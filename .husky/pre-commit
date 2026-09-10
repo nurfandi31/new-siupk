@@ -1,0 +1,10 @@
+#!/bin/sh
+
+echo "🎨 Checking PHP Code Style (Pint)..."
+php vendor/bin/pint --test
+if [ $? -ne 0 ]; then
+    echo "❌ Code style check failed! Please run 'php vendor/bin/pint' to fix formatting."
+    exit 1
+fi
+
+echo "✅ Pre-commit check passed!"

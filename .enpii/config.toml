@@ -1,0 +1,14 @@
+# Project enpii config (optional overrides; no API keys)
+# model = "enpii"
+# dialect = "openai"
+# permissionMode = "ask"
+# denyGlobs = [".env", "**/*secret*"]
+#
+# Claude-style allow rules (skip approval when match):
+# [permissions]
+# allow = [
+#   "run_shell(npm *)",
+#   "run_shell(git *)",
+#   "web_fetch(domain:github.com)",
+#   "web_search",
+# ]

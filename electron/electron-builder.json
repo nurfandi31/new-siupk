@@ -1,0 +1,41 @@
+﻿{
+  "appId": "com.enpiistudio.siupk.desktop",
+  "productName": "SIUPK Next Desktop",
+  "directories": {
+    "output": "dist-electron"
+  },
+  "files": [
+    "electron/**/*",
+    "public/**/*",
+    "bootstrap/**/*",
+    "config/**/*",
+    "app/**/*",
+    "routes/**/*",
+    "resources/views/**/*",
+    "vendor/**/*",
+    "package.json"
+  ],
+  "publish": [
+    {
+      "provider": "generic",
+      "url": "https://github.com/nurfandi31/siupknext/releases/latest/download"
+    }
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "public/favicon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "SIUPK Next Desktop",
+    "differentialPackage": true
+  }
+}

@@ -1,0 +1,42 @@
+# Files excluded from the Docker build context. Smaller context = faster
+# `docker compose build` and more reliable layer caching.
+
+# Version control
+.git
+.gitignore
+
+# Env files (use .env.example for documentation; .env comes from host)
+.env
+.env.*
+!.env.example
+
+# Dependencies (composer + npm) — built inside the image or mounted at runtime
+vendor
+node_modules
+
+# Frontend build output — generated at build time / served from host
+public/build
+
+# Laravel runtime artifacts
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# Test & tooling caches
+.phpunit.cache
+.phpunit.result.cache
+
+# Docs (not needed in the image)
+README.md
+docs
+
+# Editor / OS junk
+.idea
+.vscode
+*.swp
+.DS_Store
+Thumbs.db
+
+# The package's vendor (composer path repo) — installed by host composer
+packages/*/vendor

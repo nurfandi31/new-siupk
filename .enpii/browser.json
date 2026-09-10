@@ -1,0 +1,71 @@
+﻿{
+  "tabs": [
+    {
+      "id": "cf18f007-8675-49cb-b517-d6d5949e7e42",
+      "title": "SIUPK Next",
+      "url": "http://localhost:8080/login",
+      "ready": false,
+      "loading": false,
+      "canBack": false,
+      "canForward": false
+    }
+  ],
+  "activeId": "cf18f007-8675-49cb-b517-d6d5949e7e42",
+  "bookmarks": [],
+  "history": [
+    {
+      "id": "0cd89859-6be9-413b-b8c6-e151570e5799",
+      "title": "SIUPK Next",
+      "url": "http://localhost:8080/login",
+      "visitedAt": 1786330814167
+    },
+    {
+      "id": "fe2318a5-bf83-45ef-bd02-f8da260f9db9",
+      "title": "Integrasi Orchestrator - SIUPK Next",
+      "url": "http://localhost:8080/admin/integrations/orchestrator",
+      "visitedAt": 1785832460811
+    },
+    {
+      "id": "6f920859-7120-43a1-a3fe-0606975d2cce",
+      "title": "Admin - SIUPK Next",
+      "url": "http://localhost:8080/admin",
+      "visitedAt": 1785813832132
+    },
+    {
+      "id": "87609fe3-a5b7-4fef-b2d8-8b94e75f1d14",
+      "title": "Masuk - SIUPK Next",
+      "url": "http://localhost:8080/login",
+      "visitedAt": 1785813801345
+    },
+    {
+      "id": "a9a569fb-c66b-4975-a50c-c1dddeab2b08",
+      "title": "Beranda - SIUPK Next",
+      "url": "http://localhost:8080/",
+      "visitedAt": 1785813793881
+    },
+    {
+      "id": "6dffcbf6-3416-4f8d-8225-fd2fd1e79338",
+      "title": "Google",
+      "url": "https://www.google.com/",
+      "visitedAt": 1785813775775
+    },
+    {
+      "id": "c7bd6afd-39ca-45dc-9160-ee5043037ce6",
+      "title": "Facebook",
+      "url": "https://web.facebook.com/",
+      "visitedAt": 1785490470269
+    },
+    {
+      "id": "7558481d-746d-4195-a02f-9e8d5855832c",
+      "title": "Facebook",
+      "url": "https://web.facebook.com/two_step_verification/authentication/?encrypted_context=AWSupL1ZBBWyjGzRYSs25psehHcuGgnyiEEJqVftWPJXWB0PKm0itTKUFifrNxh1YkCaOmw4l3ho5rIUnvQInb2uKo2SsMQ9qqpdGWaZuokylJ2LvTXJ5G2oakiyWND0H9dqJcSTIbpf87wIxktYxFukLkK3gW2p-0w2fsYFeBJHxsHqm3E_pp8TmFcDXEJpdPyXK29qd3hK1dXufaqIF24p_xIMvz4keXClS1Z1zLzpZ5svH6tEqtD38Pjmdjvo4MfNT_2ZnuCR6mNIZ1EwneFjtroFJqnodgEwgPD2AJbvpZlPUCQBeZLxJKhKwcmZyLw-4ogbjkndvjnrXfg7Nva3ykpeWJ3Jjk-ij001ahtekHUVcj_yXybsj8YUzGUkq0h51J4zMxV7Npn5bWl1pIFl5bwHsjePTSPlskgXtYaxQiRtoUEm05I4OmAB2h1W85gY_DyTJS84Zr-20jcSfthtfhAhREKoKOlYXbTaN4JsJ4y2haIwgMGzhzsIcUeUvUotIvXo3nuHZcMv0MKDjhIL-_PnYjxWUzPBntNLHSBnMxhC9FqnXbhOb1BgmaNhWybvZy42V58-4bwUF4Z5spQrG9xSGA0gZS2RHjLQKLpSvhkT5uk54Mp95QYkETmtwQieOWpobCZ8BVhB9wmHC_SgJ-SNOUON-OLcRRELCDNKdwOrtCnYo2HPbfdMge23qmwjWabhsQA8JmgL4b3TOr8FvTNV9QnqoRXyYRPRGZzB8gkB8Xel1brNqYgMtfkd1Gnj6AemzCjmCrO8fsTxHigX7_vv1vzN-gnebSRpKFSCDoQtZ6W1xm1LuFvpnQaG8n7iWtZmma-Ou4kqy4x5IIVIqwFT0TSGK2F6j-dSbT-pJyOTVls8Rebi6EPV9lulTMp62MRT3xqVEGSCHjG5BTW4lPw0zPXoBEufApTJ8jHi3mIQukC7Cmzst57zd82I4cUnH49UX3IWUFfIeFTsDu6XTyiykNzqylPZQ_xpiYwwVQrSwf2_MFN1txJyAtKaGHT3qag_Er37Sp6AaC57WxdLK6g_apBmHV6gZLoV2yAfc0ip5KeSch3kd6loVlhteFEPNlU7EtpToByuoC1C61V6numhPpDBgb07dXzjTLRTrDekKL-5QLzpppyJvgQf9EQjA7EqNdtYZxMKPQE9fEpJ-2zUwCXRFIEr1sS2iMaCuflxYyiMhYqob6Kfk5UcrGoUC3tgzOEr1NTBBS76doEmtqVWL5MInTaV64HK5u20e3et8up-psQ9pe6xttF0upgOzhQJbJ_vh3a3R2BoQ1nGsuG39aTwlLWrLSfxTeo0khoZUyqxfJbh04rYNS1L3Pjh4IyACoIHa59a_Zl9Hq08ke9lSqQGnnmFfkpVz7h7tGyWnQe-xZd-D4vAx142AOJy-ethsPHBWHnyGat-mbqgu3rnyWxQWQU4DbzH-Xv-AHpJyXYr_nEreBNalomqRZbQoxXA2WnAfc347Mr9AK2sy1T1IEjQL3I3kQ35OsgfdAqkrh0VKj8yqhf0Fi_5TKqH1O_QyZFguvp6FOzd2bR4CylZAjf0LWi0m2TXJHDB3ygR-czxWNVWi9nSdzZXsA7zqFs5oZGB9X_B1Fi5eAgMvO-ScuOJATE&flow=pre_authentication&next",
+      "visitedAt": 1785489922077
+    },
+    {
+      "id": "8c07c1c6-ba02-4c6e-a21a-e93bd1b793b7",
+      "title": "Facebook",
+      "url": "https://web.facebook.com/?_rdc=1&_rdr",
+      "visitedAt": 1785489749775
+    }
+  ]
+}
