@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d4257689e21f447b9f789c95b7d01c89",
+    "content-hash": "ca8339f378052d8fa22b477911d0d57b",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -740,65 +740,6 @@
             "time": "2025-03-06T22:45:56+00:00"
         },
         {
-            "name": "enpii/assistant",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "git@github.com:its-enpii/enpii-assistant.git",
-                "reference": "e329d41a736cc34c6da5732cc19472abfd731fd0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/its-enpii/enpii-assistant/zipball/e329d41a736cc34c6da5732cc19472abfd731fd0",
-                "reference": "e329d41a736cc34c6da5732cc19472abfd731fd0",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/console": "^13.8",
-                "illuminate/contracts": "^13.8",
-                "illuminate/database": "^13.8",
-                "illuminate/http": "^13.8",
-                "illuminate/support": "^13.8",
-                "php": "^8.3",
-                "smalot/pdfparser": "^2.10"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.24",
-                "mockery/mockery": "^1.6",
-                "orchestra/testbench": "^11.0",
-                "phpunit/phpunit": "^12.5.12"
-            },
-            "default-branch": true,
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Enpii\\Assistant\\AssistantServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Enpii\\Assistant\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Enpii\\Assistant\\Tests\\": "tests/"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "description": "In-process chat orchestrator — tool-use loop, RAG, persona, audit.",
-            "homepage": "https://github.com/its-enpii/enpii-assistant",
-            "support": {
-                "source": "https://github.com/its-enpii/enpii-assistant",
-                "issues": "https://github.com/its-enpii/enpii-assistant/issues"
-            },
-            "time": "2026-08-27T03:58:50+00:00"
-        },
-        {
             "name": "fruitcake/php-cors",
             "version": "v1.4.0",
             "source": {
@@ -1015,7 +956,7 @@
                     "homepage": "https://github.com/Nyholm"
                 },
                 {
-                    "name": "Márk Sági-Kazár",
+                    "name": "MÃ¡rk SÃ¡gi-KazÃ¡r",
                     "email": "mark.sagikazar@gmail.com",
                     "homepage": "https://github.com/sagikazarmark"
                 },
@@ -1213,7 +1154,7 @@
                     "homepage": "https://github.com/Nyholm"
                 },
                 {
-                    "name": "Márk Sági-Kazár",
+                    "name": "MÃ¡rk SÃ¡gi-KazÃ¡r",
                     "email": "mark.sagikazar@gmail.com",
                     "homepage": "https://github.com/sagikazarmark"
                 },
@@ -1223,7 +1164,7 @@
                     "homepage": "https://github.com/Tobion"
                 },
                 {
-                    "name": "Márk Sági-Kazár",
+                    "name": "MÃ¡rk SÃ¡gi-KazÃ¡r",
                     "email": "mark.sagikazar@gmail.com",
                     "homepage": "https://sagikazarmark.hu"
                 }
@@ -2786,7 +2727,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "📐 Nette Schema: validating data structures against a given Schema.",
+            "description": "ðŸ“ Nette Schema: validating data structures against a given Schema.",
             "homepage": "https://nette.org",
             "keywords": [
                 "config",
@@ -2865,7 +2806,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "🛠  Nette Utils: lightweight utilities for string & array manipulation, image handling, safe JSON encoding/decoding, validation, slug or strong password generating etc.",
+            "description": "ðŸ›   Nette Utils: lightweight utilities for string & array manipulation, image handling, safe JSON encoding/decoding, validation, slug or strong password generating etc.",
             "homepage": "https://nette.org",
             "keywords": [
                 "array",
@@ -3147,7 +3088,7 @@
             ],
             "authors": [
                 {
-                    "name": "Till Krüss",
+                    "name": "Till KrÃ¼ss",
                     "homepage": "https://till.im",
                     "role": "Maintainer"
                 }
@@ -4160,7 +4101,7 @@
                     "email": "fabien@symfony.com"
                 },
                 {
-                    "name": "Jean-François Simon",
+                    "name": "Jean-FranÃ§ois Simon",
                     "email": "jeanfrancois.simon@sensiolabs.com"
                 },
                 {
@@ -5806,7 +5747,7 @@
             ],
             "authors": [
                 {
-                    "name": "Grégoire Pineau",
+                    "name": "GrÃ©goire Pineau",
                     "email": "lyrixx@lyrixx.info"
                 },
                 {
@@ -6378,7 +6319,7 @@
             ],
             "authors": [
                 {
-                    "name": "Grégoire Pineau",
+                    "name": "GrÃ©goire Pineau",
                     "email": "lyrixx@lyrixx.info"
                 },
                 {
@@ -6983,7 +6924,7 @@
             ],
             "authors": [
                 {
-                    "name": "François Zaninotto"
+                    "name": "FranÃ§ois Zaninotto"
                 }
             ],
             "description": "Faker is a PHP library that generates fake data for you.",
@@ -7373,7 +7314,7 @@
             ],
             "authors": [
                 {
-                    "name": "Pádraic Brady",
+                    "name": "PÃ¡draic Brady",
                     "email": "padraic.brady@gmail.com",
                     "homepage": "https://github.com/padraic",
                     "role": "Author"
@@ -9213,14 +9154,15 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "enpii/assistant": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.3",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "ext-bcmath": "*",
+        "ext-gd": "*",
+        "ext-zip": "*"
     },
     "platform-dev": {},
     "plugin-api-version": "2.9.0"
