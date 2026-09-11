@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="classic">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koneksi Terputus (Offline) - siupk Next</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Material+Symbols+Outlined:opsz,wght,FILL@20..48,100..700,0..1" rel="stylesheet">
+    <style>
+        :root {
+            --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+            --color-primary: #002746;
+            --color-primary-container: #0b3d66;
+            --color-secondary: #006d3d;
+            --color-secondary-container: #97f3b5;
+            --color-surface: #f8fafc;
+            --color-card: #ffffff;
+            --color-text-main: #0f172a;
+            --color-text-muted: #64748b;
+            --color-border: #e2e8f0;
+            --color-warning: #d97706;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--color-surface);
+            color: var(--color-text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow-x: hidden;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+        }
+        .ambient-glow-1 {
+            position: fixed;
+            top: -10vw;
+            left: -10vw;
+            width: 40vw;
+            height: 40vw;
+            min-width: 300px;
+            background: radial-gradient(circle, rgba(0, 39, 70, 0.08) 0%, rgba(0, 39, 70, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .error-navbar {
+            position: relative;
+            z-index: 10;
+            padding: 1.25rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .brand-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: inherit;
+        }
+        .brand-logo-icon {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 0.75rem;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%);
+            color: #ffffff;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 4px 12px rgba(0, 39, 70, 0.15);
+        }
+        .brand-text-title {
+            font-size: 1.125rem;
+            font-weight: 800;
+            line-height: 1.2;
+            color: var(--color-primary);
+        }
+        .brand-text-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--color-secondary);
+        }
+        .main-wrapper {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .error-card {
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: 1.75rem;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07);
+            overflow: hidden;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+        @media (min-width: 900px) {
+            .error-card { grid-template-columns: 42% 58%; }
+        }
+        .visual-stage {
+            background: linear-gradient(145deg, rgba(0, 39, 70, 0.03) 0%, rgba(217, 119, 6, 0.05) 100%);
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-bottom: 1px solid var(--color-border);
+        }
+        @media (min-width: 900px) {
+            .visual-stage { border-bottom: none; border-right: 1px solid var(--color-border); padding: 4rem 2.5rem; }
+        }
+        .illustration-container {
+            width: 100%;
+            max-width: 240px;
+            margin-bottom: 1.5rem;
+        }
+        .error-code-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1.1rem;
+            border-radius: 9999px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            background: #ffffff;
+            color: var(--color-warning);
+            border: 1px solid var(--color-border);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+        }
+        .content-stage {
+            padding: 2.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        @media (min-width: 900px) {
+            .content-stage { padding: 3.5rem 3rem; }
+        }
+        .error-category {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-warning);
+            margin-bottom: 0.6rem;
+        }
+        .error-heading {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.25;
+            color: var(--color-text-main);
+            margin-bottom: 0.85rem;
+        }
+        .error-description {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--color-text-muted);
+            margin-bottom: 1.5rem;
+        }
+        .recommendations-box {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 0.875rem;
+            padding: 1.15rem 1.25rem;
+            margin-bottom: 1.75rem;
+        }
+        .recommendations-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .recommendation-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+        }
+        .recommendation-icon {
+            font-size: 1.1rem;
+            color: var(--color-secondary);
+            flex-shrink: 0;
+        }
+        .actions-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.35rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 39, 70, 0.2);
+        }
+        .error-footer {
+            padding: 1.5rem 2rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow-1"></div>
+
+    <header class="error-navbar">
+        <a href="/" class="brand-link">
+            <div class="brand-logo-icon">
+                <span class="material-symbols-outlined" style="font-size: 1.5rem;">account_balance</span>
+            </div>
+            <div>
+                <p class="brand-text-title">siupk <span style="color: var(--color-secondary);">Next</span></p>
+                <p class="brand-text-badge">BUMDesma LKD Financial System</p>
+            </div>
+        </a>
+    </header>
+
+    <main class="main-wrapper">
+        <div class="error-card">
+            <div class="visual-stage">
+                <div class="illustration-container">
+                    <svg width="220" height="180" viewBox="0 0 220 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="110" cy="90" r="75" fill="#D97706" fill-opacity="0.06" />
+                        <circle cx="110" cy="90" r="55" stroke="#D97706" stroke-opacity="0.15" stroke-width="1.5" stroke-dasharray="4 4" />
+                        <!-- Router & Wi-Fi Off -->
+                        <rect x="55" y="80" width="110" height="45" rx="10" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
+                        <circle cx="75" cy="102" r="4" fill="#D97706" />
+                        <circle cx="90" cy="102" r="4" fill="#64748B" fill-opacity="0.3" />
+                        <circle cx="105" cy="102" r="4" fill="#64748B" fill-opacity="0.3" />
+                        <!-- Antenna -->
+                        <line x1="145" y1="80" x2="145" y2="50" stroke="#002746" stroke-width="3" stroke-linecap="round" />
+                        <circle cx="145" cy="48" r="4" fill="#002746" />
+                        <!-- Disconnected Slash -->
+                        <path d="M70 45C95 25 125 25 150 45" stroke="#64748B" stroke-opacity="0.3" stroke-width="3" stroke-linecap="round" />
+                        <line x1="60" y1="40" x2="160" y2="135" stroke="#BA1A1A" stroke-width="4" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <div class="error-code-badge">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">wifi_off</span>
+                    <span id="status-badge-text">Koneksi Internet Terputus</span>
+                </div>
+            </div>
+
+            <div class="content-stage">
+                <div class="error-category">
+                    <span class="material-symbols-outlined" style="font-size: 0.95rem;">cloud_off</span>
+                    <span>Status Jaringan & PWA</span>
+                </div>
+
+                <h1 class="error-heading">Anda Sedang Offline</h1>
+
+                <p class="error-description">
+                    Aplikasi siupk Next membutuhkan koneksi internet untuk mengamankan dan mensinkronkan transaksi keuangan. Halaman akan otomatis memuat ulang saat koneksi internet Anda pulih.
+                </p>
+
+                <div class="recommendations-box">
+                    <div class="recommendations-title">
+                        <span class="material-symbols-outlined" style="color: var(--color-secondary); font-size: 1rem;">lightbulb</span>
+                        <span>Langkah Pemeriksaan</span>
+                    </div>
+                    <ul class="recommendation-list">
+                        <li class="recommendation-item">
+                            <span class="material-symbols-outlined recommendation-icon">check_circle</span>
+                            <span>Periksa kabel LAN, sambungan Wi-Fi, atau paket data seluler Anda.</span>
+                        </li>
+                        <li class="recommendation-item">
+                            <span class="material-symbols-outlined recommendation-icon">check_circle</span>
+                            <span>Pastikan perangkat tidak sedang dalam mode pesawat (Airplane mode).</span>
+                        </li>
+                        <li class="recommendation-item">
+                            <span class="material-symbols-outlined recommendation-icon">check_circle</span>
+                            <span>Klik tombol muat ulang di bawah jika koneksi telah aktif kembali.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="actions-group">
+                    <button onclick="window.location.reload()" class="btn btn-primary">
+                        <span class="material-symbols-outlined" style="font-size: 1.15rem;">refresh</span>
+                        <span>Coba Muat Ulang Sekarang</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="error-footer">
+        <p>&copy; <span id="current-year">2026</span> <strong>siupk Next</strong> &bull; Tata Kelola Dana Bergulir BUMDesma LKD</p>
+    </footer>
+
+    <script>
+        try { document.getElementById('current-year').textContent = new Date().getFullYear(); } catch(e){}
+        window.addEventListener('online', function() {
+            var badge = document.getElementById('status-badge-text');
+            if (badge) badge.innerText = 'Kembali Online! Memuat...';
+            window.location.reload();
+        });
+        setInterval(function() {
+            if (navigator.onLine) {
+                fetch('/favicon.ico', { method: 'HEAD', cache: 'no-store' })
+                    .then(function() { window.location.reload(); })
+                    .catch(function() {});
+            }
+        }, 4000);
+    </script>
+</body>
+</html>

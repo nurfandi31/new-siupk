@@ -1,8 +1,8 @@
-# SIUPK Next — Project Overview
+# siupk Next — Project Overview
 
 ## 1. Ringkasan
 
-SIUPK Next adalah proyek penataan ulang arsitektur aplikasi dan basis data SIUPK agar mampu melayani sekitar 500 tenant dan terus bertumbuh tanpa mengulang pola tabel dinamis seperti `transaksi_1`, `transaksi_4`, `anggota_1`, dan seterusnya.
+siupk Next adalah proyek penataan ulang arsitektur aplikasi dan basis data siupk agar mampu melayani sekitar 500 tenant dan terus bertumbuh tanpa mengulang pola tabel dinamis seperti `transaksi_1`, `transaksi_4`, `anggota_1`, dan seterusnya.
 
 Desain target menggunakan pola:
 

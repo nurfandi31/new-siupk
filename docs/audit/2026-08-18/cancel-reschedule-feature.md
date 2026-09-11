@@ -1,4 +1,4 @@
-# Cancel Reschedule Pinjaman — SIUPK Next 2026-08-18
+# Cancel Reschedule Pinjaman — siupk Next 2026-08-18
 
 > **Pertanyaan user:** "bagaimana jika saya mau membatalkan rescheduling?
 > maksudnya saya sudah melakukan rescheduling pinjaman dan pinjaman baru sudah

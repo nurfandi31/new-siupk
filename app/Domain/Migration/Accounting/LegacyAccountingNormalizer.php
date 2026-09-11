@@ -332,7 +332,7 @@ final class LegacyAccountingNormalizer
 
     private function looksLikeChartCode(string $code): bool
     {
-        // Standard SIUPK: 1.1.01.01 (lev1 1-5). Desa/kec keys like 33.08.19 are not COA.
+        // Standard siupk: 1.1.01.01 (lev1 1-5). Desa/kec keys like 33.08.19 are not COA.
         return (bool) preg_match('/^[1-5](\.\d+){1,3}$/', $code);
     }
 }

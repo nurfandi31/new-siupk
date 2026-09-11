@@ -16,19 +16,23 @@ use App\Domain\Accounting\Services\Reports\FinancialHealthService;
 use App\Domain\Accounting\Services\Reports\GeneralLedgerService;
 use App\Domain\Accounting\Services\Reports\IncomeStatementService;
 use App\Domain\Accounting\Services\Reports\JournalListingService;
+use App\Domain\Accounting\Services\Reports\ReportBundleService;
 use App\Domain\Accounting\Services\Reports\TrialBalanceService;
 use App\Domain\Assets\Services\AssetReportService;
 use App\Domain\Membership\Models\OrganizationProfile;
 use App\Models\User;
 use App\Support\Excel\ReportExcel;
 use App\Support\ReportPdf;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use InvalidArgumentException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 final class ReportController
 {
@@ -45,6 +49,7 @@ final class ReportController
         private readonly FinancialHealthService $financialHealthService,
         private readonly AssetReportService $assetReportService,
         private readonly AnnualReportPackService $annualReportPack,
+        private readonly ReportBundleService $reportBundle,
         private readonly ReportPdf $pdf,
         private readonly ReportExcel $excel,
     ) {}
@@ -455,6 +460,22 @@ final class ReportController
             $data,
             sprintf('mou-kerjasama-antar-desa-%04d.pdf', $year),
         );
+    }
+
+    public function bundlePdf(Request $request): BinaryFileResponse|StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->period($request, defaultMonth: 12);
+
+        try {
+            if ($month === null) {
+                throw new DomainException('Periode bundle wajib memilih bulan.');
+            }
+
+            return $this->reportBundle->download($year, $month);
+        } catch (DomainException|Throwable $exception) {
+            abort(422, $exception->getMessage());
+        }
     }
 
     private function authorize(Request $request): void

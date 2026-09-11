@@ -1,0 +1,24 @@
+{
+  "name": "SI UPK Next - Sistem Informasi Dana Bergulir Masyarakat",
+  "short_name": "siupk",
+  "description": "Sistem Informasi Dana Bergulir Masyarakat BUMDesma / UPK LKD Modern",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0284c7",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/build/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/build/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

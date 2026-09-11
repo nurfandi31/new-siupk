@@ -1,12 +1,12 @@
-﻿# Roadmap & Arsitektur SIUPK Mobile App (Flutter)
+# Roadmap & Arsitektur siupk Mobile App (Flutter)
 
-Dokumen ini memetakan arsitektur, pembagian tanggung jawab fitur, strategi integrasi API multi-tenant, dan tahapan implementasi aplikasi mobile **SIUPK Mobile** berbasis **Flutter**.
+Dokumen ini memetakan arsitektur, pembagian tanggung jawab fitur, strategi integrasi API multi-tenant, dan tahapan implementasi aplikasi mobile **siupk Mobile** berbasis **Flutter**.
 
 ---
 
 ## 1. Ringkasan Eksekutif & Tujuan
 
-Aplikasi mobile **SIUPK Mobile** dirancang sebagai pendamping operasional (*companion app*) untuk melengkapi sistem **SIUPK Next Web & Desktop**. 
+Aplikasi mobile **siupk Mobile** dirancang sebagai pendamping operasional (*companion app*) untuk melengkapi sistem **siupk Next Web & Desktop**. 
 
 ### Tujuan Utama:
 1. **Kecepatan Operasional Lapangan**: Memfasilitasi petugas penagihan (kolektor/mantri) dan surveyor lapangan dengan aplikasi ringan, responsif, dan siap digunakan langsung di depan nasabah.
@@ -31,7 +31,7 @@ Aplikasi mobile **SIUPK Mobile** dirancang sebagai pendamping operasional (*comp
                                   | (Sanctum Auth + Push FCM)
                                   v
    +-------------------------------------------------------------+
-   |              SIUPK MOBILE APP (FLUTTER 3.x)                 |
+   |              siupk MOBILE APP (FLUTTER 3.x)                 |
    |                                                             |
    |  +-------------------------------------------------------+  |
    |  | Presentation Layer: BLoC / Riverpod + Material 3 UI   |  |
@@ -55,21 +55,21 @@ Pemisahan fitur ditentukan secara ketat berdasarkan kenyamanan antarmuka (UX), e
 
 | Modul & Fitur | Mobile App (Flutter) | Web / Desktop | Alasan Pemisahan |
 |---|:---:|:---:|---|
-| **Otentikasi & Profil Pengguna** | âœ… Token Mobile | âœ… Sesi Web / Token Desktop | Pengguna login sesuai perangkat masing-masing. |
-| **Koleksi & Setoran Angsuran Lapangan** | âœ… **Prioritas Utama** | âœ… Di Kantor | Mobile mendukung cetak struk printer thermal Bluetooth & kirim WhatsApp instan. |
-| **Cetak Struk Thermal (58/80mm)** | âœ… Native Bluetooth | âŒ Terbatas (RawBT) | Cetak struk portabel langsung di depan nasabah saat transaksi lapangan. |
-| **Survei & Verifikasi Proposal** | âœ… **Prioritas Utama** | âœ… Review Dokumen | Pemanfaatan kamera foto jaminan, watermark koordinat GPS, & tanda tangan layar sentuh. |
-| **Persetujuan Pinjaman (Quick Approval)** | âœ… 1-Tap Action | âœ… Detail Komite | Pengurus/Manajer dapat menyetujui atau menolak proposal secara cepat saat mobile. |
-| **Executive Dashboard Ringkas** | âœ… KPI & Ringkasan | âœ… Analisis Penuh | Menampilkan kas hari ini, realisasi bulanan, rasio NPL/PAR, dan jatuh tempo. |
-| **Asisten AI (Ariel Voice/Chat)** | âœ… Chat Ringkas | âœ… Web Widget | Konsultasi kilat kondisi keuangan tenant melalui smartphone. |
-| **Tutup Buku Bulanan & Tahunan** | âŒ **Dilarang** | âœ… **Wajib Desktop/Web** | Proses kritis akuntansi: rekonsiliasi, pembagian surplus PADes, penguncian fiskal. |
-| **Bagan Akun (Chart of Accounts)** | âŒ Hanya Lihat | âœ… **Wajib Desktop/Web** | Pengelolaan pohon hierarki akun 4-5 digit membutuhkan ruang visual lebar. |
-| **Jurnal Umum Memorial Multi-Baris** | âŒ Tidak Efisien | âœ… **Wajib Desktop/Web** | Input jurnal penyesuaian 5-10 baris debit/kredit lebih akurat di keyboard fisik. |
-| **Laporan Keuangan Standar SAK (Neraca/LR)** | âš ï¸ Ringkasan Saja | âœ… **Laporan Lengkap & PDF** | Dokumen multi-halaman dan spreadsheet analisis komparatif tahunan. |
-| **Konsolidasi Holding (Kabupaten/Provinsi)** | âš ï¸ Dashboard Global | âœ… **Matriks Ratusan Kolom** | Tabel konsolidasi multi-kecamatan membutuhkan resolusi layar monitor besar. |
-| **E-Budgeting & Rencana Anggaran (RAB)** | âŒ Terlalu Kompleks | âœ… **Wajib Desktop/Web** | Input ratusan komponen akun biaya dan target pendapatan per bulan. |
-| **Import / Export Massal (CSV & Excel)** | âŒ Tidak Praktis | âœ… **Wajib Desktop/Web** | Pemrosesan berkas migrasi ribuan data nasabah dan saldo awal. |
-| **Konfigurasi Sistem & Superadmin Platform** | âŒ **Dilarang** | âœ… **Wajib Desktop/Web** | Manajemen database sharding, billing gateway, data purifier, dan matriks hak akses. |
+| **Otentikasi & Profil Pengguna** | ✅ Token Mobile | ✅ Sesi Web / Token Desktop | Pengguna login sesuai perangkat masing-masing. |
+| **Koleksi & Setoran Angsuran Lapangan** | ✅ **Prioritas Utama** | ✅ Di Kantor | Mobile mendukung cetak struk printer thermal Bluetooth & kirim WhatsApp instan. |
+| **Cetak Struk Thermal (58/80mm)** | ✅ Native Bluetooth | ❌ Terbatas (RawBT) | Cetak struk portabel langsung di depan nasabah saat transaksi lapangan. |
+| **Survei & Verifikasi Proposal** | ✅ **Prioritas Utama** | ✅ Review Dokumen | Pemanfaatan kamera foto jaminan, watermark koordinat GPS, & tanda tangan layar sentuh. |
+| **Persetujuan Pinjaman (Quick Approval)** | ✅ 1-Tap Action | ✅ Detail Komite | Pengurus/Manajer dapat menyetujui atau menolak proposal secara cepat saat mobile. |
+| **Executive Dashboard Ringkas** | ✅ KPI & Ringkasan | ✅ Analisis Penuh | Menampilkan kas hari ini, realisasi bulanan, rasio NPL/PAR, dan jatuh tempo. |
+| **Asisten AI (Ariel Voice/Chat)** | ✅ Chat Ringkas | ✅ Web Widget | Konsultasi kilat kondisi keuangan tenant melalui smartphone. |
+| **Tutup Buku Bulanan & Tahunan** | ❌ **Dilarang** | ✅ **Wajib Desktop/Web** | Proses kritis akuntansi: rekonsiliasi, pembagian surplus PADes, penguncian fiskal. |
+| **Bagan Akun (Chart of Accounts)** | ❌ Hanya Lihat | ✅ **Wajib Desktop/Web** | Pengelolaan pohon hierarki akun 4-5 digit membutuhkan ruang visual lebar. |
+| **Jurnal Umum Memorial Multi-Baris** | ❌ Tidak Efisien | ✅ **Wajib Desktop/Web** | Input jurnal penyesuaian 5-10 baris debit/kredit lebih akurat di keyboard fisik. |
+| **Laporan Keuangan Standar SAK (Neraca/LR)** | ⚠️ Ringkasan Saja | ✅ **Laporan Lengkap & PDF** | Dokumen multi-halaman dan spreadsheet analisis komparatif tahunan. |
+| **Konsolidasi Holding (Kabupaten/Provinsi)** | ⚠️ Dashboard Global | ✅ **Matriks Ratusan Kolom** | Tabel konsolidasi multi-kecamatan membutuhkan resolusi layar monitor besar. |
+| **E-Budgeting & Rencana Anggaran (RAB)** | ❌ Terlalu Kompleks | ✅ **Wajib Desktop/Web** | Input ratusan komponen akun biaya dan target pendapatan per bulan. |
+| **Import / Export Massal (CSV & Excel)** | ❌ Tidak Praktis | ✅ **Wajib Desktop/Web** | Pemrosesan berkas migrasi ribuan data nasabah dan saldo awal. |
+| **Konfigurasi Sistem & Superadmin Platform** | ❌ **Dilarang** | ✅ **Wajib Desktop/Web** | Manajemen database sharding, billing gateway, data purifier, dan matriks hak akses. |
 
 ---
 

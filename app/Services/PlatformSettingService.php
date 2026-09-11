@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
  * Platform-scoped (not tenant-scoped) key/value config store.
  *
  * Use for installation-wide settings that apply to all tenants in this
- * SIUPK deployment — e.g. orchestrator base URL & shared secret.
+ * siupk deployment — e.g. orchestrator base URL & shared secret.
  * Per-tenant overrides go to {@see TenantSettingService} instead.
  */
 final class PlatformSettingService

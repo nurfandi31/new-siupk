@@ -1,8 +1,8 @@
-# SIUPK Next — Struktur Database Baru
+# siupk Next — Struktur Database Baru
 
 ## 1. Tujuan dokumen
 
-Dokumen ini mendefinisikan rancangan database target untuk SIUPK Next dengan kebutuhan utama:
+Dokumen ini mendefinisikan rancangan database target untuk siupk Next dengan kebutuhan utama:
 
 - hampir 500 tenant;
 - skema mudah dirawat;

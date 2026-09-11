@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -191,7 +191,7 @@ final class TenantRoleManagementController
             ],
             [
                 'category' => 'lending',
-                'label' => 'Pinjaman (SIUPK)',
+                'label' => 'Pinjaman (siupk)',
                 'icon' => 'account_balance',
                 'permissions' => [
                     ['key' => 'loans.view', 'label' => 'Lihat Pinjaman & Laporan', 'description' => 'Melihat tahapan perguliran dan laporan pinjaman'],

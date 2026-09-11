@@ -1,6 +1,6 @@
-# Dokumentasi Proyek SIUPK Next
+# Dokumentasi Proyek siupk Next
 
-Indeks dokumentasi lengkap untuk arsitektur, panduan pengguna, basis data, billing, modul supervisi, RBAC, asisten AI, dan pengujian SIUPK Next:
+Indeks dokumentasi lengkap untuk arsitektur, panduan pengguna, basis data, billing, modul supervisi, RBAC, asisten AI, dan pengujian siupk Next:
 
 ---
 
@@ -9,7 +9,7 @@ Indeks dokumentasi lengkap untuk arsitektur, panduan pengguna, basis data, billi
 Dokumentasi penggunaan aplikasi untuk pengguna akhir, pengelola BUMDesma/LKD, operator desa, supervisor wilayah, dan administrator:
 
 - [USER_GUIDE.md](USER_GUIDE.md) – **Panduan Pengguna Lengkap (User Manual)**: Mencakup seluruh 86 halaman dan fitur aplikasi (Dashboard, Master Data, Lending Lifecycle, Akuntansi & Jurnal, Inventaris, E-Budgeting, Pelaporan Keuangan & Piutang, Prosedur Periodik, Billing SaaS, WhatsApp Gateway, RBAC, Onboarding, Portal Pengawasan, Superadmin, AI Assistant, dan 36 Dokumen Cetak PDF).
-- [CUTOVER_RUNBOOK.md](CUTOVER_RUNBOOK.md) – Panduan teknis migrasi dan *cutover* data per tenant dari database legacy ke SIUPK Next.
+- [CUTOVER_RUNBOOK.md](CUTOVER_RUNBOOK.md) – Panduan teknis migrasi dan *cutover* data per tenant dari database legacy ke siupk Next.
 - [VALIDATION.md](VALIDATION.md) – Panduan verifikasi statis, pengujian backend PHPUnit, dan pengujian frontend Playwright browser (E2E).
 
 ---
@@ -30,9 +30,9 @@ Dokumentasi teknis arsitektur, skema basis data, keamanan hak akses, billing, in
 
 ## 3. Analisis Komparatif & Migrasi Legacy
 
-Dokumentasi perbandingan mendalam antara sistem versi legacy (PHP Native) dengan arsitektur modern SIUPK Next:
+Dokumentasi perbandingan mendalam antara sistem versi legacy (PHP Native) dengan arsitektur modern siupk Next:
 
-- [PERBANDINGAN_SIUPK_LEGACY_VS_NEXT.md](PERBANDINGAN_SIUPK_LEGACY_VS_NEXT.md) – Analisis komparatif menyeluruh SIUPK Legacy (`/siupk`) vs SIUPK Next (`/siupknext`), alasan upgrade, arsitektur, SaaS billing, supervisi wilayah, dan infrastruktur.
+- [PERBANDINGAN_siupk_LEGACY_VS_NEXT.md](PERBANDINGAN_siupk_LEGACY_VS_NEXT.md) – Analisis komparatif menyeluruh siupk Legacy (`/siupk`) vs siupk Next (`/new_siupk`), alasan upgrade, arsitektur, SaaS billing, supervisi wilayah, dan infrastruktur.
 - [PERBANDINGAN_DATABASE_LEGACY_VS_NEXT.md](PERBANDINGAN_DATABASE_LEGACY_VS_NEXT.md) – Perbandingan skema tabel database legacy vs normalisasi tabel modern multi-tenant.
 - [LEGACY_REPORTS_MIGRATION_ROADMAP.md](LEGACY_REPORTS_MIGRATION_ROADMAP.md) – Matriks spesifikasi dan status 100% implementasi laporan akuntansi, laporan piutang, paket LPJ tahunan MAD, dan dokumen perguliran pinjaman.
 

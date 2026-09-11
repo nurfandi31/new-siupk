@@ -1,4 +1,4 @@
-# Audit Fungsi Penghapusan Pinjaman — SIUPK Next 2026-08-15
+# Audit Fungsi Penghapusan Pinjaman — siupk Next 2026-08-15
 
 > **Pertanyaan user:** "cek fungsi penghapusan pinjaman untu pinjaman
 > anggota/pemanfaat"

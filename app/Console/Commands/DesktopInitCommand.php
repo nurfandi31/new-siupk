@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -13,11 +13,11 @@ final class DesktopInitCommand extends Command
 {
     protected $signature = 'desktop:init {--force : Force recreation of local SQLite database}';
 
-    protected $description = 'Initialize local SQLite database and environment for SIUPK Next Desktop Client';
+    protected $description = 'Initialize local SQLite database and environment for siupk Next Desktop Client';
 
     public function handle(): int
     {
-        $this->info('Initializing SIUPK Next Desktop Client...');
+        $this->info('Initializing siupk Next Desktop Client...');
 
         $sqlitePath = (string) config('desktop.sqlite_database', database_path('database.sqlite'));
         $directory = dirname($sqlitePath);

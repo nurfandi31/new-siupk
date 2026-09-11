@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 #
-# Base image for siupknext (PHP-FPM 8.4). All app source, vendor/, and .env
+# Base image for new_siupk (PHP-FPM 8.4). All app source, vendor/, and .env
 # are mounted at runtime from the host via the `app` service's volumes, so
 # this image only ships the runtime — system packages, PHP extensions, and
 # the entrypoint. Code edits on the host take effect after `docker compose

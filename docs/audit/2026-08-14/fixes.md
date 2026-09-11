@@ -1,4 +1,4 @@
-# Daftar Bug & Patch — SIUPK Next Audit 2026-08-14/15
+# Daftar Bug & Patch — siupk Next Audit 2026-08-14/15
 
 Setiap entri: kode (Fxxx), gejala (symptom), akar masalah (root cause),
 file yang diubah (jalur + baris), dan cara verifikasi ulang (re-verify).
@@ -105,14 +105,14 @@ lewat.
 **Symptom:**
 `SQLSTATE[HY000] [2002] Connection refused (Connection: legacy, Host: 127.0.0.1, …)`.
 
-**Root cause:** `siupknext-queue-1` start **sebelum** `.env` di-update
+**Root cause:** `new_siupk-queue-1` start **sebelum** `.env` di-update
 (`LEGACY_DB_HOST=103.177.95.91`). PHP-FPM default `clear_env = yes`
 sehingga Dotenv hanya di-load sekali saat container start; perubahan
 berikutnya tidak ter-baca sampai container restart.
 
 **File:** tidak ada — konfigurasi runtime.
 
-**Fix:** `docker restart siupknext-queue-1` agar worker me-load `.env`
+**Fix:** `docker restart new_siupk-queue-1` agar worker me-load `.env`
 terbaru.
 
 **Re-verify:** `php artisan legacy:discover-accounting --suffix=76`
@@ -318,7 +318,7 @@ type="number"` — lihat `number-input-and-sse-audit.md` A1 bagian
 "Form yang TIDAK perlu migrasi".
 
 **Re-verify:**
-- `npm run build` di `siupknext-node-1` → sukses tanpa error.
+- `npm run build` di `new_siupk-node-1` → sukses tanpa error.
 - `php artisan test --testsuite=Feature --filter="Plan|Invoice|Cutover"`
   → 12/12 PASS (58.96s).
 - `npx playwright test full-audit.spec.ts --grep "D2|D9"` →
@@ -365,7 +365,7 @@ dengan koma — mengasumsikan titik = desimal. Padahal di locale id-ID,
 di F015 langsung benar sejak hari pertama.
 
 **Re-verify:**
-- `node -e "..."` di `siupknext-node-1` dengan 22 case → 22/22 PASS.
+- `node -e "..."` di `new_siupk-node-1` dengan 22 case → 22/22 PASS.
 - `npm run build` → sukses 56.86s.
 - `npx playwright test full-audit.spec.ts --grep "D2|D9"` → 13/14 PASS
   (D7.2 template download timeout = issue terpisah F012+F013, **bukan

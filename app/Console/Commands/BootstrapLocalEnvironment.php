@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -138,7 +138,7 @@ final class BootstrapLocalEnvironment extends Command
             ],
         );
 
-        $this->line("Shard [{$shard->code}] â†’ {$shard->host}/{$shard->database_name}");
+        $this->line("Shard [{$shard->code}] → {$shard->host}/{$shard->database_name}");
 
         return $shard;
     }
@@ -160,7 +160,7 @@ final class BootstrapLocalEnvironment extends Command
                 'timezone' => 'Asia/Jakarta',
                 'district_code' => $districtCode ?? Tenant::query()->where('code', $code)->value('district_code'),
                 'metadata' => [
-                    'domains' => ['localhost', '127.0.0.1', 'siupknext-nginx-1'],
+                    'domains' => ['localhost', '127.0.0.1', 'new_siupk-nginx-1'],
                 ],
                 'provisioned_at' => now(),
             ],

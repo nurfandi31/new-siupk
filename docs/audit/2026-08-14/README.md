@@ -1,11 +1,11 @@
-# Audit Komprehensif SIUPK Next — README
+# Audit Komprehensif siupk Next — README
 
 Tanggal sesi: 2026-08-14 s/d 2026-08-15 (UTC+7)
 Sesi: `tests/TEST_AUDIT_LOG.md` → komprehensif via Playwright + manual fix.
 
 ## Tujuan
 
-1. Audit keseluruhan codebase (`F:\Workspace\laragon\www\siupknext`),
+1. Audit keseluruhan codebase (`F:\Workspace\laragon\www\new_siupk`),
    backend + frontend, dengan **uji coba fitur seperti manusia** (bukan
    hanya inventory route).
 2. Perbaiki flow / alur yang acak-acakan selama audit.
@@ -85,7 +85,7 @@ Lihat `migration-76.md`. Ringkas:
 
 ```bash
 # Pre-flight
-docker exec siupknext-app-1 php artisan optimize:clear
+docker exec new_siupk-app-1 php artisan optimize:clear
 
 # Audit penuh
 npx playwright test tests/e2e/full-audit.spec.ts --reporter=list

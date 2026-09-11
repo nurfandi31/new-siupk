@@ -1,4 +1,4 @@
-﻿const { app, BrowserWindow, Menu, ipcMain, shell, dialog, Notification, session } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, shell, dialog, Notification, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
@@ -21,7 +21,7 @@ const DEFAULT_CONFIG = {
 
 // Set App User Model ID for Windows Action Center Notifications
 if (process.platform === 'win32') {
-    app.setAppUserModelId('com.enpiistudio.siupk.desktop');
+    app.setAppUserModelId('com.enpiistudio.SIUPK.desktop');
 }
 
 

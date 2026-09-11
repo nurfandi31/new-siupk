@@ -1,4 +1,4 @@
-# RBAC matrix — SIUPK tenant user
+# RBAC matrix — siupk tenant user
 
 **Rules:** superadmin = all · zero roles = full access (legacy) · has role(s) = union packs.
 
@@ -13,8 +13,8 @@ Platform `/admin/*` = **superadmin only** (bukan role tenant).
 | Master | Daftar / Tambah Anggota | `/master-data/members…` | `members.view` / `members.manage` |
 | Master | Daftar / Tambah Kelompok | `/master-data/groups…` | `groups.view` / `groups.manage` |
 | Master | Daftar / Tambah Lembaga | `/master-data/institutions…` | `institutions.view` / `institutions.manage` |
-| SIUPK | Register Proposal | `/lending/loans/create` | `loans.propose` |
-| SIUPK | Tahapan Perguliran | `/lending/loans` | `loans.view` |
+| siupk | Register Proposal | `/lending/loans/create` | `loans.propose` |
+| siupk | Tahapan Perguliran | `/lending/loans` | `loans.view` |
 | Transaksi | Daftar Jurnal | `/accounting/journals` | `journals.view` |
 | Transaksi | Daftar Inventaris | `/accounting/assets` | `assets.view` |
 | Transaksi | Jurnal Umum | `/accounting/journal-entries/create` | `journals.create` |

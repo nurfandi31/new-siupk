@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -13,7 +13,7 @@ namespace App\Support;
 final class IndonesianNumber
 {
     /**
-     * Mengkonversi angka menjadi ucapan bahasa Indonesia, e.g. 1500000 â†’
+     * Mengkonversi angka menjadi ucapan bahasa Indonesia, e.g. 1500000 →
      * "satu juta lima ratus ribu rupiah".
      */
     public static function spelledOut(float $number): string

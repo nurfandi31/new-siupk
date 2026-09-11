@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -233,7 +233,7 @@ final class NotificationCenterController
             $items[] = [
                 'id' => $id,
                 'type' => 'system',
-                'title' => 'Sistem Informasi SIUPK',
+                'title' => 'Sistem Informasi siupk',
                 'message' => 'Selamat datang di Sistem Informasi Dana Bergulir Masyarakat.',
                 'time' => 'Informasi',
                 'target_url' => '/dashboard',

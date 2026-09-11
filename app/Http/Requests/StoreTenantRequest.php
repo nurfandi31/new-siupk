@@ -59,7 +59,7 @@ final class StoreTenantRequest extends FormRequest
             }
 
             RegencyGeoService::validateWithinRegency(
-                $this->string('regency_code'),
+                (string) $this->string('regency_code'),
                 $this->input('map_latitude'),
                 $this->input('map_longitude'),
                 $validator,

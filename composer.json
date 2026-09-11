@@ -1,8 +1,8 @@
-﻿{
+{
     "$schema": "https://getcomposer.org/schema.json",
     "name": "enpiistudio/siupk-next-boilerplate",
     "type": "project",
-    "description": "SIUPK Next tenancy and accounting foundation for Laravel 13.",
+    "description": "siupk Next tenancy and accounting foundation for Laravel 13.",
     "license": "proprietary",
     "require": {
         "php": "^8.3",

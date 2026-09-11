@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -32,7 +32,7 @@ final class TenantResolver
             ->get()
             ->first(fn (Tenant $candidate): bool => $candidate->matchesHost($normalizedHost));
 
-        // host.docker.internal: tool callbacks from orchestrator container -> host SIUPK
+        // host.docker.internal: tool callbacks from orchestrator container -> host siupk
         $localTenant = (string) config('tenancy.local_tenant', '');
         $localHosts = ['localhost', '127.0.0.1', '::1', 'host.docker.internal'];
         if ($tenant === null && $localTenant !== '' && in_array($normalizedHost, $localHosts, true)) {

@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 final class PrintAssistantToolDefinitions extends Command
 {
     protected $signature = 'siupk:assistant-tools
-        {--base= : SIUPK public base URL, default APP_URL}';
+        {--base= : siupk public base URL, default APP_URL}';
 
     protected $description = 'Print assistant tool definitions (JSON) for orchestrator seed.';
 

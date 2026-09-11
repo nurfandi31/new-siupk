@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -11,7 +11,7 @@ use DomainException;
 
 /**
  * Build payload Blade untuk cetak Bukti Kas (BKM/BKK/BM) dari JournalEntry modern.
- * Acuan layout: resources/views/transaksi/dokumen/bkm.blade.php pada legacy SIUPK.
+ * Acuan layout: resources/views/transaksi/dokumen/bkm.blade.php pada legacy siupk.
  */
 final class CashEvidenceService
 {

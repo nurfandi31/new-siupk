@@ -13,7 +13,7 @@ namespace App\Domain\Accounting\Services\Reports;
  * | BKK     | debit bukan mulai `1.1.01` & kredit mulai `1.1.01`                                                |
  * | BM      | kombinasi lain (kas↔kas, atau selain `1.1.01`/`1.1.02`)                                          |
  *
- * Mengikuti standar akunting SIUPK untuk penomoran bukti kas (BKM/BKK/BM).
+ * Mengikuti standar akunting siupk untuk penomoran bukti kas (BKM/BKK/BM).
  */
 final class DocumentKindClassifier
 {

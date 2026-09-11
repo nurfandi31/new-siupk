@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -16,7 +16,7 @@ final class DesktopStatusCommand extends Command
 
     public function handle(): int
     {
-        $this->info('=== SIUPK Next Desktop Client Status ===');
+        $this->info('=== siupk Next Desktop Client Status ===');
 
         $isDesktop = (bool) config('desktop.enabled', false);
         $sqlitePath = (string) config('desktop.sqlite_database', database_path('database.sqlite'));

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -8,7 +8,7 @@ return [
     | Desktop Mode Configuration
     |--------------------------------------------------------------------------
     |
-    | When enabled, SIUPK Next behaves as a desktop application client.
+    | When enabled, siupk Next behaves as a desktop application client.
     | Storage switches to local SQLite, external caches default to file,
     | and offline read-only guards are activated.
     |
@@ -42,7 +42,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'window' => [
-        'title' => env('DESKTOP_APP_TITLE', 'SIUPK Next - Desktop Client'),
+        'title' => env('DESKTOP_APP_TITLE', 'siupk Next - Desktop Client'),
         'width' => (int) env('DESKTOP_WINDOW_WIDTH', 1440),
         'height' => (int) env('DESKTOP_WINDOW_HEIGHT', 900),
         'min_width' => 1024,

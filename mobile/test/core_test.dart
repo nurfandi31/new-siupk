@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:siupk_mobile/core/utils/currency_formatter.dart';
 import 'package:siupk_mobile/core/utils/date_formatter.dart';
 import 'package:siupk_mobile/features/auth/domain/entities/auth_entities.dart';

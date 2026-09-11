@@ -22,10 +22,10 @@ Rehearsal dev **tanpa** maintenance/backup live — tetap jalankan chain Artisan
 | Platform tenant + placement + shard | `tenants.code`, `tenant_placements` |
 | Shard schema migrasi | `tenancy:migrate-shards` |
 | COA postable di tenant | `tenancy:import-legacy-chart-of-accounts {tenant}` |
-| Docker (Laragon) | host DB = `mysql` → **wajib** `docker exec siupknext-app-1 …` |
+| Docker (Laragon) | host DB = `mysql` → **wajib** `docker exec new_siupk-app-1 …` |
 
 Prefix perintah di bawah:  
-`docker exec siupknext-app-1 php artisan`
+`docker exec new_siupk-app-1 php artisan`
 
 ## Urutan load (wajib)
 
@@ -50,14 +50,14 @@ Command: `legacy:sync-villages {tenant} {suffix}` — seed `organization_units` 
 
 ```bash
 # Dry-run full chain (validasi saja di tiap step migrate)
-docker exec siupknext-app-1 php artisan legacy:cutover-tenant local 1 --dry-run
+docker exec new_siupk-app-1 php artisan legacy:cutover-tenant local 1 --dry-run
 
 # Full load rehearsal
-docker exec siupknext-app-1 php artisan legacy:cutover-tenant local 1 \
+docker exec new_siupk-app-1 php artisan legacy:cutover-tenant local 1 \
   --from-year=2018 --to-year=2026 --chunk=500 --no-fail-fast
 
 # Skip step yang sudah hijau
-docker exec siupknext-app-1 php artisan legacy:cutover-tenant local 1 \
+docker exec new_siupk-app-1 php artisan legacy:cutover-tenant local 1 \
   --skip-fiscal --skip-coa --skip-accounting
 ```
 

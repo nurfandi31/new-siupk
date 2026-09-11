@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -126,7 +126,7 @@ final readonly class WhatsAppPasswordOtpService
 
     private function sendWhatsApp(string $phone, string $otp, ?int $tenantId): bool
     {
-        $message = "Kode reset password SIUPK Anda adalah {$otp}. Berlaku 10 menit. Jangan bagikan kode ini.";
+        $message = "Kode reset password siupk Anda adalah {$otp}. Berlaku 10 menit. Jangan bagikan kode ini.";
 
         $platformResult = $this->platformGateway->sendText($phone, $message);
         if ($platformResult['success']) {

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -275,7 +275,7 @@ final class SettingsController
 
         $phone = $request->input('phone');
         if (is_string($phone) && trim($phone) !== '') {
-            return response()->json($gateway->sendText($phone, 'Tes koneksi WhatsApp Gateway SIUPK.'));
+            return response()->json($gateway->sendText($phone, 'Tes koneksi WhatsApp Gateway siupk.'));
         }
 
         return response()->json($gateway->connectionState());

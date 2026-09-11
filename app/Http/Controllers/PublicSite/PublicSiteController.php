@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -22,7 +22,7 @@ final class PublicSiteController
 {
     /**
      * Public entry point. On a platform host (or an unknown host) this renders
-     * the SIUPK marketing page; on a tenant's custom domain it renders the
+     * the siupk marketing page; on a tenant's custom domain it renders the
      * tenant's own branded landing page so visitors see the organization that
      * owns the domain, not the vendor.
      */

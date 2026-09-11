@@ -1,9 +1,9 @@
-# Roadmap Fitur & Status Implementasi (SIUPK Next vs Legacy)
+# Roadmap Fitur & Status Implementasi (siupk Next vs Legacy)
 
-Tujuan: **SIUPK Next sepenuhnya menggantikan SIUPK legacy dalam operasional harian tenant dan tingkat Kabupaten.**
+Tujuan: **siupk Next sepenuhnya menggantikan siupk legacy dalam operasional harian tenant dan tingkat Kabupaten.**
 
 Referensi legacy: F:\Workspace\laragon\www\siupk
-Dokumentasi Arsitektur: PROJECT_OVERVIEW.md, DATABASE_STRUCTURE.md, CUTOVER_RUNBOOK.md, PERBANDINGAN_SIUPK_LEGACY_VS_NEXT.md.
+Dokumentasi Arsitektur: PROJECT_OVERVIEW.md, DATABASE_STRUCTURE.md, CUTOVER_RUNBOOK.md, PERBANDINGAN_siupk_LEGACY_VS_NEXT.md.
 
 ---
 

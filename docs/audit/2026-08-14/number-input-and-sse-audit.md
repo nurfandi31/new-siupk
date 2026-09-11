@@ -1,4 +1,4 @@
-# Audit Input Number & SSE Migrasi — SIUPK Next
+# Audit Input Number & SSE Migrasi — siupk Next
 
 Tanggal: 2026-08-15
 Lingkup:
@@ -282,8 +282,8 @@ method `pollRun`). Tidak ada perubahan perlu.
 ### Untuk A1 (currency input migration)
 
 ```bash
-docker exec siupknext-app-1 php artisan optimize:clear
-docker exec siupknext-node-1 npm run build
+docker exec new_siupk-app-1 php artisan optimize:clear
+docker exec new_siupk-node-1 npm run build
 ```
 
 Smoke test Playwright:
@@ -313,7 +313,7 @@ test('plan price accepts id-ID format', async ({ page }) => {
    `executeStream`.
 3. Build:
    ```bash
-   docker exec siupknext-app-1 php artisan optimize:clear
+   docker exec new_siupk-app-1 php artisan optimize:clear
    ```
 4. Test Playwright `M.3 Monitor SSE stream sampai status=completed`:
    ```bash

@@ -1,6 +1,6 @@
 # Tahap 4 — Migrasi Live kecamatan_id 76 via Admin GUI
 
-Tanggal: 2026-08-15 (UTC+7) — sesi audit komprehensif SIUPK Next.
+Tanggal: 2026-08-15 (UTC+7) — sesi audit komprehensif siupk Next.
 
 ## Tujuan
 
@@ -34,7 +34,7 @@ Mengeksekusi migrasi cutover data **live** (non-dry-run) dari basis legacy
 | from_year          | `2018`                                                 |
 | to_year            | `2026`                                                 |
 | is_dry_run         | `false`                                                |
-| run_immediately    | `false` (submit via queue worker `siupknext-queue-1`)  |
+| run_immediately    | `false` (submit via queue worker `new_siupk-queue-1`)  |
 | skip_reconcile     | `true` (lewati `legacy:reconcile-lending` karena mismatch data legacy) |
 
 Form submit lewat Playwright dengan superadmin session (`POST /admin/migrations`).
@@ -57,11 +57,11 @@ Toggle `Lompati Rekonsiliasi` ditemukan via
 
 Symptom: Accounting step gagal dengan
 `SQLSTATE[HY000] [2002] Connection refused (Connection: legacy, Host: 127.0.0.1, …)`.
-Root cause: `siupknext-queue-1` di-restart sebelum perubahan `.env`
+Root cause: `new_siupk-queue-1` di-restart sebelum perubahan `.env`
 (`LEGACY_DB_HOST=103.177.95.91`). PHP-FPM pool `www` punya `clear_env = yes` (default),
 jadi Dotenv hanya di-load sekali saat container start. Perubahan `.env` berikutnya
 **tidak** ter-baca sampai container restart.
-Fix: `docker restart siupknext-queue-1` → queue worker pick up `.env` baru.
+Fix: `docker restart new_siupk-queue-1` → queue worker pick up `.env` baru.
 
 ### F009 — Playwright test salah klik switch (skip_sequences vs run_immediately)
 

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -134,7 +134,7 @@ final class DesktopSyncController
         return response()->json([
             'status' => 'success',
             'server_time' => now()->toIso8601String(),
-            'app_name' => config('app.name', 'SIUPK Next'),
+            'app_name' => config('app.name', 'siupk Next'),
             'app_version' => (string) config('desktop-update.server_version'),
             'tenant' => [
                 'id' => (int) $targetTenant->row_id,

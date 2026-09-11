@@ -1,4 +1,4 @@
-# Edit Jurnal (Reverse + Recreate Atomik) — SIUPK Next 2026-08-18
+# Edit Jurnal (Reverse + Recreate Atomik) — siupk Next 2026-08-18
 
 > **Pertanyaan user:** "Apakah sudah ada fitur edit transaksi?"
 > → "Bisa tambahkan fitur edit? Bukan edit dalam artian meng-edit yang sudah
@@ -7,7 +7,7 @@
 
 ## Latar Belakang
 
-Sistem akuntansi SIUPK Next memberlakukan **immutability** terhadap jurnal
+Sistem akuntansi siupk Next memberlakukan **immutability** terhadap jurnal
 yang sudah `posted` (`app/Domain/Accounting/Models/JournalEntry.php`: save
 & delete melempar `DomainException`). Prinsip ini penting untuk menjaga
 audit trail — tapi membuat koreksi jurnal yang salah jadi workflow 2 langkah

@@ -655,7 +655,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         _createElementVNode("div", _hoisted_1, [
           _cache[26] || (_cache[26] = _createElementVNode("header", null, [
             _createElementVNode("h1", { class: "text-2xl font-bold text-primary sm:text-3xl" }, "Integrasi Orchestrator AI"),
-            _createElementVNode("p", { class: "mt-1 text-on-surface-variant" }, "Asisten AI berjalan in-process di SIUPK setelah package extraction.")
+            _createElementVNode("p", { class: "mt-1 text-on-surface-variant" }, "Asisten AI berjalan in-process di siupk setelah package extraction.")
           ], -1 /* CACHED */)),
           ($setup.flash)
             ? (_openBlock(), _createBlock($setup["AppCard"], { key: 0 }, {
@@ -678,7 +678,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
                     ]))]),
                     _: 1 /* STABLE */
                   }),
-                  _cache[9] || (_cache[9] = _createElementVNode("span", { class: "text-on-surface-variant" }, "Orchestrator berjalan dalam aplikasi SIUPK — tidak perlu URL/secret/HMAC.", -1 /* CACHED */)),
+                  _cache[9] || (_cache[9] = _createElementVNode("span", { class: "text-on-surface-variant" }, "Orchestrator berjalan dalam aplikasi siupk — tidak perlu URL/secret/HMAC.", -1 /* CACHED */)),
                   _createElementVNode("button", {
                     type: "button",
                     class: "ml-auto inline-flex items-center gap-1 rounded-md border border-outline-variant bg-surface px-3 py-1.5 text-xs font-semibold text-on-surface-variant transition-colors hover:bg-surface-container",

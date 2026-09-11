@@ -1,4 +1,4 @@
-# Panduan Pengguna SIUPK Next
+# Panduan Pengguna siupk Next
 **Sistem Informasi Dana Bergulir Masyarakat & Akuntansi BUMDesma / LKD**
 *Dokumen Resmi Operasional & Manual Penggunaan Aplikasi*
 
@@ -35,8 +35,8 @@
 
 ## 1. Pendahuluan & Gambaran Umum
 
-### 1.1 Mengenal SIUPK Next
-**SIUPK Next** adalah aplikasi web modern berbasis komputasi awan (*Multi-Tenant Cloud SaaS*) yang dirancang khusus untuk mengelola operasional **Dana Bergulir Masyarakat (DBM)** pada Badan Usaha Milik Desa Bersama (**BUMDesma**) dan Lembaga Keuangan Desa (**LKD**) di seluruh Indonesia.
+### 1.1 Mengenal siupk Next
+**siupk Next** adalah aplikasi web modern berbasis komputasi awan (*Multi-Tenant Cloud SaaS*) yang dirancang khusus untuk mengelola operasional **Dana Bergulir Masyarakat (DBM)** pada Badan Usaha Milik Desa Bersama (**BUMDesma**) dan Lembaga Keuangan Desa (**LKD**) di seluruh Indonesia.
 
 Aplikasi ini mengintegrasikan seluruh rantai proses bisnis dalam satu ekosistem terpadu:
 - **Perguliran Pinjaman Terpadu**: Dari pendaftaran proposal, verifikasi lapangan, musyawarah pendanaan (MAD), akad kredit (SPK), pencairan, penagihan angsuran, hingga pelunasan atau restrukturisasi.
@@ -47,7 +47,7 @@ Aplikasi ini mengintegrasikan seluruh rantai proses bisnis dalam satu ekosistem 
 - **Asisten Cerdas (Ariel)**: Konsultasi regulasi (PP No. 11/2021, Permendesa No. 15/2021) dan analisis data berbasis AI.
 
 ### 1.2 Landasan Hukum & Kepatuhan
-SIUPK Next disusun mengikuti ketentuan perundang-undangan Republik Indonesia:
+siupk Next disusun mengikuti ketentuan perundang-undangan Republik Indonesia:
 1. **PP No. 11 Tahun 2021** tentang Badan Usaha Milik Desa.
 2. **Permendesa PDTT No. 15 Tahun 2021** tentang Tata Cara Pembentukan Pengelola Kegiatan DBM eks PNPM-MPd menjadi BUMDesma.
 3. **Standar Akuntansi Keuangan Entitas Privat (SAK EP)** dan SAK ETAP.
@@ -67,7 +67,7 @@ Untuk mengakses sistem:
 > **Keamanan Sesi**: Sistem secara otomatis mengamankan sesi Anda. Login dari perangkat baru akan memutus sesi aktif di perangkat sebelumnya (*Single Session Enforcement*).
 
 ### 2.2 Struktur Navigasi & Sidebar
-Antarmuka SIUPK Next terdiri dari:
+Antarmuka siupk Next terdiri dari:
 - **Sidebar Kiri**: Menu navigasi hierarkis berdasarkan modul kerja. Sidebar dapat diperkecil (*collapse*) untuk memperluas area kerja.
 - **Header Atas**:
   - **Pencarian Cepat / Command Palette** (`Ctrl+K` atau `Cmd+K`).
@@ -151,7 +151,7 @@ Modul Master Data adalah fondasi data anggota, kelompok, wilayah desa, dan insti
 
 ## 5. Pengelolaan Dana Bergulir & Pinjaman (Lending)
 
-Siklus perguliran pinjaman di SIUPK Next dirancang sesuai prosedur standar operasional (SOP) DBM eks PNPM-MPd / BUMDesma LKD.
+Siklus perguliran pinjaman di siupk Next dirancang sesuai prosedur standar operasional (SOP) DBM eks PNPM-MPd / BUMDesma LKD.
 
 ### 5.1 Siklus Hidup Perguliran Pinjaman (Workflow)
 ```
@@ -165,7 +165,7 @@ Setiap tahapan dilengkapi validasi hak akses dan pencatatan audit (*audit trail*
 ---
 
 ### 5.2 Tahap 1: Registrasi Proposal Pinjaman
-**Menu:** `SIUPK -> Register Proposal` (`/lending/loans/create`)
+**Menu:** `siupk -> Register Proposal` (`/lending/loans/create`)
 
 Langkah-langkah pendaftaran proposal:
 1. Pilih **Kelompok** peminjam (data pengurus dan desa akan terisi otomatis).
@@ -182,7 +182,7 @@ Langkah-langkah pendaftaran proposal:
 ---
 
 ### 5.3 Tahap 2: Verifikasi Lapangan
-**Menu:** `SIUPK -> Tahapan Perguliran -> Tab Verifikasi`
+**Menu:** `siupk -> Tahapan Perguliran -> Tab Verifikasi`
 
 Tim Verifikasi melakukan pengecekan faktual di lapangan:
 1. Buka detail pinjaman, klik tombol **Verifikasi Pinjaman**.
@@ -193,7 +193,7 @@ Tim Verifikasi melakukan pengecekan faktual di lapangan:
 ---
 
 ### 5.4 Tahap 3: Persetujuan & Alokasi Pendanaan (MAD)
-**Menu:** `SIUPK -> Tahapan Perguliran -> Tab Waiting`
+**Menu:** `siupk -> Tahapan Perguliran -> Tab Waiting`
 
 Forum Musyawarah Antar Desa (MAD) atau Tim Pendanaan menetapkan keputusan pendanaan:
 1. Klik tombol **Persetujuan (Approve)** pada pinjaman yang telah diverifikasi.
@@ -203,7 +203,7 @@ Forum Musyawarah Antar Desa (MAD) atau Tim Pendanaan menetapkan keputusan pendan
 ---
 
 ### 5.5 Tahap 4: Pencairan Pinjaman (Disbursement)
-**Menu:** `SIUPK -> Detail Pinjaman -> Tombol Cairkan Dana`
+**Menu:** `siupk -> Detail Pinjaman -> Tombol Cairkan Dana`
 
 1. Klik tombol **Cairkan Pinjaman**.
 2. Masukkan **Tanggal Pencairan Riil** dan pilih **Rekening Kas/Bank Penyalur** (misal: *Kas Operasional* atau *Bank BPD*).
@@ -239,7 +239,7 @@ Aplikasi menyediakan **36 format dokumen resmi siap cetak (PDF)** dari halaman d
 
 ## 6. Akuntansi & Jurnal Keuangan
 
-SIUPK Next menerapkan standar akuntansi berpasangan (*double-entry*) murni. Setiap transaksi tercatat secara seimbang (*Debit = Kredit*) dan dilengkapi jejak audit (*audit trail*).
+siupk Next menerapkan standar akuntansi berpasangan (*double-entry*) murni. Setiap transaksi tercatat secara seimbang (*Debit = Kredit*) dan dilengkapi jejak audit (*audit trail*).
 
 ### 6.1 Bagan Akun (Chart of Accounts / CoA)
 **Menu:** `Keuangan -> Bagan Akun` (`/accounting/chart-of-accounts`)
@@ -408,7 +408,7 @@ Perhitungan estimasi Pajak Penghasilan (PPh Badan / UMKM) berdasarkan laba kena 
 
 **Menu:** `Tagihan -> Daftar Tagihan` (`/billing/invoices`)
 
-Mengelola langganan lisensi operasional SIUPK Next untuk lembaga BUMDesma Anda.
+Mengelola langganan lisensi operasional siupk Next untuk lembaga BUMDesma Anda.
 
 ### 12.1 Cara Pembayaran Tagihan Otomatis
 1. Buka tagihan dengan status *Belum Dibayar*.
@@ -481,7 +481,7 @@ Terdiri dari **5 Tab Konfigurasi**:
 
 **Menu:** `Onboarding & Migrasi` (`/onboarding/import`)
 
-Disediakan khusus untuk instansi BUMDesma baru yang ingin bermigrasi dari sistem manual/Excel ke SIUPK Next:
+Disediakan khusus untuk instansi BUMDesma baru yang ingin bermigrasi dari sistem manual/Excel ke siupk Next:
 - **Langkah 1 (Master Anggota & Kelompok)**: Unduh template Excel, isi data warga dan kelompok, lalu unggah ke sistem.
 - **Langkah 2 (Saldo Pinjaman Berjalan)**: Impor data pinjaman yang sedang aktif berjalan beserta sisa saldo pokok dan jadwal angsuran lama.
 - **Langkah 3 (Saldo Awal Neraca Keuangan)**: Masukkan saldo awal kas, bank, piutang, aset inventaris, dan modal awal pembentukan BUMDesma. Sistem memverifikasi keseimbangan sebelum saldo awal dibukukan.
@@ -513,7 +513,7 @@ Disediakan khusus untuk instansi BUMDesma baru yang ingin bermigrasi dari sistem
 - **Manajemen Shard Tenant**: Pembuatan tenant baru, perbaikan struktur database (*Tenant Repair*), dan manajemen domain kustom.
 - **Data Purifier**: Alat sanitasi otomatis untuk mendeteksi data piutang ganda atau selisih pembukuan pada tenant.
 - **Manajemen Gateway Pembayaran**: Konfigurasi Tripay, Duitku, dan Xendit API.
-- **Alat Cutover Migrasi Database Legacy**: Migrasi instan database SIUPK versi lama (PHP murni/MySQL) ke SIUPK Next.
+- **Alat Cutover Migrasi Database Legacy**: Migrasi instan database siupk versi lama (PHP murni/MySQL) ke siupk Next.
 
 ---
 
@@ -597,4 +597,4 @@ Disediakan khusus untuk instansi BUMDesma baru yang ingin bermigrasi dari sistem
 | 36 | Daftar Hadir Pencairan Dana | Pencairan | Portrait |
 
 ---
-*Dokumentasi Resmi SIUPK Next — Hak Cipta Terlindungi.*
+*Dokumentasi Resmi siupk Next — Hak Cipta Terlindungi.*

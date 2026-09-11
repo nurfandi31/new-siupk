@@ -1,12 +1,12 @@
-﻿# Panduan Integrasi API Laporan Keuangan Holding (Holding Financial Reports API)
+# Panduan Integrasi API Laporan Keuangan Holding (Holding Financial Reports API)
 
-Dokumentasi ini adalah panduan teknis bagi pengembang aplikasi **Holding / BUMDesma Induk** untuk mengintegrasikan, mengonsumsi, dan mengonsolidasikan laporan keuangan dari seluruh unit usaha / anak perusahaan (tenant BUMDesma) yang berjalan di ekosistem **SIUPK Next**.
+Dokumentasi ini adalah panduan teknis bagi pengembang aplikasi **Holding / BUMDesma Induk** untuk mengintegrasikan, mengonsumsi, dan mengonsolidasikan laporan keuangan dari seluruh unit usaha / anak perusahaan (tenant BUMDesma) yang berjalan di ekosistem **siupk Next**.
 
 ---
 
 ## 1. Gambaran Umum Arsitektur
 
-SIUPK Next menyediakan RESTful API berstandar JSON yang dirancang khusus untuk komunikasi antar-server (*Server-to-Server / Machine-to-Machine*). Melalui API ini, sistem holding dapat:
+siupk Next menyediakan RESTful API berstandar JSON yang dirancang khusus untuk komunikasi antar-server (*Server-to-Server / Machine-to-Machine*). Melalui API ini, sistem holding dapat:
 1. **Menemukan Unit Usaha (Tenant Discovery)**: Mengambil daftar seluruh unit anak perusahaan beserta kode wilayah dan status aktifnya.
 2. **Menarik Laporan Keuangan Individual**: Mengambil data Neraca, Laba Rugi, Arus Kas, CALK, dan Perubahan Ekuitas per anak usaha pada periode bulanan maupun tahunan.
 3. **Mengambil Laporan Konsolidasi**: Mengambil kompilasi laporan keuangan gabungan dari seluruh anak usaha atau filter unit tertentu dalam satu request.
@@ -23,8 +23,8 @@ Semua endpoint terdaftar di bawah prefix API:
 
 API Holding diamankan melalui middleware `VerifyHoldingApiToken` (`holding.auth`).
 
-### 2.1 Konfigurasi Token pada SIUPK Next
-Tambahkan token rahasia pada berkas `.env` aplikasi SIUPK Next:
+### 2.1 Konfigurasi Token pada siupk Next
+Tambahkan token rahasia pada berkas `.env` aplikasi siupk Next:
 ```dotenv
 HOLDING_API_KEY="kunci-rahasia-holding-anda-disini"
 HOLDING_API_ENABLED=true
@@ -425,7 +425,7 @@ import axios from 'axios';
 const siupkApi = axios.create({
   baseURL: 'https://app-siupk.com/api/v1/holding',
   headers: {
-    'Authorization': `Bearer ${process.env.SIUPK_HOLDING_API_KEY}`,
+    'Authorization': `Bearer ${process.env.siupk_HOLDING_API_KEY}`,
     'Accept': 'application/json',
   },
 });
@@ -445,7 +445,7 @@ import requests
 
 url = "https://app-siupk.com/api/v1/holding/reports/balance-sheet"
 headers = {
-    "Authorization": f"Bearer {os.getenv('SIUPK_HOLDING_API_KEY')}",
+    "Authorization": f"Bearer {os.getenv('siupk_HOLDING_API_KEY')}",
     "Accept": "application/json",
 }
 params = {

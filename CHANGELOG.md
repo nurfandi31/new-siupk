@@ -1,7 +1,29 @@
 # Changelog
 
-Semua perubahan penting pada proyek **SIUPK Next** didokumentasikan dalam berkas ini.
+Semua perubahan penting pada proyek **siupk Next** didokumentasikan dalam berkas ini.
 Format penulisan mengikuti panduan [Keep a Changelog](https://keepachangelog.com/id/1.0.0/).
+
+## [2026-09-10]
+
+### Added
+- **Download Bundle Laporan (ZIP) — Laporan Keuangan + Buku Besar per Akun + Dokumen LPJ:**
+  - Route `GET /accounting/reports/bundle/pdf` (`ReportController::bundlePdf`, kawal permission laporan, default bulan Desember) beserta kartu "Download Bundle Laporan (ZIP)" pada halaman `AnnualPack.vue`.
+  - `ReportBundleService` menggabungkan satu ZIP `bundle-laporan-{tenant}-{Y}-{m}.pdf.zip`: 7 laporan keuangan (Neraca, Laba Rugi, Arus Kas, Perubahan Ekuitas, CALK, Neraca Saldo, Jurnal Transaksi) + Buku Besar per akun + 4 dokumen LPJ (Cover, Surat Pengantar, Berita Acara, MoU).
+  - Buku Besar dalam bundle dibuat **satu PDF per akun postable aktif** (`buku-besar-{kode}-{Y}-{m}.pdf`, label manifest `Buku Besar {kode} · {nama}`) — memperbaiki implementasi awal yang memanggil `GeneralLedgerService::build()` tanpa argumen akun wajib (fatal saat runtime).
+  - Akun tanpa mutasi (saldo awal tahun nol, debit/kredit periode nol, tanpa baris jurnal) dilewati agar ZIP tidak berisi puluhan PDF kosong; jumlahnya dilaporkan pada `README-bundle.txt` ("Akun tanpa mutasi dilewati: N").
+  - Manifest dinamis, `set_time_limit(0)` untuk bundle besar, ZIP otomatis dihapus setelah terkirim (`deleteFileAfterSend`); test `ReportBundleTest` (2 test, 13 asersi) memverifikasi isi ZIP, skip akun tanpa mutasi, dan penamaan file buku besar.
+
+### Changed
+- **Pemilihan Tenant Legacy Disederhanakan (Migrasi):**
+  - Admin hanya memilih tenant legacy (dari `kecamatan`: `nama_kec` + `kd_kec`) tanpa pairing manual: suffix server-side dari `legacy_id`, tenant Next dicocokkan otomatis via `district_code == kd_kec`, tenant otomatis di-provision bila belum ada; expert mode mempertahankan alur pairing lama.
+  - Endpoint `GET /admin/migration/legacy-tenants` (cache 5 menit) + test `MigrationFlowTest`.
+
+### Fixed
+- **Perbaikan UX Batch Halaman Website:**
+  - `app.js`: menghapus override `route()` naive (pengganti titik→slash) yang menimpa helper Ziggy — akar error "route password/request could not be found" dan "GET not supported for website/messages/index".
+  - Sidebar: posisi scroll kini dipulihkan saat navigasi antar halaman Inertia.
+  - Form Posts/Pages: raw input diganti komponen `AppTextarea`, `AppFileUpload`, `AppDatePicker` (component-first, `new_siupk` tidak mengimpor `@its-enpii/ui`).
+  - `Messages/Index.vue` & `Settings/Form.vue`: paritas layout dengan halaman dashboard standar.
 
 ## [2026-09-08]
 
@@ -20,7 +42,7 @@ Format penulisan mengikuti panduan [Keep a Changelog](https://keepachangelog.com
 
 ### Added
 - **Sistem Angsuran Legacy (23 Sistem) & Grace Period:**
-  - Master data tabel shard `installment_systems` berisi 23 sistem angsuran legacy SI DBM (seeder `InstallmentSystemSeeder`, provisioning otomatis per-tenant via `TenantInstallmentSystemProvisioner`).
+  - Master data tabel shard `installment_systems` berisi 23 sistem angsuran legacy SI UPK (seeder `InstallmentSystemSeeder`, provisioning otomatis per-tenant via `TenantInstallmentSystemProvisioner`).
   - Enum frekuensi baru pada mesin pinjaman & simulasi: `every_4` s/d `every_12`, `every_24`, dan `every_36` bulan; `weekly`, `bimonthly`, `quarterly`, dan `at_maturity` tetap didukung.
   - Kolom `principal_grace_months` & `interest_grace_months` pada tabel `loans`: sistem M1/M2/M3/M6/M12/M24/Musiman kini menghasilkan jadwal yang benar (pokok dan/atau jasa ditunda N bulan setelah cair; total pokok tetap, pembulatan diserap angsuran terakhir; M1 menunda pokok+jasa, sisanya pokok saja).
   - `LegacyLendingNormalizer` & `LegacyLoanLoader` tidak lagi memaksa `flat`: `sistem_angsuran`/`sa_jasa` legacy dipetakan ke frekuensi + grace yang sesuai.
@@ -53,7 +75,7 @@ Format penulisan mengikuti panduan [Keep a Changelog](https://keepachangelog.com
   - OTP lupa password kini mencoba instance platform terlebih dahulu, lalu fallback ke instance tenant; akun tanpa `tenant_id` (superadmin) hanya menggunakan instance platform agar tidak ada NPE pada resolver tenant.
   - Automated feature test `tests/Feature/Admin/PlatformWhatsappTest.php` serta skenario fallback OTP pada `tests/Feature/Auth/ForgotPasswordTest.php`.
 - **Situs Publik Ber-branding Tenant di Domain Kustom (Fase 1):**
-  - Resolusi host → tenant untuk halaman publik via `PublicSiteResolver` (`app/Tenancy/Services/`) dengan cache berversi (TTL 300 detik, flush O(1) lewat kenaikan versi) — `localhost`/host platform/`SITE_PLATFORM_HOSTS` selalu merender halaman vendor SIUPK.
+  - Resolusi host → tenant untuk halaman publik via `PublicSiteResolver` (`app/Tenancy/Services/`) dengan cache berversi (TTL 300 detik, flush O(1) lewat kenaikan versi) — `localhost`/host platform/`SITE_PLATFORM_HOSTS` selalu merender halaman vendor siupk.
   - Middleware `ResolvePublicSite` (alias `public.site`): menghubungkan shard + inisialisasi `TenantContext` untuk host tenant, **tanpa fail keras** — host tak dikenal jatuh lembut ke halaman vendor, bukan 403; context & koneksi dilepas di blok `finally` agar tidak bocor antar-request worker.
   - Route `/` kini dipegang `PublicSiteController` (`app/Http/Controllers/PublicSite/`): host tenant aktif merender halaman landing `PublicSite/TenantHome` ber-branding `OrganizationProfile` (logo, nama legal/singkat, alamat, kontak, tahun berdiri, CTA "Masuk Sistem" ke `/login`), tenant `suspended` dan host tak dikenal tetap ke halaman vendor, short-circuit desktop (`X-Desktop-Client` / `DESKTOP_MODE`) ke `/login` tetap terjaga.
   - `Tenant::matchesHost()` di `app/Models/Platform/Tenant.php` — logika pencocokan domain (exact + wildcard `*.domain`) dipindah dari `TenantResolver::candidateMatchesHost()` (dihapus) agar dipakai bersama resolver tenancy & resolver situs publik.
@@ -256,13 +278,13 @@ Format penulisan mengikuti panduan [Keep a Changelog](https://keepachangelog.com
   - Peningkatan komponen tombol aksi asisten (`ActionButton.vue`) dan parser markdown (`useMarkdown.js`) dengan dukungan tautan URL eksternal/internal otomatis.
 - **Sistem Notifikasi Toast Global & Reaktif (`useToast.js` & `AppToast.vue`):**
   - Pembuatan composable `useToast.js` berbasis event-bus reaktif dengan queue notifikasi mengambang (*stacked floating toasts*), timer *auto-dismiss*, *progress bar* durasi, dan method praktis: `toast.success()`, `toast.error()`, `toast.warning()`, dan `toast.info()`.
-  - Refaktor komponen `AppToast.vue` dengan animasi transisi masuk/keluar yang mulus, tema visual berbasis palet Tailwind UI SIUPK, dan tombol tutup instan.
+  - Refaktor komponen `AppToast.vue` dengan animasi transisi masuk/keluar yang mulus, tema visual berbasis palet Tailwind UI siupk, dan tombol tutup instan.
   - Migrasi seluruh alert banner statis ke sistem `useToast` terpusat pada halaman Pembuatan Jurnal (`JournalEntries/Create.vue`), AI Assistant (`AiAssistant/Index.vue`), Payment Gateways (`PaymentGateways/Index.vue`), dan Pengaturan Lembaga (`Settings/Index.vue`).
 - **Layar Pembuka (*Desktop Splash Screen*) & Kontrol Window IPC (`DesktopSplashScreen.vue` & `DesktopTitleBar.vue`):**
-  - Komponen `DesktopSplashScreen.vue` untuk transisi startup aplikasi Desktop Electron dengan animasi *pulsing logo* SIUPK Next, simulasi status inisialisasi koneksi database SQLite lokal, dan efek *fade-out* otomatis saat halaman utama siap.
+  - Komponen `DesktopSplashScreen.vue` untuk transisi startup aplikasi Desktop Electron dengan animasi *pulsing logo* siupk Next, simulasi status inisialisasi koneksi database SQLite lokal, dan efek *fade-out* otomatis saat halaman utama siap.
   - Penambahan sinkronisasi status maximize/unmaximize window melalui listener event IPC Electron pada `DesktopTitleBar.vue`.
 - **Arsitektur Aplikasi Desktop & Infrastruktur Sinkronisasi Offline (Hybrid Cloud-Desktop / Electron):**
-  - Framework Desktop Hybrid SIUPK Next berbasis Electron + SQLite lokal + Cloud Sync Engine (`docs/DESKTOP_ROADMAP.md`).
+  - Framework Desktop Hybrid siupk Next berbasis Electron + SQLite lokal + Cloud Sync Engine (`docs/DESKTOP_ROADMAP.md`).
   - Service Provider `DesktopAppServiceProvider.php` dan konfigurasi `config/desktop.php` dengan deteksi otomatis runtime desktop/offline.
   - Snapshot & Ingestion Engine: `TenantSnapshotService.php`, `DesktopSnapshotIngestionService.php`, dan `DesktopSyncClientService.php` untuk ekspor/impor snapshot database tenant (full & delta) yang aman dengan verifikasi checksum SHA-256.
   - Endpoint RESTful API Sync Desktop (`/api/v1/desktop/sync/*` dan `/desktop/sync/*`) dengan proteksi middleware `VerifyDesktopApiToken.php`.
@@ -328,7 +350,7 @@ Format penulisan mengikuti panduan [Keep a Changelog](https://keepachangelog.com
   - **Beranda (`Home.vue`)**: Interaksi 3D tilt parallax pada kartu mockup hero dengan respon pergerakan kursor mouse, floating pills multi-layer, animasi ambient glowing orbs berkala, dan micro-interaction spring pada kartu fitur.
   - **Portal Login (`Login.vue`)**: Interaksi 3D parallax pada panel informasi kiri, animasi live breathing bar chart keuangan, micro-interaction scale bounce pada toggle sandi, dan spring shake form saat validasi gagal.
 - **Dokumentasi Lengkap Panduan Pengguna (User Manual) (`docs/USER_GUIDE.md`):**
-  - Penyusunan dokumen panduan operasional komprehensif (35,7 KB, 452 baris) dalam Bahasa Indonesia mencakup seluruh 86 halaman dan alur kerja aplikasi SIUPK Next.
+  - Penyusunan dokumen panduan operasional komprehensif (35,7 KB, 452 baris) dalam Bahasa Indonesia mencakup seluruh 86 halaman dan alur kerja aplikasi siupk Next.
   - Dokumentasi lengkap untuk 24 bab: Mulai dari Autentikasi, Dashboard Drilldown, Master Data, Siklus Perguliran Pinjaman (6 tahapan), Akuntansi Double-Entry & Immutable Ledger, Inventaris Aset, E-Budgeting, 16 Laporan Keuangan & Piutang, Billing SaaS Multi-Gateway, Notifikasi WhatsApp, RBAC 37 permissions, Wizard Onboarding, Portal Supervisi Kabupaten/Provinsi, Superadmin SaaS, AI Assistant (Ariel), hingga Katalog 36 Dokumen Cetak PDF.
 - **Restrukturisasi Indeks Dokumentasi (`docs/README.md` & `README.md`):**
   - Pengelompokan seluruh 15 dokumen teknis ke dalam 4 kategori terstruktur: Panduan Pengguna & Operasional, Arsitektur & Spesifikasi Sistem, Analisis Komparatif & Migrasi Legacy, serta Roadmap & Riwayat Pengujian.
@@ -458,7 +480,7 @@ Format penulisan mengikuti panduan [Keep a Changelog](https://keepachangelog.com
 - **Sistem Notifikasi WhatsApp Gateway:**
   - Pengiriman pesan otomatis untuk jadwal angsuran, konfirmasi pembayaran, dan tagihan invoice.
 - **Penyempurnaan Modul Onboarding & Migrasi Shard:**
-  - Runner cutover data eksisting (SIUPK Access / Excel) dengan validasi akun debit-kredit otomatis.
+  - Runner cutover data eksisting (siupk Access / Excel) dengan validasi akun debit-kredit otomatis.
   - Peningkatan idempotensi loader master data anggota dan kelompok.
 - **Komponen UI Baru:**
   - `AppFilterPill.vue` untuk filter status interaktif.

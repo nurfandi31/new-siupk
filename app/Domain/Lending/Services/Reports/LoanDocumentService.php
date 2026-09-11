@@ -157,7 +157,7 @@ final class LoanDocumentService
     }
 
     /**
-     * Map token placeholder → nilai (naming modern, konsisten dengan domain siupknext).
+     * Map token placeholder → nilai (naming modern, konsisten dengan domain new_siupk).
      *
      * @return array<string, string>
      */

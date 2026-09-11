@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Binds the orchestrator tool call to a real SIUPK user.
+ * Binds the orchestrator tool call to a real siupk user.
  *
  * Body shape from tool-executor:
  *   { tool, external_user_id, params, ts }

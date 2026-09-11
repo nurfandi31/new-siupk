@@ -1,5 +1,5 @@
-﻿$ErrorActionPreference = 'Continue'
-$cmd = "docker exec -d siupknext-node-1 sh -c `"cd /var/www/html && npm run dev > /tmp/vite.log 2>&1`""
+$ErrorActionPreference = 'Continue'
+$cmd = "docker exec -d new_siupk-node-1 sh -c `"cd /var/www/html && npm run dev > /tmp/vite.log 2>&1`""
 Write-Host ("exec: " + $cmd)
 Invoke-Expression $cmd | Out-Null
 for ($i = 0; $i -lt 30; $i++) {

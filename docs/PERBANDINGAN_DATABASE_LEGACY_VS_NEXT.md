@@ -1,12 +1,12 @@
-# Perbandingan Database SIUPK Legacy vs. SIUPK Next (Modern)
+# Perbandingan Database siupk Legacy vs. siupk Next (Modern)
 
-Dokumen ini berisi panduan komparasi arsitektur database, pemetaan tabel (*table mapping*), transformasi kolom (*column transformation*), dan relasi data antara **SIUPK Legacy** (sistem monolitik tabel dinamis) dan **SIUPK Next** (arsitektur multi-tenant modern dengan database platform dan sharding).
+Dokumen ini berisi panduan komparasi arsitektur database, pemetaan tabel (*table mapping*), transformasi kolom (*column transformation*), dan relasi data antara **siupk Legacy** (sistem monolitik tabel dinamis) dan **siupk Next** (arsitektur multi-tenant modern dengan database platform dan sharding).
 
 ---
 
 ## 1. Ringkasan Perubahan Paradigma Arsitektur
 
-| Aspek | SIUPK Legacy (`siupk`) | SIUPK Next (`siupknext`) | Rationale & Dampak |
+| Aspek | siupk Legacy (`siupk`) | siupk Next (`new_siupk`) | Rationale & Dampak |
 |---|---|---|---|
 | **Model Tenancy** | **Tabel Dinamis Per-Tenant**<br>`anggota_1`, `transaksi_1`, `pinjaman_kelompok_1`, dst. dalam 1 database tunggal. | **Platform DB + Shared/Dedicated Shard DB**<br>Semua tabel tenant distandarisasi dan diisolasi dengan kolom `tenant_id` pada database shard. | Menghilangkan puluhan ribu tabel dinamis, mencegah *schema drift*, dan mempermudah migrasi struktur database. |
 | **Integritas Relasional** | **Tidak ada Foreign Key (FK)**.<br>Relasi hanya dijaga pada level aplikasi atau trigger MySQL. | **Foreign Key Constraint Ketat**.<br>Menggunakan *composite foreign key* `[tenant_id, parent_id]` untuk menjamin data tidak bocor antar-tenant. | Menghilangkan *orphan records*, inkonsistensi transaksi, dan *ghost data*. |
@@ -20,9 +20,9 @@ Dokumen ini berisi panduan komparasi arsitektur database, pemetaan tabel (*table
 
 ## 2. Tabel Pemetaan Lengkap (Master Table Mapping)
 
-Tabel berikut memetakan setiap tabel/model pada SIUPK Legacy ke entitas tabel pada SIUPK Next, beserta penempatan basis datanya (**Platform DB** atau **Shard DB**):
+Tabel berikut memetakan setiap tabel/model pada siupk Legacy ke entitas tabel pada siupk Next, beserta penempatan basis datanya (**Platform DB** atau **Shard DB**):
 
-| # | Tabel Legacy (`siupk`) | Tabel Target SIUPK Next (`siupknext`) | Lokasi DB | Kategori / Keterangan Transformasi |
+| # | Tabel Legacy (`siupk`) | Tabel Target siupk Next (`new_siupk`) | Lokasi DB | Kategori / Keterangan Transformasi |
 |---|---|---|---|---|
 | **A** | **Kelembagaan, Tenant & Wilayah** | | | |
 | 1 | `kecamatan` | `tenants` | `Platform DB` | Master tenant di tingkat platform SaaS (berisi kode kecamatan, nama, status langganan, dsb). |
@@ -82,10 +82,10 @@ Tabel berikut memetakan setiap tabel/model pada SIUPK Legacy ke entitas tabel pa
 | 50 | Riwayat kondisi/mutasi aset | `asset_status_histories` | `Shard DB` | Catatan kondisi (baik/rusak/hilang) dan mutasi inventaris. |
 | **G** | **Billing Platform, Lisensi & Integrasi Pembayaran** | | | |
 | 51 | `licenses` | `licenses` / `subscriptions` | `Platform DB` | Lisensi aktif per tenant dengan tanggal kedaluwarsa dan batasan kuota. |
-| 52 | `admin_invoice` | `invoices` | `Platform DB` | Tagihan biaya langganan aplikasi SIUPK Next yang dibuat otomatis per siklus. |
+| 52 | `admin_invoice` | `invoices` | `Platform DB` | Tagihan biaya langganan aplikasi siupk Next yang dibuat otomatis per siklus. |
 | 53 | `admin_transaksi` | `invoice_payments` | `Platform DB` | Pencatatan pelunasan tagihan terintegrasi Payment Gateway (Tripay QRIS, VA, Bank Transfer). |
 | 54 | `admin_jenis_pembayaran` & `admin_rekening` | `Platform Settings` / Payment Channels | `Platform DB` | Konfigurasi metode pembayaran gateway dan rekening penampung platform. |
-| **H** | **Entitas Khusus Baru pada SIUPK Next (Next-Only Entities)** | | | |
+| **H** | **Entitas Khusus Baru pada siupk Next (Next-Only Entities)** | | | |
 | 55 | *Tidak ada di legacy* | `database_shards` | `Platform DB` | Manajemen server/koneksi database shard multi-tenant. |
 | 56 | *Tidak ada di legacy* | `tenant_placements` | `Platform DB` | Pemetaan tenant ke database shard target. |
 | 57 | *Tidak ada di legacy* | `plans` | `Platform DB` | Master paket fitur & harga langganan SaaS. |
@@ -94,7 +94,7 @@ Tabel berikut memetakan setiap tabel/model pada SIUPK Legacy ke entitas tabel pa
 | 60 | *Tidak ada di legacy* | `legacy_record_mappings` | `Shard DB` | Tabel jembatan (*cross-reference mapping*) antara ID record legacy dan `row_id` Next. |
 | 61 | *Tidak ada di legacy* | `migration_reconciliation_results` | `Shard DB` | Log verifikasi rekonsiliasi data migrasi (jumlah baris, total nominal, baki debet). |
 | 62 | *Tidak ada di legacy* | `audit_logs` | `Shard DB` | Audit trail lengkap seluruh aksi CRUD data pengguna. |
-| 63 | *Tidak ada di legacy* | `ai_conversations` & `ai_messages` | `Shard DB` | Riwayat percakapan dengan AI Assistant SIUPK. |
+| 63 | *Tidak ada di legacy* | `ai_conversations` & `ai_messages` | `Shard DB` | Riwayat percakapan dengan AI Assistant siupk. |
 | 64 | *Tidak ada di legacy* | `ai_knowledge_sources` & `ai_document_chunks` | `Shard DB / Vector DB` | Basis pengetahuan SOP BUMDesma/UPK untuk RAG (Retrieval-Augmented Generation). |
 
 ---
@@ -105,7 +105,7 @@ Berikut adalah perbandingan struktur kolom secara mendalam untuk modul-modul bis
 
 ### 3.1 Modul Kependudukan & Anggota: `anggota_{id}` $\rightarrow$ `people` + `members` + `member_addresses`
 
-Di sistem legacy, semua data bercampur dalam satu baris `anggota_{id}`. Pada SIUPK Next, entitas kependudukan (`people`) dipisahkan dari entitas keanggotaan tenant (`members`).
+Di sistem legacy, semua data bercampur dalam satu baris `anggota_{id}`. Pada siupk Next, entitas kependudukan (`people`) dipisahkan dari entitas keanggotaan tenant (`members`).
 
 ```
 +------------------------------------+
@@ -155,7 +155,7 @@ Di sistem legacy, semua data bercampur dalam satu baris `anggota_{id}`. Pada SIU
 
 ### 3.2 Modul Akuntansi: `transaksi_{id}` $\rightarrow$ `journal_entries` + `journal_lines`
 
-Sistem legacy menggunakan satu baris per transaksi dengan menyebutkan rekening debit dan rekening kredit secara horizontal. SIUPK Next mentransformasikan setiap transaksi menjadi satu header jurnal dan minimal dua baris jurnal (double-entry).
+Sistem legacy menggunakan satu baris per transaksi dengan menyebutkan rekening debit dan rekening kredit secara horizontal. siupk Next mentransformasikan setiap transaksi menjadi satu header jurnal dan minimal dua baris jurnal (double-entry).
 
 ```
 LEGACY: transaksi_1 (Flat Row)
@@ -205,7 +205,7 @@ NEXT: journal_entries (Header)
 
 ### 3.3 Modul Pinjaman & Setoran: `pinjaman_kelompok_{id}` & `real_angsuran_{id}` $\rightarrow$ `loans`, `loan_installments`, `loan_payments`, `loan_payment_allocations`
 
-Pada SIUPK Legacy, pinjaman kelompok dan pinjaman anggota sering mengalami selisih karena alur pencatatan yang terpisah. Pada Next, struktur pinjaman diatur secara hierarkis dengan alokasi setoran yang presisi.
+Pada siupk Legacy, pinjaman kelompok dan pinjaman anggota sering mengalami selisih karena alur pencatatan yang terpisah. Pada Next, struktur pinjaman diatur secara hierarkis dengan alokasi setoran yang presisi.
 
 ```
 +---------------------------------------+
@@ -265,12 +265,12 @@ Pada SIUPK Legacy, pinjaman kelompok dan pinjaman anggota sering mengalami selis
 
 ## 4. Perbandingan Chart of Accounts (COA) & Hirarki Akun
 
-Pada SIUPK Legacy, struktur akun dipecah ke dalam 4 level tabel terpisah (`akun_level_1`, `akun_level_2`, `akun_level_3`, dan `rekening_{id}`). 
+Pada siupk Legacy, struktur akun dipecah ke dalam 4 level tabel terpisah (`akun_level_1`, `akun_level_2`, `akun_level_3`, dan `rekening_{id}`). 
 
-Pada SIUPK Next, seluruh hirarki akun disatukan ke dalam satu tabel rekursif `accounts` yang fleksibel dengan relasi `parent_row_id`:
+Pada siupk Next, seluruh hirarki akun disatukan ke dalam satu tabel rekursif `accounts` yang fleksibel dengan relasi `parent_row_id`:
 
 ```sql
--- SIUPK Next: Struktur accounts terpadu
+-- siupk Next: Struktur accounts terpadu
 CREATE TABLE `accounts` (
     `row_id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `tenant_id` BIGINT UNSIGNED NOT NULL,
@@ -322,7 +322,7 @@ php artisan legacy:reconcile-lending {tenant_id}
 
 ## 6. Kesimpulan
 
-Transformasi database dari SIUPK Legacy ke SIUPK Next tidak hanya memodernisasi nama tabel, tetapi juga:
+Transformasi database dari siupk Legacy ke siupk Next tidak hanya memodernisasi nama tabel, tetapi juga:
 1. **Mengeliminasi bottleneck arsitektur tabel dinamis** (dari ribuan tabel per instansi menjadi skema sharding terpadu).
 2. **Menjamin keabsahan finansial tingkat tinggi** melalui pembukuan *double-entry* dan tipe data desimal presisi.
 3. **Mempersiapkan sistem untuk skalabilitas ribuan kecamatan**, integrasi payment gateway otomatis, serta kecerdasan buatan (*AI Assistant*) terintegrasi.

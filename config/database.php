@@ -60,7 +60,7 @@ return [
             ]) : [],
         ],
 
-        // Legacy SIUPK source (SELECT only — never write from app code).
+        // Legacy siupk source (SELECT only — never write from app code).
         'legacy' => [
             'driver' => 'mysql',
             'host' => env('LEGACY_DB_HOST', '127.0.0.1'),

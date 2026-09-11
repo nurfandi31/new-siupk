@@ -1,8 +1,8 @@
-﻿{
+{
   "tabs": [
     {
       "id": "cf18f007-8675-49cb-b517-d6d5949e7e42",
-      "title": "SIUPK Next",
+      "title": "siupk Next",
       "url": "http://localhost:8080/login",
       "ready": false,
       "loading": false,
@@ -15,31 +15,31 @@
   "history": [
     {
       "id": "0cd89859-6be9-413b-b8c6-e151570e5799",
-      "title": "SIUPK Next",
+      "title": "siupk Next",
       "url": "http://localhost:8080/login",
       "visitedAt": 1786330814167
     },
     {
       "id": "fe2318a5-bf83-45ef-bd02-f8da260f9db9",
-      "title": "Integrasi Orchestrator - SIUPK Next",
+      "title": "Integrasi Orchestrator - siupk Next",
       "url": "http://localhost:8080/admin/integrations/orchestrator",
       "visitedAt": 1785832460811
     },
     {
       "id": "6f920859-7120-43a1-a3fe-0606975d2cce",
-      "title": "Admin - SIUPK Next",
+      "title": "Admin - siupk Next",
       "url": "http://localhost:8080/admin",
       "visitedAt": 1785813832132
     },
     {
       "id": "87609fe3-a5b7-4fef-b2d8-8b94e75f1d14",
-      "title": "Masuk - SIUPK Next",
+      "title": "Masuk - siupk Next",
       "url": "http://localhost:8080/login",
       "visitedAt": 1785813801345
     },
     {
       "id": "a9a569fb-c66b-4975-a50c-c1dddeab2b08",
-      "title": "Beranda - SIUPK Next",
+      "title": "Beranda - siupk Next",
       "url": "http://localhost:8080/",
       "visitedAt": 1785813793881
     },

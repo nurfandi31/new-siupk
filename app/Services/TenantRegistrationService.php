@@ -68,6 +68,7 @@ final readonly class TenantRegistrationService
                 'email' => $data['email'],
                 'username' => $data['username'],
                 'password' => Hash::make($data['password']),
+                'phone' => $data['phone'] ?? ('pending-wa-'.substr(md5((string) Str::ulid()), 0, 8)),
                 'status' => 'active',
             ]);
             TenantMembership::query()->create([
