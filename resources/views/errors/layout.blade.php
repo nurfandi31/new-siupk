@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#002746">
     <meta name="apple-mobile-web-app-title" content="siupk Next">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="apple-touch-icon" href="/build/assets/icon-192.png">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230284c7'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='Arial,sans-serif' font-size='38' font-weight='800' fill='white'%3ES%3C/text%3E%3C/svg%3E">
 
     <title>@yield('title', 'Terjadi Kesalahan') - {{ config('app.name', 'siupk Next') }}</title>
 

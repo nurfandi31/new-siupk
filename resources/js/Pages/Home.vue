@@ -364,7 +364,7 @@ onUnmounted(() => {
 
         <!-- Hero Section -->
         <main>
-            <section class="relative overflow-hidden bg-gradient-to-b from-surface-container-lowest via-surface-container-low/30 to-surface py-16 sm:py-24 lg:py-32">
+            <section class="relative overflow-hidden bg-gradient-to-b from-surface-container-lowest via-surface-container-low/30 to-surface py-8 sm:py-10 lg:py-12">
                 <!-- Ambient glow blobs -->
                 <div class="ambient-blob-1 absolute -top-24 -left-24 size-[28rem] rounded-full bg-primary/10 blur-3xl pointer-events-none -z-10" />
                 <div class="ambient-blob-2 absolute top-1/2 -right-24 size-[32rem] rounded-full bg-secondary/10 blur-3xl pointer-events-none -z-10" />
@@ -558,14 +558,14 @@ onUnmounted(() => {
             </section>
 
             <!-- Trust Strip / Logo Cloud -->
-            <section class="border-b border-outline-variant/40 bg-surface-container-lowest py-10">
+            <section class="border-b border-outline-variant/40 bg-surface-container-lowest py-5">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <p class="text-center text-xs font-bold uppercase tracking-[0.18em] text-outline mb-6">Dipercaya untuk Standar & Regulasi Terkini</p>
-                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                    <p class="text-center text-xs font-bold uppercase tracking-[0.18em] text-outline mb-3">Dipercaya untuk Standar & Regulasi Terkini</p>
+                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
                         <div
                             v-for="logo in trustLogos"
                             :key="logo.label"
-                            class="group flex flex-col items-center justify-center rounded-xl border border-outline-variant/40 bg-surface-container-low/40 px-4 py-3.5 text-center transition-all hover:border-primary/30 hover:bg-surface-container-low"
+                            class="group flex flex-col items-center justify-center px-4 py-1.5 text-center transition-all"
                         >
                             <span class="text-sm font-black text-primary group-hover:text-secondary transition-colors">{{ logo.label }}</span>
                             <span class="text-[10px] font-semibold uppercase tracking-wider text-outline mt-0.5">{{ logo.sub }}</span>

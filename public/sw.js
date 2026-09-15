@@ -1,10 +1,9 @@
-const CACHE_NAME = 'siupk-next-v2';
+const CACHE_NAME = 'siupk-next-v3';
 const OFFLINE_URL = '/offline.html';
 
 const ASSETS_TO_CACHE = [
     OFFLINE_URL,
     '/manifest.webmanifest',
-    '/favicon.ico'
 ];
 
 self.addEventListener('install', (event) => {
