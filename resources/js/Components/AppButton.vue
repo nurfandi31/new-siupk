@@ -42,7 +42,7 @@ const sizes = {
         v-bind="$attrs"
     >
         <span v-if="loading" class="size-5 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true" />
-        <AppIcon v-else-if="icon" :name="icon" class="text-xl" />
+        <AppIcon v-else-if="icon" :name="icon" class="text-xl leading-none" />
         <slot />
     </button>
 </template>

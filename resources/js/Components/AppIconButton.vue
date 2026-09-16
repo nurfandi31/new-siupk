@@ -73,7 +73,7 @@ const buttonClass = computed(() => [
 ]);
 
 const iconSize = computed(() => {
-    if (props.size === 'sm') return 'text-lg';
+    if (props.size === 'sm') return 'text-base';
     if (props.size === 'lg') return 'text-2xl';
     return 'text-xl';
 });
@@ -88,8 +88,8 @@ const iconSize = computed(() => {
             :aria-label="ariaLabel || name"
             :aria-busy="loading || undefined"
         >
-            <AppIcon v-if="!loading" :name="name" :class="iconSize" />
-            <span v-else class="material-symbols-outlined animate-spin" :class="iconSize">progress_activity</span>
+            <AppIcon v-if="!loading" :name="name" :class="[iconSize, 'leading-none']" />
+            <span v-else class="material-symbols-outlined animate-spin leading-none" :class="iconSize">progress_activity</span>
         </button>
     </AppTooltip>
     <button
@@ -100,7 +100,7 @@ const iconSize = computed(() => {
         :aria-label="ariaLabel || name"
         :aria-busy="loading || undefined"
     >
-        <AppIcon v-if="!loading" :name="name" :class="iconSize" />
-        <span v-else class="material-symbols-outlined animate-spin" :class="iconSize">progress_activity</span>
+        <AppIcon v-if="!loading" :name="name" :class="[iconSize, 'leading-none']" />
+        <span v-else class="material-symbols-outlined animate-spin leading-none" :class="iconSize">progress_activity</span>
     </button>
 </template>

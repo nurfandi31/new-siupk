@@ -31,7 +31,7 @@ const inputId = props.id || generatedId;
         </div>
         <label v-else :for="inputId" class="sr-only">{{ label }}</label>
         <div class="relative">
-            <AppIcon v-if="icon" :name="icon" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl text-outline" />
+            <AppIcon v-if="icon" :name="icon" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl leading-none text-outline" />
             <input
                 :id="inputId"
                 v-model="model"
