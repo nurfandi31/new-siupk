@@ -188,14 +188,14 @@ watch(model, () => {
 </script>
 
 <template>
-    <div class="space-y-2">
+    <div class="space-y-1.5">
         <div v-if="!hideLabel" class="ml-1 flex items-center gap-1.5">
             <label :for="inputId" class="block text-sm font-bold uppercase tracking-wider text-primary">{{ label }}</label>
             <AppTooltip v-if="tooltip" :id="`${inputId}-tooltip`" :text="tooltip" />
         </div>
         <label v-else :for="inputId" class="sr-only">{{ label }}</label>
         <div class="relative">
-            <AppIcon v-if="icon" :name="icon" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl text-outline" />
+            <AppIcon v-if="icon" :name="icon" class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-outline" />
             <input
                 :id="inputId"
                 :value="displayValue"
@@ -208,8 +208,8 @@ watch(model, () => {
                 ].filter(Boolean).join(' ') || undefined"
                 :readonly="readonly"
                 :placeholder="readonly ? undefined : (placeholder ?? `Masukkan ${label.toLowerCase()}`)"
-                class="h-14 w-full rounded-xl border bg-surface-container-lowest pl-12 pr-20 text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant"
-                :class="error ? 'border-error' : 'border-outline-variant'"
+                class="h-11 w-full rounded-xl border bg-surface-container-lowest px-3.5 pl-11 text-base text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant"
+                :class="[error ? 'border-error' : 'border-outline-variant', !readonly && 'pr-16']"
                 v-bind="$attrs"
                 @input="onInput"
                 @focus="onFocus"
@@ -217,11 +217,11 @@ watch(model, () => {
                 @keydown.up.prevent="adjust(step)"
                 @keydown.down.prevent="adjust(-step)"
             >
-            <div class="absolute right-2 top-1/2 flex h-10 -translate-y-1/2 items-center gap-1">
-                <button v-if="!readonly" type="button" tabindex="-1" class="flex h-9 w-9 items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-low focus:bg-surface-container-low focus:outline-none" aria-label="Kurangi nilai" @click="adjust(-step)">
+            <div class="absolute right-1.5 top-1/2 flex h-9 -translate-y-1/2 items-center gap-1">
+                <button v-if="!readonly" type="button" tabindex="-1" class="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-low focus:bg-surface-container-low focus:outline-none" aria-label="Kurangi nilai" @click="adjust(-step)">
                     <AppIcon name="remove" class="text-lg" />
                 </button>
-                <button v-if="!readonly" type="button" tabindex="-1" class="flex h-9 w-9 items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-low focus:bg-surface-container-low focus:outline-none" aria-label="Tambah nilai" @click="adjust(step)">
+                <button v-if="!readonly" type="button" tabindex="-1" class="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-low focus:bg-surface-container-low focus:outline-none" aria-label="Tambah nilai" @click="adjust(step)">
                     <AppIcon name="add" class="text-lg" />
                 </button>
             </div>

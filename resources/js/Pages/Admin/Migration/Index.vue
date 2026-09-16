@@ -7,8 +7,9 @@ import AppButton from '../../../Components/AppButton.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppInput from '../../../Components/AppInput.vue';
 import AppDatePicker from '../../../Components/AppDatePicker.vue';
+import AppPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppSwitch from '../../../Components/AppSwitch.vue';
-import SmartSelect from '../../../Components/SmartSelect.vue';
+
 import AppIcon from '../../../Components/AppIcon.vue';
 
 const props = defineProps({
@@ -381,15 +382,10 @@ const getStepStatusVariant = (status) => {
 
     <AdminLayout>
         <div class="space-y-6">
-            <!-- Header section -->
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-primary">Migrasi & Cutover Tenant</h1>
-                    <p class="text-sm text-on-surface-variant">
-                        Eksekusi migrasi data dari database MySQL legacy siupk (transaksi_*, saldo_*, dll) ke tenant Next platform.
-                    </p>
-                </div>
-            </div>
+            <AppPageHeader
+                title="Migrasi & Cutover Tenant"
+                subtitle="Eksekusi migrasi data dari database MySQL legacy siupk (transaksi_*, saldo_*, dll) ke tenant Next platform."
+            />
 
             <!-- Form Eksekusi Cutover & Petunjuk -->
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">

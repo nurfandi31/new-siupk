@@ -143,20 +143,20 @@ function toMonthValue(year, month) {
         </div>
         <slot name="extra" />
         <div class="flex shrink-0 items-end gap-2">
-            <AppButton type="button" class="!min-h-14 h-14 px-5" @click="apply">Tampilkan</AppButton>
+            <AppButton type="button" class="!min-h-11 h-11 px-5" @click="apply">Tampilkan</AppButton>
             <a
                 v-if="pdfUrl"
                 :href="pdfHref()"
                 target="_blank"
                 rel="noopener"
-                class="inline-flex h-14 min-h-14 items-center rounded-xl border border-outline-variant px-4 text-sm font-semibold text-primary hover:bg-surface-container-low"
+                class="inline-flex h-11 min-h-11 items-center rounded-xl border border-outline-variant px-4 text-sm font-semibold text-primary hover:bg-surface-container-low"
             >
                 PDF
             </a>
             <a
                 v-if="excelUrl"
                 :href="excelHref()"
-                class="inline-flex h-14 min-h-14 items-center gap-1.5 rounded-xl border border-outline-variant px-4 text-sm font-semibold text-primary hover:bg-surface-container-low"
+                class="inline-flex h-11 min-h-11 items-center gap-1.5 rounded-xl border border-outline-variant px-4 text-sm font-semibold text-primary hover:bg-surface-container-low"
             >
                 <AppIcon name="table_view" class="text-base" />
                 Excel

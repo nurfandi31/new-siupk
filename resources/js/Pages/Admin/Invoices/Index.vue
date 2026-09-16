@@ -1,5 +1,6 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
+import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -70,13 +71,14 @@ function tone(status) {
     <Head title="Invoice" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-primary">Invoice</h1>
-                    <p class="mt-1 text-on-surface-variant">Tagihan tenant: langganan, setup, support, training, custom, dll.</p>
-                </div>
-                <Link href="/admin/invoices/create"><AppButton icon="add">Buat Invoice</AppButton></Link>
-            </header>
+            <AdminPageHeader
+                title="Invoice Platform"
+                subtitle="Tagihan tenant: langganan, setup, support, training, custom, dan keperluan lain."
+            >
+                <template #actions>
+                    <Link href="/admin/invoices/create"><AppButton icon="add">Buat Invoice</AppButton></Link>
+                </template>
+            </AdminPageHeader>
 
             <AppCard :padded="false">
                 <div class="p-6">
@@ -89,13 +91,13 @@ function tone(status) {
                         :per-page="perPage"
                         :sort="sort"
                         :direction="direction"
-                        search-placeholder="Nomor, tenant, deskripsi"
+                        search-placeholder="…"
                         empty-title="Belum ada invoice"
                         empty-description="Terbitkan invoice untuk tenant."
                     >
                         <template #toolbar>
                             <div class="min-w-48">
-                                <SmartSelect :model-value="status" label="Status" hide-label :options="statusOptions" @update:model-value="filterStatus" />
+                                <SmartSelect :model-value="status" label="Status" hide-label size="compact" :options="statusOptions" @update:model-value="filterStatus" />
                             </div>
                         </template>
                         <template #cell-tenant="{ row }">
@@ -106,17 +108,21 @@ function tone(status) {
                             <span class="font-semibold text-primary">{{ purposeLabels[row.purpose] || row.purpose || '—' }}</span>
                             <span v-if="row.description" class="block truncate text-xs text-on-surface-variant">{{ row.description }}</span>
                         </template>
-                        <template #cell-amount="{ row }">{{ money(row.amount, row.currency) }}</template>
+                        <template #cell-amount="{ row }">
+                            <span class="font-bold text-primary tabular-nums">{{ money(row.amount, row.currency) }}</span>
+                        </template>
                         <template #cell-status="{ row }">
-    <div class="flex items-center gap-1.5 flex-wrap">
-        <AppBadge :tone="tone(row.status)">{{ row.status }}</AppBadge>
-        <span v-if="row.blocks_access" class="rounded bg-error/15 px-1.5 py-0.5 text-[10px] font-bold text-error" title="Tagihan memblokir akses jika belum lunas">
-            Blokir
-        </span>
-    </div>
-</template>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <AppBadge :tone="tone(row.status)">{{ row.status }}</AppBadge>
+                                <span v-if="row.blocks_access" class="rounded bg-error/15 px-1.5 py-0.5 text-[10px] font-bold text-error" title="Tagihan memblokir akses jika belum lunas">
+                                    Blokir
+                                </span>
+                            </div>
+                        </template>
                         <template #actions="{ row }">
-                            <Link :href="`/admin/invoices/${row.row_id}`"><AppButton variant="ghost" size="compact" icon="visibility">Detail</AppButton></Link>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <Link :href="`/admin/invoices/${row.row_id}`"><AppButton variant="ghost" size="compact" icon="visibility">Detail</AppButton></Link>
+                            </div>
                         </template>
                     </SmartDataTable>
                 </div>

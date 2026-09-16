@@ -7,6 +7,7 @@ import AppCard from '../../../Components/AppCard.vue';
 import AppCurrencyInput from '../../../Components/AppCurrencyInput.vue';
 import AppDatePicker from '../../../Components/AppDatePicker.vue';
 import AppIcon from '../../../Components/AppIcon.vue';
+import AppIconButton from '../../../Components/AppIconButton.vue';
 import AppInput from '../../../Components/AppInput.vue';
 import AppTextarea from '../../../Components/AppTextarea.vue';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
@@ -75,16 +76,19 @@ async function voidInvoice() {
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header class="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
-                <div>
-                    <Link href="/admin/invoices" class="text-sm font-semibold text-primary">← Daftar invoice</Link>
-                    <div class="mt-3 flex flex-wrap items-center gap-3">
+                <div class="space-y-3">
+                    <Link href="/admin/invoices" class="inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:text-primary-container">
+                        <AppIconButton name="arrow_back" size="sm" tone="primary" rounded="full" aria-label="Kembali" />
+                        <span>Daftar invoice</span>
+                    </Link>
+                    <div class="flex flex-wrap items-center gap-3">
                         <h1 class="text-2xl font-bold text-primary">{{ invoice.number }}</h1>
                         <AppBadge :tone="tone(invoice.status)">{{ invoice.status }}</AppBadge>
                         <span v-if="invoice.blocks_access" class="rounded bg-error/15 px-2 py-0.5 text-xs font-bold text-error">
                             ⛔ Memblokir Akses Tenant
                         </span>
                     </div>
-                    <p class="mt-1 text-on-surface-variant">
+                    <p class="text-on-surface-variant">
                         <Link v-if="invoice.tenant" :href="`/admin/tenants/${invoice.tenant.row_id}`" class="font-semibold text-primary">{{ invoice.tenant.name }}</Link>
                         <span v-else>—</span>
                         · jatuh tempo {{ invoice.due_at || '—' }}

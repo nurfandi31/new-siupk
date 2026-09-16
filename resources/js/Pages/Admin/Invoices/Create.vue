@@ -83,8 +83,7 @@ function submit() {
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header>
-                <Link href="/admin/invoices" class="text-sm font-semibold text-primary">← Daftar invoice</Link>
-                <h1 class="mt-3 text-2xl font-bold text-primary">Buat Invoice</h1>
+                <h1 class="text-2xl font-bold text-primary">Buat Invoice</h1>
                 <p class="mt-1 text-on-surface-variant">Tagihan ke tenant untuk langganan, setup, support, training, custom, atau keperluan lain.</p>
             </header>
 

@@ -17,6 +17,7 @@ const props = defineProps({
     readonly: { type: Boolean, default: false },
     hideLabel: { type: Boolean, default: false },
     tooltip: { type: String, default: null },
+    size: { type: String, default: 'default', validator: (v) => ['default', 'compact'].includes(v) },
 });
 
 const generatedId = useId();
@@ -24,14 +25,14 @@ const inputId = props.id || generatedId;
 </script>
 
 <template>
-    <div class="space-y-2">
+    <div class="space-y-1.5">
         <div v-if="!hideLabel" class="flex items-center gap-1.5 ml-1">
             <label :for="inputId" class="block text-sm font-bold uppercase tracking-wider text-primary">{{ label }}</label>
             <AppTooltip v-if="tooltip" :id="`${inputId}-tooltip`" :text="tooltip" />
         </div>
         <label v-else :for="inputId" class="sr-only">{{ label }}</label>
         <div class="relative">
-            <AppIcon v-if="icon" :name="icon" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl leading-none text-outline" />
+            <AppIcon v-if="icon" :name="icon" :class="['pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline leading-none', size === 'compact' ? 'left-3 text-base' : 'left-3.5 text-lg']" />
             <input
                 :id="inputId"
                 v-model="model"
@@ -44,11 +45,18 @@ const inputId = props.id || generatedId;
                 ].filter(Boolean).join(' ') || undefined"
                 :readonly="readonly"
                 :placeholder="readonly ? undefined : (placeholder ?? `Masukkan ${label.toLowerCase()}`)"
-                class="h-14 w-full rounded-xl border bg-surface-container-lowest px-4 text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant"
-                :class="[icon && 'pl-12', $slots.trailing && 'pr-14', error ? 'border-error' : 'border-outline-variant']"
+                :class="[
+                    size === 'compact'
+                        ? 'h-9 rounded-lg px-3 text-sm'
+                        : 'h-11 rounded-xl px-3.5 text-base',
+                    'w-full border bg-surface-container-lowest text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant',
+                    size === 'compact' ? (icon ? 'pl-9' : '') : (icon ? 'pl-11' : ''),
+                    $slots.trailing ? (size === 'compact' ? 'pr-10' : 'pr-12') : '',
+                    error ? 'border-error' : 'border-outline-variant',
+                ]"
                 v-bind="$attrs"
             >
-            <div v-if="$slots.trailing" class="absolute right-2 top-1/2 flex h-10 -translate-y-1/2 items-center justify-center">
+            <div v-if="$slots.trailing" :class="['absolute top-1/2 flex -translate-y-1/2 items-center justify-center', size === 'compact' ? 'right-1.5 h-8' : 'right-1.5 h-9']">
                 <slot name="trailing" />
             </div>
         </div>

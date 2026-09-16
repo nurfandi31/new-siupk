@@ -94,13 +94,13 @@ const pdfUrl = computed(() => {
             <!-- Filters -->
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-on-surface-variant mb-1">Tahun</label>
-                        <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" />
+                    <div class="space-y-1.5">
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-on-surface-variant mb-1">Bulan</label>
-                        <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" />
+                    <div class="space-y-1.5">
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
             </AppCard>

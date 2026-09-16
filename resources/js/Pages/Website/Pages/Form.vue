@@ -38,8 +38,7 @@ function submit() {
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
             <header class="mb-6">
-                <Link :href="path" class="text-sm font-semibold text-primary">← Kembali ke daftar halaman</Link>
-                <h1 class="mt-3 text-2xl font-bold text-primary">{{ editing ? 'Edit Halaman' : 'Buat Halaman' }}</h1>
+                <h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit Halaman' : 'Buat Halaman' }}</h1>
                 <p class="mt-1 text-on-surface-variant">{{ editing ? 'Perbarui isi halaman lalu simpan.' : 'Buat halaman statis yang akan tampil di situs publik.' }}</p>
             </header>
 

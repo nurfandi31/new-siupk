@@ -23,6 +23,7 @@ const props = defineProps({
     hideLabel: { type: Boolean, default: false },
     emptyActionLabel: { type: String, default: null },
     excludedValues: { type: Array, default: () => [] },
+    size: { type: String, default: 'default', validator: (v) => ['default', 'compact'].includes(v) },
 });
 
 const emit = defineEmits(['update:modelValue', 'search', 'search-change', 'empty-action']);
@@ -237,7 +238,7 @@ watch(() => props.modelValue, (value) => {
 </script>
 
 <template>
-    <div class="space-y-2" :data-smart-select="selectId">
+    <div class="space-y-1.5" :data-smart-select="selectId">
         <label :for="selectId" :class="hideLabel ? 'sr-only' : 'ml-1 block text-sm font-bold uppercase tracking-wider text-primary'">{{ label }}</label>
         <div class="relative">
             <button
@@ -250,23 +251,26 @@ watch(() => props.modelValue, (value) => {
                 :aria-invalid="Boolean(error)"
                 :aria-required="required"
                 :disabled="disabled"
-                class="flex h-14 w-full items-center justify-between rounded-xl border bg-surface-container-lowest px-4 pr-16 text-left text-primary transition-all duration-150 active:scale-[0.99] focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
-                :class="error ? 'border-error' : 'border-outline-variant'"
+                :class="[
+                    size === 'compact' ? 'h-9 rounded-lg px-3 pr-12 text-sm' : 'h-11 rounded-xl px-3.5 pr-12 text-base',
+                    'flex w-full items-center justify-between border bg-surface-container-lowest text-left text-primary transition-all duration-150 active:scale-[0.99] focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
+                    error ? 'border-error' : 'border-outline-variant',
+                ]"
                 v-bind="$attrs"
                 @click="open ? closeMenu() : openMenu()"
                 @keydown="onKeydown"
             >
                 <span class="block min-w-0 flex-1 truncate whitespace-nowrap" :class="selectedLabel ? 'text-primary' : 'text-outline'">{{ selectedLabel || (placeholder ?? `Pilih ${label.toLowerCase()}`) }}</span>
-                <AppIcon name="expand_more" class="absolute right-3 text-xl text-outline transition-transform duration-200" :class="{ 'rotate-180': open }" />
+                <AppIcon :name="'expand_more'" :class="['absolute text-outline leading-none transition-transform duration-200', size === 'compact' ? 'right-2.5 !text-base' : 'right-2.5 !text-lg', { 'rotate-180': open }]" />
             </button>
             <button
                 v-if="clearable && selectedLabel"
                 type="button"
-                class="absolute right-9 top-1/2 z-10 -translate-y-1/2 rounded-full p-1 text-outline transition-all duration-150 hover:bg-surface-container-low hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary-container/20 active:scale-90"
+                :class="['absolute top-1/2 z-10 flex -translate-y-1/2 items-center justify-center rounded-full text-outline transition-all duration-150 hover:bg-surface-container-low hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary-container/20 active:scale-90', size === 'compact' ? 'right-7 h-5 w-5' : 'right-7 h-7 w-7']"
                 aria-label="Hapus pilihan"
                 @click="clear"
             >
-                <AppIcon name="close" class="text-lg" />
+                <AppIcon :name="'close'" :class="size === 'compact' ? '!text-base leading-none' : '!text-lg leading-none'" />
             </button>
             <Teleport to="body">
                 <Transition
@@ -309,7 +313,7 @@ watch(() => props.modelValue, (value) => {
                                         type="button"
                                         role="option"
                                         :aria-selected="String(row.option[valueKey]) === String(modelValue)"
-                                        class="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors duration-150 hover:bg-surface-container-low"
+                                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors duration-150 hover:bg-surface-container-low"
                                         :class="row.index === highlighted ? 'bg-surface-container-low text-primary font-medium' : 'text-on-surface'"
                                         @mouseenter="highlighted = row.index"
                                         @click="choose(row.option)"
@@ -327,7 +331,7 @@ watch(() => props.modelValue, (value) => {
                                                 {{ row.option.subtitle || row.option.description }}
                                             </p>
                                         </div>
-                                        <AppIcon v-if="String(row.option[valueKey]) === String(modelValue)" name="check" class="shrink-0 text-base text-primary" />
+                                        <AppIcon v-if="String(row.option[valueKey]) === String(modelValue)" name="check" class="ml-2 shrink-0 text-base text-primary" />
                                     </button>
                                 </template>
                                 <button v-if="!visibleOptions.length && emptyActionLabel && search.trim()" type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-3 text-left text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low focus:bg-surface-container-low focus:outline-none" @click="runEmptyAction"><AppIcon name="person_add" class="text-xl" />{{ emptyActionLabel }}</button>

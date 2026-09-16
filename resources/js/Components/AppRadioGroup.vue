@@ -32,7 +32,7 @@ const inputId = props.id || useId();
                     class="peer sr-only"
                 >
                 <span
-                    class="flex h-14 cursor-pointer items-center justify-center gap-2 px-3 text-sm font-semibold transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-inset peer-focus-visible:ring-primary-container/40 peer-disabled:cursor-not-allowed peer-disabled:opacity-60"
+                    class="flex h-11 cursor-pointer items-center justify-center gap-2 px-3 text-sm font-semibold transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-inset peer-focus-visible:ring-primary-container/40 peer-disabled:cursor-not-allowed peer-disabled:opacity-60"
                     :class="model === option.value
                         ? 'bg-primary text-on-primary hover:bg-primary'
                         : 'text-on-surface-variant hover:bg-surface-container-low hover:text-primary'"

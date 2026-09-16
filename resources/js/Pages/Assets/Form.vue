@@ -60,9 +60,6 @@ function submit() {
                         Meta &amp; status register. Pembelian baru lewat Jurnal Umum — ubah di sini tidak membuat jurnal.
                     </p>
                 </div>
-                <Link :href="`/accounting/assets/${asset.row_id}`">
-                    <AppButton variant="ghost" icon="arrow_back">Kembali</AppButton>
-                </Link>
             </header>
 
             <AppCard>

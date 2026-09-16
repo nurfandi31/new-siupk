@@ -88,10 +88,7 @@ function submit() {
     <AuthenticatedLayout>
         <div class="mx-auto max-w-4xl space-y-6">
             <header>
-                <Link href="/access/users" class="text-sm font-semibold text-primary hover:underline">
-                    ← Kembali ke Manajemen Pengguna
-                </Link>
-                <h1 class="mt-2 text-2xl font-bold text-primary sm:text-3xl">
+                <h1 class="text-2xl font-bold text-primary sm:text-3xl">
                     {{ editing ? `Edit Pengguna: ${user.name}` : 'Tambah Pengguna Baru' }}
                 </h1>
                 <p class="mt-1 text-sm text-on-surface-variant">

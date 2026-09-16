@@ -208,8 +208,8 @@ function submitBulkReverse() {
 
             <AppCard>
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <AppDatePicker v-model="from" mode="day" label="Dari tanggal" />
-                    <AppDatePicker v-model="to" mode="day" label="Sampai tanggal" />
+                    <AppDatePicker v-model="from" mode="date" label="Dari tanggal" />
+                    <AppDatePicker v-model="to" mode="date" label="Sampai tanggal" />
                     <SmartSelect v-model="source" label="Sumber jurnal" :options="sourceOptions" />
                     <AppInput
                         v-model="q"
@@ -414,7 +414,7 @@ function submitBulkReverse() {
                         {{ reverseTarget.description || '—' }}
                         · {{ formatMoney(reverseTarget.amount) }}
                     </p>
-                    <AppDatePicker v-model="reverseForm.reversal_date" mode="day" label="Tanggal reverse" required />
+                    <AppDatePicker v-model="reverseForm.reversal_date" mode="date" label="Tanggal reverse" required />
                     <AppTextarea
                         v-model="reverseForm.reason"
                         label="Alasan pembatalan"
@@ -438,7 +438,7 @@ function submitBulkReverse() {
                         (Total nominal <span class="font-semibold text-primary">{{ formatMoney(selectedTotalAmount) }}</span>)
                         akan dibatalkan secara bersamaan dengan membuat jurnal lawan (reverse). Data transaksi asli tetap tersimpan demi audit trail.
                     </p>
-                    <AppDatePicker v-model="bulkReverseForm.reversal_date" mode="day" label="Tanggal reverse" required />
+                    <AppDatePicker v-model="bulkReverseForm.reversal_date" mode="date" label="Tanggal reverse" required />
                     <AppTextarea
                         v-model="bulkReverseForm.reason"
                         label="Alasan pembatalan massal"

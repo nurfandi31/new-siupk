@@ -1,5 +1,6 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
+import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppCard from '../../../Components/AppCard.vue';
 import SmartDataTable from '../../../Components/SmartDataTable.vue';
@@ -73,10 +74,10 @@ function subjectLink(row) {
     <Head title="Log Audit" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header>
-                <h1 class="text-2xl font-bold text-primary">Log Audit Platform</h1>
-                <p class="mt-1 text-on-surface-variant">Jejak semua aksi sensitif superadmin: perubahan tenant, impersonasi, penagihan, dan penghapusan data.</p>
-            </header>
+            <AdminPageHeader
+                title="Log Audit Platform"
+                subtitle="Jejak semua aksi sensitif superadmin: perubahan tenant, impersonasi, penagihan, dan penghapusan data."
+            />
 
             <AppCard :padded="false">
                 <div class="p-6">
@@ -87,7 +88,6 @@ function subjectLink(row) {
                         url="/admin/audit-logs"
                         :search="search"
                         :per-page="perPage"
-                        search-placeholder="Cari deskripsi atau aktor"
                         empty-title="Belum ada aktivitas tercatat"
                         empty-description="Aksi admin sensitif akan terekam otomatis di sini."
                     >
@@ -97,6 +97,7 @@ function subjectLink(row) {
                                     :model-value="action"
                                     label="Aksi"
                                     hide-label
+                                    size="compact"
                                     clearable
                                     :options="actionOptions"
                                     @update:model-value="filterAction"
@@ -107,6 +108,7 @@ function subjectLink(row) {
                                     :model-value="tenant_id ? String(tenant_id) : ''"
                                     label="Tenant"
                                     hide-label
+                                    size="compact"
                                     clearable
                                     searchable
                                     value-key="value"

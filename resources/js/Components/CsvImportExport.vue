@@ -62,7 +62,7 @@ function submitImport() {
                 ref="fileInput"
                 type="file"
                 accept=".csv,text/csv,application/vnd.ms-excel"
-                class="block w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-primary file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-bold file:text-on-primary"
+                class="block w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-base text-primary transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-bold file:text-on-primary"
                 @change="onFileChange"
             />
             <p v-if="form.errors.file" class="text-sm text-error">{{ form.errors.file }}</p>

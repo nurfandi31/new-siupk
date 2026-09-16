@@ -42,8 +42,7 @@ function submit() {
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
             <header class="mb-6">
-                <Link :href="path" class="text-sm font-semibold text-primary">← Kembali ke daftar berita</Link>
-                <h1 class="mt-3 text-2xl font-bold text-primary">{{ editing ? 'Edit Berita' : 'Tulis Berita' }}</h1>
+                <h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit Berita' : 'Tulis Berita' }}</h1>
                 <p class="mt-1 text-on-surface-variant">{{ editing ? 'Perbarui isi berita lalu simpan.' : 'Isi detail berita yang akan tampil di situs publik.' }}</p>
             </header>
 

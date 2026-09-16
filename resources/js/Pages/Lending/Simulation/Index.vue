@@ -535,8 +535,8 @@ Est. Angsuran/Bln: ${money(s.estimated_monthly)}`;
                     <AppCard title="Skema Bunga & Pembulatan" icon="tune" class="shadow-xs">
                         <div class="space-y-4">
                             <!-- Sistem Bunga (Segmented Card Selection) -->
-                            <div>
-                                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+                            <div class="space-y-1.5">
+                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">
                                     Sistem Perhitungan Bunga
                                 </label>
                                 <div class="grid grid-cols-3 gap-2">
@@ -563,9 +563,9 @@ Est. Angsuran/Bln: ${money(s.estimated_monthly)}`;
                             </div>
 
                             <!-- Suku Bunga & Rate Unit Switcher -->
-                            <div>
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <label class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">
                                         Suku Bunga / Jasa
                                     </label>
                                     <div class="inline-flex rounded-lg bg-surface-container p-0.5 text-xs font-medium">

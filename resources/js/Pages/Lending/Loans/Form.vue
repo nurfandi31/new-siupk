@@ -283,8 +283,7 @@ function addBeneficiary() {
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
             <header class="mb-6">
-                <Link :href="path" class="text-sm font-semibold text-primary">← Kembali</Link>
-                <h1 class="mt-3 text-2xl font-bold text-primary">Register Proposal Pinjaman</h1>
+                <h1 class="text-2xl font-bold text-primary">Register Proposal Pinjaman</h1>
                 <p class="mt-1 text-on-surface-variant">Daftarkan proposal pinjaman baru untuk kelompok. Pemanfaat adalah anggota terdaftar pada kelompok tersebut.</p>
             </header>
 
@@ -360,7 +359,7 @@ function addBeneficiary() {
                             <template v-else>
                                 <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
                                     <div class="flex-1"><SmartSelect v-model="beneficiaryCandidateId" label="Cari anggota di luar kelompok" :options="beneficiaryCandidateOptions" searchable :loading="beneficiaryLoading" placeholder="Cari NIK atau nama" @search-change="updateBeneficiarySearch" @search="searchBeneficiaries" /></div>
-                                    <AppButton type="button" variant="secondary" icon="person_add" class="min-h-14 w-full sm:w-auto" :disabled="!beneficiaryCandidateId" @click="addBeneficiary">Tambahkan</AppButton>
+                                    <AppButton type="button" variant="secondary" icon="person_add" class="min-h-11 w-full sm:w-auto" :disabled="!beneficiaryCandidateId" @click="addBeneficiary">Tambahkan</AppButton>
                                 </div>
                                 <div v-if="memberOptions.length === 0" class="mt-3 rounded-xl border border-outline-variant bg-surface-container-low p-4 text-sm text-on-surface-variant">Belum ada pemanfaat.</div>
                                 <div v-else class="mt-3 overflow-x-auto rounded-xl border border-outline-variant">

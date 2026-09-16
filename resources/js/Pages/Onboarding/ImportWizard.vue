@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout.vue';
+import AdminLayout from '../../Layouts/AdminLayout.vue';
 import AppCard from '../../Components/AppCard.vue';
 import AppButton from '../../Components/AppButton.vue';
 import AppBadge from '../../Components/AppBadge.vue';
@@ -251,7 +251,7 @@ const uploadLoans = () => {
 <template>
     <Head title="Migrasi & Saldo Awal Tenant Baru" />
 
-    <AuthenticatedLayout>
+    <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <!-- Header Banner -->
             <header class="rounded-2xl bg-gradient-to-r from-primary to-primary-deep p-6 text-on-primary shadow-xl">
@@ -288,7 +288,7 @@ const uploadLoans = () => {
                                 <p class="text-xs text-on-surface-variant">Masukkan nilai saldo pada tanggal awal konversi operasional aplikasi.</p>
                             </div>
                             <div class="flex items-center space-x-3">
-                                <label class="text-xs font-semibold text-on-surface">Tanggal Saldo Awal:</label>
+                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tanggal Saldo Awal</label>
                                 <AppDatePicker
                                     v-model="asOfDate"
                                     label="Tanggal Saldo Awal"
@@ -462,8 +462,8 @@ const uploadLoans = () => {
                         </div>
 
                         <form @submit.prevent="uploadLoans" class="space-y-4 pt-2">
-                            <div>
-                                <label class="block text-xs font-semibold text-on-surface mb-1">Pilih File CSV Pinjaman Aktif & Angsuran:</label>
+                            <div class="space-y-1.5">
+                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Pilih File CSV Pinjaman Aktif & Angsuran</label>
                                 <input
                                     type="file"
                                     accept=".csv"
@@ -529,7 +529,7 @@ const uploadLoans = () => {
                                 </p>
                             </div>
                             <div class="flex items-center space-x-3">
-                                <label class="text-xs font-semibold text-on-surface">Tahun Fiskal:</label>
+                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun Fiskal</label>
                                 <AppInput
                                     v-model="manualFiscalYear"
                                     type="number"
@@ -665,14 +665,13 @@ const uploadLoans = () => {
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
-                        <AppInput
+                        <AppDatePicker
                             v-model="aggregateForm.transaction_date"
-                            type="date"
                             label="Tanggal Jurnal"
                             required
                         />
-                        <div>
-                            <label class="block text-xs font-semibold text-on-surface mb-1">Keterangan</label>
+                        <div class="space-y-1.5">
+                            <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Keterangan</label>
                             <AppInput
                                 v-model="aggregateForm.description"
                                 label="Keterangan"
@@ -774,7 +773,7 @@ const uploadLoans = () => {
                 </AppCard>
             </div>
         </div>
-    </AuthenticatedLayout>
+    </AdminLayout>
 </template>
 
 

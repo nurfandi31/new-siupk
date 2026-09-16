@@ -501,8 +501,8 @@ function applySignatureStarter() {
                                 <AppButton
                                     type="button"
                                     variant="secondary"
-                                    size="large"
-                                    class="h-14 shrink-0"
+                                    size="default"
+                                    class="shrink-0"
                                     icon="table"
                                     @click="applySignatureStarter"
                                 >

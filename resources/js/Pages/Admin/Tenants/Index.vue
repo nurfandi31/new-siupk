@@ -1,9 +1,11 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
+import AppIcon from '../../../Components/AppIcon.vue';
 import SmartDataTable from '../../../Components/SmartDataTable.vue';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
 
@@ -45,29 +47,30 @@ async function autoLogin(tenant) {
 }
 
 const columns = [
-    { key: 'name', label: 'Tenant', sortable: true },
-    { key: 'district_code', label: 'Kecamatan' },
-    { key: 'status', label: 'Status', sortable: true },
-    { key: 'plan', label: 'Plan' },
-    { key: 'memberships_count', label: 'Users' },
-    { key: 'shard', label: 'Shard' },
+    { key: 'name', label: 'Tenant', sortable: true, class: 'w-64 min-w-[12rem]' },
+    { key: 'district_code', label: 'Kecamatan', class: 'w-44 hidden md:table-cell' },
+    { key: 'status', label: 'Status', sortable: true, class: 'w-28' },
+    { key: 'plan', label: 'Plan', class: 'w-32 hidden md:table-cell' },
+    { key: 'memberships_count', label: 'Users', class: 'w-20 text-right hidden md:table-cell' },
+    { key: 'shard', label: 'Shard', class: 'w-28 hidden xl:table-cell' },
 ];
 </script>
 
 <template>
     <Head title="Tenant" />
     <AdminLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
-            <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-primary">Tenant</h1>
-                    <p class="mt-1 text-on-surface-variant">Kelola tenant platform dan penempatannya.</p>
-                </div>
-                <Link href="/admin/tenants/create"><AppButton icon="add">Tambah Tenant</AppButton></Link>
-            </header>
+        <div class="mx-auto max-w-7xl space-y-5">
+            <AdminPageHeader
+                title="Manajemen Tenant"
+                subtitle="Daftarkan, monitor status, dan kelola penempatan tenant platform di seluruh shard."
+            >
+                <template #actions>
+                    <Link href="/admin/tenants/create"><AppButton icon="add">Tambah Tenant</AppButton></Link>
+                </template>
+            </AdminPageHeader>
 
             <AppCard :padded="false">
-                <div class="p-6">
+                <div class="p-4 sm:p-6">
                     <SmartDataTable
                         :rows="tenants.data"
                         :columns="columns"
@@ -77,22 +80,35 @@ const columns = [
                         :per-page="perPage"
                         :sort="sort"
                         :direction="direction"
-                        search-label="Cari tenant"
-                        search-placeholder="Nama, kode, atau kecamatan"
+                        :dense="true"
+                        search-label="Pencarian"
                         empty-title="Belum ada tenant"
                         empty-description="Daftarkan tenant pertama untuk mulai."
                     >
                         <template #cell-name="{ row }">
-                            <Link :href="`/admin/tenants/${row.row_id}`" class="font-semibold text-primary">{{ row.name }}</Link>
-                            <span class="block text-xs text-on-surface-variant">{{ row.code }}</span>
+                            <div class="min-w-0">
+                                <Link :href="`/admin/tenants/${row.row_id}`" class="block truncate font-semibold text-primary hover:underline">{{ row.name }}</Link>
+                                <p class="truncate text-[11px] text-on-surface-variant">{{ row.code }}</p>
+                            </div>
                         </template>
                         <template #cell-status="{ row }">
-                            <AppBadge :tone="row.status === 'active' ? 'success' : row.status === 'suspended' ? 'error' : 'neutral'">{{ row.status }}</AppBadge>
+                            <AppBadge :tone="row.status === 'active' ? 'success' : row.status === 'suspended' ? 'error' : 'neutral'">
+                                {{ row.status === 'active' ? 'Aktif' : row.status === 'suspended' ? 'Suspended' : row.status }}
+                            </AppBadge>
                         </template>
-                        <template #cell-plan="{ row }">{{ row.plan?.name || '—' }}</template>
-                        <template #cell-shard="{ row }">{{ row.shard?.code || '—' }}</template>
+                        <template #cell-plan="{ row }">
+                            <span v-if="row.plan" class="font-medium text-primary">{{ row.plan.name }}</span>
+                            <span v-else class="text-outline">—</span>
+                        </template>
+                        <template #cell-shard="{ row }">
+                            <span v-if="row.shard" class="inline-flex items-center gap-1 font-mono text-xs text-on-surface-variant">
+                                <AppIcon name="storage" class="text-sm" />
+                                {{ row.shard.code }}
+                            </span>
+                            <span v-else class="text-outline">—</span>
+                        </template>
                         <template #actions="{ row }">
-                            <div class="flex items-center gap-1.5">
+                            <div class="flex items-center justify-end gap-1.5">
                                 <AppButton
                                     v-if="row.status === 'active'"
                                     variant="secondary"
@@ -102,10 +118,12 @@ const columns = [
                                     aria-label="Auto login ke tenant"
                                     @click="autoLogin(row)"
                                 >
-                                    Auto Login
+                                    <span class="hidden md:inline">Auto Login</span>
                                 </AppButton>
                                 <Link :href="`/admin/tenants/${row.row_id}`">
-                                    <AppButton variant="ghost" size="compact" icon="visibility" aria-label="Detail tenant">Detail</AppButton>
+                                    <AppButton variant="ghost" size="compact" icon="visibility" aria-label="Detail tenant">
+                                        <span class="hidden md:inline">Detail</span>
+                                    </AppButton>
                                 </Link>
                             </div>
                         </template>

@@ -474,7 +474,7 @@ async function submitAllocation() {
                         @submit.prevent="submitAllocation"
                     >
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <AppDatePicker v-model="allocForm.date" mode="day" label="Tanggal alokasi" />
+                            <AppDatePicker v-model="allocForm.date" mode="date" label="Tanggal alokasi" />
                             <AppInput
                                 v-model="allocForm.note"
                                 label="Keterangan (opsional)"

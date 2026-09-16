@@ -1,5 +1,6 @@
 <script setup>
 import { Head, router, useForm } from '@inertiajs/vue3';
+import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -83,13 +84,10 @@ async function toggleStatus(user) {
     <Head title="Pengguna Platform" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header>
-                <h1 class="text-2xl font-bold text-primary">Pengguna Platform</h1>
-                <p class="mt-1 text-on-surface-variant">
-                    Cari dan kelola semua pengguna lintas tenant. Menonaktifkan akun langsung memblokir
-                    login user di seluruh aplikasi — perubahan role/detail tetap lewat halaman user tenant.
-                </p>
-            </header>
+            <AdminPageHeader
+                title="Pengguna Platform"
+                subtitle="Cari dan kelola semua pengguna lintas tenant. Menonaktifkan akun langsung memblokir login user di seluruh aplikasi — perubahan role/detail tetap lewat halaman user tenant."
+            />
 
             <!-- Ringkasan KPI -->
             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -111,7 +109,7 @@ async function toggleStatus(user) {
                         url="/admin/users"
                         :search="search"
                         :per-page="perPage"
-                        search-placeholder="Nama, username, atau email"
+                        search-placeholder="…"
                         empty-title="Tidak ada pengguna ditemukan"
                         empty-description="Ubah kata kunci pencarian atau filter."
                     >

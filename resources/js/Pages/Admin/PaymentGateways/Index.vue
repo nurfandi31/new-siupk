@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
+import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppCard from '../../../Components/AppCard.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -192,15 +193,14 @@ const gatewayTabs = [
     <Head title="Pengaturan Payment Gateway" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">Pengaturan Payment Gateway</h1>
-                    <p class="mt-1 text-on-surface-variant">Kelola provider Payment Gateway (Duitku, Tripay, Xendit) dan tetapkan gateway aktif penagihan sistem.</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <AppBadge tone="success">Active Gateway: {{ (props.active_gateway || 'duitku').toUpperCase() }}</AppBadge>
-                </div>
-            </header>
+            <AdminPageHeader
+                title="Payment Gateway"
+                subtitle="Kelola provider Payment Gateway (Duitku, Tripay, Xendit) dan tetapkan gateway aktif penagihan sistem."
+            >
+                <template #actions>
+                    <AppBadge tone="success">Active: {{ (props.active_gateway || 'duitku').toUpperCase() }}</AppBadge>
+                </template>
+            </AdminPageHeader>
 
 
             <!-- Navigation Tabs -->

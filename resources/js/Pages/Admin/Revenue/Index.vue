@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -72,20 +73,14 @@ watch([status, planId, perPage], () => {
     <Head title="Monitor Pendapatan & Tagihan Tenant" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <!-- Header -->
-            <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-primary">Monitor Pendapatan &amp; Tagihan Tenant</h1>
-                    <p class="mt-1 text-on-surface-variant">
-                        Pantau nominal tagihan, tanggal jatuh tempo, dan status pembayaran per masing-masing tenant.
-                    </p>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                    <Link href="/admin/invoices/create">
-                        <AppButton icon="add">Terbitkan Tagihan</AppButton>
-                    </Link>
-                </div>
-            </header>
+            <AdminPageHeader
+                title="Monitor Pendapatan & Tagihan"
+                subtitle="Pantau nominal tagihan, tanggal jatuh tempo, dan status pembayaran per masing-masing tenant."
+            >
+                <template #actions>
+                    <Link href="/admin/invoices/create"><AppButton icon="add">Terbitkan Tagihan</AppButton></Link>
+                </template>
+            </AdminPageHeader>
 
             <!-- Summary KPI Metric Cards -->
             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

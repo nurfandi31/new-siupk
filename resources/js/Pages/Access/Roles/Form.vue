@@ -84,10 +84,7 @@ function submit() {
     <AuthenticatedLayout>
         <div class="mx-auto max-w-5xl space-y-6">
             <header>
-                <Link href="/access/roles" class="text-sm font-semibold text-primary hover:underline">
-                    ← Kembali ke Daftar Role
-                </Link>
-                <div class="mt-2 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                <div class="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                     <div>
                         <h1 class="text-2xl font-bold text-primary sm:text-3xl">
                             {{ editing ? `Role: ${role.name}` : 'Tambah Role Kustom Baru' }}

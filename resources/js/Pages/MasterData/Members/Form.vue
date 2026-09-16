@@ -126,8 +126,7 @@ function submit() {
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
             <header class="mb-6">
-                <Link :href="path" class="text-sm font-semibold text-primary">← Kembali ke daftar anggota</Link>
-                <h1 class="mt-3 text-2xl font-bold text-primary">{{ editing ? 'Edit Anggota' : 'Tambah Anggota' }}</h1>
+                <h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit Anggota' : 'Tambah Anggota' }}</h1>
                 <p class="mt-1 text-on-surface-variant">{{ editing ? 'Perbarui identitas dan data pendukung anggota.' : 'Lengkapi identitas dan data pendukung anggota.' }}</p>
             </header>
 

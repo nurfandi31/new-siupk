@@ -6,6 +6,7 @@ import AppButton from '../../../../Components/AppButton.vue';
 import AppCard from '../../../../Components/AppCard.vue';
 import AppCheckbox from '../../../../Components/AppCheckbox.vue';
 import AppDatePicker from '../../../../Components/AppDatePicker.vue';
+import AppIconButton from '../../../../Components/AppIconButton.vue';
 import AppInput from '../../../../Components/AppInput.vue';
 import AppModal from '../../../../Components/AppModal.vue';
 import SmartSelect from '../../../../Components/SmartSelect.vue';
@@ -184,17 +185,18 @@ function submitResetTraining() {
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header class="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
-                <div>
-                    <Link :href="`/admin/tenants/${tenant.row_id}`" class="text-sm font-semibold text-primary">
-                        ← Kembali ke detail tenant
+                <div class="space-y-3">
+                    <Link :href="`/admin/tenants/${tenant.row_id}`" class="inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:text-primary-container">
+                        <AppIconButton name="arrow_back" size="sm" tone="primary" rounded="full" aria-label="Kembali" />
+                        <span>Kembali ke detail tenant</span>
                     </Link>
-                    <div class="mt-2 flex flex-wrap items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-3">
                         <h1 class="text-2xl font-bold text-primary">Data Purifier &amp; Siklus Pelatihan</h1>
                         <AppBadge :tone="tenant.is_training_mode ? 'warning' : 'success'">
                             {{ tenant.is_training_mode ? 'Mode Pelatihan' : 'Mode Live' }}
                         </AppBadge>
                     </div>
-                    <p class="mt-1 text-sm text-on-surface-variant">
+                    <p class="text-sm text-on-surface-variant">
                         Tenant: <span class="font-bold text-primary">{{ tenant.name }}</span> ({{ tenant.code }}) · Isolasi dan pembersihan transaksi uji coba secara presisi.
                     </p>
                 </div>
@@ -303,8 +305,8 @@ function submitResetTraining() {
             <!-- Filters -->
             <AppCard>
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                    <AppDatePicker v-model="from" mode="day" label="Dari tanggal" />
-                    <AppDatePicker v-model="to" mode="day" label="Sampai tanggal" />
+                    <AppDatePicker v-model="from" mode="date" label="Dari tanggal" />
+                    <AppDatePicker v-model="to" mode="date" label="Sampai tanggal" />
                     <SmartSelect v-model="category" label="Kategori Data" :options="categoryOptions" />
                     <SmartSelect v-model="source" label="Sumber Jurnal" :options="sourceOptions" />
                     <AppInput
@@ -480,13 +482,13 @@ function submitResetTraining() {
                         </p>
                     </div>
 
-                    <label class="flex items-center gap-2 text-sm text-primary">
+                    <label class="ml-1 flex items-center gap-2 text-sm text-primary">
                         <input
                             v-model="includeReversalPairs"
                             type="checkbox"
                             class="size-4 rounded border-outline-variant accent-primary"
                         />
-                        <span>Hapus juga jurnal pembalik (reversal) terkait secara otomatis</span>
+                        <span class="font-bold uppercase tracking-wider">Hapus juga jurnal pembalik (reversal) terkait secara otomatis</span>
                     </label>
 
                     <div class="flex justify-end gap-2">
@@ -521,7 +523,7 @@ function submitResetTraining() {
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="text-xs font-semibold text-primary">
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">
                             Ketik <code class="rounded bg-error-container px-1 py-0.5 text-error font-bold">RESET</code> untuk konfirmasi:
                         </label>
                         <AppInput v-model="resetConfirmText" placeholder="RESET" />

@@ -116,35 +116,35 @@ const social = computed(() => props.settings?.social ?? {});
                             </div>
 
                             <div class="grid gap-4 sm:grid-cols-2">
-                                <div>
-                                    <label class="mb-1 block text-sm font-semibold text-primary">Nama <span class="text-error">*</span></label>
-                                    <input v-model="form.name" type="text" maxlength="120" required placeholder="Nama lengkap" class="w-full rounded-xl border border-outline-variant bg-surface px-3.5 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                                    <p v-if="form.errors.name" class="mt-1 text-xs text-error">{{ form.errors.name }}</p>
+                                <div class="space-y-1.5">
+                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Nama <span class="text-error">*</span></label>
+                                    <input v-model="form.name" type="text" maxlength="120" required placeholder="Nama lengkap" class="h-11 w-full rounded-xl border border-outline-variant bg-surface px-3.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                    <p v-if="form.errors.name" class="ml-1 text-xs text-error">{{ form.errors.name }}</p>
                                 </div>
-                                <div>
-                                    <label class="mb-1 block text-sm font-semibold text-primary">Email</label>
-                                    <input v-model="form.email" type="email" maxlength="255" placeholder="nama@email.com" class="w-full rounded-xl border border-outline-variant bg-surface px-3.5 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                                    <p v-if="form.errors.email" class="mt-1 text-xs text-error">{{ form.errors.email }}</p>
+                                <div class="space-y-1.5">
+                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Email</label>
+                                    <input v-model="form.email" type="email" maxlength="255" placeholder="nama@email.com" class="h-11 w-full rounded-xl border border-outline-variant bg-surface px-3.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                    <p v-if="form.errors.email" class="ml-1 text-xs text-error">{{ form.errors.email }}</p>
                                 </div>
                             </div>
 
                             <div class="grid gap-4 sm:grid-cols-2">
-                                <div>
-                                    <label class="mb-1 block text-sm font-semibold text-primary">Telepon</label>
-                                    <input v-model="form.phone" type="text" maxlength="40" placeholder="08xx-xxxx-xxxx" class="w-full rounded-xl border border-outline-variant bg-surface px-3.5 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                                    <p v-if="form.errors.phone" class="mt-1 text-xs text-error">{{ form.errors.phone }}</p>
+                                <div class="space-y-1.5">
+                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Telepon</label>
+                                    <input v-model="form.phone" type="text" maxlength="40" placeholder="08xx-xxxx-xxxx" class="h-11 w-full rounded-xl border border-outline-variant bg-surface px-3.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                    <p v-if="form.errors.phone" class="ml-1 text-xs text-error">{{ form.errors.phone }}</p>
                                 </div>
-                                <div>
-                                    <label class="mb-1 block text-sm font-semibold text-primary">Subjek</label>
-                                    <input v-model="form.subject" type="text" maxlength="200" placeholder="Perihal pesan" class="w-full rounded-xl border border-outline-variant bg-surface px-3.5 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                                    <p v-if="form.errors.subject" class="mt-1 text-xs text-error">{{ form.errors.subject }}</p>
+                                <div class="space-y-1.5">
+                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Subjek</label>
+                                    <input v-model="form.subject" type="text" maxlength="200" placeholder="Perihal pesan" class="h-11 w-full rounded-xl border border-outline-variant bg-surface px-3.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                    <p v-if="form.errors.subject" class="ml-1 text-xs text-error">{{ form.errors.subject }}</p>
                                 </div>
                             </div>
 
-                            <div>
-                                <label class="mb-1 block text-sm font-semibold text-primary">Pesan <span class="text-error">*</span></label>
+                            <div class="space-y-1.5">
+                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Pesan <span class="text-error">*</span></label>
                                 <textarea v-model="form.message" rows="5" maxlength="5000" required placeholder="Tuliskan pesan Anda di sini..." class="w-full rounded-xl border border-outline-variant bg-surface px-3.5 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
-                                <p v-if="form.errors.message" class="mt-1 text-xs text-error">{{ form.errors.message }}</p>
+                                <p v-if="form.errors.message" class="ml-1 text-xs text-error">{{ form.errors.message }}</p>
                             </div>
 
                             <div class="flex justify-end pt-2">

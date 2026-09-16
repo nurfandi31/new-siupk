@@ -325,11 +325,10 @@ onBeforeUnmount(() => {
 });
 
 const todayActionLabel = computed(() => props.mode === 'year' ? 'Tahun ini' : props.mode === 'month' ? 'Bulan ini' : 'Hari ini');
-const triggerIcon = computed(() => props.mode === 'year' ? 'event' : 'calendar_month');
 </script>
 
 <template>
-    <div ref="root" class="space-y-2">
+    <div ref="root" class="space-y-1.5">
         <label v-if="!hideLabel" :for="inputId" class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ label }}</label>
         <label v-else :for="inputId" class="sr-only">{{ label }}</label>
         <div class="relative">
@@ -337,8 +336,8 @@ const triggerIcon = computed(() => props.mode === 'year' ? 'event' : 'calendar_m
                 :id="inputId"
                 ref="trigger"
                 type="button"
-                class="flex h-14 w-full items-center rounded-xl border bg-surface-container-lowest px-4 text-left text-primary transition-all duration-150 active:scale-[0.99] focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
-                :class="[icon && 'pl-12', error ? 'border-error' : 'border-outline-variant']"
+                class="flex h-11 w-full items-center gap-2 rounded-xl border bg-surface-container-lowest px-3.5 text-left text-base text-primary transition-all duration-150 active:scale-[0.99] focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
+                :class="[error ? 'border-error' : 'border-outline-variant', clearable && model && 'pr-9']"
                 :disabled="disabled"
                 :aria-expanded="open"
                 :aria-controls="`${inputId}-calendar`"
@@ -347,9 +346,18 @@ const triggerIcon = computed(() => props.mode === 'year' ? 'event' : 'calendar_m
                 @click="open ? closeCalendar() : openCalendar()"
                 @keydown.esc="closeCalendar(true)"
             >
-                <AppIcon v-if="icon" :name="icon" class="pointer-events-none absolute left-4 text-xl text-outline" />
-                <span :class="displayValue ? 'text-primary' : 'text-outline'">{{ displayValue || (placeholder ?? `Pilih ${label.toLowerCase()}`) }}</span>
-                <AppIcon :name="triggerIcon" class="pointer-events-none absolute right-4 text-xl text-outline transition-transform duration-200" :class="{ 'scale-110 text-primary': open }" />
+                <AppIcon v-if="icon" :name="icon" class="shrink-0 text-lg text-outline" />
+                <span class="min-w-0 flex-1 truncate" :class="displayValue ? 'text-primary' : 'text-outline'">{{ displayValue || (placeholder ?? `Pilih ${label.toLowerCase()}`) }}</span>
+                <button
+                    v-if="clearable && model"
+                    type="button"
+                    tabindex="-1"
+                    class="absolute right-1.5 grid h-7 w-7 place-items-center rounded-full text-outline transition hover:bg-surface-container-low hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary-container/20 active:scale-90"
+                    aria-label="Hapus tanggal"
+                    @click.stop="clear"
+                >
+                    <AppIcon name="close" class="text-base" />
+                </button>
             </button>
 
             <Teleport to="body">

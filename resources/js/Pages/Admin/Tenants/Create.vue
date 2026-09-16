@@ -93,9 +93,8 @@ function submit() {
     <Head title="Tambah Tenant" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header class="mb-6">
-                <Link href="/admin/tenants" class="text-sm font-semibold text-primary">← Kembali ke daftar tenant</Link>
-                <h1 class="mt-3 text-2xl font-bold text-primary">Tambah Tenant</h1>
+            <header>
+                <h1 class="text-2xl font-bold text-primary">Tambah Tenant</h1>
                 <p class="mt-1 text-on-surface-variant">Tenant dibuat bersama desa dari kecamatan terpilih dan pengguna pertama.</p>
             </header>
 

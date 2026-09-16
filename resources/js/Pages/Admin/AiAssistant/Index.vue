@@ -11,6 +11,7 @@ import AppIconButton from '../../../Components/AppIconButton.vue';
 import AppInput from '../../../Components/AppInput.vue';
 import { useConfirm } from '../../../composables/useConfirm';
 import AppModal from '../../../Components/AppModal.vue';
+import AppPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppSwitch from '../../../Components/AppSwitch.vue';
 import AppTextarea from '../../../Components/AppTextarea.vue';
 import AppTabs from '../../../Components/AppTabs.vue';
@@ -788,15 +789,14 @@ onBeforeUnmount(() => {
     <Head title="AI Assistant Control Panel" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">AI Assistant Control Panel</h1>
-                    <p class="mt-1 text-on-surface-variant">Kelola AI Personas, Tools, Knowledge Base (RAG), Live Test Chat, dan Monitor Aktivitas Log In-Process.</p>
-                </div>
-                <div class="flex items-center gap-3">
+            <AppPageHeader
+                title="AI Assistant Control Panel"
+                subtitle="Kelola AI Personas, Tools, Knowledge Base (RAG), Live Test Chat, dan Monitor Aktivitas Log In-Process."
+            >
+                <template #actions>
                     <AppBadge tone="success">In-process</AppBadge>
-                </div>
-            </header>
+                </template>
+            </AppPageHeader>
 
             <!-- Flash success -->
             <AppCard v-if="flash">
@@ -957,8 +957,8 @@ onBeforeUnmount(() => {
                                 :clearable="false"
                             />
                         </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-bold uppercase tracking-wider text-primary">File</label>
+                        <div class="space-y-1.5">
+                            <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">File</label>
                             <label
                                 class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-outline-variant bg-surface-container-lowest px-4 py-6 text-center transition-colors hover:border-primary"
                                 :class="uploadDragOver ? 'border-primary bg-primary/5' : ''"
@@ -1186,8 +1186,8 @@ onBeforeUnmount(() => {
                     <AppInput v-model="personaModal.data.name" label="Nama" placeholder="Contoh: Koperasi Assistant" />
                     <AppInput v-model="personaModal.data.slug" label="Slug" placeholder="Contoh: koperasi-assistant (otomatis dari nama jika kosong)" />
                     <AppTextarea v-model="personaModal.data.system_prompt" label="System Prompt" placeholder="Deskripsikan kepribadian, gaya bahasa, dan batasan persona ini…" :rows="8" />
-                    <div>
-                        <label class="mb-2 block text-sm font-bold uppercase tracking-wider text-primary">Tool Scope (kosongkan = semua tools)</label>
+                    <div class="space-y-1.5">
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tool Scope (kosongkan = semua tools)</label>
                         <div class="grid max-h-56 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-3 sm:grid-cols-2">
                             <label v-for="t in tools" :key="t.id" class="flex items-start gap-2 rounded-lg p-2 hover:bg-surface-container-low">
                                 <AppCheckbox

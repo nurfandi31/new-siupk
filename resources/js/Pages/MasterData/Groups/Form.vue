@@ -159,7 +159,7 @@ searchMembers();
     <Head :title="editing ? 'Edit Kelompok' : 'Tambah Kelompok'" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
-            <header class="mb-6"><Link :href="path" class="text-sm font-semibold text-primary">← Kembali ke daftar kelompok</Link><h1 class="mt-3 text-2xl font-bold text-primary">{{ editing ? 'Edit Kelompok' : 'Tambah Kelompok' }}</h1><p class="mt-1 text-on-surface-variant">Kelola identitas, anggota, dan pengurus kelompok.</p></header>
+            <header class="mb-6"><h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit Kelompok' : 'Tambah Kelompok' }}</h1><p class="mt-1 text-on-surface-variant">Kelola identitas, anggota, dan pengurus kelompok.</p></header>
             <AppCard>
                 <form class="space-y-5" @submit.prevent="submit">
                     <section>

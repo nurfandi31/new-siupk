@@ -591,8 +591,8 @@ const sourceLabel = {
                 <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
                     <AppDatePicker v-model="selectedDate" label="Tanggal Jatuh Tempo" />
                     <div class="flex flex-wrap items-end gap-2">
-                        <AppButton variant="secondary" class="h-14" @click="selectSendable">Pilih ber-nomor</AppButton>
-                        <AppButton variant="ghost" class="h-14" @click="clearSelection">Kosongkan</AppButton>
+                        <AppButton variant="secondary" class="h-11" @click="selectSendable">Pilih ber-nomor</AppButton>
+                        <AppButton variant="ghost" class="h-11" @click="clearSelection">Kosongkan</AppButton>
                     </div>
                 </div>
             </AppCard>

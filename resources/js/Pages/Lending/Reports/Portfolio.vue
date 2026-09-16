@@ -121,7 +121,7 @@ const villageSections = computed(() => {
 
             <AppCard class="p-4">
                 <div class="grid gap-3 sm:grid-cols-[200px_1fr_auto] sm:items-end">
-                    <AppDatePicker v-model="asOf" mode="day" label="Posisi per" />
+                    <AppDatePicker v-model="asOf" mode="date" label="Posisi per" />
                     <div>
                         <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Filter</p>
                         <AppFilterPill

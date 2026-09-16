@@ -45,8 +45,7 @@ function submit() {
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header>
-                <Link :href="`/admin/tenants/${tenant.row_id}/users`" class="text-sm font-semibold text-primary">← Users {{ tenant.name }}</Link>
-                <h1 class="mt-3 text-2xl font-bold text-primary">{{ editing ? 'Edit User' : 'Tambah User' }}</h1>
+                <h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit User' : 'Tambah User' }}</h1>
             </header>
 
             <AppCard>

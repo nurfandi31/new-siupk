@@ -10,6 +10,7 @@ import AppEmptyState from '../../../Components/AppEmptyState.vue';
 import AppIcon from '../../../Components/AppIcon.vue';
 import AppInput from '../../../Components/AppInput.vue';
 import AppModal from '../../../Components/AppModal.vue';
+import AppPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppTextarea from '../../../Components/AppTextarea.vue';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
 
@@ -247,35 +248,39 @@ onBeforeUnmount(stopPolling);
     <Head title="WhatsApp Platform" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                    <p class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-on-surface-variant">
-                        <AppIcon name="chat" class="text-primary" />
-                        Platform
-                    </p>
-                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">WhatsApp Platform</h1>
-                    <p class="mt-1 text-sm text-on-surface-variant">
-                        Kelola nomor WhatsApp platform untuk OTP lupa password dan pengiriman system-level.
-                    </p>
-                </div>
-                <AppBadge :tone="props.configured ? 'success' : 'warning'">
-                    {{ props.configured ? 'Gateway Terkonfigurasi' : 'Gateway Belum Dikonfigurasi' }}
-                </AppBadge>
-            </header>
+            <AppPageHeader
+                title="WhatsApp Platform"
+                subtitle="Kelola nomor WhatsApp platform untuk OTP lupa password dan pengiriman system-level."
+            >
+                <template #actions>
+                    <AppBadge :tone="props.configured ? 'success' : 'warning'">
+                        {{ props.configured ? 'Gateway Terkonfigurasi' : 'Gateway Belum Dikonfigurasi' }}
+                    </AppBadge>
+                </template>
+            </AppPageHeader>
 
             <div class="grid gap-4 sm:grid-cols-3">
-                <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
-                    <p class="text-sm text-on-surface-variant">Total Instance</p>
-                    <p class="mt-1 text-2xl font-bold text-primary">{{ stats.total }}</p>
-                </div>
-                <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
-                    <p class="text-sm text-on-surface-variant">Instance Aktif</p>
-                    <p class="mt-1 text-2xl font-bold text-primary">{{ stats.active }}</p>
-                </div>
-                <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
-                    <p class="text-sm text-on-surface-variant">Terhubung</p>
-                    <p class="mt-1 text-2xl font-bold text-primary">{{ stats.connected }}</p>
-                </div>
+                <AppCard>
+                    <div class="flex items-start justify-between gap-3">
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Instance</p>
+                        <AppIcon name="devices" tone="primary" container-size="9" container-shape="pill" />
+                    </div>
+                    <p class="mt-3 text-2xl font-extrabold text-primary">{{ stats.total }}</p>
+                </AppCard>
+                <AppCard>
+                    <div class="flex items-start justify-between gap-3">
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Instance Aktif</p>
+                        <AppIcon name="toggle_on" tone="info" container-size="9" container-shape="pill" />
+                    </div>
+                    <p class="mt-3 text-2xl font-extrabold text-primary">{{ stats.active }}</p>
+                </AppCard>
+                <AppCard>
+                    <div class="flex items-start justify-between gap-3">
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Terhubung</p>
+                        <AppIcon name="link" tone="success" container-size="9" container-shape="pill" />
+                    </div>
+                    <p class="mt-3 text-2xl font-extrabold text-secondary">{{ stats.connected }}</p>
+                </AppCard>
             </div>
 
             <AppCard bordered>

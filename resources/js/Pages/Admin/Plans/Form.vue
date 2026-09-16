@@ -45,8 +45,7 @@ function submit() {
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header>
-                <Link href="/admin/plans" class="text-sm font-semibold text-primary">← Daftar plan</Link>
-                <h1 class="mt-3 text-2xl font-bold text-primary">{{ editing ? 'Edit Plan' : 'Tambah Plan' }}</h1>
+                <h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit Plan' : 'Tambah Plan' }}</h1>
             </header>
 
             <AppCard>

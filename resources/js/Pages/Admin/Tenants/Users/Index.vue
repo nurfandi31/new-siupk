@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import AppBadge from '../../../../Components/AppBadge.vue';
 import AppButton from '../../../../Components/AppButton.vue';
 import AppCard from '../../../../Components/AppCard.vue';
+import AppIconButton from '../../../../Components/AppIconButton.vue';
 import SmartDataTable from '../../../../Components/SmartDataTable.vue';
 import AdminLayout from '../../../../Layouts/AdminLayout.vue';
 
@@ -64,11 +65,16 @@ const columns = [
     <Head :title="`Users · ${tenant.name}`" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <Link :href="`/admin/tenants/${tenant.row_id}`" class="text-sm font-semibold text-primary">← {{ tenant.name }}</Link>
-                    <h1 class="mt-3 text-2xl font-bold text-primary">Pengguna Tenant</h1>
-                    <p class="mt-1 text-on-surface-variant">{{ tenant.code }}</p>
+            <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+                <div class="space-y-3">
+                    <Link :href="`/admin/tenants/${tenant.row_id}`" class="inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:text-primary-container">
+                        <AppIconButton name="arrow_back" size="sm" tone="primary" rounded="full" aria-label="Kembali" />
+                        <span>{{ tenant.name }}</span>
+                    </Link>
+                    <div>
+                        <h1 class="text-2xl font-bold text-primary">Pengguna Tenant</h1>
+                        <p class="mt-1 text-on-surface-variant">{{ tenant.code }}</p>
+                    </div>
                 </div>
                 <Link :href="`/admin/tenants/${tenant.row_id}/users/create`"><AppButton icon="person_add">Tambah User</AppButton></Link>
             </header>
@@ -84,7 +90,7 @@ const columns = [
                         :per-page="perPage"
                         :sort="sort"
                         :direction="direction"
-                        search-placeholder="Nama, username, email"
+
                         empty-title="Belum ada pengguna"
                         empty-description="Tambahkan user untuk tenant ini."
                     >

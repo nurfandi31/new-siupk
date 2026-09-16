@@ -24,7 +24,7 @@ function onChange(event) {
 </script>
 
 <template>
-    <div class="space-y-2">
+    <div class="space-y-1.5">
         <label :for="inputId" class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ label }}</label>
         <input
             :id="inputId"
@@ -33,7 +33,7 @@ function onChange(event) {
             :aria-invalid="Boolean(error)"
             :aria-describedby="error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined"
             :key="String(model)"
-            class="block w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm text-on-surface transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none file:mr-3 file:rounded-full file:border-0 file:bg-primary-container file:px-4 file:py-1.5 file:text-sm file:font-semibold file:text-on-primary-container"
+            class="block w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-base text-primary transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none file:mr-3 file:rounded-full file:border-0 file:bg-primary-container file:px-4 file:py-1.5 file:text-sm file:font-semibold file:text-on-primary-container"
             :class="error && 'border-error'"
             v-bind="$attrs"
             @change="onChange"

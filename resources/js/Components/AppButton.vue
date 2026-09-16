@@ -25,9 +25,9 @@ const variants = {
 };
 
 const sizes = {
-    compact: 'min-h-10 px-3 text-sm',
-    default: 'min-h-12 px-5',
-    large: 'min-h-14 px-6 text-lg',
+    compact: 'min-h-9 px-3 text-sm',
+    default: 'min-h-11 px-4',
+    large: 'min-h-12 px-5 text-lg',
 };
 </script>
 
@@ -35,14 +35,14 @@ const sizes = {
     <button
         :type="type"
         :disabled="disabled || loading"
-        class="inline-flex items-center justify-center gap-2 rounded-xl font-bold transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-lowest disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-bold transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-lowest disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
         :class="[variants[variant] || variants.primary, iconOnly ? 'aspect-square p-0' : sizes[size] || sizes.default]"
         :aria-busy="loading"
         :aria-label="ariaLabel || undefined"
         v-bind="$attrs"
     >
         <span v-if="loading" class="size-5 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true" />
-        <AppIcon v-else-if="icon" :name="icon" class="text-xl leading-none" />
+        <AppIcon v-else-if="icon" :name="icon" class="text-lg leading-none" />
         <slot />
     </button>
 </template>

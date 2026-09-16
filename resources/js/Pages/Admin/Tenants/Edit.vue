@@ -136,31 +136,36 @@ function submit() {
 <template>
     <Head title="Edit Tenant" />
     <AdminLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
-            <header>
-                <Link :href="`/admin/tenants/${tenant.row_id}`" class="text-sm font-semibold text-primary">← Kembali</Link>
-                <h1 class="mt-3 text-2xl font-bold text-primary">Edit Tenant</h1>
-                <p class="mt-1 text-on-surface-variant">{{ tenant.code }} · {{ tenant.name }}</p>
+        <div class="mx-auto max-w-5xl space-y-6">
+            <header class="flex flex-col gap-3">
+                <div>
+                    <h1 class="text-2xl font-bold text-primary">Edit Tenant</h1>
+                    <p class="mt-1 text-on-surface-variant">{{ tenant.code }} · {{ tenant.name }}</p>
+                </div>
             </header>
 
             <AppCard>
                 <form class="space-y-5" @submit.prevent="submit">
-                    <AppInput v-model="form.name" label="Nama Tenant" required :error="form.errors.name" />
-                    <SmartSelect v-model="form.status" label="Status" :options="statusOptions" required :error="form.errors.status" />
-                    <AppInput v-model="form.timezone" label="Zona waktu" :error="form.errors.timezone" />
+                    <!-- Identitas -->
+                    <section class="space-y-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Identitas</h2>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <AppInput v-model="form.name" label="Nama Tenant" required :error="form.errors.name" />
+                            <SmartSelect v-model="form.status" label="Status" :options="statusOptions" required :error="form.errors.status" />
+                        </div>
+                        <AppInput v-model="form.timezone" label="Zona waktu" :error="form.errors.timezone" />
+                    </section>
 
                     <!-- Custom Domains Section -->
-                    <div class="border-t border-outline-variant pt-5">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <h2 class="font-semibold text-primary">Custom Domain</h2>
-                                <p class="text-xs text-on-surface-variant">
-                                    Daftarkan domain atau subdomain untuk tenant ini (misal: <code>bumdesma-sukamaju.id</code> atau <code>app.sukamaju.desa.id</code>). Arahkan DNS domain ke IP server siupk.
-                                </p>
-                            </div>
+                    <section class="space-y-3 border-t border-outline-variant pt-5">
+                        <div>
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Custom Domain</h2>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">
+                                Daftarkan domain atau subdomain (misal <code>bumdesma-sukamaju.id</code>). Arahkan DNS ke IP server siupk.
+                            </p>
                         </div>
 
-                        <div class="mt-3 flex gap-2">
+                        <div class="flex gap-2">
                             <AppInput
                                 v-model="domainInput"
                                 label="Tambah Domain"
@@ -170,11 +175,11 @@ function submit() {
                                 @keydown.enter.prevent="addDomain"
                             />
                             <div class="flex items-end pb-0.5">
-                                <AppButton type="button" variant="secondary" icon="add" @click="addDomain">Tambah</AppButton>
+                                <AppButton type="button" variant="primary" icon="add" @click="addDomain">Tambah</AppButton>
                             </div>
                         </div>
 
-                        <div v-if="form.custom_domains.length > 0" class="mt-3 flex flex-wrap gap-2">
+                        <div v-if="form.custom_domains.length > 0" class="flex flex-wrap gap-2">
                             <div
                                 v-for="(dom, idx) in form.custom_domains"
                                 :key="dom"
@@ -193,34 +198,38 @@ function submit() {
                                 />
                             </div>
                         </div>
-                        <p v-else class="mt-2 text-xs italic text-on-surface-variant">
+                        <p v-else class="text-xs italic text-on-surface-variant">
                             Belum ada custom domain yang didaftarkan.
                         </p>
 
-                        <div v-if="Object.keys(form.errors).some(k => k.startsWith('custom_domains.'))" class="mt-2 space-y-1">
+                        <div v-if="Object.keys(form.errors).some(k => k.startsWith('custom_domains.'))" class="space-y-1">
                             <template v-for="(err, key) in form.errors" :key="key">
                                 <p v-if="key.startsWith('custom_domains.')" class="text-xs font-semibold text-error">
                                     {{ err }}
                                 </p>
                             </template>
                         </div>
-                    </div>
+                    </section>
 
                     <!-- Wilayah Kecamatan Section -->
-                    <div class="border-t border-outline-variant pt-5">
-                        <h2 class="font-semibold text-primary">Wilayah Kecamatan (district_code)</h2>
-                        <p class="text-xs text-on-surface-variant mb-4">Pilih kecamatan untuk mengasosiasikan tenant dengan kode wilayah resmi Indonesia.</p>
-                        <div class="grid gap-4 xl:grid-cols-3">
+                    <section class="space-y-3 border-t border-outline-variant pt-5">
+                        <div>
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Wilayah Kecamatan</h2>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">Asosiasi tenant dengan kode wilayah resmi Indonesia.</p>
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-3">
                             <SmartSelect v-model="form.province_code" label="Provinsi" :options="provinces.map((item) => ({ value: item.code, label: item.name }))" placeholder="Pilih provinsi" :error="form.errors.province_code" :loading="loading" searchable />
                             <SmartSelect v-model="form.regency_code" label="Kabupaten/Kota" :options="regencies.map((item) => ({ value: item.code, label: item.name }))" placeholder="Pilih kabupaten/kota" :error="form.errors.regency_code" :disabled="!form.province_code" :loading="loading" searchable />
                             <SmartSelect v-model="form.district_code" label="Kecamatan" :options="districts.map((item) => ({ value: item.code, label: item.name }))" placeholder="Pilih kecamatan" :error="form.errors.district_code" :disabled="!form.regency_code" :loading="loading" searchable />
                         </div>
-                    </div>
+                    </section>
 
                     <!-- Titik Koordinat & Peta Lokasi Section -->
-                    <div class="border-t border-outline-variant pt-5">
-                        <h2 class="font-semibold text-primary">Titik Koordinat & Peta Lokasi</h2>
-                        <p class="text-xs text-on-surface-variant mb-4">Tentukan titik koordinat kantor / wilayah tenant untuk keperluan pemetaan konsolidasi.</p>
+                    <section class="space-y-3 border-t border-outline-variant pt-5">
+                        <div>
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Titik Koordinat & Peta Lokasi</h2>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">Tentukan titik koordinat kantor / wilayah tenant.</p>
+                        </div>
                         <LocationMapPicker
                             v-model:latitude="form.map_latitude"
                             v-model:longitude="form.map_longitude"
@@ -228,9 +237,9 @@ function submit() {
                             :regency-center="regencyCenter"
                             :error="form.errors.map_latitude || form.errors.map_longitude"
                         />
-                    </div>
+                    </section>
 
-                    <div class="flex justify-end gap-3 pt-2">
+                    <div class="flex justify-end gap-3 border-t border-outline-variant pt-5">
                         <Link :href="`/admin/tenants/${tenant.row_id}`"><AppButton variant="secondary">Batal</AppButton></Link>
                         <AppButton type="submit" :loading="form.processing" icon="save">Simpan Perubahan</AppButton>
                     </div>

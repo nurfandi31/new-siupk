@@ -1,6 +1,7 @@
 <script setup>
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -90,16 +91,14 @@ async function removeSetting(key) {
     <Head title="Pengaturan Platform" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-primary">Pengaturan Platform</h1>
-                    <p class="mt-1 text-on-surface-variant">
-                        Key-value store tingkat instalasi yang berlaku untuk semua tenant — kredensial payment
-                        gateway, template WhatsApp, dan konfigurasi integrasi lainnya.
-                    </p>
-                </div>
-                <AppButton icon="add" @click="createOpen = !createOpen">{{ createOpen ? 'Tutup' : 'Setting Baru' }}</AppButton>
-            </header>
+            <AdminPageHeader
+                title="Pengaturan Platform"
+                subtitle="Key-value store tingkat instalasi yang berlaku untuk semua tenant — kredensial payment gateway, template WhatsApp, dan konfigurasi integrasi lainnya."
+            >
+                <template #actions>
+                    <AppButton icon="add" @click="createOpen = !createOpen">{{ createOpen ? 'Tutup' : 'Setting Baru' }}</AppButton>
+                </template>
+            </AdminPageHeader>
 
             <!-- KPI -->
             <div class="grid gap-4 sm:grid-cols-2">
@@ -153,7 +152,7 @@ async function removeSetting(key) {
                         :search="search"
                         :per-page="perPage"
                         search-label="Cari key"
-                        search-placeholder="misal. tripay"
+                        search-placeholder="…"
                         empty-title="Belum ada setting"
                         empty-description="Setting akan muncul otomatis saat fitur pertama kali menyimpan konfigurasi."
                     >
