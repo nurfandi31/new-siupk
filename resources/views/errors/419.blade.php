@@ -13,9 +13,9 @@
     <circle cx="120" cy="100" r="65" stroke="#006D3D" stroke-opacity="0.12" stroke-width="1.5" stroke-dasharray="4 4" />
     <g filter="url(#drop-shadow-419)">
         <rect x="75" y="40" width="90" height="120" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
-        <path d="M96 60H144M96 140H144" stroke="#002746" stroke-width="3.5" stroke-linecap="round" />
-        <path d="M102 60C102 85 116 95 120 100C124 95 138 85 138 60H102Z" fill="#002746" fill-opacity="0.08" stroke="#002746" stroke-width="2" />
-        <path d="M102 140C102 115 116 105 120 100C124 105 138 115 138 140H102Z" fill="#006D3D" fill-opacity="0.2" stroke="#002746" stroke-width="2" />
+        <path d="M96 60H144M96 140H144" stroke="#059669" stroke-width="3.5" stroke-linecap="round" />
+        <path d="M102 60C102 85 116 95 120 100C124 95 138 85 138 60H102Z" fill="#059669" fill-opacity="0.08" stroke="#059669" stroke-width="2" />
+        <path d="M102 140C102 115 116 105 120 100C124 105 138 115 138 140H102Z" fill="#006D3D" fill-opacity="0.2" stroke="#059669" stroke-width="2" />
         <circle cx="120" cy="102" r="1.5" fill="#006D3D" />
         <circle cx="120" cy="110" r="1.5" fill="#006D3D" />
         <circle cx="120" cy="118" r="1.5" fill="#006D3D" />
@@ -75,3 +75,5 @@
         <span>Dashboard</span>
     </a>
 @endsection
+
+

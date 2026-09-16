@@ -17,7 +17,7 @@
         <path d="M78 120C78 96.804 96.804 78 120 78" stroke="#006D3D" stroke-width="10" stroke-linecap="round" />
         <path d="M120 78C135 78 148 86 156 98" stroke="#D97706" stroke-width="10" stroke-linecap="round" />
         <path d="M156 98C160 104 162 112 162 120" stroke="#BA1A1A" stroke-width="10" stroke-linecap="round" />
-        <circle cx="120" cy="120" r="7" fill="#002746" />
+        <circle cx="120" cy="120" r="7" fill="#059669" />
         <line x1="120" y1="120" x2="148" y2="94" stroke="#BA1A1A" stroke-width="3" stroke-linecap="round" />
     </g>
     <g transform="translate(155, 38)">
@@ -68,3 +68,5 @@
         <span>Ke Dashboard</span>
     </a>
 @endsection
+
+

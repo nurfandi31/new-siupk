@@ -9,11 +9,11 @@
 
 @section('illustration')
 <svg width="240" height="200" viewBox="0 0 240 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="120" cy="100" r="85" fill="#002746" fill-opacity="0.04" />
-    <circle cx="120" cy="100" r="65" stroke="#002746" stroke-opacity="0.1" stroke-width="1.5" stroke-dasharray="4 4" />
+    <circle cx="120" cy="100" r="85" fill="#059669" fill-opacity="0.04" />
+    <circle cx="120" cy="100" r="65" stroke="#059669" stroke-opacity="0.1" stroke-width="1.5" stroke-dasharray="4 4" />
     <g filter="url(#drop-shadow-404)">
         <rect x="48" y="35" width="144" height="130" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
-        <rect x="62" y="55" width="60" height="8" rx="4" fill="#002746" fill-opacity="0.2" />
+        <rect x="62" y="55" width="60" height="8" rx="4" fill="#059669" fill-opacity="0.2" />
         <rect x="62" y="70" width="40" height="6" rx="3" fill="#64748B" fill-opacity="0.2" />
         <rect x="62" y="90" width="116" height="58" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1" />
         <path d="M72 132L94 112L112 122L140 100L168 116" stroke="#006D3D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -21,12 +21,12 @@
         <circle cx="140" cy="100" r="3.5" fill="#97F3B5" stroke="#006D3D" stroke-width="2" />
     </g>
     <g transform="translate(130, 85)">
-        <circle cx="28" cy="28" r="26" fill="#002746" fill-opacity="0.08" />
-        <circle cx="28" cy="28" r="22" fill="#FFFFFF" stroke="#002746" stroke-width="3" />
+        <circle cx="28" cy="28" r="26" fill="#059669" fill-opacity="0.08" />
+        <circle cx="28" cy="28" r="22" fill="#FFFFFF" stroke="#059669" stroke-width="3" />
         <circle cx="28" cy="28" r="16" fill="#D1E4FF" fill-opacity="0.4" />
         <path d="M28 16L32 28L28 40L24 28Z" fill="#BA1A1A" />
-        <circle cx="28" cy="28" r="3.5" fill="#002746" />
-        <line x1="44" y1="44" x2="62" y2="62" stroke="#002746" stroke-width="4.5" stroke-linecap="round" />
+        <circle cx="28" cy="28" r="3.5" fill="#059669" />
+        <line x1="44" y1="44" x2="62" y2="62" stroke="#059669" stroke-width="4.5" stroke-linecap="round" />
     </g>
     <g transform="translate(42, 28)">
         <rect width="36" height="24" rx="6" fill="#BA1A1A" />
@@ -81,3 +81,5 @@
         <span>Beranda</span>
     </a>
 @endsection
+
+

@@ -13,7 +13,7 @@
     <circle cx="120" cy="100" r="65" stroke="#D97706" stroke-opacity="0.15" stroke-width="1.5" stroke-dasharray="4 4" />
     <g filter="url(#drop-shadow-402)">
         <rect x="45" y="55" width="150" height="96" rx="14" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
-        <rect x="45" y="75" width="150" height="20" fill="#002746" />
+        <rect x="45" y="75" width="150" height="20" fill="#059669" />
         <rect x="62" y="105" width="22" height="16" rx="3" fill="#D97706" fill-opacity="0.25" stroke="#D97706" stroke-width="1.2" />
         <line x1="62" y1="113" x2="84" y2="113" stroke="#D97706" stroke-width="1" />
         <line x1="73" y1="105" x2="73" y2="121" stroke="#D97706" stroke-width="1" />
@@ -68,3 +68,5 @@
         <span>Ke Dashboard</span>
     </a>
 @endsection
+
+

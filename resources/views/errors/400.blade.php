@@ -18,7 +18,7 @@
         <rect x="55" y="45" width="130" height="110" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
         
         <!-- Code syntax lines -->
-        <rect x="70" y="65" width="40" height="8" rx="4" fill="#002746" fill-opacity="0.2" />
+        <rect x="70" y="65" width="40" height="8" rx="4" fill="#059669" fill-opacity="0.2" />
         <rect x="115" y="65" width="50" height="8" rx="4" fill="#BA1A1A" fill-opacity="0.3" />
         
         <!-- Error snippet box -->
@@ -80,3 +80,6 @@
         <span>Halaman Sebelumnya</span>
     </button>
 @endsection
+
+
+

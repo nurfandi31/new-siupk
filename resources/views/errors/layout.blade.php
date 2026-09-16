@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#002746">
+    <meta name="theme-color" content="#059669">
     <meta name="apple-mobile-web-app-title" content="siupk Next">
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230284c7'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='Arial,sans-serif' font-size='38' font-weight='800' fill='white'%3ES%3C/text%3E%3C/svg%3E">
@@ -28,7 +28,7 @@
     <style>
         :root {
             --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            --color-primary: #002746;
+            --color-primary: #059669;
             --color-primary-deep: #001d36;
             --color-primary-container: #0b3d66;
             --color-on-primary: #ffffff;
@@ -788,3 +788,6 @@
     </script>
 </body>
 </html>
+
+
+
