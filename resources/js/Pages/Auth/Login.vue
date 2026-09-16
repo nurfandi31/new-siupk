@@ -1,7 +1,6 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import gsap from 'gsap';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import AppButton from '../../Components/AppButton.vue';
 import AppCheckbox from '../../Components/AppCheckbox.vue';
 import AppIcon from '../../Components/AppIcon.vue';
@@ -10,307 +9,177 @@ import AppInput from '../../Components/AppInput.vue';
 
 const showPassword = ref(false);
 const form = useForm({ identifier: '', password: '', remember: false });
+const page = usePage();
 const formContainerRef = ref(null);
-const leftPanelRef = ref(null);
-const eyeButtonRef = ref(null);
 
 function submit() {
     form.post('/login', {
         onFinish: () => form.reset('password'),
         onError: () => {
-            if (formContainerRef.value) {
-                gsap.fromTo(
-                    formContainerRef.value,
-                    { x: -12 },
-                    {
-                        x: 12,
-                        duration: 0.07,
-                        repeat: 5,
-                        yoyo: true,
-                        ease: 'sine.inOut',
-                        onComplete: () => {
-                            gsap.set(formContainerRef.value, { x: 0 });
-                        },
-                    }
-                );
-            }
+            if (!formContainerRef.value) return;
+            formContainerRef.value.animate(
+                [
+                    { transform: 'translateX(-6px)' },
+                    { transform: 'translateX(6px)' },
+                    { transform: 'translateX(-4px)' },
+                    { transform: 'translateX(4px)' },
+                    { transform: 'translateX(0)' },
+                ],
+                { duration: 240, easing: 'ease-in-out' }
+            );
         },
     });
 }
 
 function togglePasswordVisibility() {
     showPassword.value = !showPassword.value;
-    if (eyeButtonRef.value) {
-        gsap.fromTo(
-            eyeButtonRef.value,
-            { scale: 0.8, rotate: -15 },
-            { scale: 1, rotate: 0, duration: 0.3, ease: 'back.out(2)' }
-        );
-    }
 }
 
-// Interactive Parallax on Left Branding Panel
-function onPanelMouseMove(e) {
-    if (!leftPanelRef.value) return;
-    const rect = leftPanelRef.value.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const deltaX = (x - centerX) / centerX;
-    const deltaY = (y - centerY) / centerY;
-
-    gsap.to('.chart-container', {
-        x: deltaX * 12,
-        y: deltaY * 12,
-        duration: 0.5,
-        ease: 'power2.out',
-    });
-    gsap.to('.ambient-circle-1', {
-        x: deltaX * 25,
-        y: deltaY * 25,
-        duration: 0.6,
-        ease: 'power2.out',
-    });
-    gsap.to('.ambient-circle-2', {
-        x: -deltaX * 20,
-        y: -deltaY * 20,
-        duration: 0.6,
-        ease: 'power2.out',
-    });
-}
-
-function onPanelMouseLeave() {
-    gsap.to('.chart-container, .ambient-circle-1, .ambient-circle-2', {
-        x: 0,
-        y: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-    });
-}
-
-onMounted(() => {
-    nextTick(() => {
-        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-        // Ambient background circles floating loop
-        gsap.to('.ambient-circle-1', {
-            y: -20,
-            x: 10,
-            duration: 6,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut',
-        });
-        gsap.to('.ambient-circle-2', {
-            y: 25,
-            x: -15,
-            duration: 7,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut',
-            delay: 1,
-        });
-
-        // Left branding showcase entrance
-        tl.fromTo(
-            '.brand-header',
-            { opacity: 0, y: -20 },
-            { opacity: 1, y: 0, duration: 0.6 }
-        )
-        .fromTo(
-            '.chart-bar',
-            { scaleY: 0, opacity: 0 },
-            {
-                scaleY: 1,
-                opacity: 1,
-                transformOrigin: 'bottom center',
-                duration: 0.85,
-                stagger: 0.12,
-                ease: 'back.out(1.6)',
-            },
-            '-=0.3'
-        )
-        .fromTo(
-            '.brand-text',
-            { opacity: 0, y: 25 },
-            { opacity: 1, y: 0, duration: 0.7, stagger: 0.12 },
-            '-=0.5'
-        )
-        .fromTo(
-            '.brand-footer',
-            { opacity: 0 },
-            { opacity: 1, duration: 0.5 },
-            '-=0.3'
-        );
-
-        // Continuous Living Chart Breathing Pulse
-        gsap.to('.chart-bar-1', {
-            scaleY: 1.06,
-            transformOrigin: 'bottom center',
-            duration: 3.2,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut',
-        });
-        gsap.to('.chart-bar-2', {
-            scaleY: 1.08,
-            transformOrigin: 'bottom center',
-            duration: 2.8,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut',
-            delay: 0.4,
-        });
-        gsap.to('.chart-bar-3', {
-            scaleY: 1.05,
-            transformOrigin: 'bottom center',
-            duration: 3.6,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut',
-            delay: 0.8,
-        });
-
-        // Right form entrance
-        gsap.fromTo(
-            '.form-anim-item',
-            { opacity: 0, y: 24 },
-            {
-                opacity: 1,
-                y: 0,
-                duration: 0.65,
-                stagger: 0.08,
-                ease: 'power2.out',
-                delay: 0.1,
-            }
-        );
-    });
-});
+const trustItems = [
+    { icon: 'verified_user', label: 'Regulasi PP No. 11/2021' },
+    { icon: 'lock', label: 'Enkripsi & Database Sharding' },
+];
 </script>
 
 <template>
     <Head title="Masuk Ke Portal - siupk Next" />
 
-    <main class="flex min-h-screen overflow-hidden bg-surface font-sans text-on-surface">
-        <!-- Left Branding Showcase Panel -->
-        <section
-            ref="leftPanelRef"
-            class="login-panel relative hidden w-[52%] flex-col justify-between overflow-hidden p-12 lg:flex select-none"
-            aria-label="Informasi siupk"
-            @mousemove="onPanelMouseMove"
-            @mouseleave="onPanelMouseLeave"
-        >
-            <div class="ambient-circle-1 absolute -left-28 top-1/3 size-96 rounded-full border border-on-primary/15 bg-on-primary/[0.03] blur-md pointer-events-none" />
-            <div class="ambient-circle-2 absolute -left-10 top-1/3 size-96 rounded-full border border-on-primary/10 bg-secondary-container/[0.06] blur-md pointer-events-none" />
+    <main class="login-shell flex flex-col bg-surface font-sans text-on-surface lg:flex-row">
+        <!-- ============================================================
+             LEFT BRANDING PANEL
+             - Mobile: compact horizontal strip (~72px)
+             - Desktop (md+): full-height sidebar with bg image & headline
+        ============================================================ -->
+        <aside class="login-brand relative w-full shrink-0 overflow-hidden md:fixed md:inset-y-0 md:left-0 md:flex md:w-[55%] md:flex-col md:justify-between lg:w-[52%] xl:w-[58%]" aria-label="Informasi siupk">
+            <div class="login-brand-bg" aria-hidden="true" />
+            <div class="login-brand-overlay" aria-hidden="true" />
 
-            <!-- Brand Header -->
-            <div class="brand-header relative z-10 flex items-center justify-between">
-                <Link href="/" class="flex items-center gap-3 transition hover:opacity-90 group">
-                    <div class="grid size-12 place-items-center rounded-2xl bg-surface-container-lowest text-primary-container shadow-md transition-transform group-hover:scale-105 duration-300">
-                        <AppIcon name="account_balance" class="text-3xl" />
+            <!-- Top: Logo brand + tombol Beranda -->
+            <header class="login-brand-header relative z-10 flex items-center justify-between gap-3 text-on-primary">
+                <Link href="/" class="flex min-w-0 items-center gap-2.5 transition hover:opacity-90">
+                    <div class="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-container-lowest text-primary shadow-sm md:size-10">
+                        <AppIcon name="account_balance" class="text-lg md:text-xl" />
                     </div>
-                    <div>
-                        <p class="text-xl font-extrabold tracking-tight text-on-primary">siupk <span class="text-secondary-container">Next</span></p>
-                        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-primary-fixed-dim">BUMDesma LKD Financial System</p>
+                    <div class="min-w-0 leading-tight">
+                        <p class="truncate text-sm font-bold tracking-tight md:text-base">
+                            siupk <span class="text-secondary-container">Next</span>
+                        </p>
+                        <p class="hidden truncate text-[10px] font-medium uppercase tracking-[0.18em] text-primary-fixed-dim md:block">
+                            BUMDesma LKD Platform
+                        </p>
                     </div>
                 </Link>
 
-                <Link href="/">
-                    <AppButton variant="ghost" size="compact" class="!text-on-primary hover:!bg-on-primary/10 font-bold" icon="arrow_back">
-                        Kembali ke Beranda
-                    </AppButton>
+                <Link href="/" class="login-back group inline-flex shrink-0 items-center gap-1 rounded-full border border-on-primary/25 bg-on-primary/5 px-2.5 py-1 text-[11px] font-medium text-on-primary backdrop-blur-sm transition hover:bg-on-primary/15 md:px-3 md:py-1.5">
+                    <AppIcon name="arrow_back" class="text-base transition-transform group-hover:-translate-x-0.5" />
+                    <span>Beranda</span>
                 </Link>
-            </div>
+            </header>
 
-            <!-- Central Content Pitch -->
-            <div class="relative z-10 my-auto mx-auto max-w-xl text-center space-y-6">
-                <!-- Living Financial Activity Chart Graphic -->
-                <div class="chart-container mx-auto grid max-w-xs grid-cols-3 items-end gap-4 relative will-change-transform" aria-hidden="true">
-                    <div class="chart-bar chart-bar-1 h-24 rounded-t-2xl bg-on-primary/20 backdrop-blur-sm shadow-sm relative overflow-hidden">
-                        <div class="absolute top-0 inset-x-0 h-1 bg-secondary-container/60" />
-                    </div>
-                    <div class="chart-bar chart-bar-2 h-40 rounded-t-2xl bg-secondary-container/40 backdrop-blur-sm shadow-sm relative overflow-hidden">
-                        <div class="absolute top-0 inset-x-0 h-1.5 bg-secondary-container" />
-                    </div>
-                    <div class="chart-bar chart-bar-3 h-32 rounded-t-2xl bg-on-primary/30 backdrop-blur-sm shadow-sm relative overflow-hidden">
-                        <div class="absolute top-0 inset-x-0 h-1 bg-secondary-container/60" />
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <div class="brand-text inline-flex items-center gap-2 rounded-full bg-on-primary/10 backdrop-blur-sm px-3.5 py-1 text-xs font-bold text-on-primary border border-on-primary/15 shadow-xs">
-                        <span class="size-2 rounded-full bg-secondary-container animate-ping" />
-                        <span>Platform Keuangan SAK EP & DBM</span>
-                    </div>
-
-                    <h2 class="brand-text text-3xl font-black tracking-tight text-on-primary lg:text-4xl leading-snug">
-                        Tata Kelola Keuangan BUMDesma yang Akuntabel
-                    </h2>
-
-                    <p class="brand-text text-sm leading-relaxed text-primary-fixed-dim">
-                        Sistem manajemen pinjaman bergulir, otomatisasi pembukuan jurnal akuntansi, dan integrasi pengawasan Dinas PMD Kabupaten dalam satu pintu.
-                    </p>
-                </div>
-            </div>
-
-            <!-- Brand Footer Badges -->
-            <footer class="brand-footer relative z-10 flex items-center justify-between border-t border-on-primary/10 pt-6 text-xs text-primary-fixed-dim">
-                <span class="font-semibold flex items-center gap-1.5">
-                    <AppIcon name="verified_user" class="text-secondary-container text-base" /> Sesuai Regulasi PP No. 11/2021
-                </span>
-                <span class="font-semibold flex items-center gap-1.5">
-                    <AppIcon name="lock" class="text-secondary-container text-base" /> Enkripsi & Database Sharding
-                </span>
-            </footer>
-        </section>
-
-        <!-- Right Form Panel -->
-        <section class="flex flex-1 flex-col justify-between overflow-y-auto p-6 sm:p-12 lg:p-16 bg-surface-container-lowest">
-            <!-- Mobile Top Header -->
-            <div class="flex items-center justify-between lg:hidden mb-8">
-                <Link href="/" class="flex items-center gap-2">
-                    <div class="grid size-10 place-items-center rounded-xl bg-primary-container text-on-primary shadow-sm">
-                        <AppIcon name="account_balance" class="text-2xl" />
-                    </div>
-                    <span class="text-lg font-black text-primary">siupk Next</span>
-                </Link>
-
-                <Link href="/">
-                    <AppButton variant="ghost" size="compact" icon="arrow_back">
-                        Beranda
-                    </AppButton>
-                </Link>
-            </div>
-
-            <!-- Form Container -->
-            <div ref="formContainerRef" class="my-auto mx-auto w-full max-w-md space-y-8 will-change-transform">
-                <header class="form-anim-item space-y-2">
-                    <span class="inline-flex items-center rounded-full bg-primary-fixed px-3 py-1 text-xs font-bold text-primary shadow-xs">
-                        Portal Autentikasi Pengurus & Admin
+            <!-- Middle: Headline pitch (desktop only) -->
+            <div class="login-headline-wrap relative z-10 mx-auto hidden w-full max-w-xl text-on-primary md:block">
+                <div class="login-pill mb-4 inline-flex items-center gap-1.5 rounded-full border border-on-primary/20 bg-on-primary/10 px-3 py-1 text-[11px] font-medium backdrop-blur-sm">
+                    <span class="relative flex size-1.5">
+                        <span class="absolute inset-0 animate-ping rounded-full bg-secondary-container opacity-75" />
+                        <span class="relative inline-flex size-1.5 rounded-full bg-secondary-container" />
                     </span>
-                    <h1 class="text-3xl font-black tracking-tight text-primary">Masuk ke Akun Anda</h1>
-                    <p class="text-sm text-on-surface-variant">Masukkan kredensial pengguna terdaftar BUMDesma Anda.</p>
-                </header>
+                    Sistem Informasi Unit Pengelola Kegiatan
+                </div>
 
-                <form class="space-y-6" @submit.prevent="submit">
-                    <div class="form-anim-item">
+                <h2 class="login-headline text-xl font-bold leading-tight tracking-tight lg:text-2xl xl:text-[1.75rem]">
+                    Solusi Tata Kelola Keuangan
+                    <span class="block text-secondary-container">BUMDesma &amp; LKD</span>
+                    Terintegrasi.
+                </h2>
+
+                <p class="login-desc mt-3 max-w-md text-sm leading-relaxed text-primary-fixed-dim">
+                    Pinjaman bergulir, pembukuan standar SAK EP, laporan konsolidasi, dan integrasi WhatsApp Gateway dalam satu platform.
+                </p>
+            </div>
+
+            <!-- Bottom: Trust badges (pojok bawah, 2 item justify-between) -->
+            <footer class="login-brand-footer relative z-10 hidden text-on-primary md:block">
+                <ul class="login-trust flex items-center justify-between gap-4 border-t border-on-primary/15 pt-4 text-xs">
+                    <li v-for="item in trustItems" :key="item.label" class="flex items-center gap-2 text-primary-fixed-dim">
+                        <span class="grid size-6 place-items-center rounded-md bg-on-primary/10 text-secondary-container">
+                            <AppIcon :name="item.icon" class="text-sm" />
+                        </span>
+                        {{ item.label }}
+                    </li>
+                </ul>
+            </footer>
+        </aside>
+
+        <!-- ============================================================
+             RIGHT FORM PANEL
+        ============================================================ -->
+        <section class="login-form-panel flex min-h-0 flex-1 flex-col bg-surface-container-lowest md:ml-[55%] lg:ml-[52%] xl:ml-[58%]">
+            <!-- Top bar (mobile only — desktop brand panel handles it) -->
+            <div class="flex shrink-0 items-center justify-between border-b border-outline-variant/40 px-4 py-2 md:hidden">
+                <Link href="/" class="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                    <AppIcon name="arrow_back" class="text-base" />
+                    Beranda
+                </Link>
+                <span class="text-[11px] font-medium uppercase tracking-[0.18em] text-outline">
+                    Autentikasi
+                </span>
+            </div>
+
+            <div class="login-form-scroll flex min-h-0 flex-1 items-center justify-center px-4 py-6 sm:px-6 md:px-10 md:py-10 lg:px-14 xl:px-20">
+                <div ref="formContainerRef" class="w-full max-w-sm space-y-5 sm:space-y-6">
+                    <!-- Header -->
+                    <header class="space-y-2 text-center sm:text-left">
+                        <span class="inline-block rounded-full bg-primary-container/40 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-primary)_15%,transparent)] backdrop-blur-sm">
+                            Portal Autentikasi Pengurus &amp; Admin
+                        </span>
+                        <h1 class="text-2xl font-extrabold tracking-tight text-on-surface sm:text-3xl">
+                            Masuk ke Akun Anda
+                        </h1>
+                        <p class="text-sm text-on-surface-variant">
+                            Masukkan kredensial pengguna terdaftar BUMDesma Anda.
+                        </p>
+                    </header>
+
+                    <!-- Flash messages -->
+                    <div class="space-y-2">
+                        <div v-if="page.props.flash?.error" role="alert" class="flex items-start gap-2 rounded-lg border border-error/30 bg-error-container/40 p-2.5 text-sm text-error">
+                            <AppIcon name="error" class="text-lg shrink-0 mt-0.5" />
+                            <span>{{ page.props.flash.error }}</span>
+                        </div>
+                        <div v-if="page.props.flash?.warning" role="status" class="flex items-start gap-2 rounded-lg border border-tertiary/30 bg-tertiary-fixed/40 p-2.5 text-sm text-on-surface">
+                            <AppIcon name="warning" class="text-lg shrink-0 mt-0.5" />
+                            <span>{{ page.props.flash.warning }}</span>
+                        </div>
+                        <div v-if="page.props.flash?.success" role="status" class="flex items-start gap-2 rounded-lg border border-secondary/30 bg-secondary-container/30 p-2.5 text-sm text-secondary">
+                            <AppIcon name="check_circle" class="text-lg shrink-0 mt-0.5" />
+                            <span>{{ page.props.flash.success }}</span>
+                        </div>
+                        <div v-if="page.props.flash?.info" role="status" class="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary-container/30 p-2.5 text-sm text-primary">
+                            <AppIcon name="info" class="text-lg shrink-0 mt-0.5" />
+                            <span>{{ page.props.flash.info }}</span>
+                        </div>
+                        <div v-if="form.errors.identifier || form.errors.password || form.errors.error" role="alert" class="flex items-start gap-2 rounded-lg border border-error/30 bg-error-container/40 p-2.5 text-sm text-error">
+                            <AppIcon name="lock_reset" class="text-lg shrink-0 mt-0.5" />
+                            <span>{{ form.errors.identifier || form.errors.password || form.errors.error || 'Kredensial tidak valid.' }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <form class="space-y-3.5 sm:space-y-4" @submit.prevent="submit">
                         <AppInput
                             v-model="form.identifier"
-                            label="Username atau Email"
+                            label="Username / Email"
                             icon="person"
                             autocomplete="username"
-                            placeholder="Masukkan username atau email anda"
+                            placeholder="Username atau email"
                             required
                             autofocus
                             :error="form.errors.identifier"
                         />
-                    </div>
 
-                    <div class="form-anim-item">
                         <AppInput
                             v-model="form.password"
-                            label="Kata Sandi (Password)"
+                            label="Password"
                             icon="lock"
                             :type="showPassword ? 'text' : 'password'"
                             autocomplete="current-password"
@@ -319,66 +188,184 @@ onMounted(() => {
                             :error="form.errors.password"
                         >
                             <template #trailing>
-                                <div ref="eyeButtonRef">
-                                    <AppIconButton
-                                        :name="showPassword ? 'visibility_off' : 'visibility'"
-                                        size="sm"
-                                        tone="neutral"
-                                        rounded="lg"
-                                        :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
-                                        @click="togglePasswordVisibility"
-                                    />
-                                </div>
+                                <AppIconButton
+                                    :name="showPassword ? 'visibility_off' : 'visibility'"
+                                    size="sm"
+                                    tone="neutral"
+                                    rounded="lg"
+                                    :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
+                                    @click="togglePasswordVisibility"
+                                />
                             </template>
                         </AppInput>
-                    </div>
 
-                    <div class="form-anim-item flex items-center justify-between text-sm">
-                        <AppCheckbox v-model="form.remember" variant="inline" label="Ingat sesi saya" />
-                    </div>
+                        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
+                            <AppCheckbox v-model="form.remember" variant="inline" label="Ingat sesi saya" />
+                            <Link :href="route('password.request')" class="font-semibold text-primary hover:underline">
+                                Lupa password?
+                            </Link>
+                        </div>
 
-                    <div class="form-anim-item">
                         <AppButton
                             type="submit"
                             variant="success"
                             size="large"
-                            class="w-full font-bold shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                            class="w-full font-semibold"
                             :loading="form.processing"
                             icon="login"
                         >
-                            {{ form.processing ? 'Memverifikasi Kredensial...' : 'Masuk ke Dashboard' }}
+                            <span>{{ form.processing ? 'Memverifikasi...' : 'Masuk' }}</span>
                         </AppButton>
-                    </div>
-
-                    <div class="form-anim-item text-center">
-                        <Link :href="route('password.request')" class="text-sm font-bold text-primary hover:underline">
-                            Lupa password?
-                        </Link>
-                    </div>
-                </form>
-
-                <!-- Help Info Card -->
-                <div class="form-anim-item rounded-2xl border border-outline-variant/70 bg-surface-container-low p-4 text-xs text-on-surface-variant leading-relaxed flex items-start gap-3 shadow-xs">
-                    <div class="grid size-7 place-items-center rounded-lg bg-primary-fixed text-primary shrink-0 mt-0.5">
-                        <AppIcon name="info" class="text-base" />
-                    </div>
-                    <div>
-                        <p class="font-bold text-primary">Butuh bantuan akses?</p>
-                        <p class="mt-0.5">Lupa kata sandi atau akun terblokir? Silakan hubungi Administrator Utama BUMDesma atau Dinas PMD setempat.</p>
-                    </div>
+                    </form>
                 </div>
             </div>
 
-            <!-- Footer Copyright -->
-            <footer class="mt-8 text-center text-xs font-medium text-outline">
-                &copy; 2026 BUMDesma LKD. Seluruh hak cipta dilindungi.
+            <!-- Footer -->
+            <footer class="shrink-0 border-t border-outline-variant/40 px-4 py-3 text-center text-[11px] text-outline sm:px-6">
+                &copy; {{ new Date().getFullYear() }} siupk Next &mdash; Sistem Informasi Unit Pengelola Kegiatan
             </footer>
         </section>
     </main>
 </template>
 
 <style scoped>
-.login-panel {
-    background: linear-gradient(145deg, var(--color-primary, #1e3a8a) 0%, var(--color-primary-container, #172554) 100%);
+/* ================================================================
+   Shell — mobile: column with natural height, desktop: row locked
+   ================================================================ */
+.login-shell {
+    min-height: 100vh;
+    min-height: 100svh;
+}
+@media (min-width: 768px) {
+    .login-shell {
+        height: 100vh;
+        height: 100svh;
+        overflow: hidden;
+    }
+}
+
+/* ================================================================
+   Brand panel
+   ================================================================ */
+.login-brand {
+    min-height: 72px;
+}
+@media (min-width: 768px) {
+    .login-brand {
+        min-height: 100vh;
+        min-height: 100svh;
+    }
+}
+
+/* Header padding — compact, consistent */
+.login-brand-header {
+    padding: 0.75rem 1rem;
+}
+@media (min-width: 768px) {
+    .login-brand-header {
+        padding: 1.25rem 1.5rem;
+    }
+}
+@media (min-width: 1024px) {
+    .login-brand-header {
+        padding: 1.5rem 2rem;
+    }
+}
+
+/* Headline middle padding */
+.login-headline-wrap {
+    padding: 0 1.5rem 1.25rem;
+}
+@media (min-width: 1024px) {
+    .login-headline-wrap {
+        padding: 0 2rem;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+}
+
+/* Footer (trust badges) padding */
+.login-brand-footer {
+    padding: 0 1.5rem 1.25rem;
+}
+@media (min-width: 1024px) {
+    .login-brand-footer {
+        padding: 0 2rem 2rem;
+    }
+}
+
+/* ================================================================
+   Form panel
+   ================================================================ */
+.login-form-scroll {
+    overflow-y: auto;
+}
+@media (min-width: 768px) {
+    .login-form-scroll {
+        overflow-y: visible;
+    }
+}
+
+/* ================================================================
+   Brand panel visuals
+   ================================================================ */
+.login-brand-bg {
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-primary-container, #0a7d57);
+    background-image: url('/assets/img/login.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.login-brand-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at top right, color-mix(in srgb, var(--color-secondary-container) 20%, transparent) 0%, transparent 55%),
+        radial-gradient(ellipse at bottom left, color-mix(in srgb, var(--color-primary-deep) 55%, transparent) 0%, transparent 60%),
+        linear-gradient(
+            165deg,
+            color-mix(in srgb, var(--color-primary) 65%, transparent) 0%,
+            color-mix(in srgb, var(--color-primary-container) 75%, transparent) 50%,
+            color-mix(in srgb, var(--color-primary-deep) 85%, transparent) 100%
+        );
+}
+
+/* ================================================================
+   Entrance animation (desktop only)
+   ================================================================ */
+@media (min-width: 768px) {
+    .login-pill,
+    .login-headline,
+    .login-desc,
+    .login-trust {
+        opacity: 0;
+        transform: translateY(6px);
+        animation: login-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .login-pill { animation-delay: 0.1s; }
+    .login-headline { animation-delay: 0.2s; }
+    .login-desc { animation-delay: 0.3s; }
+    .login-trust { animation-delay: 0.4s; }
+
+    @keyframes login-fade-in {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-pill,
+    .login-headline,
+    .login-desc,
+    .login-trust {
+        opacity: 1;
+        transform: none;
+        animation: none;
+    }
 }
 </style>
