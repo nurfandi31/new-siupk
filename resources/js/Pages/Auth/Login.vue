@@ -311,6 +311,16 @@ const trustItems = [
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: high-quality;
+    /* Warm wood-tone match reference image */
+    filter: brightness(1.02) contrast(1.18) saturate(1.35) sepia(0.14) hue-rotate(-10deg);
+}
+
+@media (min-width: 768px) and (-webkit-min-device-pixel-ratio: 2), (min-width: 768px) and (min-resolution: 192dpi) {
+    .login-brand-bg {
+        background-image: url('/assets/img/login.png');
+    }
 }
 
 .login-brand-overlay {
