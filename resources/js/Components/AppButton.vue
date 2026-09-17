@@ -7,6 +7,7 @@ defineProps({
     variant: { type: String, default: 'primary' },
     size: { type: String, default: 'default' },
     icon: { type: String, default: null },
+    iconClass: { type: String, default: '' },
     iconOnly: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
@@ -35,14 +36,14 @@ const sizes = {
     <button
         :type="type"
         :disabled="disabled || loading"
-        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-bold transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-lowest disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
+        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-bold shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.97] active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-lowest disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-sm disabled:active:scale-100"
         :class="[variants[variant] || variants.primary, iconOnly ? 'aspect-square p-0' : sizes[size] || sizes.default]"
         :aria-busy="loading"
         :aria-label="ariaLabel || undefined"
         v-bind="$attrs"
     >
         <span v-if="loading" class="size-5 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true" />
-        <AppIcon v-else-if="icon" :name="icon" class="text-lg leading-none" />
+        <AppIcon v-else-if="icon" :name="icon" class="text-lg leading-none" :class="iconClass" />
         <slot />
     </button>
 </template>

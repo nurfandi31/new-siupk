@@ -63,6 +63,8 @@ final class AuthController
         Auth::logoutOtherDevices($password);
         $request->session()->regenerate();
 
+        $request->session()->flash('success', 'Login berhasil. Selamat datang kembali.');
+
         $guard = Auth::guard();
         $passwordHash = $user->fresh()?->getAuthPassword();
         if ($passwordHash !== null) {
@@ -106,6 +108,8 @@ final class AuthController
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        $request->session()->flash('success', 'Anda telah berhasil keluar.');
 
         return redirect()->route('login');
     }

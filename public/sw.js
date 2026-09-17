@@ -1,4 +1,4 @@
-const CACHE_NAME = 'siupk-next-v28';
+const CACHE_NAME = 'siupk-next-v49';
 const OFFLINE_URL = '/offline.html';
 
 const ASSETS_TO_CACHE = [

@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
 import AppButton from '../../Components/AppButton.vue';
 import AppCheckbox from '../../Components/AppCheckbox.vue';
 import AppIcon from '../../Components/AppIcon.vue';
@@ -11,6 +11,32 @@ const showPassword = ref(false);
 const form = useForm({ identifier: '', password: '', remember: false });
 const page = usePage();
 const formContainerRef = ref(null);
+const localFlash = ref({ ...(page.props.flash ?? {}) });
+const FLASH_AUTO_DISMISS_MS = 4500;
+let flashTimer = null;
+
+function clearFlashTimer() {
+    if (flashTimer) {
+        clearTimeout(flashTimer);
+        flashTimer = null;
+    }
+}
+
+watch(
+    () => page.props.flash,
+    (flash) => {
+        localFlash.value = { ...(flash ?? {}) };
+        clearFlashTimer();
+        if (flash && Object.values(flash).some((v) => v != null && v !== '')) {
+            flashTimer = setTimeout(() => {
+                localFlash.value = {};
+            }, FLASH_AUTO_DISMISS_MS);
+        }
+    },
+    { deep: true, immediate: true },
+);
+
+onBeforeUnmount(clearFlashTimer);
 
 function submit() {
     form.post('/login', {
@@ -131,21 +157,21 @@ const trustItems = [
 
                     <!-- Flash messages -->
                     <div class="login-form-flash space-y-2">
-                        <div v-if="page.props.flash?.error" role="alert" class="flex items-start gap-2.5 rounded-lg border border-error/30 bg-error-container/40 p-3 text-sm text-error">
+                        <div v-if="localFlash.error" role="alert" class="flex items-start gap-2.5 rounded-lg border border-error/30 bg-error-container/40 p-3 text-sm text-error">
                             <AppIcon name="error" class="text-xl shrink-0 mt-0.5 leading-none" />
-                            <span class="leading-snug">{{ page.props.flash.error }}</span>
+                            <span class="leading-snug">{{ localFlash.error }}</span>
                         </div>
-                        <div v-if="page.props.flash?.warning" role="status" class="flex items-start gap-2.5 rounded-lg border border-tertiary/30 bg-tertiary-fixed/40 p-3 text-sm text-on-surface">
+                        <div v-if="localFlash.warning" role="status" class="flex items-start gap-2.5 rounded-lg border border-tertiary/30 bg-tertiary-fixed/40 p-3 text-sm text-on-surface">
                             <AppIcon name="warning" class="text-xl shrink-0 mt-0.5 leading-none" />
-                            <span class="leading-snug">{{ page.props.flash.warning }}</span>
+                            <span class="leading-snug">{{ localFlash.warning }}</span>
                         </div>
-                        <div v-if="page.props.flash?.success" role="status" class="flex items-start gap-2.5 rounded-lg border border-secondary/30 bg-secondary-container/30 p-3 text-sm text-secondary">
+                        <div v-if="localFlash.success" role="status" class="flex items-start gap-2.5 rounded-lg border border-secondary/30 bg-secondary-container/30 p-3 text-sm text-secondary">
                             <AppIcon name="check_circle" class="text-xl shrink-0 mt-0.5 leading-none" />
-                            <span class="leading-snug">{{ page.props.flash.success }}</span>
+                            <span class="leading-snug">{{ localFlash.success }}</span>
                         </div>
-                        <div v-if="page.props.flash?.info" role="status" class="flex items-start gap-2.5 rounded-lg border border-primary/30 bg-primary-container/30 p-3 text-sm text-primary">
+                        <div v-if="localFlash.info" role="status" class="flex items-start gap-2.5 rounded-lg border border-primary/30 bg-primary-container/30 p-3 text-sm text-primary">
                             <AppIcon name="info" class="text-xl shrink-0 mt-0.5 leading-none" />
-                            <span class="leading-snug">{{ page.props.flash.info }}</span>
+                            <span class="leading-snug">{{ localFlash.info }}</span>
                         </div>
                         <div v-if="form.errors.identifier || form.errors.password || form.errors.error" role="alert" class="flex items-start gap-2.5 rounded-lg border border-error/30 bg-error-container/40 p-3 text-sm text-error">
                             <AppIcon name="lock_reset" class="text-xl shrink-0 mt-0.5 leading-none" />
@@ -361,6 +387,13 @@ const trustItems = [
         transform: none;
         animation: none;
     }
+}
+
+/* ================================================================
+   Flash auto-dismiss — fade + collapse when removed from DOM
+   ================================================================ */
+.login-form-flash {
+    transition: opacity 280ms ease, transform 280ms ease;
 }
 
 /* ================================================================
