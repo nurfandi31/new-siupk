@@ -36,7 +36,7 @@ const normalizedVariant = computed(() => {
 const wrapperClass = {
     underline: 'flex flex-wrap gap-x-6 gap-y-1',
     pill: 'flex flex-col gap-1 w-full',
-    'pills-bar': 'flex flex-wrap gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest p-1',
+    'pills-bar': 'flex flex-wrap gap-1 rounded-xl chip-shadow bg-surface-container-lowest p-1 ring-1 ring-outline-variant/40',
 };
 
 const tabBase = {
@@ -47,8 +47,8 @@ const tabBase = {
 
 const tabActive = {
     underline: 'border-primary text-primary font-bold',
-    pill: 'bg-primary-container font-bold text-on-primary-container shadow-xs',
-    'pills-bar': 'bg-primary text-on-primary shadow-sm',
+    pill: 'bg-primary-container font-bold text-on-primary-container shadow-sm shadow-primary/15',
+    'pills-bar': 'bg-primary text-on-primary shadow-sm shadow-primary/30',
 };
 
 const tabInactive = {

@@ -291,7 +291,7 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <div class="relative w-full" :class="isExpanded ? 'flex-1 min-h-[500px]' : 'h-[460px] sm:h-[520px]'">
+        <div class="relative w-full overflow-hidden" :class="isExpanded ? 'flex-1 min-h-[360px] sm:min-h-[500px]' : 'h-[320px] sm:h-[460px] lg:h-[520px]'">
             <div ref="mapContainer" class="size-full z-0"></div>
 
             <div class="absolute right-3 top-3 z-10 flex flex-col gap-2">
@@ -369,7 +369,7 @@ onUnmounted(() => {
 
             <div
                 v-if="selectedKecamatan"
-                class="absolute left-3 top-3 z-10 w-80 max-w-[calc(100%-4rem)] rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-xl backdrop-blur-xs transition-all"
+                class="absolute left-3 top-3 z-10 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-xl backdrop-blur-xs transition-all sm:w-80"
             >
                 <div class="flex items-start justify-between gap-2 border-b border-outline-variant/60 pb-3">
                     <div>

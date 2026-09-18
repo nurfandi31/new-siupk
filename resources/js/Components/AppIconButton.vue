@@ -74,8 +74,8 @@ const buttonClass = computed(() => [
 
 const iconSize = computed(() => {
     if (props.size === 'sm') return 'text-base';
-    if (props.size === 'lg') return 'text-2xl';
-    return 'text-xl';
+    if (props.size === 'lg') return 'text-xl';
+    return 'text-lg';
 });
 </script>
 

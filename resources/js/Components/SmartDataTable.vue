@@ -69,7 +69,7 @@ onBeforeUnmount(() => clearTimeout(timer));
 
 <template>
     <div class="space-y-4">
-        <div class="flex flex-col gap-4 border-b border-outline-variant pb-5 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex flex-col gap-4 inset-divider pb-5 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex items-center gap-3"><SmartSelect id="smart-table-per-page" label="Per halaman" hide-label size="compact" :model-value="Number(perPage)" :options="perPageOptions" :disabled="processing" @update:model-value="changePerPage"/><slot name="toolbar" /></div>
             <div class="flex-1 sm:max-w-[10rem] lg:max-w-[12rem]"><AppInput v-model="query" :label="searchLabel" hide-label icon="search" size="compact" :placeholder="searchPlaceholder" @input="scheduleSearch"><template v-if="query" #trailing><button type="button" class="rounded-full p-1 text-outline hover:bg-surface-container-low hover:text-primary" aria-label="Hapus pencarian" @click="resetSearch"><AppIcon name="close" class="text-base" /></button></template></AppInput></div>
         </div>

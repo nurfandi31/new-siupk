@@ -26,8 +26,8 @@ const assistantEnabled = computed(() => {
 });
 const currentPath = computed(() => page.url.split('?')[0]);
 const sidebarNav = ref(null);
-const sidebarScrollTop = ref(0);
 const mobileMenuOpen = ref(false);
+const sidebarCollapsed = ref(false);
 const expanded = ref({});
 const logoutForm = useForm({});
 const isTrainingMode = computed(() => page.props.tenant?.is_training_mode === true);
@@ -37,8 +37,27 @@ const leaveForm = useForm({});
 const avatarError = ref(false);
 const { showShortcutsModal } = useKeyboardShortcuts();
 
+const SIDEBAR_KEY = 'siupk-auth-sidebar';
+
 watch(() => user.value?.photo_url, () => {
     avatarError.value = false;
+});
+
+onMounted(() => {
+    try {
+        const v = localStorage.getItem(SIDEBAR_KEY);
+        if (v === '1') sidebarCollapsed.value = true;
+    } catch (e) {
+        // ignore
+    }
+});
+
+watch(sidebarCollapsed, (val) => {
+    try {
+        localStorage.setItem(SIDEBAR_KEY, val ? '1' : '0');
+    } catch (e) {
+        // ignore
+    }
 });
 
 function leaveImpersonation() {
@@ -61,10 +80,8 @@ function permissionForHref(href) {
         if (href === prefix || href.startsWith(prefix + '/') || href.startsWith(prefix + '?')) {
             return map[prefix];
         }
-        // exact prefix match for bare paths like /budgeting
         if (href === prefix) return map[prefix];
     }
-    // also try startsWith without trailing nuances
     for (const prefix of keys) {
         if (href.startsWith(prefix)) return map[prefix];
     }
@@ -99,7 +116,6 @@ const visibleSections = computed(() =>
         .filter(Boolean),
 );
 
-// Command-palette search
 const searchOpen = ref(false);
 const searchQ = ref('');
 const searchLoading = ref(false);
@@ -166,7 +182,7 @@ function clearSearchQuery() {
 function pickResult(item) {
     closeSearch();
     if (item?.href) {
-        // Link click handles navigation; keyboard path uses router via <a>
+        // navigation handled by Link
     }
 }
 
@@ -225,10 +241,18 @@ onBeforeUnmount(() => {
     searchAbort?.abort();
     if (searchOpen.value) document.body.style.overflow = previousOverflow;
 });
+
 const sections = [
     {
         label: 'Dashboard',
         items: [{ label: 'Dashboard', icon: 'dashboard', href: '/dashboard', exact: true }],
+    },
+    {
+        label: 'Pengaturan',
+        items: [
+            { label: 'Pengaturan', icon: 'settings', href: '/settings' },
+            { label: 'WhatsApp Gateway', icon: 'chat', href: '/settings/whatsapp' },
+        ],
     },
     {
         label: 'Anggota',
@@ -272,9 +296,32 @@ const sections = [
                     },
                 ],
             },
-            { label: 'Register Proposal', icon: 'assignment_add', href: '/lending/loans/create', exact: true },
-            { label: 'Tahapan Perguliran', icon: 'sync_alt', href: '/lending/loans', exclude: '/lending/loans/create' },
-            { label: 'Simulasi Pinjaman', icon: 'calculate', href: '/lending/simulation' },
+            {
+                key: 'loans',
+                label: 'Pinjaman / Perguliran',
+                icon: 'account_balance',
+                children: [
+                    {
+                        key: 'register-proposal',
+                        label: 'Register Proposal',
+                        icon: 'assignment_add',
+                        children: [
+                            { label: 'Proposal Kelompok', href: '/lending/loans/create', exact: true },
+                            { label: 'Proposal Individu', href: '/lending/member-loans/create', exact: true },
+                        ],
+                    },
+                    {
+                        key: 'tahapan-perguliran',
+                        label: 'Tahapan Perguliran',
+                        icon: 'sync_alt',
+                        children: [
+                            { label: 'Kelompok', href: '/lending/loans', exclude: '/lending/loans/create' },
+                            { label: 'Individu', href: '/lending/member-loans', exclude: '/lending/member-loans/create' },
+                        ],
+                    },
+                    { label: 'Simulasi Pinjaman', icon: 'calculate', href: '/lending/simulation' },
+                ],
+            },
         ],
     },
     {
@@ -351,20 +398,13 @@ const sections = [
             { label: 'Pesan Masuk', icon: 'inbox', href: '/website/messages' },
         ],
     },
-    {
-        label: 'Pengaturan',
-        items: [
-            { label: 'Pengaturan', icon: 'settings', href: '/settings' },
-            { label: 'WhatsApp Gateway', icon: 'chat', href: '/settings/whatsapp' },
-        ],
-    },
 ];
+
 const platformNavigation = [{ label: 'Panel Admin', icon: 'admin_panel_settings', href: '/admin' }];
 
 function isActive(item) {
     if (item.children) return item.children.some(isActive);
     if (!item.href || (item.exclude && currentPath.value.startsWith(item.exclude))) return false;
-
     return item.exact ? currentPath.value === item.href : currentPath.value.startsWith(item.href);
 }
 
@@ -389,22 +429,26 @@ function askLogout() {
     logoutOpen.value = true;
 }
 
-function preserveSidebarScroll() {
-    if (sidebarNav.value) {
-        sidebarScrollTop.value = sidebarNav.value.scrollTop;
-    }
-}
-
-function restoreSidebarScroll() {
+function scrollSidebarToActive() {
     nextTick(() => {
-        if (sidebarNav.value) {
-            sidebarNav.value.scrollTop = sidebarScrollTop.value;
+        const nav = sidebarNav.value;
+        if (!nav) return;
+        const active = nav.querySelector('[data-sidebar-active="true"]');
+        if (!active) {
+            nav.scrollTop = 0;
+            return;
+        }
+        const navTop = nav.getBoundingClientRect().top;
+        const activeTop = active.getBoundingClientRect().top;
+        const offset = activeTop - navTop - 16;
+        const navBottom = navTop + nav.clientHeight;
+        if (activeTop < navTop || activeTop > navBottom - 40) {
+            nav.scrollTop = Math.max(0, nav.scrollTop + offset);
         }
     });
 }
 
-router.on('before', preserveSidebarScroll);
-router.on('navigate', restoreSidebarScroll);
+router.on('navigate', scrollSidebarToActive);
 
 function logout() {
     logoutForm.post('/logout', {
@@ -413,10 +457,23 @@ function logout() {
         },
     });
 }
+
+function closeMobileMenu() {
+    mobileMenuOpen.value = false;
+}
+
+function onParentItemClick(item, event) {
+    if (sidebarCollapsed.value && !mobileMenuOpen.value) {
+        event.preventDefault();
+        sidebarCollapsed.value = false;
+        return;
+    }
+    toggle(item.key);
+}
 </script>
 
 <template>
-    <div class="min-h-screen bg-surface">
+    <div class="min-h-screen bg-surface text-on-surface">
         <Transition
             enter-active-class="transition-opacity duration-300 ease-out"
             enter-from-class="opacity-0"
@@ -425,86 +482,132 @@ function logout() {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <button v-if="mobileMenuOpen" type="button" class="fixed inset-0 z-40 bg-primary/45 backdrop-blur-xs lg:hidden" aria-label="Tutup navigasi" @click="mobileMenuOpen = false" />
+            <button v-if="mobileMenuOpen" type="button" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden" aria-label="Tutup navigasi" @click="closeMobileMenu" />
         </Transition>
-        <aside class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-primary py-6 shadow-xl transition-transform duration-300 ease-in-out lg:translate-x-0" :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'">
-            <div class="mb-6 flex items-center gap-3 px-6">
-                <div class="grid size-10 place-items-center overflow-hidden rounded-lg bg-surface-container-lowest text-primary">
+
+        <aside
+            class="fixed inset-y-0 left-0 z-50 flex flex-col border-r border-white/5 bg-zinc-950 text-zinc-300 shadow-2xl shadow-black/40 transition-[width,transform] duration-300 ease-in-out lg:translate-x-0"
+            :class="[
+                mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
+                sidebarCollapsed && !mobileMenuOpen ? 'lg:w-16' : 'lg:w-64',
+                'w-64',
+            ]"
+        >
+            <button
+                type="button"
+                class="absolute -right-3 top-5 z-10 hidden size-8 place-items-center rounded-full chip-shadow bg-surface text-on-surface ring-1 ring-outline-variant transition hover:scale-110 hover:bg-surface-container focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container lg:grid lg:top-7"
+                :aria-label="sidebarCollapsed ? 'Buka sidebar' : 'Tutup sidebar'"
+                :title="sidebarCollapsed ? 'Buka sidebar' : 'Tutup sidebar'"
+                @click="sidebarCollapsed = !sidebarCollapsed"
+            >
+                <AppIcon :name="sidebarCollapsed ? 'chevron_right' : 'chevron_left'" class="text-xl leading-none" />
+            </button>
+
+            <div class="flex items-center gap-3 px-4 py-6 transition-[padding] duration-300 lg:px-6" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-2' : ''">
+                <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-zinc-800 text-zinc-100 ring-1 ring-white/10">
                     <img v-if="logoPath" :src="logoPath" alt="Logo lembaga" class="size-full object-contain" />
-                    <AppIcon v-else name="account_balance" />
+                    <AppIcon v-else name="account_balance" class="text-zinc-100" />
                 </div>
-                <div><p class="font-bold leading-none text-on-primary">BUMDesma/LKD</p><p class="mt-1 text-[10px] font-semibold uppercase tracking-widest text-primary-fixed-dim">Financial Management</p></div>
+                <div v-show="!(sidebarCollapsed && !mobileMenuOpen)" class="min-w-0 flex-1 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">
+                    <p class="truncate font-bold leading-none text-white">{{ page.props.auth?.tenant?.name || 'BUMDesma/LKD' }}</p>
+                    <p class="mt-1 truncate text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Financial Management</p>
+                </div>
+                <button
+                    type="button"
+                    class="grid size-9 shrink-0 place-items-center rounded-lg text-zinc-400 transition-colors hover:bg-white/5 hover:text-white lg:hidden"
+                    aria-label="Tutup navigasi"
+                    @click="closeMobileMenu"
+                >
+                    <AppIcon name="close" class="text-xl" />
+                </button>
             </div>
 
-            <nav ref="sidebarNav" class="scrollbar-hidden flex-1 space-y-5 overflow-y-auto px-2" aria-label="Navigasi utama">
-                <section v-for="section in visibleSections" :key="section.label">
-                    <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-fixed-dim/70">{{ section.label }}</h2>
+            <nav
+                ref="sidebarNav"
+                class="scrollbar-hidden flex-1 space-y-5 overflow-y-auto px-2 py-2"
+                aria-label="Navigasi utama"
+            >
+                <section v-for="(section, sIdx) in visibleSections" :key="section.label">
+                    <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ section.label }}</h2>
                     <div class="space-y-1">
                         <template v-for="item in section.items" :key="item.key || item.label">
                             <button
                                 v-if="item.children"
                                 type="button"
-                                class="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left transition-colors hover:bg-primary-container hover:text-on-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-fixed/30"
-                                :class="isActive(item) ? 'text-on-primary' : 'text-primary-fixed-dim'"
+                                class="group flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30"
+                                :class="[
+                                    isActive(item) ? 'bg-white/5 text-white' : 'text-zinc-400',
+                                    sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '',
+                                ]"
+                                :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined"
                                 :aria-expanded="Boolean(expanded[item.key])"
-                                @click="toggle(item.key)"
+                                :data-sidebar-active="isActive(item) ? 'true' : null"
+                                @click="onParentItemClick(item, $event)"
                             >
-                                <AppIcon :name="item.icon" :filled="isActive(item)" />
-                                <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
-                                <AppIcon name="expand_more" class="text-lg transition-transform duration-200" :class="expanded[item.key] && 'rotate-180'" />
+                                <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none" />
+                                <span class="min-w-0 flex-1 truncate transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span>
+                                <AppIcon v-show="!(sidebarCollapsed && !mobileMenuOpen)" name="expand_more" class="text-lg transition-transform duration-200" :class="expanded[item.key] && 'rotate-180'" />
                             </button>
                             <Link
                                 v-else-if="item.href"
                                 :href="item.href"
-                                class="flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors"
-                                :class="isActive(item) ? 'bg-primary-container text-on-primary' : 'text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary'"
-                                @click="mobileMenuOpen = false"
+                                class="group flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors"
+                                :class="[
+                                    isActive(item) ? 'bg-white/10 text-white shadow-inner shadow-black/40' : 'text-zinc-400 hover:bg-white/5 hover:text-white',
+                                    sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '',
+                                ]"
+                                :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined"
+                                :data-sidebar-active="isActive(item) ? 'true' : null"
+                                @click="closeMobileMenu"
                             >
-                                <AppIcon :name="item.icon" :filled="isActive(item)" /><span>{{ item.label }}</span>
+                                <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none" /><span class="transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span>
                             </Link>
-                            <button v-else type="button" disabled class="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left text-primary-fixed-dim/45" :title="`${item.label} belum tersedia`"><AppIcon :name="item.icon" /><span>{{ item.label }}</span></button>
+                            <button v-else type="button" disabled class="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left text-zinc-600" :title="`${item.label} belum tersedia`"><AppIcon :name="item.icon" /><span>{{ item.label }}</span></button>
 
                             <Transition name="sidebar-menu">
-                                <div v-if="item.children && expanded[item.key]" class="ml-5 space-y-1 overflow-hidden border-l border-primary-container pl-2">
-                                <template v-for="child in item.children" :key="child.key || child.label">
-                                    <button
-                                        v-if="child.children"
-                                        type="button"
-                                        class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-primary-container hover:text-on-primary focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-fixed/30"
-                                        :class="isActive(child) ? 'text-on-primary' : 'text-primary-fixed-dim'"
-                                        :aria-expanded="Boolean(expanded[child.key])"
-                                        @click="toggle(child.key)"
-                                    >
-                                        <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl" />
-                                        <span class="min-w-0 flex-1 truncate">{{ child.label }}</span>
-                                        <AppIcon name="expand_more" class="text-lg transition-transform duration-200" :class="expanded[child.key] && 'rotate-180'" />
-                                    </button>
-                                    <Link
-                                        v-else-if="child.href"
-                                        :href="child.href"
-                                        class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
-                                        :class="isActive(child) ? 'bg-primary-container text-on-primary' : 'text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary'"
-                                        @click="mobileMenuOpen = false"
-                                    >
-                                        <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl" /><span>{{ child.label }}</span>
-                                    </Link>
-                                    <button v-else type="button" disabled class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-primary-fixed-dim/45" :title="`${child.label} belum tersedia`"><AppIcon :name="child.icon" class="text-xl" /><span>{{ child.label }}</span></button>
+                                <div v-if="item.children && expanded[item.key] && !(sidebarCollapsed && !mobileMenuOpen)" class="ml-5 space-y-1 overflow-hidden border-l border-white/5 pl-2">
+                                    <template v-for="child in item.children" :key="child.key || child.label">
+                                        <button
+                                            v-if="child.children"
+                                            type="button"
+                                            class="group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30"
+                                            :class="isActive(child) ? 'text-white' : 'text-zinc-400'"
+                                            :aria-expanded="Boolean(expanded[child.key])"
+                                            :data-sidebar-active="isActive(child) ? 'true' : null"
+                                            @click="toggle(child.key)"
+                                        >
+                                            <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl" />
+                                            <span class="min-w-0 flex-1 truncate">{{ child.label }}</span>
+                                            <AppIcon name="expand_more" class="text-lg transition-transform duration-200" :class="expanded[child.key] && 'rotate-180'" />
+                                        </button>
+                                        <Link
+                                            v-else-if="child.href"
+                                            :href="child.href"
+                                            class="group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
+                                            :class="isActive(child) ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white'"
+                                            :data-sidebar-active="isActive(child) ? 'true' : null"
+                                            @click="closeMobileMenu"
+                                        >
+                                            <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl" /><span>{{ child.label }}</span>
+                                        </Link>
+                                        <button v-else type="button" disabled class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-600" :title="`${child.label} belum tersedia`"><AppIcon :name="child.icon" class="text-xl" /><span>{{ child.label }}</span></button>
 
-                                    <Transition name="sidebar-menu">
-                                        <div v-if="child.children && expanded[child.key]" class="ml-5 space-y-1 overflow-hidden border-l border-primary-container pl-2">
-                                            <template v-for="leaf in child.children" :key="leaf.label">
-                                                <Link
-                                                    v-if="leaf.href"
-                                                    :href="leaf.href"
-                                                    class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
-                                                    :class="isActive(leaf) ? 'bg-primary-container text-on-primary' : 'text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary'"
-                                                    @click="mobileMenuOpen = false"
-                                                ><span class="size-1.5 rounded-full bg-current" />{{ leaf.label }}</Link>
-                                                <button v-else type="button" disabled class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-primary-fixed-dim/45" :title="`${leaf.label} belum tersedia`"><span class="size-1.5 rounded-full bg-current" />{{ leaf.label }}</button>
-                                            </template>
-                                        </div>
-                                    </Transition>
-                                </template>
+                                        <Transition name="sidebar-menu">
+                                            <div v-if="child.children && expanded[child.key]" class="ml-5 space-y-1 overflow-hidden border-l border-white/10 pl-2">
+                                                <template v-for="leaf in child.children" :key="leaf.label">
+                                                    <Link
+                                                        v-if="leaf.href"
+                                                        :href="leaf.href"
+                                                        class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
+                                                        :class="isActive(leaf) ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white'"
+                                                        :data-sidebar-active="isActive(leaf) ? 'true' : null"
+                                                        @click="closeMobileMenu"
+                                                    ><span class="size-1.5 rounded-full bg-current" />{{ leaf.label }}</Link>
+                                                    <button v-else type="button" disabled class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-600" :title="`${leaf.label} belum tersedia`"><span class="size-1.5 rounded-full bg-current" />{{ leaf.label }}</button>
+                                                </template>
+                                            </div>
+                                        </Transition>
+                                    </template>
                                 </div>
                             </Transition>
                         </template>
@@ -512,34 +615,37 @@ function logout() {
                 </section>
 
                 <section v-if="user?.is_superadmin">
-                    <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-primary-fixed-dim/70">Platform</h2>
-                    <Link v-for="item in platformNavigation" :key="item.label" :href="item.href" class="flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors" :class="isActive(item) ? 'bg-primary-container text-on-primary' : 'text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary'" @click="mobileMenuOpen = false"><AppIcon :name="item.icon" :filled="isActive(item)" /><span>{{ item.label }}</span></Link>
+                    <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">Platform</h2>
+                    <Link v-for="item in platformNavigation" :key="item.label" :href="item.href" class="group flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors" :class="[isActive(item) ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white', sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '']" :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined" @click="closeMobileMenu"><AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none" /><span class="transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span></Link>
                 </section>
             </nav>
-
-            <div class="mt-4 border-t border-primary-container px-4 pt-4">
-                <div class="flex items-center gap-3 rounded-xl bg-primary-container/50 p-3">
-                    <Link href="/profile" class="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-sm font-bold text-primary transition hover:opacity-85" aria-label="Buka Profil"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'User'" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'U' }}</span></Link>
-                    <Link href="/profile" class="min-w-0 flex-1 group" aria-label="Buka Profil"><p class="truncate font-bold text-on-primary group-hover:underline">{{ user?.name || 'Pengguna' }}</p><p class="truncate text-xs text-primary-fixed-dim">{{ props.unitName || 'Unit belum dipilih' }}</p></Link>
-                    <AppIconButton name="logout" tone="neutral" size="sm" rounded="lg" aria-label="Keluar" class="text-primary-fixed-dim hover:bg-on-primary/10 hover:text-on-primary" @click="askLogout" />
-                </div>
-            </div>
         </aside>
 
-        <header class="sticky top-0 z-30 flex h-16 items-center border-b border-outline-variant bg-surface px-4 lg:ml-64 lg:px-6">
-            <AppIconButton name="menu" tone="primary" size="sm" rounded="lg" aria-label="Buka navigasi" class="mr-3 lg:hidden" @click="mobileMenuOpen = true" />
+        <header
+            class="sticky top-0 z-30 flex h-16 items-center gap-2 header-shadow bg-surface/90 px-4 backdrop-blur transition-all duration-300 sm:gap-3 lg:px-6"
+            :class="sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'"
+        >
             <button
                 type="button"
-                class="flex w-full max-w-md items-center gap-3 rounded-full border-0 bg-surface-container-low py-2 pr-3 pl-3 text-left text-sm text-on-surface-variant transition hover:bg-surface-container focus:outline-none focus:ring-2 focus:ring-primary-container/30"
+                class="grid size-10 shrink-0 place-items-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary lg:hidden"
+                aria-label="Buka navigasi"
+                @click="mobileMenuOpen = true"
+            >
+                <AppIcon name="menu" class="text-2xl leading-none" />
+            </button>
+            <button
+                type="button"
+                class="flex min-w-0 flex-1 items-center gap-2.5 rounded-full bg-surface-container-low py-2 px-3 text-left text-sm text-on-surface-variant transition hover:bg-surface-container focus:outline-none focus:ring-2 focus:ring-primary-container/30 sm:max-w-md sm:gap-3"
                 aria-label="Buka pencarian"
                 @click="openSearch"
             >
-                <AppIcon name="search" class="text-on-surface-variant" />
+
+                <AppIcon name="search" class="shrink-0 text-on-surface-variant" />
                 <span class="min-w-0 flex-1 truncate">Cari anggota, kelompok, pinjaman...</span>
-                <kbd class="hidden rounded-md border border-outline-variant bg-surface px-1.5 py-0.5 text-[10px] font-semibold text-on-surface-variant sm:inline">Ctrl K</kbd>
+                <kbd class="hidden rounded-md chip-shadow bg-surface px-1.5 py-0.5 text-[10px] font-semibold text-on-surface-variant ring-1 ring-outline-variant sm:inline">Ctrl K</kbd>
             </button>
-            <p v-if="props.unitName" class="ml-6 hidden items-center gap-2 text-sm font-bold text-primary xl:flex"><AppIcon name="location_on" class="text-secondary" />{{ props.unitName }}</p>
-            <div class="ml-auto flex items-center gap-1 pl-3">
+            <p v-if="false" class="ml-2 hidden items-center gap-1.5 text-sm font-bold text-primary xl:flex"><AppIcon name="location_on" class="text-secondary" />{{ props.unitName }}</p>
+            <div class="ml-auto flex shrink-0 items-center gap-0.5 pl-1 sm:gap-1 sm:pl-3">
                 <AppIconButton
                     name="palette"
                     tone="neutral"
@@ -559,47 +665,66 @@ function logout() {
                     title="Catatan Rilis & Changelog"
                     aria-label="Catatan Rilis & Changelog"
                 >
-                    <AppIcon name="history_edu" class="text-2xl leading-none" />
+                    <AppIcon name="history_edu" class="text-xl leading-none" />
                 </Link>
                 <NotificationDropdown />
-                <Link href="/profile" class="grid size-10 shrink-0 place-items-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary" aria-label="Profil"><AppIcon name="account_circle" class="text-2xl leading-none" /></Link>
+
+                <!-- Profile pill -->
+                <Link
+                    href="/profile"
+                    class="ml-1 flex shrink-0 items-center gap-2 rounded-full chip-shadow bg-surface-container-lowest py-1 pl-1 pr-3 ring-1 ring-outline-variant transition hover:bg-surface-container-low hover:ring-primary/40"
+                    aria-label="Buka Profil"
+                >
+                    <span class="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'User'" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'U' }}</span></span>
+                    <span class="hidden min-w-0 flex-col leading-tight sm:flex">
+                        <span class="truncate text-xs font-bold text-primary">{{ user?.name || 'Pengguna' }}</span>
+                        <span class="truncate text-[10px] font-medium text-on-surface-variant">{{ props.unitName || 'Unit belum dipilih' }}</span>
+                    </span>
+                </Link>
+
+                <AppIconButton name="logout" tone="danger" size="md" rounded="full" aria-label="Keluar" class="shrink-0" @click="askLogout" />
             </div>
         </header>
-        <main class="p-4 sm:p-6 lg:ml-64 lg:p-8">
-            <div
-                v-if="impersonatedBy"
-                class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/40 bg-primary-container/30 px-4 py-3 text-sm text-primary shadow-sm"
-            >
-                <div class="flex items-center gap-2.5">
-                    <AppIcon name="admin_panel_settings" tone="primary" />
-                    <p class="font-medium">
-                        <span class="font-bold">Mode Impersonasi Superadmin:</span>
-                        Anda sedang mengakses tenant sebagai <span class="font-bold">{{ user?.name }}</span> (diinisiasi oleh Superadmin <span class="font-bold">{{ impersonatorName || 'Superadmin' }}</span>).
-                    </p>
+        <main
+            class="min-w-0 flex-1 p-4 transition-all duration-300 sm:p-6 lg:p-8"
+            :class="sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'"
+        >
+            <div class="mx-auto w-full max-w-7xl space-y-6">
+                <div
+                    v-if="impersonatedBy"
+                    class="flex flex-wrap items-center justify-between gap-3 rounded-xl chip-shadow bg-primary-container/30 px-4 py-3 text-sm text-primary ring-1 ring-primary/40"
+                >
+                    <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                        <AppIcon name="admin_panel_settings" tone="primary" />
+                        <p class="min-w-0 flex-1 break-words font-medium">
+                            <span class="font-bold">Mode Impersonasi Superadmin:</span>
+                            Anda sedang mengakses tenant sebagai <span class="font-bold">{{ user?.name }}</span> (diinisiasi oleh Superadmin <span class="font-bold">{{ impersonatorName || 'Superadmin' }}</span>).
+                        </p>
+                    </div>
+                    <form class="shrink-0" @submit.prevent="leaveImpersonation">
+                        <AppButton size="compact" variant="secondary" icon="logout" :loading="leaveForm.processing">
+                            Kembali ke Superadmin
+                        </AppButton>
+                    </form>
                 </div>
-                <form @submit.prevent="leaveImpersonation">
-                    <AppButton size="compact" variant="secondary" icon="logout" :loading="leaveForm.processing">
-                        Kembali ke Superadmin
-                    </AppButton>
-                </form>
+                <div
+                    v-if="isTrainingMode"
+                    class="flex flex-wrap items-center justify-between gap-3 rounded-xl chip-shadow bg-warning-container/30 px-4 py-3 text-sm text-primary ring-1 ring-warning/40"
+                >
+                    <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                        <span class="inline-block size-2.5 shrink-0 rounded-full bg-warning animate-pulse" />
+                        <p class="min-w-0 flex-1 break-words font-medium">
+                            <span class="font-bold">Mode Pelatihan Aktif:</span>
+                            Transaksi yang di-input pada periode ini adalah data simulasi latihan dan dapat dibersihkan oleh Superadmin.
+                        </p>
+                    </div>
+                </div>
+                <Transition name="page" mode="out-in" appear>
+                    <div :key="currentPath" class="min-w-0">
+                        <slot />
+                    </div>
+                </Transition>
             </div>
-            <div
-                v-if="isTrainingMode"
-                class="mb-6 flex items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning-container/30 px-4 py-3 text-sm text-primary shadow-sm"
-            >
-                <div class="flex items-center gap-2.5">
-                    <span class="inline-block size-2.5 rounded-full bg-warning animate-pulse" />
-                    <p class="font-medium">
-                        <span class="font-bold">Mode Pelatihan Aktif:</span>
-                        Transaksi yang di-input pada periode ini adalah data simulasi latihan dan dapat dibersihkan oleh Superadmin.
-                    </p>
-                </div>
-            </div>
-            <Transition name="page" mode="out-in" appear>
-                <div :key="currentPath" class="min-w-0 flex-1">
-                    <slot />
-                </div>
-            </Transition>
         </main>
         <AssistantWidget v-if="assistantEnabled" />
         <AppConfirmDialog />
@@ -631,18 +756,18 @@ function logout() {
                         role="dialog"
                         aria-modal="true"
                         aria-label="Pencarian"
-                        class="flex max-h-[min(36rem,75vh)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl"
+                        class="flex max-h-[min(36rem,75vh)] w-full max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl floating-shadow bg-surface-container-lowest ring-1 ring-outline-variant/60 sm:max-w-3xl"
                         @keydown="onPaletteKeydown"
                     >
-                        <div class="flex shrink-0 items-center gap-2 border-b border-outline-variant px-3">
-                            <AppIcon name="search" class="text-xl text-on-surface-variant" />
+                        <div class="flex shrink-0 items-center gap-2 inset-divider px-3">
+                            <AppIcon name="search" class="text-base text-on-surface-variant" />
                             <input
                                 ref="searchInput"
                                 v-model="searchQ"
                                 type="search"
                                 placeholder="Cari anggota, kelompok, pinjaman..."
                                 aria-label="Kata kunci pencarian"
-                                class="h-14 min-w-0 flex-1 border-0 bg-transparent text-base text-primary placeholder:text-on-surface-variant focus:outline-none focus:ring-0"
+                                class="h-14 min-w-0 flex-1 border-0 bg-transparent text-sm text-primary placeholder:text-on-surface-variant focus:outline-none focus:ring-0"
                                 autocomplete="off"
                                 @input="onSearchInput"
                             />
@@ -701,10 +826,10 @@ function logout() {
                             </p>
                         </div>
 
-                        <div class="flex shrink-0 items-center gap-3 border-t border-outline-variant px-4 py-2 text-[11px] text-on-surface-variant">
-                            <span><kbd class="rounded border border-outline-variant px-1 font-mono">??</kbd> pilih</span>
-                            <span><kbd class="rounded border border-outline-variant px-1 font-mono">Enter</kbd> buka</span>
-                            <span><kbd class="rounded border border-outline-variant px-1 font-mono">Esc</kbd> tutup</span>
+                        <div class="flex shrink-0 items-center gap-3 inset-divider-t px-4 py-2 text-[11px] text-on-surface-variant">
+                            <span><kbd class="rounded chip-shadow px-1 font-mono ring-1 ring-outline-variant/70">↑↓</kbd> pilih</span>
+                            <span><kbd class="rounded chip-shadow px-1 font-mono ring-1 ring-outline-variant/70">Enter</kbd> buka</span>
+                            <span><kbd class="rounded chip-shadow px-1 font-mono ring-1 ring-outline-variant/70">Esc</kbd> tutup</span>
                         </div>
                     </div>
                 </div>

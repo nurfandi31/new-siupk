@@ -40,7 +40,7 @@ const wrapperBase = 'flex flex-wrap gap-2';
 const alignCls = 'inline-flex items-center justify-center gap-1.5';
 
 const base = {
-    outline: 'rounded-xl border transition-all duration-150 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-lowest',
+    outline: 'rounded-xl ring-1 transition-all duration-150 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-lowest',
     solid: 'rounded-full transition-all duration-150 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-lowest',
     segment: 'rounded-lg transition-all duration-150 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-lowest',
 };
@@ -51,13 +51,13 @@ const sizeCls = {
 };
 
 const activeCls = {
-    outline: 'border-primary bg-primary text-on-primary shadow-sm',
-    solid: 'bg-primary text-on-primary',
+    outline: 'ring-primary bg-primary text-on-primary shadow-md shadow-primary/25',
+    solid: 'bg-primary text-on-primary shadow-md shadow-primary/25',
     segment: 'bg-primary text-on-primary shadow-sm',
 };
 
 const inactiveCls = {
-    outline: 'border-outline-variant bg-surface-container-lowest text-primary hover:border-primary/40',
+    outline: 'ring-outline-variant bg-surface-container-lowest text-primary hover:ring-primary/40 shadow-sm shadow-black/5',
     solid: 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container',
     segment: 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container',
 };

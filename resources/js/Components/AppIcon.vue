@@ -3,24 +3,12 @@ const props = defineProps({
     name: { type: String, required: true },
     filled: { type: Boolean, default: false },
     label: { type: String, default: null },
-    /**
-     * Semantic color tone. When set (not 'neutral'), the icon is rendered inside
-     * a rounded container with MD3 token classes. Useful for stat tiles, status
-     * badges, and inline alerts. Backwards-compatible: omit to keep raw icon.
-     */
     tone: {
         type: String,
         default: 'neutral',
         validator: (value) => ['neutral', 'success', 'warning', 'danger', 'error', 'info', 'primary', 'secondary', 'tertiary'].includes(value),
     },
-    /**
-     * Optional container size when tone is set. Maps to Tailwind size-* utility.
-     * Default: 9 (36px). Used in stat tiles / status pills.
-     */
     containerSize: { type: [Number, String], default: 9 },
-    /**
-     * Optional container shape. 'rounded' = rounded-lg (default), 'pill' = rounded-full.
-     */
     containerShape: {
         type: String,
         default: 'rounded',
@@ -31,18 +19,17 @@ const props = defineProps({
 const containerClasses = {
     neutral: 'bg-surface-container-low text-on-surface-variant',
     success: 'bg-secondary-container text-on-secondary-container',
-    warning: 'bg-tertiary-fixed text-tertiary',
+    warning: 'bg-tertiary-fixed text-on-tertiary',
     danger: 'bg-error-container text-on-error-container',
     error: 'bg-error-container text-on-error-container',
     info: 'bg-primary-container text-on-primary-container',
     primary: 'bg-primary-container text-on-primary-container',
     secondary: 'bg-secondary-container text-on-secondary-container',
-    tertiary: 'bg-tertiary-fixed text-tertiary',
+    tertiary: 'bg-tertiary-fixed text-on-tertiary',
 };
 </script>
 
 <template>
-    <!-- Raw icon (tone === 'neutral') — preserves existing call sites -->
     <span
         v-if="tone === 'neutral'"
         class="material-symbols-outlined shrink-0"
@@ -50,9 +37,9 @@ const containerClasses = {
         :aria-hidden="label ? undefined : 'true'"
         :aria-label="label || undefined"
         :role="label ? 'img' : undefined"
+        style="font-size: inherit; line-height: 1; width: 1em; height: 1em; display: inline-block; text-align: center;"
     >{{ name }}</span>
 
-    <!-- Toned icon: render inside a colored container -->
     <span
         v-else
         class="grid shrink-0 place-items-center"
@@ -68,6 +55,7 @@ const containerClasses = {
         <span
             class="material-symbols-outlined"
             :class="{ 'is-filled': filled }"
+            style="font-size: 1.25rem; line-height: 1;"
         >{{ name }}</span>
     </span>
 </template>

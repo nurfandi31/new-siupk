@@ -32,7 +32,7 @@ const inputId = props.id || useId();
                 :aria-describedby="error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined"
                 :readonly="readonly"
                 :placeholder="readonly ? undefined : (placeholder ?? `Masukkan ${label.toLowerCase()}`)"
-                class="min-h-24 w-full resize-y rounded-xl border bg-surface-container-lowest px-3.5 py-2.5 text-base text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant"
+                class="min-h-24 w-full resize-y rounded-xl border bg-surface-container-lowest px-3.5 py-2.5 text-sm text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant"
                 :class="[icon && 'pl-11', error ? 'border-error' : 'border-outline-variant']"
                 v-bind="$attrs"
             />

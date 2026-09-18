@@ -18,7 +18,6 @@ export default defineConfig({
         strictPort: true,
         hmr: {
             host: 'localhost',
-            clientPort: Number(process.env.VITE_PORT || 5174),
         },
     },
 });

@@ -252,7 +252,7 @@ watch(() => props.modelValue, (value) => {
                 :aria-required="required"
                 :disabled="disabled"
                 :class="[
-                    size === 'compact' ? 'h-9 rounded-lg px-3 pr-12 text-sm' : 'h-11 rounded-xl px-3.5 pr-12 text-base',
+                    size === 'compact' ? 'h-9 rounded-lg px-3 pr-12 text-sm' : 'h-11 rounded-xl px-3.5 pr-12 text-sm',
                     'flex w-full items-center justify-between border bg-surface-container-lowest text-left text-primary transition-all duration-150 active:scale-[0.99] focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
                     error ? 'border-error' : 'border-outline-variant',
                 ]"
@@ -261,7 +261,7 @@ watch(() => props.modelValue, (value) => {
                 @keydown="onKeydown"
             >
                 <span class="block min-w-0 flex-1 truncate whitespace-nowrap" :class="selectedLabel ? 'text-primary' : 'text-outline'">{{ selectedLabel || (placeholder ?? `Pilih ${label.toLowerCase()}`) }}</span>
-                <AppIcon :name="'expand_more'" :class="['absolute text-outline leading-none transition-transform duration-200', size === 'compact' ? 'right-2.5 !text-base' : 'right-2.5 !text-lg', { 'rotate-180': open }]" />
+                <AppIcon :name="'expand_more'" :class="['absolute text-outline leading-none transition-transform duration-200', size === 'compact' ? 'right-2.5 !text-base' : 'right-2.5 !text-base', { 'rotate-180': open }]" />
             </button>
             <button
                 v-if="clearable && selectedLabel"
@@ -270,7 +270,7 @@ watch(() => props.modelValue, (value) => {
                 aria-label="Hapus pilihan"
                 @click="clear"
             >
-                <AppIcon :name="'close'" :class="size === 'compact' ? '!text-base leading-none' : '!text-lg leading-none'" />
+                <AppIcon :name="'close'" :class="size === 'compact' ? '!text-base leading-none' : '!text-base leading-none'" />
             </button>
             <Teleport to="body">
                 <Transition
@@ -286,7 +286,7 @@ watch(() => props.modelValue, (value) => {
                         :id="`${selectId}-listbox`"
                         ref="listbox"
                         role="listbox"
-                        class="flex flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-2 shadow-xl"
+                        class="flex flex-col overflow-hidden rounded-xl panel-shadow bg-surface-container-lowest p-2 ring-1 ring-outline-variant/40"
                         :class="placeAbove ? 'origin-bottom' : 'origin-top'"
                         :style="menuStyle"
                         :data-smart-select="selectId"

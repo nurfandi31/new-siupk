@@ -60,9 +60,9 @@ const shortcutGroups = computed(() => [
                 <div
                     v-for="group in shortcutGroups"
                     :key="group.title"
-                    class="rounded-xl border border-outline-variant bg-surface-container-low/40 p-4"
+                    class="rounded-xl chip-shadow bg-surface-container-low/40 p-4 ring-1 ring-outline-variant/40"
                 >
-                    <div class="flex items-center gap-2 pb-2.5 border-b border-outline-variant/60">
+                    <div class="flex items-center gap-2 pb-2.5 inset-divider">
                         <AppIcon :name="group.icon" class="text-primary text-base" />
                         <h4 class="text-xs font-bold uppercase tracking-wider text-primary">
                             {{ group.title }}

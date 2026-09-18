@@ -10,9 +10,12 @@ import AppButton from '../Components/AppButton.vue';
 import ThemeMenu from '../Components/ThemeMenu.vue';
 import NotificationDropdown from '../Components/NotificationDropdown.vue';
 
+const props = defineProps({ unitName: { type: String, default: null } });
+
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
 const appName = computed(() => page.props.appName || 'siupk Next');
+const logoPath = computed(() => page.props.logoPath ?? null);
 const currentPath = computed(() => page.url.split('?')[0]);
 const mobileMenuOpen = ref(false);
 const sidebarCollapsed = ref(false);
@@ -21,7 +24,7 @@ const logoutOpen = ref(false);
 const themeOpen = ref(false);
 const avatarError = ref(false);
 
-const SIDEBAR_KEY = 'siupk-admin-sidebar';
+const SIDEBAR_KEY = 'siupk-tenant-admin-sidebar';
 onMounted(() => {
     try {
         const v = localStorage.getItem(SIDEBAR_KEY);
@@ -32,20 +35,40 @@ watch(sidebarCollapsed, (v) => {
     try { localStorage.setItem(SIDEBAR_KEY, v ? '1' : '0'); } catch (e) { /* ignore */ }
 });
 
-const navigation = [
-    { label: 'Dashboard', icon: 'dashboard', href: '/admin', exact: true },
-    { label: 'Tenant', icon: 'domain', href: '/admin/tenants' },
-    { label: 'Plan', icon: 'workspace_premium', href: '/admin/plans' },
-    { label: 'Invoice', icon: 'receipt_long', href: '/admin/invoices' },
-    { label: 'Pendapatan', icon: 'monitoring', href: '/admin/revenue' },
-    { label: 'Log Audit', icon: 'history', href: '/admin/audit-logs' },
-    { label: 'Pengguna Platform', icon: 'group', href: '/admin/users' },
-    { label: 'Shard & Cutover', icon: 'storage', href: '/admin/shards' },
-    { label: 'WhatsApp', icon: 'chat', href: '/admin/whatsapp' },
-    { label: 'Platform Settings', icon: 'tune', href: '/admin/settings' },
-    { label: 'Payment Gateway', icon: 'payments', href: '/admin/payment-gateways' },
-    { label: 'AI Assistant', icon: 'smart_toy', href: '/admin/ai-assistant' },
-    { label: 'Migrasi Data', icon: 'transform', href: '/admin/migration' },
+const sections = [
+    {
+        label: 'Dashboard',
+        items: [{ label: 'Dashboard', icon: 'dashboard', href: '/dashboard', exact: true }],
+    },
+    {
+        label: 'Pengaturan',
+        items: [
+            { label: 'Pengaturan', icon: 'settings', href: '/settings' },
+            { label: 'WhatsApp Gateway', icon: 'chat', href: '/settings/whatsapp' },
+        ],
+    },
+    {
+        label: 'Pengguna',
+        items: [
+            { label: 'Manajemen User', icon: 'manage_accounts', href: '/access/users' },
+            { label: 'Manajemen Role', icon: 'admin_panel_settings', href: '/access/roles' },
+        ],
+    },
+    {
+        label: 'Website',
+        items: [
+            { label: 'Berita', icon: 'article', href: '/website/posts' },
+            { label: 'Halaman', icon: 'description', href: '/website/pages' },
+            { label: 'Pengaturan Situs', icon: 'tune', href: '/website/settings' },
+            { label: 'Pesan Masuk', icon: 'inbox', href: '/website/messages' },
+        ],
+    },
+    {
+        label: 'Notifikasi',
+        items: [
+            { label: 'Billing Notice', icon: 'campaign', href: '/notifications/billing' },
+        ],
+    },
 ];
 
 function isActive(item) {
@@ -54,7 +77,7 @@ function isActive(item) {
 }
 
 function toggleSidebar() {
-    if (window.matchMedia('(max-width: 1023px)').matches) {
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
         mobileMenuOpen.value = !mobileMenuOpen.value;
     } else {
         sidebarCollapsed.value = !sidebarCollapsed.value;
@@ -128,7 +151,6 @@ function logout() {
                 sidebarCollapsed ? 'lg:w-16' : 'lg:w-64',
             ]"
         >
-            <!-- Toggle button: floating at sidebar edge -->
             <button
                 type="button"
                 class="absolute top-5 -right-3 z-10 grid size-8 place-items-center rounded-full chip-shadow bg-surface text-on-surface ring-1 ring-outline-variant transition hover:bg-surface-container hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container lg:top-7"
@@ -141,20 +163,23 @@ function logout() {
 
             <div class="flex items-center gap-3 px-4 py-6 lg:px-6" :class="sidebarCollapsed && 'lg:justify-center lg:px-2'">
                 <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-zinc-800 text-zinc-100 ring-1 ring-white/10">
-                    <AppIcon name="account_balance" />
+                    <img v-if="logoPath" :src="logoPath" alt="Logo lembaga" class="size-full object-contain" />
+                    <AppIcon v-else name="admin_panel_settings" />
                 </div>
                 <div class="min-w-0 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && 'lg:hidden'">
-                    <p class="truncate font-bold leading-none text-white">Platform Admin</p>
-                    <p class="mt-1 truncate text-[10px] font-semibold uppercase tracking-widest text-zinc-400">siupk Next</p>
+                    <p class="truncate font-bold leading-none text-white">Admin Tenant</p>
+                    <p class="mt-1 truncate text-[10px] font-semibold uppercase tracking-widest text-zinc-400">{{ appName }}</p>
                 </div>
             </div>
 
-            <nav class="scrollbar-hidden flex-1 space-y-5 overflow-y-auto px-2" aria-label="Navigasi admin">
-                <section>
-                    <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && 'lg:hidden'">Manajemen Platform</h2>
+            <nav class="scrollbar-hidden flex-1 space-y-5 overflow-y-auto px-2" aria-label="Navigasi admin tenant">
+                <section v-for="section in sections" :key="section.label">
+                    <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && 'lg:hidden'">
+                        {{ section.label }}
+                    </h2>
                     <div class="space-y-1">
                         <Link
-                            v-for="item in navigation"
+                            v-for="item in section.items"
                             :key="item.label"
                             :href="item.href"
                             class="group flex items-center gap-3 rounded-lg px-4 py-2.5 transition-all duration-200"
@@ -188,7 +213,7 @@ function logout() {
                 class="mr-3 lg:hidden"
                 @click="toggleSidebar"
             />
-            <p class="font-bold text-primary">Panel Admin Platform</p>
+            <p class="font-bold text-primary">{{ unitName ? unitName : 'Admin Tenant' }}</p>
             <p class="ml-3 hidden items-center gap-1 text-xs text-on-surface-variant md:flex">
                 <AppIcon name="admin_panel_settings" class="text-base text-primary" />
                 {{ appName }}
@@ -218,16 +243,18 @@ function logout() {
                 </Link>
                 <NotificationDropdown />
 
-                <!-- Profile pill -->
                 <Link
                     href="/profile"
                     class="ml-1 flex shrink-0 items-center gap-2 rounded-full chip-shadow bg-surface-container-lowest py-1 pl-1 pr-3 ring-1 ring-outline-variant transition hover:bg-surface-container-low hover:ring-primary/40"
                     aria-label="Buka Profil"
                 >
-                    <span class="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'Admin'" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'A' }}</span></span>
+                    <span class="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary">
+                        <img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'Admin'" class="size-full object-cover" @error="avatarError = true" />
+                        <span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'A' }}</span>
+                    </span>
                     <span class="hidden min-w-0 flex-col leading-tight sm:flex">
-                        <span class="truncate text-xs font-bold text-primary">{{ user?.name || 'Superadmin' }}</span>
-                        <span class="truncate text-[10px] font-medium text-on-surface-variant">Superadmin Platform</span>
+                        <span class="truncate text-xs font-bold text-primary">{{ user?.name || 'Admin' }}</span>
+                        <span class="truncate text-[10px] font-medium text-on-surface-variant">Admin Tenant</span>
                     </span>
                 </Link>
 
@@ -250,7 +277,7 @@ function logout() {
         <AppToast />
         <ThemeMenu v-model="themeOpen" />
 
-        <AppModal v-model="logoutOpen" title="Keluar dari Panel Admin?" size="sm">
+        <AppModal v-model="logoutOpen" title="Keluar dari Admin Tenant?" size="sm">
             <p class="text-sm text-on-surface-variant">
                 Sesi <span class="font-semibold text-primary">{{ user?.name || 'Admin' }}</span> akan diakhiri. Lanjutkan?
             </p>

@@ -51,9 +51,9 @@ onBeforeUnmount(() => {
                 ref="panel"
                 role="menu"
                 aria-label="Pilih tema tampilan"
-                class="fixed right-4 top-[4.5rem] z-50 w-64 origin-top-right overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl"
+                class="fixed right-4 top-[4.5rem] z-50 w-64 origin-top-right overflow-hidden rounded-2xl floating-shadow bg-surface-container-lowest ring-1 ring-outline-variant/40"
             >
-                <p class="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant border-b border-outline-variant/50 bg-surface-container-low/40">
+                <p class="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant inset-divider bg-surface-container-low/40">
                     Tema tampilan
                 </p>
                 <div class="p-1">

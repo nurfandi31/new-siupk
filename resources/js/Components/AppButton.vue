@@ -20,15 +20,15 @@ const variants = {
     success: 'bg-secondary text-on-secondary hover:brightness-110 disabled:bg-secondary/60',
     secondary: 'border border-outline-variant bg-surface-container-lowest text-primary hover:bg-surface-container-low',
     outline: 'border border-primary bg-transparent text-primary hover:bg-primary-container/20 disabled:border-primary/40',
-    ghost: 'bg-transparent text-primary hover:bg-surface-container-low',
+    ghost: 'bg-transparent text-primary hover:bg-surface-container-low shadow-none hover:shadow-none active:shadow-none',
     danger: 'bg-error text-on-error hover:brightness-90 disabled:bg-error/60',
     tertiary: 'bg-tertiary text-on-tertiary hover:brightness-110 disabled:bg-tertiary/60',
 };
 
 const sizes = {
     compact: 'min-h-9 px-3 text-sm',
-    default: 'min-h-11 px-4',
-    large: 'min-h-12 px-5 text-lg',
+    default: 'min-h-11 px-4 text-sm',
+    large: 'min-h-12 px-5 text-base',
 };
 </script>
 
@@ -43,7 +43,7 @@ const sizes = {
         v-bind="$attrs"
     >
         <span v-if="loading" class="size-5 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true" />
-        <AppIcon v-else-if="icon" :name="icon" class="text-lg leading-none" :class="iconClass" />
+        <AppIcon v-else-if="icon" :name="icon" class="text-base leading-none" :class="iconClass" />
         <slot />
     </button>
 </template>

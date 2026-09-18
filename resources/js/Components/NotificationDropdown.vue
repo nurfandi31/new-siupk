@@ -171,11 +171,11 @@ onBeforeUnmount(() => {
         >
             <div
                 v-if="open"
-                class="absolute right-0 top-12 z-50 w-88 sm:w-96 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-outline-variant bg-surface shadow-2xl overflow-hidden backdrop-blur-xl"
+                class="absolute right-0 top-12 z-50 w-88 sm:w-96 max-w-[calc(100vw-1.5rem)] rounded-2xl floating-shadow bg-surface ring-1 ring-outline-variant/40 overflow-hidden backdrop-blur-xl"
                 @click.stop
             >
                 <!-- Header -->
-                <div class="flex items-center justify-between border-b border-outline-variant bg-surface-container-low/80 px-4 py-3">
+                <div class="flex items-center justify-between inset-divider bg-surface-container-low/80 px-4 py-3">
                     <div class="flex items-center gap-2">
                         <AppIcon name="notifications" class="text-lg text-primary" />
                         <h3 class="text-sm font-bold text-primary">Notifikasi</h3>
@@ -194,7 +194,7 @@ onBeforeUnmount(() => {
                 </div>
 
                 <!-- Tabs Filter -->
-                <div class="flex border-b border-outline-variant bg-surface-container-lowest text-xs font-semibold px-2">
+                <div class="flex inset-divider bg-surface-container-lowest text-xs font-semibold px-2">
                     <button
                         type="button"
                         class="flex-1 py-2.5 text-center transition-colors border-b-2 cursor-pointer"
@@ -260,7 +260,7 @@ onBeforeUnmount(() => {
                 </div>
 
                 <!-- Footer -->
-                <div class="border-t border-outline-variant bg-surface-container-low/50 px-4 py-2.5 flex items-center justify-between text-xs font-semibold">
+                <div class="inset-divider-t bg-surface-container-low/50 px-4 py-2.5 flex items-center justify-between text-xs font-semibold">
                     <Link
                         href="/notifications/billing"
                         class="text-primary hover:underline flex items-center gap-1.5"

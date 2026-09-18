@@ -76,8 +76,8 @@ function logout() {
                 </Link>
             </nav>
 
-            <div class="mt-4 border-t border-primary-container px-4 pt-4">
-                <div class="flex items-center gap-3 rounded-xl bg-primary-container/50 p-3">
+            <div class="mt-4 border-t border-primary-container/40 px-4 pt-4">
+                <div class="flex min-w-0 items-center gap-3 rounded-xl bg-primary-container/50 p-3 shadow-inner shadow-black/20">
                     <div class="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-sm font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'Provinsi'" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'P' }}</span></div>
                     <div class="min-w-0 flex-1">
                         <p class="truncate font-bold text-on-primary">{{ user?.name || 'Supervisor' }}</p>
@@ -88,7 +88,7 @@ function logout() {
             </div>
         </aside>
 
-        <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-outline-variant bg-surface px-4 lg:ml-64 lg:px-6">
+        <header class="sticky top-0 z-30 flex h-16 items-center justify-between header-shadow bg-surface px-4 lg:ml-64 lg:px-6">
             <div class="flex items-center gap-3">
                 <AppIconButton name="menu" tone="primary" size="sm" rounded="lg" aria-label="Buka navigasi" class="lg:hidden" @click="mobileMenuOpen = true" />
                 <div>

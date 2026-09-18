@@ -77,7 +77,7 @@ onUnmounted(() => {
         >
             <div
                 v-if="isOffline"
-                class="pointer-events-auto flex max-w-2xl items-center justify-between gap-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3.5 shadow-xl backdrop-blur-md text-amber-900 dark:text-amber-200 sm:px-5"
+                class="pointer-events-auto flex max-w-2xl items-center justify-between gap-4 rounded-2xl chip-shadow bg-amber-500/10 p-3.5 ring-1 ring-amber-500/30 backdrop-blur-md text-amber-900 dark:text-amber-200 sm:px-5"
                 role="alert"
                 aria-live="assertive"
             >
@@ -106,7 +106,7 @@ onUnmounted(() => {
 
             <div
                 v-else-if="isReconnected"
-                class="pointer-events-auto flex max-w-xl items-center gap-3 rounded-2xl border border-secondary/30 bg-secondary-container/95 p-3.5 shadow-xl backdrop-blur-md text-on-secondary-container sm:px-5"
+                class="pointer-events-auto flex max-w-xl items-center gap-3 rounded-2xl chip-shadow bg-secondary-container/95 p-3.5 ring-1 ring-secondary/30 backdrop-blur-md text-on-secondary-container sm:px-5"
                 role="status"
                 aria-live="polite"
             >

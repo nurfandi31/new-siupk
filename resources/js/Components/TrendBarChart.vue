@@ -212,7 +212,7 @@ function tooltipStyle(h) {
 
         <div
             v-if="hover"
-            class="pointer-events-none absolute z-10 min-w-[10.5rem] rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 shadow-md"
+            class="pointer-events-none absolute z-10 min-w-[10.5rem] rounded-lg chip-shadow bg-surface-container-lowest px-3 py-2 ring-1 ring-outline-variant/40"
             :style="tooltipStyle(hover)"
             role="tooltip"
         >

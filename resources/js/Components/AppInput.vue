@@ -32,7 +32,7 @@ const inputId = props.id || generatedId;
         </div>
         <label v-else :for="inputId" class="sr-only">{{ label }}</label>
         <div class="relative">
-            <AppIcon v-if="icon" :name="icon" :class="['pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline leading-none', size === 'compact' ? 'left-3 text-base' : 'left-3.5 text-lg']" />
+            <AppIcon v-if="icon" :name="icon" :class="['pointer-events-none absolute top-1/2 -translate-y-1/2 text-outline leading-none', size === 'compact' ? 'left-3 text-base' : 'left-3 text-base']" />
             <input
                 :id="inputId"
                 v-model="model"
@@ -48,7 +48,7 @@ const inputId = props.id || generatedId;
                 :class="[
                     size === 'compact'
                         ? 'h-9 rounded-lg px-3 text-sm'
-                        : 'h-11 rounded-xl px-3.5 text-base',
+                        : 'h-11 rounded-xl px-3.5 text-sm',
                     'w-full border bg-surface-container-lowest text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant',
                     size === 'compact' ? (icon ? 'pl-9' : '') : (icon ? 'pl-11' : ''),
                     $slots.trailing ? (size === 'compact' ? 'pr-10' : 'pr-12') : '',

@@ -11,8 +11,8 @@ defineExpose({ root });
 </script>
 
 <template>
-    <section ref="root" class="card-shadow rounded-xl bg-surface-container-lowest" :class="[padded && 'p-6', bordered && 'border border-outline-variant']">
-        <header v-if="$slots.header" class="mb-6 flex items-center justify-between gap-4">
+    <section ref="root" class="elevated-card rounded-xl bg-surface-container-lowest" :class="[padded && 'p-6', bordered && 'ring-1 ring-outline-variant']">
+        <header v-if="$slots.header" class="flex items-center justify-between gap-4" :class="[padded ? 'mb-6' : 'px-4 py-3 inset-divider']">
             <slot name="header" />
         </header>
         <slot />

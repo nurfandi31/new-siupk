@@ -190,9 +190,9 @@ defineExpose({ invalidateSize });
             />
         </div>
 
-        <div class="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest">
+        <div class="overflow-hidden rounded-xl chip-shadow bg-surface-container-lowest ring-1 ring-outline-variant/40">
             <div ref="mapContainer" class="h-72 w-full z-0" />
-            <div class="flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant bg-surface-container p-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 inset-divider-t bg-surface-container p-3">
                 <p class="flex items-center gap-2 text-xs text-on-surface-variant">
                     <AppIcon name="location_on" />
                     Klik peta atau geser pin untuk mengatur titik lokasi tenant.

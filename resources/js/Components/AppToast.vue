@@ -9,23 +9,23 @@ const { toastState, show, dismiss, pause, resume } = useToast();
 
 const toneStyles = computed(() => ({
     success: {
-        iconBg: 'bg-secondary-container/50 text-secondary border-secondary/30',
+        iconBg: 'bg-secondary-container/60 text-secondary ring-1 ring-secondary/30 shadow-sm',
         icon: 'check_circle',
     },
     error: {
-        iconBg: 'bg-error-container/50 text-error border-error/30',
+        iconBg: 'bg-error-container/60 text-error ring-1 ring-error/30 shadow-sm',
         icon: 'error',
     },
     warning: {
-        iconBg: 'bg-tertiary-fixed/50 text-tertiary border-tertiary/30',
+        iconBg: 'bg-tertiary-fixed/60 text-tertiary ring-1 ring-tertiary/30 shadow-sm',
         icon: 'warning',
     },
     info: {
-        iconBg: 'bg-primary-container/30 text-primary border-primary/20',
+        iconBg: 'bg-primary-container/40 text-primary ring-1 ring-primary/20 shadow-sm',
         icon: 'info',
     },
 }[toastState.tone] || {
-    iconBg: 'bg-surface-container-high text-on-surface-variant border-outline-variant',
+    iconBg: 'bg-surface-container-high text-on-surface-variant ring-1 ring-outline-variant shadow-sm',
     icon: 'info',
 }));
 
@@ -56,13 +56,13 @@ onBeforeUnmount(() => {
                 <div
                     v-if="toastState.visible"
                     role="status"
-                    class="pointer-events-auto flex max-w-md items-center gap-3.5 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-4 py-3.5 shadow-xl shadow-surface-container-highest/30 ring-1 ring-black/5 transition-all duration-200 dark:ring-white/10"
+                    class="pointer-events-auto flex max-w-md items-center gap-3.5 rounded-2xl floating-shadow bg-surface-container-lowest px-4 py-3.5 ring-1 ring-outline-variant/40 transition-all duration-200"
                     @mouseenter="pause"
                     @mouseleave="resume"
                 >
                     <!-- Left Icon Badge -->
                     <div
-                        class="grid size-9 shrink-0 place-items-center rounded-xl border"
+                        class="grid size-9 shrink-0 place-items-center rounded-xl"
                         :class="toneStyles.iconBg"
                     >
                         <AppIcon :name="toneStyles.icon" class="text-xl" />

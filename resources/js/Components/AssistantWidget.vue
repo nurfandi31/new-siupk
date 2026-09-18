@@ -556,11 +556,11 @@ onBeforeUnmount(() => {
         <Transition name="assistant-panel">
             <div
                 v-if="open"
-                class="assistant-panel pointer-events-auto flex h-[min(36rem,75vh)] w-[min(24rem,calc(100vw-2rem))] origin-bottom-right flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-2xl"
+                class="assistant-panel pointer-events-auto flex h-[min(36rem,75vh)] w-[min(24rem,calc(100vw-2rem))] origin-bottom-right flex-col overflow-hidden rounded-2xl floating-shadow bg-surface-container-lowest ring-1 ring-outline-variant/40"
                 role="dialog"
                 :aria-label="displayName()"
             >
-                <div class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-variant bg-primary px-4 py-3 text-on-primary">
+                <div class="flex shrink-0 items-center justify-between gap-2 inset-divider bg-primary px-4 py-3 text-on-primary">
                     <div class="flex min-w-0 items-center gap-2">
                         <AppIcon name="smart_toy" class="shrink-0 text-xl" />
                         <div class="min-w-0">
@@ -583,8 +583,8 @@ onBeforeUnmount(() => {
                             :key="msg.id"
                             class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed"
                             :class="{
-                                'self-end rounded-br-sm bg-primary text-on-primary whitespace-pre-wrap': msg.role === 'user',
-                                'assistant-md self-start rounded-bl-sm border border-outline-variant bg-surface-container-lowest text-on-surface': msg.role === 'assistant' || msg.role === 'system',
+                                'self-end rounded-br-sm bg-primary text-on-primary whitespace-pre-wrap shadow-sm shadow-primary/30': msg.role === 'user',
+                                'assistant-md self-start rounded-bl-sm chip-shadow bg-surface-container-lowest text-on-surface': msg.role === 'assistant' || msg.role === 'system',
                                 'self-start rounded-bl-sm bg-error-container text-on-error-container whitespace-pre-wrap': msg.role === 'error',
                                 'self-start rounded-bl-sm border border-dashed border-outline-variant bg-surface-container-low text-xs text-on-surface-variant': msg.role === 'tool',
                             }"
@@ -676,7 +676,7 @@ onBeforeUnmount(() => {
 
                     <div
                         v-if="typing"
-                        class="assistant-typing self-start flex max-w-[85%] items-center gap-2 rounded-2xl rounded-bl-sm border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5"
+                        class="assistant-typing self-start flex max-w-[85%] items-center gap-2 rounded-2xl rounded-bl-sm chip-shadow bg-surface-container-lowest px-3.5 py-2.5"
                         :aria-label="typingLabel"
                     >
                         <span class="flex items-center gap-1">
@@ -689,7 +689,7 @@ onBeforeUnmount(() => {
 
                     <div
                         v-if="pendingConfirmation"
-                        class="self-stretch rounded-xl border border-outline-variant bg-surface-container-lowest p-3 text-sm"
+                        class="self-stretch rounded-xl chip-shadow bg-surface-container-lowest p-3 text-sm"
                     >
                         <p class="font-semibold text-primary">{{ pendingConfirmation.summary }}</p>
                         <ul v-if="pendingConfirmation.warnings?.length" class="mt-2 list-disc pl-4 text-on-surface-variant">
@@ -704,7 +704,7 @@ onBeforeUnmount(() => {
                             >Setuju</button>
                             <button
                                 type="button"
-                                class="rounded-lg border border-outline-variant px-3 py-1.5 text-xs font-semibold text-on-surface disabled:opacity-50"
+                                class="rounded-lg ring-1 ring-outline-variant px-3 py-1.5 text-xs font-semibold text-on-surface shadow-sm shadow-black/5 disabled:opacity-50"
                                 :disabled="sending"
                                 @click="decideConfirmation('reject')"
                             >Tolak</button>
@@ -712,9 +712,9 @@ onBeforeUnmount(() => {
                     </div>
                 </div>
 
-                <div class="border-t border-outline-variant bg-surface-container-lowest">
+                <div class="inset-divider-t bg-surface-container-lowest">
                     <!-- Attached Files Preview -->
-                    <div v-if="attachedImages.length" class="flex flex-wrap gap-2 border-b border-outline-variant/50 px-3 pt-2.5 pb-2">
+                    <div v-if="attachedImages.length" class="flex flex-wrap gap-2 inset-divider px-3 pt-2.5 pb-2">
                         <div
                             v-for="(att, idx) in attachedImages"
                             :key="idx"
@@ -747,7 +747,7 @@ onBeforeUnmount(() => {
                         />
                         <button
                             type="button"
-                            class="mb-0.5 grid size-11 shrink-0 place-items-center rounded-xl border border-outline-variant text-on-surface-variant transition hover:bg-surface-container hover:text-on-surface focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                            class="mb-0.5 grid size-11 shrink-0 place-items-center rounded-xl chip-shadow ring-1 ring-outline-variant text-on-surface-variant transition hover:bg-surface-container hover:text-on-surface focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                             :disabled="sending || loading"
                             aria-label="Lampirkan Gambar atau Dokumen"
                             title="Lampirkan Gambar atau Dokumen (PDF)"

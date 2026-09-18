@@ -52,7 +52,7 @@ function submitImport() {
 
     <AppModal v-model="open" :title="title" size="md">
         <p class="mb-4 text-sm text-on-surface-variant">{{ hint }}</p>
-        <div class="mb-4 rounded-xl border border-outline-variant bg-surface-container-low p-4">
+        <div class="mb-4 rounded-xl chip-shadow bg-surface-container-low p-4 ring-1 ring-outline-variant/40">
             <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Kolom header</p>
             <p class="mt-2 font-mono text-sm text-primary">{{ columns.join(';') }}</p>
         </div>

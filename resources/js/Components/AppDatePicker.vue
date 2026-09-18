@@ -336,7 +336,7 @@ const todayActionLabel = computed(() => props.mode === 'year' ? 'Tahun ini' : pr
                 :id="inputId"
                 ref="trigger"
                 type="button"
-                class="flex h-11 w-full items-center gap-2 rounded-xl border bg-surface-container-lowest px-3.5 text-left text-base text-primary transition-all duration-150 active:scale-[0.99] focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
+                class="flex h-11 w-full items-center gap-2 rounded-xl border bg-surface-container-lowest px-3.5 text-left text-sm text-primary transition-all duration-150 active:scale-[0.99] focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
                 :class="[error ? 'border-error' : 'border-outline-variant', clearable && model && 'pr-9']"
                 :disabled="disabled"
                 :aria-expanded="open"
@@ -346,7 +346,7 @@ const todayActionLabel = computed(() => props.mode === 'year' ? 'Tahun ini' : pr
                 @click="open ? closeCalendar() : openCalendar()"
                 @keydown.esc="closeCalendar(true)"
             >
-                <AppIcon v-if="icon" :name="icon" class="shrink-0 text-lg text-outline" />
+                <AppIcon v-if="icon" :name="icon" class="shrink-0 text-base text-outline" />
                 <span class="min-w-0 flex-1 truncate" :class="displayValue ? 'text-primary' : 'text-outline'">{{ displayValue || (placeholder ?? `Pilih ${label.toLowerCase()}`) }}</span>
                 <button
                     v-if="clearable && model"
@@ -376,7 +376,7 @@ const todayActionLabel = computed(() => props.mode === 'year' ? 'Tahun ini' : pr
                         role="dialog"
                         aria-modal="false"
                         :aria-label="`Pilih ${label.toLowerCase()}`"
-                        class="min-w-72 rounded-2xl border border-outline-variant bg-surface-container-lowest p-3.5 shadow-xl select-none"
+                        class="min-w-72 rounded-2xl panel-shadow bg-surface-container-lowest p-3.5 ring-1 ring-outline-variant/40 select-none"
                         :class="placeAbove ? 'origin-bottom' : 'origin-top'"
                         :style="popupStyle"
                         @keydown="onCalendarKeydown"
@@ -414,7 +414,7 @@ const todayActionLabel = computed(() => props.mode === 'year' ? 'Tahun ini' : pr
                             </div>
                         </Transition>
 
-                        <div class="mt-3 flex items-center justify-between border-t border-outline-variant pt-3 text-sm font-semibold">
+                        <div class="mt-3 flex items-center justify-between inset-divider pt-3 text-sm font-semibold">
                             <button v-if="clearable && model" type="button" class="rounded-lg px-3 py-2 text-error transition-all duration-150 hover:bg-error-container active:scale-95" @click="clear">Hapus</button>
                             <span v-else></span>
                             <button type="button" class="rounded-lg px-3 py-2 text-primary transition-all duration-150 hover:bg-surface-container-low active:scale-95" @click="selectToday">{{ todayActionLabel }}</button>
