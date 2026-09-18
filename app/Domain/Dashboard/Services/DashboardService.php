@@ -77,6 +77,9 @@ final class DashboardService
         $groupCount = (int) Group::query()->where('status', 'active')->count();
         $activeLoanCount = (int) Loan::query()->whereIn('status', self::ACTIVE_LOAN_STATUSES)->count();
 
+        $activeLoanBreakdown = $this->activeLoanBreakdown();
+        $memberBreakdown = $this->memberBreakdown();
+
         return [
             'unit_name' => $profile?->short_name ?: $profile?->legal_name,
             'as_of' => $today->toDateString(),
@@ -96,7 +99,8 @@ final class DashboardService
                     'icon' => 'payments',
                     'value' => $activeOutstanding['amount'],
                     'format' => 'money',
-                    'hint' => $activeOutstanding['count'].' pinjaman aktif',
+                    'hint' => $activeLoanBreakdown['hint'],
+                    'breakdown' => $activeLoanBreakdown['breakdown'],
                     'tone' => null,
                 ],
                 [
@@ -112,9 +116,10 @@ final class DashboardService
                     'key' => 'members',
                     'label' => 'Anggota Aktif',
                     'icon' => 'groups',
-                    'value' => $memberCount,
+                    'value' => $memberCount + $groupCount,
                     'format' => 'number',
-                    'hint' => $groupCount.' kelompok aktif',
+                    'hint' => $memberBreakdown['hint'],
+                    'breakdown' => $memberBreakdown['breakdown'],
                     'tone' => null,
                 ],
             ],
@@ -127,7 +132,101 @@ final class DashboardService
                 'members' => $memberCount,
                 'groups' => $groupCount,
                 'active_loans' => $activeLoanCount,
+                'active_loans_kelompok' => $activeLoanBreakdown['kelompok'],
+                'active_loans_individu' => $activeLoanBreakdown['individu'],
+                'members_individu' => $memberBreakdown['individu'],
             ],
+        ];
+    }
+
+    /**
+     * @return array{hint:string, breakdown:array<string,int>, kelompok:int, individu:int}
+     */
+    private function activeLoanBreakdown(): array
+    {
+        $tenantId = $this->tenantId();
+
+        $rows = DB::connection('tenant')
+            ->table('loans as l')
+            ->leftJoin('loan_borrowers as b', function ($join): void {
+                $join->on('b.tenant_id', '=', 'l.tenant_id')
+                    ->on('b.loan_row_id', '=', 'l.row_id');
+            })
+            ->where('l.tenant_id', $tenantId)
+            ->whereIn('l.status', self::ACTIVE_LOAN_STATUSES)
+            ->selectRaw("
+                SUM(CASE WHEN b.group_row_id IS NOT NULL OR l.legacy_source = 'group_loan' THEN 1 ELSE 0 END) AS kelompok,
+                SUM(CASE WHEN (b.member_row_id IS NOT NULL AND (b.group_row_id IS NULL OR l.legacy_source = 'individual_loan')) THEN 1 ELSE 0 END) AS individu
+            ")
+            ->first();
+
+        $kelompok = (int) ($rows->kelompok ?? 0);
+        $individu = (int) ($rows->individu ?? 0);
+
+        $parts = [];
+        if ($kelompok > 0) {
+            $parts[] = $kelompok.' kelompok';
+        }
+        if ($individu > 0) {
+            $parts[] = $individu.' individu';
+        }
+
+        return [
+            'hint' => $parts === [] ? 'Belum ada pinjaman aktif' : implode(' · ', $parts).' · '.($kelompok + $individu).' total',
+            'breakdown' => [
+                'Kelompok' => $kelompok,
+                'Individu' => $individu,
+            ],
+            'kelompok' => $kelompok,
+            'individu' => $individu,
+        ];
+    }
+
+    /**
+     * @return array{hint:string, breakdown:array<string,int>, individu:int}
+     */
+    private function memberBreakdown(): array
+    {
+        $tenantId = $this->tenantId();
+
+        $kelompok = (int) Group::query()->where('status', 'active')->count();
+
+        // Individu = anggota aktif yang pernah tercatat sebagai borrower pada loan individu
+        // (loan_borrowers dengan group_row_id NULL ATAU loan.legacy_source = 'individual_loan').
+        $individu = (int) DB::connection('tenant')
+            ->table('members as m')
+            ->join('loan_borrowers as b', function ($join): void {
+                $join->on('b.tenant_id', '=', 'm.tenant_id')
+                    ->on('b.member_row_id', '=', 'm.row_id');
+            })
+            ->join('loans as l', function ($join): void {
+                $join->on('l.tenant_id', '=', 'b.tenant_id')
+                    ->on('l.row_id', '=', 'b.loan_row_id');
+            })
+            ->where('m.tenant_id', $tenantId)
+            ->where('m.status', 'active')
+            ->where(function ($q): void {
+                $q->whereNull('b.group_row_id')
+                    ->orWhere('l.legacy_source', 'individual_loan');
+            })
+            ->distinct()
+            ->count('m.row_id');
+
+        $parts = [];
+        if ($kelompok > 0) {
+            $parts[] = $kelompok.' kelompok';
+        }
+        if ($individu > 0) {
+            $parts[] = $individu.' individu';
+        }
+
+        return [
+            'hint' => $parts === [] ? 'Belum ada entitas aktif' : implode(' · ', $parts),
+            'breakdown' => [
+                'Kelompok' => $kelompok,
+                'Individu' => $individu,
+            ],
+            'individu' => $individu,
         ];
     }
 
@@ -355,12 +454,17 @@ final class DashboardService
         };
 
         $group = $loan->borrower?->group;
+        $memberRowId = $loan->borrower?->member_row_id;
+        $groupRowId = $group?->row_id;
+        $legacySource = (string) ($loan->legacy_source ?? '');
+        $borrowerType = ($groupRowId !== null || $legacySource === 'group_loan') ? 'kelompok' : 'individu';
 
         return [
             'row_id' => (int) $loan->row_id,
             'id' => (int) $loan->id,
             'loan_number' => $loan->loan_number ?? '—',
             'status' => $loan->status,
+            'borrower_type' => $borrowerType,
             'proposed_at' => $loan->proposed_at?->format('Y-m-d'),
             'verified_at' => $loan->verified_at?->format('Y-m-d'),
             'approved_at' => $loan->approved_at?->format('Y-m-d'),
@@ -376,6 +480,7 @@ final class DashboardService
             'product_name' => $loan->product?->name,
             'group_name' => $group?->name ?? '—',
             'group_address' => trim(($group?->address ?? '').' '.($group?->village?->name ?? '')),
+            'member_name' => $memberRowId !== null ? ($loan->borrower?->member?->person?->full_name ?? null) : null,
         ];
     }
 

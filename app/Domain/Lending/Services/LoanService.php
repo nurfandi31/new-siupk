@@ -15,6 +15,7 @@ use App\Domain\Lending\Models\LoanCommittee;
 use App\Domain\Lending\Models\LoanInstallment;
 use App\Domain\Lending\Models\LoanProduct;
 use App\Domain\Lending\Models\LoanWriteOff;
+use App\Domain\Lending\Services\MemberLoanScheduleCalculator;
 use App\Domain\Membership\Models\Group;
 use App\Domain\Membership\Models\Member;
 use App\Services\TenantSettingService;
@@ -98,6 +99,7 @@ final class LoanService
         private readonly JournalPostingService $journalPosting,
         private readonly TenantContext $tenantContext,
         private readonly LoanTrackingService $tracking,
+        private readonly LoanEligibilityChecker $eligibility,
     ) {}
 
     public function createProposal(array $data, int $userId): Loan
@@ -109,6 +111,11 @@ final class LoanService
                 ->firstOrFail();
 
             $group = Group::query()->where('row_id', $data['group_id'])->firstOrFail();
+
+            // Cegah double-registration: kelompok dan anggota belum pinjam aktif.
+            $this->eligibility->ensureGroupEligible((int) $group->row_id);
+            $beneficiaryIds = collect($data['beneficiary_ids'] ?? [])->map(fn ($v) => (int) $v)->all();
+            $this->eligibility->ensureMembersEligible($beneficiaryIds);
 
             $principal = (float) $data['principal_amount'];
             $serviceRateTotal = (float) $data['service_rate_total'];
@@ -194,6 +201,84 @@ final class LoanService
             ]);
 
             return $loan->fresh(['product', 'borrower.group', 'committee', 'beneficiaries', 'installments']);
+        });
+    }
+
+    public function createMemberProposal(array $data, int $userId): Loan
+    {
+        return DB::connection('tenant')->transaction(function () use ($data, $userId): Loan {
+            $product = LoanProduct::query()
+                ->where('row_id', $data['loan_product_id'])
+                ->where('is_active', true)
+                ->firstOrFail();
+
+            if (! in_array((string) $product->borrower_scope, ['member', 'both'], true)) {
+                throw new DomainException('Produk pinjaman ini tidak dapat digunakan untuk pinjaman individu.');
+            }
+
+            $member = Member::query()->with('person')->where('row_id', $data['member_id'])->firstOrFail();
+
+            // Cegah double-registration: anggota belum punya pinjaman aktif.
+            $this->eligibility->ensureMemberEligible((int) $member->row_id);
+
+            $principal = (float) $data['principal_amount'];
+            $serviceRateTotal = (float) $data['service_rate_total'];
+            $term = (int) $data['term_months'];
+            $method = $data['installment_method'];
+            $principalFreq = $data['principal_frequency'];
+            $interestFreq = $data['interest_frequency'];
+            $principalGraceMonths = (int) ($data['principal_grace_months'] ?? 0);
+            $interestGraceMonths = (int) ($data['interest_grace_months'] ?? 0);
+
+            $principalPeriods = $this->periods($principalFreq, $term, $principalGraceMonths);
+            $interestPeriods = $this->periods($interestFreq, $term, $interestGraceMonths);
+            $principalRatePerPeriod = $principalPeriods > 0 ? round($serviceRateTotal / $principalPeriods, 4) : 0.0;
+            $interestRatePerPeriod = $interestPeriods > 0 ? round($serviceRateTotal / $interestPeriods, 4) : 0.0;
+
+            $loan = Loan::query()->create([
+                'legacy_source' => 'member_loan',
+                'loan_product_row_id' => $product->row_id,
+                'sequence_number' => 1,
+                'proposed_at' => $data['proposed_at'],
+                'principal_amount' => $principal,
+                'interest_rate' => $principalRatePerPeriod,
+                'service_rate_total' => $serviceRateTotal,
+                'term_months' => $term,
+                'installment_method' => $method,
+                'principal_frequency' => $principalFreq,
+                'interest_frequency' => $interestFreq,
+                'principal_grace_months' => $principalGraceMonths,
+                'interest_grace_months' => $interestGraceMonths,
+                'rounding_step' => isset($data['rounding_step']) && $data['rounding_step'] !== '' ? (int) $data['rounding_step'] : null,
+                'status' => 'draft',
+                'created_by_user_id' => $userId,
+            ]);
+
+            $loan->borrower()->create([
+                'member_row_id' => $member->row_id,
+                'group_row_id' => null,
+            ]);
+
+            $this->generatePrincipalSchedule($loan, $principal, $principalPeriods, $principalRatePerPeriod, $principalFreq, $data['proposed_at'], $principalGraceMonths);
+            $this->generateInterestSchedule($loan, $principal, $interestPeriods, $interestRatePerPeriod, $method, $interestFreq, $data['proposed_at'], $interestGraceMonths);
+
+            $loan->statusHistories()->create([
+                'from_status' => null,
+                'to_status' => 'draft',
+                'principal_amount' => $principal,
+                'product_row_id' => $product->row_id,
+                'term_months' => $term,
+                'service_rate_total' => $serviceRateTotal,
+                'principal_frequency' => $principalFreq,
+                'interest_frequency' => $interestFreq,
+                'principal_grace_months' => $principalGraceMonths,
+                'interest_grace_months' => $interestGraceMonths,
+                'notes' => 'Proposal pinjaman individu didaftarkan.',
+                'changed_by_user_id' => $userId,
+                'changed_at' => now(),
+            ]);
+
+            return $loan->fresh(['product', 'borrower.member.person', 'installments']);
         });
     }
 
@@ -345,7 +430,11 @@ final class LoanService
                 : (float) $loan->principal_amount;
 
             $verifiedAmounts = $data['verified_amounts'] ?? null;
-            if (is_array($verifiedAmounts) && $verifiedAmounts !== []) {
+            $isMemberLoan = (string) $loan->legacy_source === 'member_loan';
+
+            if ($isMemberLoan) {
+                // Pinjaman individu: skip beneficiaries loop
+            } elseif (is_array($verifiedAmounts) && $verifiedAmounts !== []) {
                 foreach ($verifiedAmounts as $memberRowId => $amount) {
                     $loan->beneficiaries()->where('member_row_id', (int) $memberRowId)->update([
                         'verified_amount' => (float) $amount,
@@ -366,7 +455,7 @@ final class LoanService
 
             $loan->update([
                 'verified_at' => $data['verified_at'],
-                'verification_notes' => $data['verification_notes'],
+                'verification_notes' => $data['verification_notes'] ?? null,
                 'status' => 'verified',
             ]);
 
@@ -381,12 +470,12 @@ final class LoanService
                 'interest_frequency' => $interestFrequency,
                 'principal_grace_months' => $principalGraceMonths,
                 'interest_grace_months' => $interestGraceMonths,
-                'notes' => $data['verification_notes'],
+                'notes' => $data['verification_notes'] ?? null,
                 'changed_by_user_id' => $userId,
                 'changed_at' => now(),
             ]);
 
-            return $loan->fresh(['product', 'borrower.group', 'committee', 'beneficiaries', 'installments']);
+            return $loan->fresh(['product', 'borrower.group', 'borrower.member', 'committee', 'beneficiaries', 'installments']);
         });
     }
 
@@ -394,6 +483,63 @@ final class LoanService
     {
         return DB::connection('tenant')->transaction(function () use ($loan, $data, $userId): Loan {
             $fromStatus = $loan->status;
+
+            // Pinjaman individu: tidak ada beneficiaries, principal_amount dari loan
+            if ((string) $loan->legacy_source === 'member_loan') {
+                $verification = $loan->statusHistories()
+                    ->where('to_status', 'verified')
+                    ->orderByDesc('changed_at')
+                    ->first();
+                $termMonths = $this->optionalInteger($data, 'term_months', (int) ($verification?->term_months ?? $loan->term_months));
+                $serviceRateTotal = $this->optionalFloat($data, 'service_rate_total', (float) ($verification?->service_rate_total ?? $loan->service_rate_total));
+                $principalFrequency = $data['principal_frequency'] ?? (string) ($verification?->principal_frequency ?? $loan->principal_frequency);
+                $interestFrequency = $data['interest_frequency'] ?? (string) ($verification?->interest_frequency ?? $loan->interest_frequency);
+                $principalGraceMonths = $this->optionalInteger($data, 'principal_grace_months', (int) ($verification?->principal_grace_months ?? $loan->principal_grace_months));
+                $interestGraceMonths = $this->optionalInteger($data, 'interest_grace_months', (int) ($verification?->interest_grace_months ?? $loan->interest_grace_months));
+
+                $loan->update([
+                    'approved_at' => $data['approved_at'],
+                    'funded_at' => $data['planned_disbursed_at'],
+                    'term_months' => $termMonths,
+                    'service_rate_total' => $serviceRateTotal,
+                    'principal_frequency' => $principalFrequency,
+                    'interest_frequency' => $interestFrequency,
+                    'principal_grace_months' => $principalGraceMonths,
+                    'interest_grace_months' => $interestGraceMonths,
+                    'status' => 'waiting',
+                ]);
+
+                $this->regenerateIndividualSchedule(
+                    loan: $loan,
+                    principal: (float) $loan->principal_amount,
+                    termMonths: $termMonths,
+                    serviceRateTotal: $serviceRateTotal,
+                    principalFrequency: $principalFrequency,
+                    interestFrequency: $interestFrequency,
+                    principalGraceMonths: $principalGraceMonths,
+                    interestGraceMonths: $interestGraceMonths,
+                    disbursementDate: CarbonImmutable::parse((string) $data['planned_disbursed_at']),
+                );
+
+                $defaultNotes = sprintf('Alokasi pinjaman individu ditetapkan sebesar %s. Rencana pencairan: %s.', number_format((float) $loan->principal_amount, 2, ',', '.'), $data['planned_disbursed_at']);
+                $loan->statusHistories()->create([
+                    'from_status' => $fromStatus,
+                    'to_status' => 'waiting',
+                    'principal_amount' => (float) $loan->principal_amount,
+                    'product_row_id' => $loan->loan_product_row_id,
+                    'term_months' => $termMonths,
+                    'service_rate_total' => $serviceRateTotal,
+                    'principal_frequency' => $principalFrequency,
+                    'interest_frequency' => $interestFrequency,
+                    'principal_grace_months' => $principalGraceMonths,
+                    'interest_grace_months' => $interestGraceMonths,
+                    'notes' => $data['allocation_notes'] ?? $defaultNotes,
+                    'changed_by_user_id' => $userId,
+                    'changed_at' => now(),
+                ]);
+
+                return $loan->fresh();
+            }
 
             $loan->loadMissing('beneficiaries');
             $byMember = $loan->beneficiaries->keyBy('member_row_id');
@@ -459,13 +605,18 @@ final class LoanService
     {
         return DB::connection('tenant')->transaction(function () use ($loan, $data, $userId): Loan {
             $fromStatus = $loan->status;
-            $totalAllocated = (float) $loan->beneficiaries()->sum('allocated_amount');
+            $isMemberLoan = (string) $loan->legacy_source === 'member_loan';
+            $totalAllocated = $isMemberLoan
+                ? (float) $loan->principal_amount
+                : (float) $loan->beneficiaries()->sum('allocated_amount');
 
             $loan->update([
                 'disbursed_at' => $data['disbursed_at'],
                 'disbursement_account_row_id' => (int) $data['disbursement_account_row_id'],
                 'disbursement_notes' => $data['disbursement_notes'] ?? null,
                 'status' => 'active',
+                'spk_no' => $data['spk_no'] ?? $loan->spk_no,
+                'disbursement_slot' => $data['disbursement_slot'] ?? $loan->disbursement_slot,
             ]);
 
             $loan->statusHistories()->create([
@@ -1178,36 +1329,53 @@ final class LoanService
                 ]);
             }
 
-            $totalAllocated = (float) $loan->beneficiaries
-                ->filter(fn ($b) => $b->written_off_at === null)
-                ->sum(fn ($b) => (float) $b->allocated_amount);
-            $assigned = 0.0;
-            $beneficiaries = $loan->beneficiaries
-                ->filter(fn ($b) => $b->written_off_at === null)
-                ->values();
-            $count = $beneficiaries->count();
-            foreach ($beneficiaries as $index => $beneficiary) {
-                if ($totalAllocated > 0) {
-                    $share = $index === $count - 1
-                        ? round($principalRemaining - $assigned, 2)
-                        : round($principalRemaining * ((float) $beneficiary->allocated_amount / $totalAllocated), 2);
-                } else {
-                    $share = $index === $count - 1
-                        ? round($principalRemaining - $assigned, 2)
-                        : round($principalRemaining / max(1, $count), 2);
+            $isMemberLoan = (string) $loan->legacy_source === 'member_loan';
+            if (! $isMemberLoan) {
+                $totalAllocated = (float) $loan->beneficiaries
+                    ->filter(fn ($b) => $b->written_off_at === null)
+                    ->sum(fn ($b) => (float) $b->allocated_amount);
+                $assigned = 0.0;
+                $beneficiaries = $loan->beneficiaries
+                    ->filter(fn ($b) => $b->written_off_at === null)
+                    ->values();
+                $count = $beneficiaries->count();
+                foreach ($beneficiaries as $index => $beneficiary) {
+                    if ($totalAllocated > 0) {
+                        $share = $index === $count - 1
+                            ? round($principalRemaining - $assigned, 2)
+                            : round($principalRemaining * ((float) $beneficiary->allocated_amount / $totalAllocated), 2);
+                    } else {
+                        $share = $index === $count - 1
+                            ? round($principalRemaining - $assigned, 2)
+                            : round($principalRemaining / max(1, $count), 2);
+                    }
+                    $assigned = round($assigned + $share, 2);
+                    LoanBeneficiary::query()->create([
+                        'loan_row_id' => $newLoan->row_id,
+                        'member_row_id' => $beneficiary->member_row_id,
+                        'proposed_amount' => $share,
+                        'verified_amount' => $share,
+                        'allocated_amount' => $share,
+                    ]);
                 }
-                $assigned = round($assigned + $share, 2);
-                LoanBeneficiary::query()->create([
-                    'loan_row_id' => $newLoan->row_id,
-                    'member_row_id' => $beneficiary->member_row_id,
-                    'proposed_amount' => $share,
-                    'verified_amount' => $share,
-                    'allocated_amount' => $share,
-                ]);
             }
 
-            $this->generatePrincipalSchedule($newLoan, $principalRemaining, $principalPeriods, $principalRatePerPeriod, $principalFreq, $rescheduledAt->toDateString(), $principalGraceMonths);
-            $this->generateInterestSchedule($newLoan, $principalRemaining, $interestPeriods, $interestRatePerPeriod, $method, $interestFreq, $rescheduledAt->toDateString(), $interestGraceMonths);
+            if ($isMemberLoan) {
+                $calc = app(\App\Domain\Lending\Services\MemberLoanScheduleCalculator::class);
+                $calc->recalculate(
+                    loan: $newLoan,
+                    term: $term,
+                    principal: $principalRemaining,
+                    principalSystem: $principalFreq,
+                    interestSystem: $interestFreq,
+                    serviceRateTotal: $serviceRateTotal,
+                    interestMethod: $method,
+                    disbursementDate: $rescheduledAt,
+                );
+            } else {
+                $this->generatePrincipalSchedule($newLoan, $principalRemaining, $principalPeriods, $principalRatePerPeriod, $principalFreq, $rescheduledAt->toDateString(), $principalGraceMonths);
+                $this->generateInterestSchedule($newLoan, $principalRemaining, $interestPeriods, $interestRatePerPeriod, $method, $interestFreq, $rescheduledAt->toDateString(), $interestGraceMonths);
+            }
 
             foreach (['draft', 'verified', 'waiting', 'active'] as $to) {
                 $newLoan->statusHistories()->create([
@@ -1607,6 +1775,73 @@ final class LoanService
             $this->generatePrincipalSchedule($loan, $principal, $principalPeriods, $principalRatePerPeriod, $principalFreq, $startDate, $principalGraceMonths);
             $this->generateInterestSchedule($loan, $principal, $interestPeriods, $interestRatePerPeriod, $method, $interestFreq, $startDate, $interestGraceMonths);
         }
+    }
+
+    /**
+     * Generate schedule pinjaman individu via MemberLoanScheduleCalculator (copy rumus pacuan).
+     */
+    private function regenerateIndividualSchedule(
+        Loan $loan,
+        float $principal,
+        int $termMonths,
+        float $serviceRateTotal,
+        string $principalFrequency,
+        string $interestFrequency,
+        int $principalGraceMonths,
+        int $interestGraceMonths,
+        CarbonImmutable $disbursementDate,
+    ): void {
+        $calc = app(MemberLoanScheduleCalculator::class);
+        $calc->recalculate(
+            loan: $loan,
+            term: $termMonths,
+            principal: $principal,
+            principalSystem: $principalFrequency,
+            interestSystem: $interestFrequency,
+            serviceRateTotal: $serviceRateTotal,
+            interestMethod: (string) ($loan->installment_method ?: 'flat'),
+            disbursementDate: $disbursementDate,
+        );
+    }
+
+    /**
+     * Tolak pinjaman individu (Tidak Layak) — pacuan: status='T' / 'rejected'.
+     * Hanya untuk legacy_source='member_loan'.
+     */
+    public function rejectMemberLoan(Loan $loan, int $userId, ?string $notes = null): Loan
+    {
+        if ((string) $loan->legacy_source !== 'member_loan') {
+            throw new DomainException('Reject hanya untuk pinjaman individu.');
+        }
+        if (! in_array($loan->status, ['draft', 'verified'], true)) {
+            throw new DomainException('Hanya pinjaman dengan status draft atau verified yang dapat ditolak.');
+        }
+
+        return DB::connection('tenant')->transaction(function () use ($loan, $userId, $notes): Loan {
+            $fromStatus = $loan->status;
+
+            $loan->update([
+                'status' => 'rejected',
+            ]);
+
+            $loan->statusHistories()->create([
+                'from_status' => $fromStatus,
+                'to_status' => 'rejected',
+                'principal_amount' => (float) $loan->principal_amount,
+                'product_row_id' => $loan->loan_product_row_id,
+                'term_months' => (int) $loan->term_months,
+                'service_rate_total' => (float) $loan->service_rate_total,
+                'principal_frequency' => $loan->principal_frequency,
+                'interest_frequency' => $loan->interest_frequency,
+                'principal_grace_months' => (int) $loan->principal_grace_months,
+                'interest_grace_months' => (int) $loan->interest_grace_months,
+                'notes' => $notes ?? 'Pinjaman individu ditolak (Tidak Layak).',
+                'changed_by_user_id' => $userId,
+                'changed_at' => now(),
+            ]);
+
+            return $loan->fresh();
+        });
     }
 
     /**
