@@ -96,7 +96,7 @@ function tone(status) {
                         empty-description="Terbitkan invoice untuk tenant."
                     >
                         <template #toolbar>
-                            <div class="min-w-48">
+                            <div class="min-w-0 flex-1 sm:min-w-48 sm:flex-initial">
                                 <SmartSelect :model-value="status" label="Status" hide-label size="compact" :options="statusOptions" @update:model-value="filterStatus" />
                             </div>
                         </template>

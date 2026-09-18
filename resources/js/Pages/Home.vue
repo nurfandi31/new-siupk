@@ -718,43 +718,45 @@ onUnmounted(() => {
                             </div>
                         </div>
 
-                        <!-- Small stat 1 · top right (col-span-5, row 1) -->
+                        <!-- Small stat 1 · top right · LIGHT surface + amber accent -->
                         <div
-                            class="bento-card group relative overflow-hidden rounded-2xl bg-secondary p-4 text-on-secondary shadow-xl shadow-secondary/25 ring-1 ring-inset ring-secondary/40 md:col-span-5 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-secondary/30"
+                            class="bento-card group relative overflow-hidden rounded-2xl bg-surface-container-lowest p-4 text-on-surface shadow-lg shadow-primary/10 ring-1 ring-inset ring-outline-variant/40 md:col-span-5 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/20"
                         >
-                            <div class="absolute -right-8 -top-8 size-24 rounded-full bg-primary-fixed/30 blur-2xl transition-all duration-500 group-hover:bg-primary-fixed/50 group-hover:scale-125" />
+                            <div class="absolute -right-8 -top-8 size-24 rounded-full bg-amber-400/20 blur-2xl transition-all duration-500 group-hover:bg-amber-400/30 group-hover:scale-125" />
                             <div class="relative z-10 flex h-full flex-col justify-between gap-2">
                                 <div class="flex items-start justify-between">
-                                    <div class="grid size-9 place-items-center rounded-lg bg-on-secondary/20 text-on-secondary shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
+                                    <div class="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md shadow-amber-600/25 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
                                         <AppIcon :name="stats[0].icon" class="text-lg" />
                                     </div>
-                                    <AppIcon name="trending_up" class="text-on-secondary/50 text-base transition-colors group-hover:text-on-secondary" />
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
+                                        <AppIcon name="trending_up" class="text-[11px]" />
+                                        Nasional
+                                    </span>
                                 </div>
                                 <div>
-                                    <p class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums leading-none">{{ formatStat(0) }}</p>
-                                    <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-primary-fixed-dim">{{ stats[0].label }}</p>
+                                    <p class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums leading-none text-on-surface">{{ formatStat(0) }}</p>
+                                    <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">{{ stats[0].label }}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Small stat 2 · bottom right (col-span-5, row 2) -->
+                        <!-- Small stat 2 · bottom right · WHITE surface + emerald ring (clean tech look) -->
                         <div
-                            class="bento-card group relative overflow-hidden rounded-2xl bg-primary-container p-4 text-on-primary shadow-xl shadow-primary/25 ring-1 ring-inset ring-primary/40 md:col-span-5 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/30"
+                            class="bento-card group relative overflow-hidden rounded-2xl bg-surface-container-lowest p-4 text-on-surface shadow-lg shadow-primary/10 ring-1 ring-inset ring-primary/30 md:col-span-5 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/20"
                         >
-                            <div class="absolute -left-8 -bottom-8 size-24 rounded-full bg-secondary/30 blur-2xl transition-all duration-500 group-hover:bg-secondary/50 group-hover:scale-125" />
+                            <div class="absolute -left-8 -bottom-8 size-24 rounded-full bg-primary/15 blur-2xl transition-all duration-500 group-hover:bg-primary/25 group-hover:scale-125" />
                             <div class="relative z-10 flex h-full flex-col justify-between gap-2">
                                 <div class="flex items-start justify-between">
-                                    <div class="grid size-9 place-items-center rounded-lg bg-on-primary/20 text-on-primary shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                                    <div class="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary-container text-on-primary shadow-md shadow-primary/25 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
                                         <AppIcon :name="stats[2].icon" class="text-lg" />
                                     </div>
-                                    <!-- Check badge -->
-                                    <div class="grid size-6 place-items-center rounded-full bg-emerald-300 text-emerald-950 shadow-sm">
+                                    <div class="grid size-6 place-items-center rounded-full bg-primary text-on-primary shadow-sm">
                                         <AppIcon name="check" class="text-sm font-bold" />
                                     </div>
                                 </div>
                                 <div>
-                                    <p class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums leading-none">{{ formatStat(2) }}</p>
-                                    <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-primary-fixed-dim">{{ stats[2].label }}</p>
+                                    <p class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums leading-none text-on-surface">{{ formatStat(2) }}</p>
+                                    <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">{{ stats[2].label }}</p>
                                 </div>
                             </div>
                         </div>
@@ -762,22 +764,23 @@ onUnmounted(() => {
 
                     <!-- Bottom row: stat akurasi full-width (di luar bento, sebagai banner mini) -->
                     <div
-                        class="bento-card mt-3 group relative overflow-hidden rounded-2xl bg-gradient-to-r from-secondary via-primary-container to-primary p-4 text-on-primary shadow-xl shadow-primary/25 ring-1 ring-inset ring-primary/40 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/30"
+                        class="bento-card mt-3 group relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-4 text-white shadow-xl shadow-slate-900/25 ring-1 ring-inset ring-slate-700/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-900/40"
                     >
+                        <div class="absolute -right-16 -top-16 size-40 rounded-full bg-primary/20 blur-3xl transition-all duration-500 group-hover:bg-primary/30 group-hover:scale-110" />
                         <div class="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="grid size-10 place-items-center rounded-lg bg-on-primary/20 text-on-primary shadow-inner transition-transform duration-500 group-hover:scale-110">
+                                <div class="grid size-10 place-items-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-md shadow-amber-600/30 transition-all duration-500 group-hover:scale-110">
                                     <AppIcon :name="stats[3].icon" class="text-lg" />
                                 </div>
                                 <div>
-                                    <p class="text-[9px] font-bold uppercase tracking-wider text-primary-fixed-dim">Standar Akurasi</p>
-                                    <p class="text-xs font-bold text-on-primary">{{ stats[3].label }}</p>
+                                    <p class="text-[9px] font-bold uppercase tracking-wider text-amber-300">Standar Akurasi</p>
+                                    <p class="text-xs font-bold text-white">{{ stats[3].label }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="flex-1 sm:flex-none sm:w-44">
-                                    <div class="h-1.5 w-full overflow-hidden rounded-full bg-on-primary/20">
-                                        <div class="bento-progress h-full rounded-full bg-gradient-to-r from-emerald-300 via-primary-fixed to-secondary-fixed" :style="`width: ${accuracyProgress}%`" />
+                                    <div class="h-1.5 w-full overflow-hidden rounded-full bg-white/15">
+                                        <div class="bento-progress h-full rounded-full bg-gradient-to-r from-amber-400 via-emerald-300 to-teal-300" :style="`width: ${accuracyProgress}%`" />
                                     </div>
                                 </div>
                                 <p class="text-xl sm:text-2xl font-black tracking-tight tabular-nums leading-none">{{ formatStat(3) }}</p>

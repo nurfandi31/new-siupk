@@ -175,18 +175,18 @@ async function autoLogin(domain = null, userId = null) {
                     <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                         <AppButton
                             v-if="tenant.status === 'active'"
-                            class="flex-1 min-w-[150px]"
+                            class="min-w-0 flex-1 sm:min-w-[150px]"
                             variant="primary"
                             icon="login"
                             :loading="impersonating"
                             @click="autoLogin()"
                         >Login Tenant</AppButton>
-                        <AppButton class="flex-1 min-w-[150px]" variant="secondary" icon="edit" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/edit`)">Edit</AppButton>
-                        <AppButton class="flex-1 min-w-[150px]" variant="secondary" icon="group" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/users`)">Users</AppButton>
-                        <AppButton class="flex-1 min-w-[150px]" variant="secondary" icon="account_balance_wallet" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/onboarding/import`)">Onboarding</AppButton>
-                        <AppButton class="flex-1 min-w-[150px]" variant="secondary" icon="cleaning_services" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/data-purifier`)">Data Purifier</AppButton>
-                        <AppButton class="flex-1 min-w-[150px]" variant="secondary" icon="receipt_long" @click="$inertia.visit(`/admin/invoices/create?tenant_id=${tenant.row_id}`)">Buat Invoice</AppButton>
-                        <AppButton v-if="tenant.status === 'active'" class="flex-1 min-w-[150px]" variant="danger" :loading="suspendForm.processing" @click="suspend">Suspend</AppButton>
+                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="edit" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/edit`)">Edit</AppButton>
+                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="group" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/users`)">Users</AppButton>
+                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="account_balance_wallet" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/onboarding/import`)">Onboarding</AppButton>
+                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="cleaning_services" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/data-purifier`)">Data Purifier</AppButton>
+                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="receipt_long" @click="$inertia.visit(`/admin/invoices/create?tenant_id=${tenant.row_id}`)">Buat Invoice</AppButton>
+                        <AppButton v-if="tenant.status === 'active'" class="min-w-0 flex-1 sm:min-w-[150px]" variant="danger" :loading="suspendForm.processing" @click="suspend">Suspend</AppButton>
                     </div>
                 </div>
             </AppCard>

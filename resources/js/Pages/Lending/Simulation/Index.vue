@@ -413,7 +413,7 @@ Est. Angsuran/Bln: ${money(s.estimated_monthly)}`;
                     <AppButton
                         icon="restart_alt"
                         variant="secondary"
-                        size="sm"
+                        size="compact"
                         @click="resetForm"
                     >
                         Reset
@@ -421,7 +421,7 @@ Est. Angsuran/Bln: ${money(s.estimated_monthly)}`;
                     <AppButton
                         :icon="copied ? 'check' : 'content_copy'"
                         variant="secondary"
-                        size="sm"
+                        size="compact"
                         @click="copySummary"
                     >
                         {{ copied ? 'Tersalin!' : 'Salin Ringkasan' }}
@@ -429,7 +429,7 @@ Est. Angsuran/Bln: ${money(s.estimated_monthly)}`;
                     <AppButton
                         icon="picture_as_pdf"
                         variant="primary"
-                        size="sm"
+                        size="compact"
                         @click="openPdf"
                     >
                         Unduh PDF

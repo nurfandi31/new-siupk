@@ -116,7 +116,7 @@ const docs = computed(() => [
                     </div>
                     <div class="mt-4 pt-3 border-t border-outline-variant/20 flex justify-end">
                         <a :href="doc.href" target="_blank">
-                            <AppButton size="sm" variant="outline">
+                            <AppButton size="compact" variant="outline">
                                 <span class="material-symbols-outlined mr-1 text-sm">picture_as_pdf</span>
                                 Unduh / Cetak PDF
                             </AppButton>

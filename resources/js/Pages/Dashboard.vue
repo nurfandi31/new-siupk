@@ -4,10 +4,8 @@ import { computed, ref, watch } from 'vue';
 import AppBadge from '../Components/AppBadge.vue';
 import AppButton from '../Components/AppButton.vue';
 import AppCard from '../Components/AppCard.vue';
-import AppEmptyState from '../Components/AppEmptyState.vue';
 import AppIcon from '../Components/AppIcon.vue';
 import AppModal from '../Components/AppModal.vue';
-import TrendBarChart from '../Components/TrendBarChart.vue';
 import AuthenticatedLayout from '../Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
@@ -45,31 +43,64 @@ function formatDate(value) {
 
 const pipelineTotal = computed(() => props.pipeline.reduce((sum, row) => sum + Number(row.count || 0), 0));
 
-// Two independent states:
-//   `pendingKey`  — set the moment the user clicks a pipeline card. The
-//                   dialog MUST NOT open until data arrives.
-//   `open`        — gated by props.pipeline_modal arrival. Becomes true only
-//                   after the server payload lands, so the modal never shows
-//                   empty/stale content.
-//
-// Closing is instant: `closePipeline()` flips `open=false` directly and fires
-// a fire-and-forget server cleanup.
+const trendSummary = computed(() => {
+    if (!props.trend.length) return { cair: 0, terima: 0, delta: 0, months: 0 };
+    const cair = props.trend.reduce((s, r) => s + Number(r.cair ?? r.disbursed ?? r.amount ?? 0), 0);
+    const terima = props.trend.reduce((s, r) => s + Number(r.terima ?? r.received ?? r.installment ?? 0), 0);
+    const delta = cair === 0 ? 0 : Math.round(((terima - cair) / cair) * 100);
+    return { cair, terima, delta, months: props.trend.length };
+});
+
+const trendSlices = computed(() => {
+    const palette = ['#0891b2', '#f97316', '#10b981', '#6366f1', '#ef4444', '#a855f7'];
+    const sliced = props.trend.length > 6 ? props.trend.slice(-6) : props.trend;
+    const total = sliced.reduce((s, r) => s + Number(r.cair ?? r.disbursed ?? r.amount ?? 0), 0);
+    let acc = 0;
+    return sliced.map((row, idx) => {
+        const value = Number(row.cair ?? row.disbursed ?? row.amount ?? 0);
+        const pct = total > 0 ? (value / total) * 100 : 0;
+        const start = acc;
+        acc += pct;
+        return {
+            label: row.label ?? row.month ?? '',
+            value,
+            pct: Math.round(pct * 100) / 100,
+            start: Math.round(start * 100) / 100,
+            color: palette[idx % palette.length],
+        };
+    });
+});
+
 const pendingKey = ref(null);
 const open = ref(false);
+const borrowerFilter = ref('semua');
 
 function hasPipelineQuery() {
     if (typeof window === 'undefined') return false;
     return new URL(window.location.href).searchParams.has('pipeline');
 }
 
-// Auto-open when the URL requests a modal AND the data has arrived. This
-// covers the deep-link / refresh case.
 function syncOpenFromServer() {
     if (props.pipeline_modal_key !== null && props.pipeline_modal !== null && hasPipelineQuery()) {
         open.value = true;
         pendingKey.value = null;
+        borrowerFilter.value = 'semua';
     }
 }
+
+const filteredPipelineRows = computed(() => {
+    const rows = props.pipeline_modal?.rows ?? [];
+    if (borrowerFilter.value === 'semua') return rows;
+    return rows.filter((r) => r.borrower_type === borrowerFilter.value);
+});
+
+const pipelineBreakdown = computed(() => {
+    const rows = props.pipeline_modal?.rows ?? [];
+    return {
+        kelompok: rows.filter((r) => r.borrower_type === 'kelompok').length,
+        individu: rows.filter((r) => r.borrower_type === 'individu').length,
+    };
+});
 
 watch(() => [props.pipeline_modal_key, props.pipeline_modal], () => {
     syncOpenFromServer();
@@ -82,8 +113,6 @@ function openPipeline(stage) {
         preserveScroll: true,
         only: ['pipeline_modal', 'pipeline_modal_key'],
         onFinish: () => {
-            // If the response didn't bring a modal payload (e.g. invalid key),
-            // clear pending so we don't sit on a stale request.
             if (props.pipeline_modal_key === null) pendingKey.value = null;
         },
     });
@@ -92,12 +121,7 @@ function openPipeline(stage) {
 function closePipeline() {
     open.value = false;
     pendingKey.value = null;
-    // Force-clear any leftover overflow lock from AppModal's own watcher
-    // before the server roundtrip completes. Otherwise the page stays
-    // un-scrollable until Inertia finishes its partial visit.
-    if (typeof document !== 'undefined') {
-        document.body.style.overflow = '';
-    }
+    if (typeof document !== 'undefined') document.body.style.overflow = '';
     if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         if (url.searchParams.has('pipeline')) {
@@ -127,270 +151,420 @@ function dateForRow(row) {
     return row.disbursed_at ?? row.funded_at ?? row.verified_at ?? row.proposed_at ?? null;
 }
 
-const quickActions = [
-    { label: 'Register Proposal', href: '/lending/loans/create', icon: 'assignment_add' },
-    { label: 'Jurnal Angsuran', href: '/accounting/journal-entries/installment', icon: 'payments' },
-    { label: 'Jurnal Umum', href: '/accounting/journal-entries/create', icon: 'receipt_long' },
-    { label: 'E-Budgeting', href: '/budgeting', icon: 'account_balance_wallet' },
-];
-
 const sourceLabel = {
     loan: 'Pinjaman',
     installment: 'Angsuran',
     manual: 'Manual',
     general: 'Umum',
 };
+
+const kpiTones = {
+    saldo_kas: 'emerald',
+    saldo_bank: 'emerald',
+    cash_balance: 'emerald',
+    cash: 'emerald',
+    outstanding: 'cyan',
+    outstanding_pokok: 'cyan',
+    principal_outstanding: 'cyan',
+    tunggakan: 'rose',
+    overdue: 'rose',
+    lewat_jatuh_tempo: 'rose',
+    anggota: 'violet',
+    members: 'violet',
+    active_members: 'violet',
+};
+const kpiBox = {
+    emerald: 'bg-emerald-600 text-white ring-1 ring-emerald-700/30',
+    cyan: 'bg-cyan-700 text-white ring-1 ring-cyan-800/30',
+    rose: 'bg-rose-600 text-white ring-1 ring-rose-700/30',
+    violet: 'bg-violet-600 text-white ring-1 ring-violet-700/30',
+    amber: 'bg-amber-500 text-amber-950 ring-1 ring-amber-600/30',
+};
+const kpiIconBadge = {
+    emerald: 'bg-white/20 text-white',
+    cyan: 'bg-white/20 text-white',
+    rose: 'bg-white/20 text-white',
+    violet: 'bg-white/20 text-white',
+    amber: 'bg-black/10 text-amber-950',
+};
+const kpiText = {
+    emerald: 'text-white',
+    cyan: 'text-white',
+    rose: 'text-white',
+    violet: 'text-white',
+    amber: 'text-amber-950',
+};
+const kpiTextFallback = 'text-on-surface';
+
+function cardKpiTone(card) {
+    if (card.tone === 'error') return 'rose';
+    return kpiTones[card.key] || 'cyan';
+}
+
+function cardKpiBoxClass(card) {
+    return kpiBox[cardKpiTone(card)] || kpiBox.cyan;
+}
+
+function cardKpiIconBadgeClass(card) {
+    return kpiIconBadge[cardKpiTone(card)] || kpiIconBadge.cyan;
+}
+
+function cardKpiTextClass(card) {
+    return kpiText[cardKpiTone(card)] || kpiTextFallback;
+}
 </script>
 
 <template>
     <Head title="Dashboard" />
     <AuthenticatedLayout :unit-name="unitName">
-        <div class="mx-auto max-w-7xl space-y-8">
-            <section class="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Ringkasan operasional</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary sm:text-3xl">
-                        {{ unitName || 'Dashboard' }}
-                    </h1>
-                    <p class="mt-1 text-on-surface-variant">
-                        Data live per {{ formatDate(as_of) }} · {{ counts.active_loans }} pinjaman aktif ·
-                        {{ counts.members }} anggota
+        <div class="mx-auto w-full max-w-6xl space-y-4">
+            <!-- 1) Header halaman standar (seperti halaman konten lain) -->
+            <div class="flex flex-wrap items-end justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <AppIcon name="space_dashboard" class="text-2xl text-primary" />
+                        <h1 class="truncate text-xl font-bold leading-tight text-primary sm:text-2xl">
+                            {{ unitName || 'Dashboard' }}
+                        </h1>
+                    </div>
+                    <p class="mt-1 text-xs text-on-surface-variant sm:text-sm">
+                        Ringkasan operasional · per {{ formatDate(as_of) }}
                     </p>
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    <Link v-for="action in quickActions" :key="action.href" :href="action.href">
-                        <AppButton variant="secondary" size="compact" :icon="action.icon">{{ action.label }}</AppButton>
-                    </Link>
+                <div class="flex items-center gap-2 text-xs text-on-surface-variant">
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-secondary-container px-2.5 py-1 font-semibold text-on-secondary-container">
+                        <span class="size-1.5 rounded-full bg-secondary" />{{ counts.active_loans }} pinjaman aktif
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-primary-container px-2.5 py-1 font-semibold text-on-primary-container">
+                        <span class="size-1.5 rounded-full bg-primary" />{{ counts.members }} anggota
+                    </span>
                 </div>
-            </section>
-
-            <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="KPI utama">
-                <AppCard v-for="card in cards" :key="card.key" bordered>
-                    <div class="mb-3 flex items-start justify-between gap-3">
-                        <div
-                            class="grid size-10 place-items-center rounded-lg"
-                            :class="card.tone === 'error' ? 'bg-error-container text-on-error-container' : 'bg-primary-fixed/40 text-primary'"
-                        >
-                            <AppIcon :name="card.icon" />
-                        </div>
-                        <AppBadge v-if="card.tone === 'error'" tone="error">Perhatian</AppBadge>
-                    </div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ card.label }}</p>
-                    <p class="mt-2 text-2xl font-bold" :class="card.tone === 'error' ? 'text-error' : 'text-primary'">
-                        {{ formatValue(card) }}
-                    </p>
-                    <p v-if="card.hint" class="mt-1 text-xs text-on-surface-variant">{{ card.hint }}</p>
-                </AppCard>
-            </section>
-
-            <div class="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-3">
-                <section class="card-shadow flex min-h-0 flex-col rounded-xl bg-surface-container-lowest p-6 xl:col-span-2">
-                    <header class="mb-4 flex shrink-0 items-center justify-between gap-3">
-                        <div>
-                            <h2 class="text-lg font-bold text-primary">Tren 6 Bulan</h2>
-                            <p class="text-sm text-on-surface-variant">Pencairan vs penerimaan angsuran</p>
-                        </div>
-                        <div class="flex items-center gap-3 text-xs font-semibold text-on-surface-variant">
-                            <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-primary" />Cair</span>
-                            <span class="inline-flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-secondary" />Terima</span>
-                        </div>
-                    </header>
-
-                    <div v-if="trend.length" class="min-h-[14rem] flex-1">
-                        <TrendBarChart :data="trend" />
-                    </div>
-                    <div v-else class="flex flex-1 items-center">
-                        <AppEmptyState icon="show_chart" title="Belum ada tren" description="Pencairan dan angsuran akan tampil di sini." />
-                    </div>
-                </section>
-
-                <section class="card-shadow flex min-h-0 flex-col rounded-xl bg-surface-container-lowest p-6">
-                    <header class="mb-4 flex shrink-0 items-center justify-between">
-                        <h2 class="text-lg font-bold text-primary">Pipeline Pinjaman</h2>
-                        <AppBadge tone="primary">{{ pipelineTotal }}</AppBadge>
-                    </header>
-                    <div class="flex flex-1 flex-col justify-between gap-3">
-                        <AppButton
-                            v-for="stage in pipeline"
-                            :key="stage.status"
-                            variant="secondary"
-                            class="!min-h-0 !justify-between !rounded-xl !px-4 !py-3 !text-left"
-                            @click="openPipeline(stage)"
-                        >
-                            <span>
-                                <p class="font-semibold text-primary">{{ stage.label }}</p>
-                                <p class="text-xs text-on-surface-variant">{{ formatMoney(stage.amount) }}</p>
-                            </span>
-                            <span class="text-xl font-bold text-primary">{{ stage.count }}</span>
-                        </AppButton>
-                    </div>
-                </section>
             </div>
 
-            <!-- Jurnal + Jatuh Tempo: fixed max height, internal scroll -->
-            <div class="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-3">
-                <section class="card-shadow flex max-h-[28rem] min-h-0 flex-col rounded-xl bg-surface-container-lowest xl:col-span-2">
-                    <header class="flex shrink-0 items-center justify-between border-b border-outline-variant px-6 py-4">
-                        <div>
-                            <h2 class="text-lg font-bold text-primary">Jurnal Terbaru</h2>
-                            <p class="text-sm text-on-surface-variant">Posted, {{ recent_journals.length }} entri terakhir</p>
+            <!-- 2) KPI - 4 kolom ukuran standar (padding cukup, ikon besar) -->
+            <section class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <article
+                    v-for="card in cards"
+                    :key="card.key"
+                    class="rounded-xl px-4 py-4 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+                    :class="cardKpiBoxClass(card)"
+                >
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="grid size-12 shrink-0 place-items-center rounded-xl"
+                            :class="cardKpiIconBadgeClass(card)"
+                        >
+                            <AppIcon :name="card.icon" class="text-2xl" />
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-[11px] font-bold uppercase leading-none tracking-wider opacity-80" :class="cardKpiTextClass(card)">{{ card.label }}</p>
+                            <p class="mt-1.5 truncate text-2xl font-extrabold leading-tight tabular-nums" :class="cardKpiTextClass(card)">{{ formatValue(card) }}</p>
                         </div>
-                        <Link href="/accounting/journal-entries/create">
-                            <AppButton variant="ghost" size="compact">Buat jurnal</AppButton>
-                        </Link>
-                    </header>
+                    </div>
+                    <div v-if="card.breakdown" class="mt-3 flex items-center gap-1.5">
+                        <span
+                            v-for="(count, label) in card.breakdown"
+                            :key="label"
+                            class="inline-flex items-center gap-1 rounded-md bg-white/15 px-1.5 py-0.5 text-[10px] font-bold tabular-nums backdrop-blur-sm"
+                            :class="cardKpiTextClass(card)"
+                        >
+                            <span class="opacity-75">{{ label }}</span>
+                            <span class="opacity-100">{{ count }}</span>
+                        </span>
+                    </div>
+                    <p v-else-if="card.hint" class="mt-2 truncate text-[11px] leading-tight opacity-80" :class="cardKpiTextClass(card)">{{ card.hint }}</p>
+                </article>
+            </section>
 
-                    <div v-if="recent_journals.length" class="min-h-0 flex-1 overflow-auto">
+            <!-- 3) Tren & Pipeline - 2 kolom side-by-side ukuran standar -->
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-5">
+                <!-- Tren -->
+                <AppCard :padded="false" class="lg:col-span-3">
+                    <template #header>
+                        <div class="flex items-center gap-2">
+                            <AppIcon name="monitoring" tone="success" :container-size="10" container-shape="rounded" />
+                            <h2 class="truncate text-base font-bold leading-none text-primary">Tren {{ trendSummary.months }} Bulan</h2>
+                        </div>
+                        <Link href="/accounting/reports" class="shrink-0 text-xs font-bold text-primary hover:underline">Detail →</Link>
+                    </template>
+
+                    <div v-if="trendSlices.length" class="flex items-center gap-6 px-6 py-6">
+                        <div class="relative shrink-0 pie-shadow rounded-full" :style="{ width: '170px', height: '170px' }">
+                            <div
+                                class="absolute inset-0 rounded-full"
+                                :style="{ background: `conic-gradient(${trendSlices.map(s => `${s.color} ${s.start}% ${s.start + s.pct}%`).join(', ')})` }"
+                            />
+                            <div
+                                class="absolute inset-0 rounded-full"
+                                style="background: conic-gradient(from -90deg, rgb(255 255 255 / 0.18) 0deg, rgb(255 255 255 / 0) 30%, rgb(0 0 0 / 0.06) 100%); mix-blend-mode: overlay;"
+                            />
+                            <div
+                                class="absolute inset-0 rounded-full"
+                                style="box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 60%), 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 12px rgb(0 0 0 / 0.08);"
+                            />
+                            <template v-for="(slice, idx) in trendSlices" :key="`lbl-${idx}`">
+                                <span
+                                    v-if="slice.pct >= 8"
+                                    class="pointer-events-none absolute text-xs font-bold tabular-nums text-white"
+                                    style="text-shadow: 0 1px 2px rgb(0 0 0 / 50%);"
+                                    :style="{
+                                        left: `${50 + 34 * Math.cos((slice.start + slice.pct / 2) * 2 * Math.PI / 100 - Math.PI / 2)}%`,
+                                        top: `${50 + 34 * Math.sin((slice.start + slice.pct / 2) * 2 * Math.PI / 100 - Math.PI / 2)}%`,
+                                        transform: 'translate(-50%, -50%)',
+                                    }"
+                                >
+                                    {{ slice.pct.toFixed(2) }}%
+                                </span>
+                            </template>
+                        </div>
+                        <ul class="min-w-0 flex-1 space-y-2 text-sm">
+                            <li v-for="(slice, idx) in trendSlices" :key="idx" class="flex items-center justify-between gap-3">
+                                <span class="inline-flex min-w-0 items-center gap-2">
+                                    <span class="size-3 shrink-0 rounded-sm ring-1 ring-outline-variant/30" :style="{ background: slice.color }" />
+                                    <span class="truncate font-semibold text-primary">{{ slice.label }}</span>
+                                </span>
+                                <span class="shrink-0 font-bold tabular-nums text-primary">{{ slice.pct.toFixed(2) }}%</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div v-else class="py-8 text-center text-sm text-on-surface-variant">
+                        Belum ada data tren
+                    </div>
+                </AppCard>
+
+                <!-- Pipeline -->
+                <AppCard :padded="false" class="lg:col-span-2">
+                    <template #header>
+                        <div class="flex items-center gap-2">
+                            <AppIcon name="timeline" tone="success" :container-size="10" container-shape="rounded" />
+                            <h2 class="truncate text-base font-bold leading-none text-primary">Pipeline</h2>
+                        </div>
+                        <Link href="/lending/loans" class="shrink-0 text-xs font-bold text-primary hover:underline">Lihat →</Link>
+                    </template>
+                    <div class="grid grid-cols-2 divide-x divide-outline-variant/40 sm:grid-cols-4 lg:grid-cols-2">
+                        <button
+                            v-for="(stage, idx) in pipeline"
+                            :key="stage.status"
+                            type="button"
+                            class="group relative flex flex-col items-center gap-1.5 px-3 py-5 text-center transition-colors hover:bg-primary-container/30 focus:outline-none focus:bg-primary-container/40"
+                            :class="[
+                                (idx === 2) ? 'border-t border-outline-variant/40 sm:border-t-0 lg:border-t' : '',
+                                (idx === 3) ? 'border-t border-outline-variant/40 sm:border-t-0 lg:border-t-0' : '',
+                                idx < 2 ? 'border-t border-outline-variant/40 sm:border-t-0 lg:border-t-0' : '',
+                            ]"
+                            @click="openPipeline(stage)"
+                        >
+                            <span
+                                class="absolute left-1/2 top-1.5 size-1.5 -translate-x-1/2 rounded-full transition-transform group-hover:scale-150"
+                                :class="stage.count > 0 ? 'bg-secondary' : 'bg-outline-variant/50'"
+                            />
+                            <span class="mt-1 text-[11px] font-bold uppercase leading-none tracking-wider text-on-surface-variant">{{ stage.label }}</span>
+                            <span class="text-3xl font-extrabold leading-tight tabular-nums text-primary">{{ stage.count }}</span>
+                            <span class="truncate text-xs font-semibold tabular-nums leading-none text-primary">{{ formatMoney(stage.amount) }}</span>
+                        </button>
+                    </div>
+                    <div v-if="!pipeline.length" class="py-8 text-center text-sm text-on-surface-variant">
+                        Belum ada pinjaman
+                    </div>
+                </AppCard>
+            </div>
+
+            <!-- 4) Jurnal + Jatuh Tempo - 2 kolom ukuran standar -->
+            <div class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-5">
+                <!-- Jurnal -->
+                <AppCard class="flex flex-col lg:col-span-3" :padded="false">
+                    <template #header>
+                        <div class="flex min-w-0 items-center gap-2">
+                            <AppIcon name="receipt_long" tone="success" :container-size="10" container-shape="rounded" />
+                            <h2 class="truncate text-base font-bold leading-none text-primary">Jurnal Terbaru</h2>
+                            <span class="text-xs text-on-surface-variant">({{ recent_journals.length }})</span>
+                        </div>
+                        <Link href="/accounting/journal-entries/create" class="shrink-0">
+                            <AppButton variant="primary" icon="add">Buat</AppButton>
+                        </Link>
+                    </template>
+                    <div v-if="recent_journals.length" class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead class="sticky top-0 z-10 bg-surface-container-low text-on-surface-variant">
+                            <thead class="bg-surface-container-low text-xs uppercase tracking-wider text-on-surface-variant">
                                 <tr>
-                                    <th class="px-6 py-3 font-semibold">Tanggal</th>
-                                    <th class="px-6 py-3 font-semibold">No / Uraian</th>
-                                    <th class="px-6 py-3 font-semibold">Sumber</th>
-                                    <th class="px-6 py-3 text-right font-semibold">Jumlah</th>
+                                    <th class="px-4 py-3 font-semibold">Tgl</th>
+                                    <th class="px-4 py-3 font-semibold">No / Uraian</th>
+                                    <th class="hidden px-4 py-3 font-semibold sm:table-cell">Sumber</th>
+                                    <th class="px-4 py-3 text-right font-semibold">Jumlah</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr
                                     v-for="row in recent_journals"
                                     :key="row.row_id"
-                                    class="border-t border-outline-variant"
+                                    class="border-t border-outline-variant transition hover:bg-surface-container-low/50"
                                 >
-                                    <td class="whitespace-nowrap px-6 py-3 text-on-surface-variant">{{ formatDate(row.transaction_date) }}</td>
-                                    <td class="px-6 py-3">
-                                        <p class="font-semibold text-primary">{{ row.journal_number || `#${row.row_id}` }}</p>
-                                        <p class="line-clamp-1 text-xs text-on-surface-variant">{{ row.description || '—' }}</p>
+                                    <td class="whitespace-nowrap px-4 py-3 align-top text-xs text-on-surface-variant">{{ formatDate(row.transaction_date) }}</td>
+                                    <td class="px-4 py-3 align-top">
+                                        <p class="truncate text-sm font-bold leading-tight text-primary">{{ row.journal_number || `#${row.row_id}` }}</p>
+                                        <p class="truncate text-xs leading-tight text-on-surface-variant">{{ row.description || '—' }}</p>
                                     </td>
-                                    <td class="px-6 py-3">
-                                        <AppBadge tone="neutral">{{ sourceLabel[row.source_type] || row.source_type || '—' }}</AppBadge>
+                                    <td class="hidden px-4 py-3 align-top sm:table-cell">
+                                        <span class="inline-flex items-center rounded bg-surface-container-low px-2 py-1 text-xs font-semibold text-on-surface-variant">
+                                            {{ sourceLabel[row.source_type] || row.source_type || '—' }}
+                                        </span>
                                     </td>
-                                    <td class="whitespace-nowrap px-6 py-3 text-right font-semibold text-primary">
+                                    <td class="whitespace-nowrap px-4 py-3 text-right align-top text-sm font-bold tabular-nums text-primary">
                                         {{ formatMoney(row.amount) }}
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div v-else class="flex flex-1 items-center p-6">
-                        <AppEmptyState icon="receipt_long" title="Belum ada jurnal posted" description="Transaksi yang di-post akan tampil di sini." />
+                    <div v-else class="flex items-center justify-center px-4 py-10 text-center">
+                        <div>
+                            <AppIcon name="receipt_long" tone="neutral" :container-size="12" container-shape="rounded" />
+                            <p class="mt-2 text-sm font-semibold text-on-surface-variant">Belum ada jurnal posted</p>
+                        </div>
                     </div>
-                </section>
+                </AppCard>
 
-                <section class="card-shadow flex max-h-[28rem] min-h-0 flex-col rounded-xl bg-surface-container-lowest">
-                    <header class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-variant px-6 py-4">
-                        <h2 class="flex items-center gap-2 text-lg font-bold text-primary">
-                            <AppIcon name="event_note" class="text-tertiary" />
-                            Jatuh Tempo
-                        </h2>
+                <!-- Jatuh Tempo -->
+                <AppCard class="flex flex-col lg:col-span-2" :padded="false">
+                    <template #header>
+                        <div class="flex min-w-0 items-center gap-2">
+                            <AppIcon name="event_note" tone="tertiary" :container-size="10" container-shape="rounded" />
+                            <h2 class="truncate text-base font-bold leading-none text-primary">Jatuh Tempo</h2>
+                        </div>
                         <AppBadge v-if="overdue_summary.count" tone="error">{{ overdue_summary.count }} lewat</AppBadge>
-                    </header>
-
-                    <div v-if="upcoming_due.length" class="min-h-0 flex-1 space-y-3 overflow-y-auto px-6 py-4">
+                    </template>
+                    <div v-if="upcoming_due.length" class="flex-1 space-y-2 overflow-y-auto p-3">
                         <article
                             v-for="item in upcoming_due"
                             :key="item.row_id"
-                            class="rounded-lg border-l-4 bg-surface-container-low p-3"
+                            class="flex items-start justify-between gap-2 rounded-lg border-l-4 bg-surface-container-low px-3 py-2.5 transition hover:bg-primary-container/20"
                             :class="item.overdue ? 'border-error' : 'border-tertiary'"
                         >
-                            <div class="flex items-start justify-between gap-2">
-                                <div class="min-w-0">
-                                    <p class="truncate font-bold text-primary">{{ item.borrower }}</p>
-                                    <p class="text-xs text-on-surface-variant">
-                                        {{ item.loan_number || 'Pinjaman' }} · {{ formatDate(item.due_date) }}
-                                    </p>
-                                </div>
-                                <p class="shrink-0 text-sm font-bold" :class="item.overdue ? 'text-error' : 'text-primary'">
-                                    {{ formatMoney(item.amount) }}
-                                </p>
+                            <div class="min-w-0">
+                                <p class="truncate text-sm font-bold leading-tight text-primary">{{ item.borrower }}</p>
+                                <p class="truncate text-xs leading-tight text-on-surface-variant">{{ item.loan_number || 'Pinjaman' }} · {{ formatDate(item.due_date) }}</p>
                             </div>
+                            <p class="shrink-0 text-sm font-bold tabular-nums leading-tight" :class="item.overdue ? 'text-error' : 'text-primary'">
+                                {{ formatMoney(item.amount) }}
+                            </p>
                         </article>
                     </div>
-                    <div v-else class="flex flex-1 items-center px-6 py-4">
-                        <AppEmptyState icon="event_available" title="Tidak ada jatuh tempo 14 hari" />
+                    <div v-else class="flex flex-1 items-center justify-center px-4 py-10 text-center">
+                        <div>
+                            <AppIcon name="event_available" tone="neutral" :container-size="12" container-shape="rounded" />
+                            <p class="mt-2 text-sm font-semibold text-on-surface-variant">Tidak ada 14 hari ke depan</p>
+                        </div>
                     </div>
-
-                    <div class="shrink-0 border-t border-outline-variant px-6 py-4">
+                    <div class="shrink-0 border-t border-outline-variant p-3">
                         <Link href="/accounting/journal-entries/installment" class="block">
-                            <AppButton variant="secondary" class="w-full" icon="payments">Catat angsuran</AppButton>
+                            <AppButton variant="secondary" icon="payments" class="w-full">Catat angsuran</AppButton>
                         </Link>
                     </div>
-                </section>
+                </AppCard>
             </div>
 
-            <section class="relative overflow-hidden rounded-xl bg-primary p-6 text-on-primary">
-                <AppIcon name="verified" class="absolute -bottom-8 -right-5 text-[8rem] text-on-primary/5" />
-                <div class="relative space-y-2">
-                    <h2 class="text-lg font-bold">Siap operasional</h2>
-                    <p class="text-sm leading-6 text-primary-fixed-dim">
-                        KPI dihitung dari jurnal posted dan jadwal angsuran pinjaman aktif — tanpa salinan saldo legacy.
-                    </p>
-                    <Link href="/accounting/tax-estimate" class="inline-flex text-sm font-bold text-on-primary underline-offset-2 hover:underline">
-                        Lihat taksiran pajak →
-                    </Link>
+            <!-- 5) Footer info -->
+            <section class="flex items-center justify-between gap-3 rounded-lg border border-primary/20 bg-surface-container-low px-4 py-3">
+                <div class="flex min-w-0 items-center gap-2">
+                    <AppIcon name="verified" tone="primary" :container-size="9" container-shape="rounded" class="shrink-0" />
+                    <p class="truncate text-sm text-on-surface-variant">KPI dihitung dari jurnal posted &amp; jadwal angsuran aktif</p>
                 </div>
+                <Link href="/accounting/tax-estimate" class="shrink-0">
+                    <AppButton variant="ghost" icon-after="arrow_forward">Taksiran pajak</AppButton>
+                </Link>
             </section>
         </div>
 
+        <!-- Modal pipeline -->
         <AppModal
             :model-value="open"
             :title="`Pinjaman · ${pipeline_modal?.label ?? ''}`"
             size="lg"
             @update:model-value="(value) => { if (!value) closePipeline(); }"
         >
-            <div v-if="pipeline_modal" class="space-y-4">
-                <p class="text-sm text-on-surface-variant">
+            <div v-if="pipeline_modal" class="space-y-3">
+                <p class="text-xs text-on-surface-variant">
                     Menampilkan
-                    <span class="font-semibold text-primary">{{ pipeline_modal.rows.length }}</span>
+                    <span class="font-semibold text-primary">{{ filteredPipelineRows.length }}</span>
                     dari
                     <span class="font-semibold text-primary">{{ pipeline_modal.total }}</span>
                     pinjaman pada tahap
                     <span class="font-semibold text-primary">{{ pipeline_modal.label }}</span>.
                 </p>
 
-                <div v-if="pipeline_modal.rows.length" class="overflow-hidden rounded-xl border border-outline-variant">
+                <div class="flex items-center gap-1 rounded-lg bg-surface-container-low p-1 chip-shadow ring-1 ring-outline-variant/40">
+                    <button
+                        v-for="opt in [
+                            { value: 'semua', label: 'Semua', icon: 'all_inclusive', count: pipeline_modal.rows.length },
+                            { value: 'kelompok', label: 'Kelompok', icon: 'groups', count: pipelineBreakdown.kelompok },
+                            { value: 'individu', label: 'Individu', icon: 'person', count: pipelineBreakdown.individu },
+                        ]"
+                        :key="opt.value"
+                        type="button"
+                        class="flex flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-bold transition-all"
+                        :class="borrowerFilter === opt.value ? 'bg-surface-container-lowest text-primary shadow-sm ring-1 ring-outline-variant/40' : 'text-on-surface-variant hover:bg-surface-container-lowest/60 hover:text-primary'"
+                        @click="borrowerFilter = opt.value"
+                    >
+                        <AppIcon :name="opt.icon" class="text-base" />
+                        <span>{{ opt.label }}</span>
+                        <span class="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-primary">{{ opt.count }}</span>
+                    </button>
+                </div>
+
+                <div v-if="filteredPipelineRows.length" class="overflow-hidden rounded-lg border border-outline-variant">
                     <table class="w-full text-left text-sm">
-                        <thead class="bg-surface-container-low text-on-surface-variant">
+                        <thead class="bg-surface-container-low text-[10px] uppercase tracking-wider text-on-surface-variant">
                             <tr>
-                                <th class="px-4 py-3 font-semibold">Kelompok &amp; Desa</th>
-                                <th class="px-4 py-3 font-semibold">Tgl</th>
-                                <th class="px-4 py-3 text-right font-semibold">Nominal</th>
-                                <th class="px-4 py-3 text-right font-semibold">Sisa Pokok</th>
-                                <th class="px-4 py-3 text-right font-semibold">Aksi</th>
+                                <th class="px-3 py-2 font-semibold">Peminfaat</th>
+                                <th class="px-3 py-2 font-semibold">Tgl</th>
+                                <th class="px-3 py-2 text-right font-semibold">Nominal</th>
+                                <th class="px-3 py-2 text-right font-semibold">Sisa Pokok</th>
+                                <th class="px-3 py-2 text-right font-semibold">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr
-                                v-for="row in pipeline_modal.rows"
+                                v-for="row in filteredPipelineRows"
                                 :key="row.row_id"
                                 class="border-t border-outline-variant"
                             >
-                                <td class="px-4 py-3 align-top">
-                                    <p class="font-semibold text-primary">{{ row.group_name }}</p>
-                                    <p v-if="row.group_address" class="mt-0.5 text-xs text-on-surface-variant">{{ row.group_address }}</p>
-                                    <p class="mt-0.5 text-[10px] uppercase tracking-wider text-outline">#{{ row.id }} · {{ row.product_code || '—' }}</p>
+                                <td class="px-3 py-2 align-top">
+                                    <div class="flex items-start gap-2">
+                                        <span
+                                            class="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                                            :class="row.borrower_type === 'kelompok' ? 'bg-tertiary-container/30 text-on-tertiary-container' : 'bg-secondary-container/40 text-on-secondary-container'"
+                                        >
+                                            <AppIcon :name="row.borrower_type === 'kelompok' ? 'groups' : 'person'" class="text-[10px]" />
+                                            {{ row.borrower_type }}
+                                        </span>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="truncate text-[11px] font-semibold leading-tight text-primary">{{ row.borrower_type === 'individu' ? (row.member_name || row.group_name) : row.group_name }}</p>
+                                            <p v-if="row.borrower_type === 'kelompok' && row.group_address" class="mt-0.5 truncate text-[10px] text-on-surface-variant">{{ row.group_address }}</p>
+                                            <p class="mt-0.5 text-[9px] uppercase tracking-wider text-outline">#{{ row.id }} · {{ row.product_code || '—' }}</p>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 align-top text-on-surface-variant">{{ formatDate(dateForRow(row)) }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 text-right align-top font-semibold text-primary">{{ formatMoney(amountForRow(row)) }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 text-right align-top">
-                                    <span v-if="row.principal_remaining > 0" class="font-semibold text-primary">{{ formatMoney(row.principal_remaining) }}</span>
-                                    <span v-else class="text-on-surface-variant">—</span>
+                                <td class="whitespace-nowrap px-3 py-2 align-top text-[11px] text-on-surface-variant">{{ formatDate(dateForRow(row)) }}</td>
+                                <td class="whitespace-nowrap px-3 py-2 text-right align-top text-[11px] font-semibold text-primary">{{ formatMoney(amountForRow(row)) }}</td>
+                                <td class="whitespace-nowrap px-3 py-2 text-right align-top">
+                                    <span v-if="row.principal_remaining > 0" class="text-[11px] font-semibold text-primary">{{ formatMoney(row.principal_remaining) }}</span>
+                                    <span v-else class="text-[11px] text-on-surface-variant">—</span>
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 text-right align-top">
-                                    <Link :href="`/lending/loans/${row.row_id}`" class="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/10">Detail →</Link>
+                                <td class="whitespace-nowrap px-3 py-2 text-right align-top">
+                                    <Link :href="`/lending/loans/${row.row_id}`" class="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-bold text-primary hover:bg-primary/10">Detail →</Link>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <AppEmptyState
-                    v-else
-                    icon="inbox"
-                    title="Belum ada pinjaman"
-                    :description="`Tidak ada pinjaman pada tahap ${pipeline_modal.label}.`"
-                />
+                <div v-else class="rounded-lg border border-dashed border-outline-variant py-8 text-center">
+                    <AppIcon name="inbox" tone="neutral" :container-size="14" container-shape="rounded" />
+                    <p class="mt-2 text-sm font-semibold text-on-surface-variant">Belum ada pinjaman</p>
+                    <p class="text-[11px] text-on-surface-variant">Tidak ada pinjaman {{ borrowerFilter === 'semua' ? '' : `(${borrowerFilter}) ` }}pada tahap {{ pipeline_modal.label }}.</p>
+                </div>
 
-                <p v-if="pipeline_modal.total > pipeline_modal.limit" class="text-xs text-on-surface-variant">
+                <p v-if="pipeline_modal.total > pipeline_modal.limit" class="text-[11px] text-on-surface-variant">
                     Preview terbatas {{ pipeline_modal.limit }} baris. Buka halaman penuh untuk melihat semua data.
                 </p>
             </div>

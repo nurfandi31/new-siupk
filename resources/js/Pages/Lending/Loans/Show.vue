@@ -22,6 +22,7 @@ import { useCan } from '../../../composables/useCan';
 const props = defineProps({
     loan: { type: Object, required: true },
     card_url: { type: String, default: null },
+    settlement_letter_url: { type: String, default: null },
     disbursement_account: { type: Object, default: null },
     disbursementAccounts: { type: Array, default: () => [] },
     today: { type: String, required: true },
@@ -380,9 +381,9 @@ function confirmRevert() {
 
 const canRevert = computed(() => can('loans.manage') && ['verified', 'waiting', 'approved'].includes(props.loan.status));
 const isActiveLoan = computed(() => ['active', 'disbursed'].includes(props.loan.status));
-const canReschedule = computed(() => can('loans.manage') && isActiveLoan.value && Number(props.loan.principal_remaining) > 0);
-const canWriteOff = computed(() => can('loans.manage') && isActiveLoan.value && Number(props.loan.principal_remaining) > 0);
-const canWriteOffBeneficiary = computed(() => can('loans.manage') && isActiveLoan.value && Number(props.loan.principal_remaining) > 0);
+const canReschedule = computed(() => (can('loans.reschedule_director') || can('loans.manage')) && isActiveLoan.value && Number(props.loan.principal_remaining) > 0);
+const canWriteOff = computed(() => can('loans.write_off') && isActiveLoan.value && Number(props.loan.principal_remaining) > 0);
+const canWriteOffBeneficiary = computed(() => can('loans.write_off') && isActiveLoan.value && Number(props.loan.principal_remaining) > 0);
 const canCancelReschedule = computed(() =>
     can('loans.manage')
     && props.loan.rescheduled_from_loan_row_id !== null
@@ -660,7 +661,7 @@ const completeForm = useForm({
     notes: '',
 });
 
-const canCompleteAction = computed(() => can('loans.manage') && (isPendingCompletion.value || (isActiveLoan.value && Number(props.loan.principal_remaining ?? 0) <= 0)));
+const canCompleteAction = computed(() => (can('loans.complete_director') || can('loans.manage')) && (isPendingCompletion.value || (isActiveLoan.value && Number(props.loan.principal_remaining ?? 0) <= 0)));
 
 function openCompleteModal() {
     completeForm.completed_at = props.today;
@@ -719,6 +720,9 @@ function setAllocatedAmount(memberRowId, value) {
                     <a v-if="card_url" :href="card_url" target="_blank" rel="noopener">
                         <AppButton type="button" variant="secondary" icon="credit_card" size="compact">Kartu Angsuran</AppButton>
                     </a>
+                    <a v-if="settlement_letter_url" :href="settlement_letter_url" target="_blank" rel="noopener">
+                        <AppButton type="button" variant="secondary" icon="verified" size="compact">Surat Keterangan Lunas</AppButton>
+                    </a>
                     <AppButton v-if="canCompleteAction" variant="success" icon="task_alt" @click="openCompleteModal">Validasi Lunas</AppButton>
                     <AppButton v-if="canEdit" variant="secondary" icon="edit" @click="openEditModal">Edit Proposal</AppButton>
                     <AppButton v-if="canDeleteProposal" variant="danger" icon="delete_outline" @click="confirmDeleteLoan">Hapus Proposal</AppButton>
@@ -749,7 +753,7 @@ function setAllocatedAmount(memberRowId, value) {
                     <div class="space-y-4">
                         <div>
                             <p class="text-xs font-bold uppercase tracking-widest opacity-80">Plafon</p>
-                            <p class="text-3xl font-bold">{{ currency(loan.proposed_amount) }}</p>
+                            <p class="text-2xl font-bold tabular-nums sm:text-3xl">{{ currency(loan.proposed_amount) }}</p>
                         </div>
                         <div class="grid grid-cols-3 gap-3 text-center">
                             <div class="rounded-xl bg-on-primary/15 p-3">
@@ -893,7 +897,7 @@ function setAllocatedAmount(memberRowId, value) {
                                     label="Cari dokumen"
                                     :hide-label="true"
                                     placeholder="Cari dokumen..."
-                                    class="w-56"
+                                    class="w-full sm:w-56"
                                 />
                             </div>
                         </div>
@@ -986,7 +990,7 @@ function setAllocatedAmount(memberRowId, value) {
             <AppModal v-model="auditHistoryModalOpen" title="Riwayat & Audit Parameter Pinjaman" size="lg">
                 <div class="space-y-6">
                     <div class="overflow-x-auto">
-                        <table class="w-full min-w-[56rem] text-left text-sm">
+                        <table class="w-full min-w-[36rem] text-left text-[11px] sm:min-w-[56rem] sm:text-sm">
                             <thead class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
                                 <tr>
                                     <th class="py-3 pr-4">Parameter</th>

@@ -101,7 +101,7 @@ function statusLabel(status) {
                         empty-description="Tagihan akan muncul di sini setelah diterbitkan."
                     >
                         <template #toolbar>
-                            <div class="min-w-48">
+                            <div class="min-w-0 flex-1 sm:min-w-48 sm:flex-initial">
                                 <SmartSelect :model-value="status" label="Status" hide-label :options="statusOptions" @update:model-value="filterStatus" />
                             </div>
                         </template>

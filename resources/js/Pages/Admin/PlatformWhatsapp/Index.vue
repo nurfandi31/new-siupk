@@ -292,8 +292,8 @@ onBeforeUnmount(stopPolling);
                     <AppButton icon="add" :disabled="!props.configured" @click="openCreate">Tambah Instance</AppButton>
                 </div>
 
-                <div v-if="props.instances.length" class="overflow-x-auto">
-                    <table class="w-full min-w-[900px] text-left text-sm">
+    <div v-if="props.instances.length" class="overflow-x-auto">
+        <table class="w-full min-w-[40rem] text-left text-[11px] sm:min-w-[56rem] sm:text-sm">
                         <thead class="bg-surface-container-low">
                             <tr>
                                 <th class="px-4 py-3 font-bold text-primary">Instance</th>

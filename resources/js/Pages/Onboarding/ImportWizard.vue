@@ -398,14 +398,14 @@ const uploadLoans = () => {
                                 type="file"
                                 accept=".csv"
                                 @change="e => memberFileForm.file = e.target.files[0]"
-                                class="block w-full text-xs text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-container file:text-primary hover:file:bg-primary-fixed"
+                                class="block w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-container file:text-primary hover:file:bg-primary-fixed"
                             />
                         </div>
                         <div class="flex justify-between items-center pt-2">
-                            <a :href="`${baseUrl}/onboarding/templates/anggota`" class="text-xs text-secondary hover:underline font-semibold">
+                            <a :href="`${baseUrl}/onboarding/templates/anggota`" class="text-sm text-secondary hover:underline font-semibold">
                                 ?? Download Template CSV Anggota
                             </a>
-                            <AppButton type="submit" variant="primary" size="sm" :disabled="!memberFileForm.file || memberFileForm.processing">
+                            <AppButton type="submit" variant="primary" size="compact" :disabled="!memberFileForm.file || memberFileForm.processing">
                                 Upload & Impor Anggota
                             </AppButton>
                         </div>
@@ -426,14 +426,14 @@ const uploadLoans = () => {
                                 type="file"
                                 accept=".csv"
                                 @change="e => groupFileForm.file = e.target.files[0]"
-                                class="block w-full text-xs text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-container file:text-primary hover:file:bg-primary-fixed"
+                                class="block w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-container file:text-primary hover:file:bg-primary-fixed"
                             />
                         </div>
                         <div class="flex justify-between items-center pt-2">
-                            <a :href="`${baseUrl}/onboarding/templates/kelompok`" class="text-xs text-secondary hover:underline font-semibold">
+                            <a :href="`${baseUrl}/onboarding/templates/kelompok`" class="text-sm text-secondary hover:underline font-semibold">
                                 ?? Download Template CSV Kelompok
                             </a>
-                            <AppButton type="submit" variant="primary" size="sm" :disabled="!groupFileForm.file || groupFileForm.processing">
+                            <AppButton type="submit" variant="primary" size="compact" :disabled="!groupFileForm.file || groupFileForm.processing">
                                 Upload & Impor Kelompok
                             </AppButton>
                         </div>
@@ -468,14 +468,14 @@ const uploadLoans = () => {
                                     type="file"
                                     accept=".csv"
                                     @change="e => loanFileForm.file = e.target.files[0]"
-                                    class="block w-full text-xs text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-container file:text-primary hover:file:bg-primary-fixed"
+                                    class="block w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-container file:text-primary hover:file:bg-primary-fixed"
                                 />
                             </div>
                             <div class="flex justify-between items-center pt-2">
-                                <a :href="`${baseUrl}/onboarding/templates/pinjaman-aktif`" class="text-xs text-secondary hover:underline font-semibold">
+                                <a :href="`${baseUrl}/onboarding/templates/pinjaman-aktif`" class="text-sm text-secondary hover:underline font-semibold">
                                     ?? Download Format Template CSV Pinjaman Aktif (.csv)
                                 </a>
-                                <AppButton type="submit" variant="primary" size="sm" :disabled="!loanFileForm.file || loanFileForm.processing">
+                                <AppButton type="submit" variant="primary" size="compact" :disabled="!loanFileForm.file || loanFileForm.processing">
                                     Upload & Impor Pinjaman Aktif
                                 </AppButton>
                             </div>
@@ -489,31 +489,31 @@ const uploadLoans = () => {
                 <AppCard class="hover:border-primary transition-colors">
                     <h3 class="font-bold text-sm text-primary">1. Template Saldo Awal</h3>
                     <p class="text-xs text-on-surface-variant mt-1">Format neraca saldo awal akun COA debit/kredit.</p>
-                    <a :href="`${baseUrl}/onboarding/templates/saldo-awal`" class="mt-4 inline-block text-xs font-semibold text-secondary">?? Download CSV Template</a>
+                    <a :href="`${baseUrl}/onboarding/templates/saldo-awal`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? Download CSV Template</a>
                 </AppCard>
 
                 <AppCard class="hover:border-primary transition-colors">
                     <h3 class="font-bold text-sm text-primary">2. Template Anggota</h3>
                     <p class="text-xs text-on-surface-variant mt-1">Format data NIK, Nama, Alamat, Desa, Phone.</p>
-                    <a :href="`${baseUrl}/onboarding/templates/anggota`" class="mt-4 inline-block text-xs font-semibold text-secondary">?? Download CSV Template</a>
+                    <a :href="`${baseUrl}/onboarding/templates/anggota`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? Download CSV Template</a>
                 </AppCard>
 
                 <AppCard class="hover:border-primary transition-colors">
                     <h3 class="font-bold text-sm text-primary">3. Template Kelompok</h3>
                     <p class="text-xs text-on-surface-variant mt-1">Format nama kelompok, alamat, desa, pengurus.</p>
-                    <a :href="`${baseUrl}/onboarding/templates/kelompok`" class="mt-4 inline-block text-xs font-semibold text-secondary">?? Download CSV Template</a>
+                    <a :href="`${baseUrl}/onboarding/templates/kelompok`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? Download CSV Template</a>
                 </AppCard>
 
                 <AppCard class="hover:border-primary transition-colors">
                     <h3 class="font-bold text-sm text-primary">4. Template Pinjaman Aktif & Angsuran</h3>
                     <p class="text-xs text-on-surface-variant mt-1">Format portofolio pinjaman berjalan & akumulasi angsuran.</p>
-                    <a :href="`${baseUrl}/onboarding/templates/pinjaman-aktif`" class="mt-4 inline-block text-xs font-semibold text-secondary">?? Download CSV Template</a>
+                    <a :href="`${baseUrl}/onboarding/templates/pinjaman-aktif`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? Download CSV Template</a>
                 </AppCard>
 
                 <AppCard class="hover:border-primary transition-colors">
                     <h3 class="font-bold text-sm text-primary">5. Template Aset Tetap Awal</h3>
                     <p class="text-xs text-on-surface-variant mt-1">Format barang inventaris, harga perolehan, depresiasi.</p>
-                    <a :href="`${baseUrl}/onboarding/templates/aset-tetap`" class="mt-4 inline-block text-xs font-semibold text-secondary">?? Download CSV Template</a>
+                    <a :href="`${baseUrl}/onboarding/templates/aset-tetap`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? Download CSV Template</a>
                 </AppCard>
             </div>
 
@@ -758,7 +758,7 @@ const uploadLoans = () => {
                     </div>
 
                     <div class="flex justify-between items-center pt-6">
-                        <AppButton type="button" variant="secondary" size="sm" @click="addAggregateLine">
+                        <AppButton type="button" variant="secondary" size="compact" @click="addAggregateLine">
                             + Tambah Baris
                         </AppButton>
                         <AppButton

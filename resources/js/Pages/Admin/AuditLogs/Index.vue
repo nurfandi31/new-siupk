@@ -92,7 +92,7 @@ function subjectLink(row) {
                         empty-description="Aksi admin sensitif akan terekam otomatis di sini."
                     >
                         <template #toolbar>
-                            <div class="min-w-48">
+                            <div class="min-w-0 flex-1 sm:min-w-48 sm:flex-initial">
                                 <SmartSelect
                                     :model-value="action"
                                     label="Aksi"
