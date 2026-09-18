@@ -7,8 +7,16 @@ import AppIcon from '../../Components/AppIcon.vue';
 import AppIconButton from '../../Components/AppIconButton.vue';
 import AppInput from '../../Components/AppInput.vue';
 
-const showPassword = ref(false);
-const form = useForm({ identifier: '', password: '', remember: false });
+const props = defineProps({
+    demo: { type: Object, default: null },
+});
+
+const showPassword = ref(Boolean(props.demo));
+const form = useForm({
+    identifier: props.demo?.username ?? '',
+    password: props.demo?.password ?? '',
+    remember: false,
+});
 const page = usePage();
 const formContainerRef = ref(null);
 const localFlash = ref({ ...(page.props.flash ?? {}) });
@@ -140,20 +148,34 @@ const trustItems = [
                 <div ref="formContainerRef" class="login-form-card w-full max-w-sm space-y-5 sm:space-y-6">
                     <!-- Header -->
                     <header class="login-form-header space-y-2 text-center sm:text-left">
-                        <span class="login-form-pill inline-flex items-center gap-1.5 rounded-full bg-primary-container/40 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-primary)_15%,transparent)] backdrop-blur-sm">
+                        <span class="login-form-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-primary)_15%,transparent)] backdrop-blur-sm"
+                            :class="demo
+                                ? 'bg-tertiary-fixed/40 text-tertiary'
+                                : 'bg-primary-container/40 text-primary'">
                             <span class="login-pill-dot relative flex size-1.5">
-                                <span class="login-pill-dot-ping absolute inset-0 rounded-full bg-primary opacity-75" />
-                                <span class="relative inline-flex size-1.5 rounded-full bg-primary" />
+                                <span class="login-pill-dot-ping absolute inset-0 rounded-full opacity-75"
+                                    :class="demo ? 'bg-tertiary' : 'bg-primary'" />
+                                <span class="relative inline-flex size-1.5 rounded-full"
+                                    :class="demo ? 'bg-tertiary' : 'bg-primary'" />
                             </span>
-                            Portal Autentikasi Pengurus &amp; Admin
+                            {{ demo ? 'Akun Demo · Data Fiktif' : 'Portal Autentikasi Pengurus & Admin' }}
                         </span>
                         <h1 class="login-form-title text-2xl font-extrabold tracking-tight text-on-surface sm:text-3xl">
-                            Masuk ke Akun Anda
+                            {{ demo ? 'Coba Sistem Demo' : 'Masuk ke Akun Anda' }}
                         </h1>
                         <p class="login-form-subtitle text-sm text-on-surface-variant">
-                            Masukkan kredensial pengguna terdaftar BUMDesma Anda.
+                            {{ demo ? 'Kredensial demo sudah terisi otomatis. Klik tombol masuk untuk menjelajah sistem.' : 'Masukkan kredensial pengguna terdaftar BUMDesma Anda.' }}
                         </p>
                     </header>
+
+                    <!-- Demo banner info -->
+                    <div v-if="demo" role="status" class="flex items-start gap-2.5 rounded-lg border border-tertiary/30 bg-tertiary-fixed/30 p-3 text-sm text-on-surface">
+                        <AppIcon name="info" class="text-xl shrink-0 mt-0.5 leading-none text-tertiary" />
+                        <div class="leading-snug">
+                            <p class="font-semibold">Ini akun <span class="uppercase">demo</span> · bukan data produksi.</p>
+                            <p class="mt-0.5 text-on-surface-variant">Username: <code class="font-mono font-bold text-tertiary">{{ demo.username }}</code> · Password: <code class="font-mono font-bold text-tertiary">{{ demo.password }}</code></p>
+                        </div>
+                    </div>
 
                     <!-- Flash messages -->
                     <div class="login-form-flash space-y-2">
@@ -219,10 +241,11 @@ const trustItems = [
                         </div>
 
                         <div class="login-form-options flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
-                            <AppCheckbox v-model="form.remember" variant="inline" label="Ingat sesi saya" />
-                            <Link :href="route('password.request')" class="font-semibold text-primary hover:underline">
+                            <AppCheckbox v-if="!demo" v-model="form.remember" variant="inline" label="Ingat sesi saya" />
+                            <Link v-if="!demo" :href="route('password.request')" class="font-semibold text-primary hover:underline">
                                 Lupa password?
                             </Link>
+                            <span v-else class="text-xs text-on-surface-variant">Akun demo direset otomatis tiap periode.</span>
                         </div>
 
                         <div class="login-form-submit" style="margin-top: 1.5rem;">
@@ -234,9 +257,13 @@ const trustItems = [
                                 :loading="form.processing"
                                 icon="login"
                             >
-                                <span>{{ form.processing ? 'Memverifikasi...' : 'masuk ke dashboard' }}</span>
+                                <span>{{ form.processing ? 'Memverifikasi...' : (demo ? 'masuk sebagai demo' : 'masuk ke dashboard') }}</span>
                             </AppButton>
                         </div>
+
+                        <p v-if="demo" class="text-center text-[11px] text-outline">
+                            Kembali ke <Link :href="route('home')" class="font-semibold text-primary hover:underline">halaman demo</Link>.
+                        </p>
                     </form>
                 </div>
             </div>

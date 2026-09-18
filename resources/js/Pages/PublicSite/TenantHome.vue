@@ -1,17 +1,8 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import gsap from 'gsap';
 import AppIcon from '@/Components/AppIcon.vue';
-
-const mobileNavOpen = ref(false);
-
-function smoothScrollTo(id) {
-    mobileNavOpen.value = false;
-    const el = document.getElementById(id);
-    if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
 
 const props = defineProps({
     organization: { type: Object, required: true },
@@ -19,652 +10,949 @@ const props = defineProps({
     settings: { type: Object, default: () => ({}) },
 });
 
-const stats = computed(() => ([
-    { value: props.organization.stat_total_members ?? '—', label: 'Anggota Aktif', icon: 'group', tone: 'primary' },
-    { value: props.organization.stat_total_groups ?? '—', label: 'Kelompok', icon: 'workspaces', tone: 'secondary' },
-    { value: props.organization.stat_villages ?? '—', label: 'Desa Layanan', icon: 'location_city', tone: 'tertiary' },
-    { value: props.organization.stat_total_funding ?? '—', label: 'Total Penyaluran', icon: 'payments', tone: 'success' },
-]));
+const mobileNavOpen = ref(false);
+const activeSection = ref('');
+const scrolled = ref(false);
+const cursorX = ref(-100);
+const cursorY = ref(-100);
+const hoverTarget = ref(false);
 
-const features = [
-    { icon: 'savings', title: 'Dana Bergulir Terkelola', desc: 'Penyaluran, pengembalian, dan rotasi dana tercatat rapi mengikuti siklus PP No. 11/2021.' },
-    { icon: 'rule', title: 'Patuh Regulasi', desc: 'Seluruh tata kelola merujuk pada PP No. 11/2021 tentang Pendirian & Pengelolaan BUMDesma.' },
-    { icon: 'verified_user', title: 'Transparan & Akuntabel', desc: 'Laporan keuangan, berita acara, dan dokumentasi dapat diakses publik setiap saat.' },
-    { icon: 'shield', title: 'Keamanan Data', desc: 'Enkripsi berlapis, kontrol akses peran, serta audit log untuk setiap transaksi sensitif.' },
-    { icon: 'monitoring', title: 'Monitoring Real-time', desc: 'Pantau kolektabilitas, NPL, dan kinerja pelayanan langsung dari dashboard informatif.' },
-    { icon: 'support_agent', title: 'Pendampingan', desc: 'Tim provinsi & kabupaten siap mendampingi pengurus BUMDesma di lapangan.' },
+function smoothScrollTo(id) {
+    mobileNavOpen.value = false;
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function onGlobalMouseMove(e) {
+    cursorX.value = e.clientX;
+    cursorY.value = e.clientY;
+}
+
+function onScroll() {
+    scrolled.value = window.scrollY > 12;
+}
+
+const orgName = computed(() => props.organization?.name || 'BUMDesma LKD');
+const orgLegalName = computed(() => props.organization?.legal_name || orgName.value);
+const orgRegion = computed(() => {
+    const d = props.organization?.district_name;
+    const r = props.organization?.regency_name;
+    return [d, r].filter(Boolean).join(' · ');
+});
+const orgAddress = computed(() => props.organization?.address || '');
+const orgPhone = computed(() => props.organization?.phone || '');
+const orgEmail = computed(() => props.organization?.email || '');
+const orgWebsite = computed(() => props.organization?.website || '');
+const orgFounded = computed(() => props.organization?.operational_start_year || '');
+const orgLogo = computed(() => props.organization?.logo_url || '');
+const orgInitial = computed(() =>
+    (props.organization?.legal_name || orgName.value || 'B').charAt(0).toUpperCase()
+);
+
+const heroTagline = computed(
+    () =>
+        props.settings?.hero_tagline ||
+        `${orgLegalName.value} — Sistem Tata Kelola Keuangan & Dana Bergulir Masyarakat.`
+);
+const heroDescription = computed(
+    () =>
+        props.settings?.hero_description ||
+        `Portal informasi resmi ${orgLegalName.value} — mengelola pinjaman, pembukuan, dan pelaporan keuangan BUMDesma LKD sesuai regulasi yang berlaku.`
+);
+
+const navAnchors = [
+    { id: 'layanan', label: 'Layanan' },
+    { id: 'produk', label: 'Produk' },
+    { id: 'alur', label: 'Alur' },
+    { id: 'regulasi', label: 'Regulasi' },
 ];
 
-const quickStats = [
-    { icon: 'trending_up', value: '+12,4%', label: 'Pertumbuhan Penyaluran' },
-    { icon: 'percent', value: '97,2%', label: 'Kolektabilitas' },
-    { icon: 'groups', value: '12.480', label: 'Penerima Manfaat' },
+const stats = [
+    { label: 'Kecamatan / Wilayah Layanan Aktif', value: '500+', top: 'Wilayah', icon: 'map' },
+    { label: 'Kelompok Pemanfaat Aktif', value: '12.500+', top: 'Pemanfaat', icon: 'groups' },
+    { label: 'Akurasi Jurnal Otomatis', value: '100%', top: 'Akurasi', icon: 'verified' },
+    { label: 'Standar Akuntansi SAK EP', value: '99,9%', top: 'Kepatuhan', icon: 'shield' },
 ];
 
-const modules = [
-    { icon: 'how_to_reg', title: 'Verifikasi Anggota', desc: 'Form digital, validasi NIK, dan lampiran dokumen otomatis.' },
-    { icon: 'request_quote', title: 'Pengajuan Kredit', desc: 'Alur berjenjang dari kelompok hingga pengurus dengan berita acara.' },
-    { icon: 'account_balance_wallet', title: 'Pencairan & Angsuran', desc: 'Jadwal angsuran,监控 kolektabilitas, dan tanda terima digital.' },
-    { icon: 'fact_check', title: 'Berita Acara', desc: 'Template BA tersinkronisasi dengan format kecamatan/kabupaten.' },
-    { icon: 'analytics', title: 'Laporan Keuangan', desc: 'Neraca, laba-rugi, arus kas, dan CALK otomatis.' },
-    { icon: 'inventory_2', title: 'Aset & Inventaris', desc: 'Manajemen aset tetap, inventaris, dan penyusutan otomatis.' },
+const layananModul = [
+    { num: '01', icon: 'how_to_reg', title: 'Verifikasi Anggota', desc: 'Form digital, validasi NIK, dan lampiran dokumen otomatis untuk pengurus kelompok.', tone: 'indigo', tag: 'Onboarding', period: 'Real-time', stats: [
+        { value: '2.4K', label: 'Tervalidasi', highlight: true },
+        { value: '99,7%', label: 'Akurat', highlight: false },
+    ] },
+    { num: '02', icon: 'request_quote', title: 'Pengajuan Kredit', desc: 'Alur berjenjang dari kelompok hingga pengurus dengan berita acara otomatis.', tone: 'sky', tag: 'Workflow', period: '7 hari kerja', stats: [
+        { value: '850+', label: 'Pengajuan/bln', highlight: true },
+        { value: '< 3 hari', label: 'Rata-rata', highlight: false },
+    ] },
+    { num: '03', icon: 'account_balance_wallet', title: 'Pencairan & Angsuran', desc: 'Jadwal angsuran, kolektabilitas, dan tanda terima digital real-time.', tone: 'amber', tag: 'Transaksi', period: 'H+1 pencairan', stats: [
+        { value: 'Rp 8,5M', label: 'Outstanding', highlight: true },
+        { value: '98,4%', label: 'Kolektabilitas', highlight: false },
+    ] },
+    { num: '04', icon: 'fact_check', title: 'Berita Acara', desc: 'Template BA tersinkronisasi dengan format kecamatan dan kabupaten.', tone: 'rose', tag: 'Dokumen', period: 'Otomatis', stats: [
+        { value: '12+', label: 'Template', highlight: true },
+        { value: '100%', label: 'Tersinkron', highlight: false },
+    ] },
+    { num: '05', icon: 'analytics', title: 'Laporan Keuangan', desc: 'Neraca, laba-rugi, arus kas, dan CALK otomatis sesuai standar.', tone: 'teal', tag: 'Reporting', period: 'Bulanan', stats: [
+        { value: '24+', label: 'Laporan', highlight: true },
+        { value: 'SAK EP', label: 'Standar', highlight: false },
+    ] },
+    { num: '06', icon: 'inventory_2', title: 'Aset & Inventaris', desc: 'Manajemen aset tetap, inventaris, dan penyusutan otomatis.', tone: 'violet', tag: 'Aset', period: 'Update mingguan', stats: [
+        { value: '320+', label: 'Item aset', highlight: true },
+        { value: 'Auto', label: 'Penyusutan', highlight: false },
+    ] },
 ];
+
+const produkCards = [
+    {
+        key: 'kelompok',
+        icon: 'groups',
+        tone: 'indigo',
+        headline: 'Solidaritas & gotong-royong',
+        ringkasan: 'Pinjaman untuk satu kelompok usaha/masyarakat beranggotakan 5–20 orang.',
+        desc: 'Skema penyaluran dimana pengurus kelompok bersama anggotanya bertanggung jawab secara kolektif atas kelancaran angsuran. Cocok untuk anggota yang baru memulai usaha.',
+        stats: [
+            { label: 'Porsi penyaluran', value: '68%', icon: 'pie_chart' },
+            { label: 'Kolektabilitas', value: '98,4%', icon: 'trending_up' },
+            { label: 'Tepat waktu', value: '96,2%', icon: 'schedule' },
+            { label: 'Rata-rata nominal', value: 'Rp 8,5 jt', icon: 'payments' },
+        ],
+        manfaat: [
+            'Risiko gagal bayar lebih rendah',
+            'Verifikasi kolektif oleh pengurus',
+            'Berita acara cukup satu dokumen',
+            'Pendampingan intensif',
+            'Cocok untuk usaha pemula',
+            'Monitoring real-time',
+        ],
+        syarat: [
+            'Kelompok minimal 5 anggota',
+            'Memiliki pengurus aktif',
+            'Berita acara musyawarah kelompok',
+            'Rekomendasi pendamping kecamatan',
+        ],
+    },
+    {
+        key: 'individu',
+        icon: 'person',
+        tone: 'amber',
+        headline: 'Fleksibel & personal',
+        ringkasan: 'Pinjaman untuk peminjam perorangan dengan plafon lebih besar.',
+        desc: 'Skema penyaluran kepada peminjam perorangan dengan analisis profil risiko yang lebih ketat. Cocok untuk anggota yang butuh plafon lebih besar dan sudah memiliki catatan usaha.',
+        stats: [
+            { label: 'Porsi penyaluran', value: '32%', icon: 'pie_chart' },
+            { label: 'Kolektabilitas', value: '92,1%', icon: 'trending_up' },
+            { label: 'Tepat waktu', value: '88,5%', icon: 'schedule' },
+            { label: 'Rata-rata nominal', value: 'Rp 15,8 jt', icon: 'payments' },
+        ],
+        manfaat: [
+            'Plafon lebih tinggi per peminjam',
+            'Skoring risiko otomatis',
+            'Reminder WhatsApp otomatis',
+            'Jadwal angsuran custom',
+            'Cocok untuk usaha berkembang',
+            'Pencairan lebih cepat',
+        ],
+        syarat: [
+            'Anggota aktif minimal 1 tahun',
+            'Riwayat pinjaman sebelumnya',
+            'Profil usaha terdaftar',
+            'Rekomendasi pengurus',
+        ],
+    },
+];
+
+const toneStyles = {
+    indigo: { ring: 'ring-emerald-600/30', bg: 'bg-emerald-50', text: 'text-emerald-800', grad: 'from-emerald-700 to-green-600', soft: 'from-emerald-700/10 to-green-600/10', icon: 'bg-emerald-700', accent: 'shadow-emerald-600/25', defaultTone: 'shadow-emerald-600/[0.08]', shadowRgb: 'rgba(16,185,129,0.18)' },
+    sky: { ring: 'ring-emerald-500/30', bg: 'bg-emerald-50', text: 'text-emerald-700', grad: 'from-emerald-600 to-teal-500', soft: 'from-emerald-600/10 to-teal-500/10', icon: 'bg-emerald-600', accent: 'shadow-emerald-500/25', defaultTone: 'shadow-emerald-500/[0.08]', shadowRgb: 'rgba(16,185,129,0.16)' },
+    violet: { ring: 'ring-green-600/30', bg: 'bg-green-50', text: 'text-green-800', grad: 'from-green-600 to-teal-500', soft: 'from-green-600/10 to-teal-500/10', icon: 'bg-green-600', accent: 'shadow-green-600/25', defaultTone: 'shadow-green-600/[0.08]', shadowRgb: 'rgba(22,163,74,0.18)' },
+    amber: { ring: 'ring-amber-500/30', bg: 'bg-amber-50', text: 'text-amber-700', grad: 'from-amber-500 to-orange-500', soft: 'from-amber-500/10 to-orange-500/10', icon: 'bg-amber-500', accent: 'shadow-amber-500/25', defaultTone: 'shadow-amber-500/[0.08]', shadowRgb: 'rgba(245,158,11,0.18)' },
+    rose: { ring: 'ring-rose-500/30', bg: 'bg-rose-50', text: 'text-rose-700', grad: 'from-rose-500 to-pink-500', soft: 'from-rose-500/10 to-pink-500/10', icon: 'bg-rose-500', accent: 'shadow-rose-500/25', defaultTone: 'shadow-rose-500/[0.08]', shadowRgb: 'rgba(244,63,94,0.18)' },
+    teal: { ring: 'ring-teal-500/30', bg: 'bg-teal-50', text: 'text-teal-700', grad: 'from-teal-500 to-emerald-500', soft: 'from-teal-500/10 to-emerald-500/10', icon: 'bg-teal-500', accent: 'shadow-teal-500/25', defaultTone: 'shadow-teal-500/[0.08]', shadowRgb: 'rgba(20,184,166,0.18)' },
+};
+
+const alur = [
+    { num: '01', title: 'Musyawarah Desa', desc: 'Verifikasi calon anggota dan rencana kebutuhan oleh pengurus & LKD desa.', role: 'Pengurus + LKD', duration: '1–3 hari', icon: 'groups_2' },
+    { num: '02', title: 'Verifikasi & SPK', desc: 'Pemeriksaan data, berita acara, dan penandatanganan perjanjian kredit.', role: 'Tim Teknis', duration: '2–5 hari', icon: 'task_alt' },
+    { num: '03', title: 'Penyaluran & Angsuran', desc: 'Pencairan, jadwal angsuran, dan monitoring kolektabilitas real-time.', role: 'Operator', duration: 'Otomatis', icon: 'sync_alt' },
+    { num: '04', title: 'Pelaporan', desc: 'Laporan keuangan, berita acara, dan dokumentasi tersimpan otomatis.', role: 'Pengurus + Dinas', duration: 'Bulanan', icon: 'analytics' },
+];
+
+const regulasi = [
+    { label: 'PP No. 11/2021', sub: 'BUMDesma', desc: 'Pendirian & pengelolaan badan usaha milik desa sesuai regulasi.', tone: 'indigo', icon: 'policy' },
+    { label: 'SAK EP / ETAP', sub: 'Standar Akuntansi', desc: 'Bagan akun entitas mikro & privat yang berlaku nasional.', tone: 'sky', icon: 'menu_book' },
+    { label: 'Sharding DB', sub: 'Isolasi Tenant', desc: 'Ruang data independen per BUMDesma untuk keamanan.', tone: 'teal', icon: 'database' },
+    { label: 'QRIS & VA', sub: 'Payment Gateway', desc: 'Pembayaran nasional multi-bank yang aman & cepat.', tone: 'amber', icon: 'qr_code_2' },
+];
+
+let observerInstance = null;
+let statsObserver = null;
+let navObserver = null;
+let dividerObserver = null;
+
+onMounted(() => {
+    nextTick(() => {
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.addEventListener('mousemove', onGlobalMouseMove, { passive: true });
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        if (!prefersReducedMotion) {
+            // Hero entrance
+            const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+            tl.fromTo('.anim-fade', { opacity: 0 }, { opacity: 1, duration: 0.45, stagger: 0.03, delay: 0.05 })
+              .fromTo('.anim-fade-up', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.55, stagger: 0.05 }, '-=0.2')
+              .fromTo('.anim-scale', { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.6, ease: 'expo.out', stagger: 0.06 }, '-=0.3')
+              .fromTo('.anim-slide', { opacity: 0, x: -12 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.04 }, '-=0.35');
+
+            // Floating decorative orbs
+            gsap.to('.float-orb', {
+                y: 'random(-22, 22)',
+                x: 'random(-14, 14)',
+                duration: 'random(8, 14)',
+                ease: 'sine.inOut',
+                yoyo: true,
+                repeat: -1,
+                stagger: { each: 0.3, from: 'random' }
+            });
+
+            // Rotating gradients
+            gsap.to('.spin-slow', { rotation: 360, duration: 90, ease: 'none', repeat: -1 });
+            gsap.to('.spin-reverse', { rotation: -360, duration: 110, ease: 'none', repeat: -1 });
+
+            // Reveal on scroll
+            observerInstance = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) return;
+                        const items = entry.target.querySelectorAll('.reveal-item');
+                        gsap.fromTo(items,
+                            { opacity: 0, y: 40 },
+                            { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, ease: 'power3.out' }
+                        );
+                        observerInstance.unobserve(entry.target);
+                    });
+                },
+                { threshold: 0.12 }
+            );
+            document.querySelectorAll('.reveal-group').forEach((el) => observerInstance.observe(el));
+
+            // Side reveal
+            const sideObserver = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) return;
+                        const items = entry.target.querySelectorAll('.reveal-side');
+                        gsap.fromTo(items,
+                            { opacity: 0, x: 30 },
+                            { opacity: 1, x: 0, duration: 0.9, stagger: 0.1, ease: 'power3.out' }
+                        );
+                        sideObserver.unobserve(entry.target);
+                    });
+                },
+                { threshold: 0.15 }
+            );
+            document.querySelectorAll('.reveal-side-group').forEach((el) => sideObserver.observe(el));
+
+            // Scale reveal
+            const scaleObserver = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) return;
+                        gsap.fromTo(entry.target.querySelector('.reveal-scale'),
+                            { opacity: 0, scale: 0.95, y: 30 },
+                            { opacity: 1, scale: 1, y: 0, duration: 1.0, ease: 'expo.out' }
+                        );
+                        scaleObserver.unobserve(entry.target);
+                    });
+                },
+                { threshold: 0.2 }
+            );
+            document.querySelectorAll('.scale-group').forEach((el) => scaleObserver.observe(el));
+
+            // Section nav tracking
+            navObserver = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) activeSection.value = entry.target.id;
+                    });
+                },
+                { rootMargin: '-35% 0px -55% 0px', threshold: 0 }
+            );
+            navAnchors.forEach((a) => {
+                const el = document.getElementById(a.id);
+                if (el) navObserver.observe(el);
+            });
+
+            // Animated section dividers — draw SVG line + label fade
+            dividerObserver = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) return;
+                        const el = entry.target;
+                        const line = el.querySelector('.divider-line');
+                        const dot = el.querySelector('.divider-dot');
+                        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+                        if (line) {
+                            tl.fromTo(line,
+                                { strokeDashoffset: 1000 },
+                                { strokeDashoffset: 0, duration: 1.4 }, 0
+                            );
+                        }
+                        if (dot) {
+                            tl.fromTo(dot, { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.8)' }, 0.1);
+                        }
+                        dividerObserver.unobserve(el);
+                    });
+                },
+                { threshold: 0.4 }
+            );
+            document.querySelectorAll('.section-divider').forEach((el) => dividerObserver.observe(el));
+        } else {
+            gsap.set('.anim-fade, .anim-fade-up, .anim-scale, .anim-slide, .reveal-item, .reveal-side, .reveal-scale', { opacity: 1, y: 0, x: 0, scale: 1 });
+            gsap.set('.divider-line', { strokeDashoffset: 0 });
+            gsap.set('.divider-dot', { opacity: 1, scale: 1 });
+        }
+    });
+});
+
+onUnmounted(() => {
+    if (observerInstance) observerInstance.disconnect();
+    if (statsObserver) statsObserver.disconnect();
+    if (navObserver) navObserver.disconnect();
+    if (dividerObserver) dividerObserver.disconnect();
+    window.removeEventListener('mousemove', onGlobalMouseMove);
+    window.removeEventListener('scroll', onScroll);
+});
 </script>
 
-<style scoped>
-/* ==========================================================================
-   Landing palette — consolidated tokens (hijau bertingkat, 4 token saja)
-   Berlaku hanya untuk komponen ini, tidak mengotak-atik theme global.
-   Token:
-     --tenant-deep   (#052e1f)  // base forest, footer & headline dark stop
-     --tenant-mid    (#0e5538)  // middle band
-     --tenant-bright (#117a4a)  // primary highlight, CTA gradient stop
-     --tenant-soft   (#65a30d)  // accent lime pop, used sparingly
-   ========================================================================== */
-:root {
-    --tenant-deep: #052e1f;
-    --tenant-mid: #0e5538;
-    --tenant-bright: #117a4a;
-    --tenant-soft: #65a30d;
-}
-
-.landing-topbar {
-    background: linear-gradient(95deg, var(--tenant-deep) 0%, var(--tenant-mid) 45%, var(--tenant-bright) 100%);
-    box-shadow: 0 2px 14px rgb(5 46 31 / 25%);
-}
-
-.landing-hero {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-}
-
-.landing-hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -2;
-    background:
-        radial-gradient(120% 80% at 0% 0%, var(--tenant-mid) 0%, transparent 55%),
-        radial-gradient(110% 70% at 100% 100%, var(--tenant-bright) 0%, transparent 60%),
-        linear-gradient(135deg, var(--tenant-deep) 0%, var(--tenant-mid) 38%, #145c3f 68%, var(--tenant-bright) 100%);
-}
-
-.landing-hero::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    opacity: 0.18;
-    background-image:
-        linear-gradient(115deg, transparent 0%, transparent 38%, rgb(132 204 22 / 22%) 38%, rgb(132 204 22 / 22%) 42%, transparent 42%),
-        linear-gradient(115deg, transparent 0%, transparent 62%, rgb(16 185 129 / 28%) 62%, rgb(16 185 129 / 28%) 66%, transparent 66%);
-    pointer-events: none;
-}
-
-.landing-hero h1,
-.landing-hero .t-h1 {
-    background: linear-gradient(120deg, var(--tenant-deep) 0%, var(--tenant-bright) 45%, var(--tenant-soft) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-}
-
-.landing-hero .t-body-lg,
-.landing-hero .text-on-surface-variant {
-    color: #2d3f37 !important;
-}
-
-.landing-hero-card {
-    background: linear-gradient(155deg, #ffffff 0%, #f3faf5 100%);
-    border-color: rgb(16 185 129 / 22%);
-}
-
-.landing-hero-card .text-secondary {
-    color: var(--tenant-bright) !important;
-}
-
-.landing-cta {
-    background:
-        radial-gradient(120% 90% at 0% 0%, var(--tenant-bright) 0%, transparent 60%),
-        radial-gradient(120% 90% at 100% 100%, var(--tenant-soft) 0%, transparent 60%),
-        linear-gradient(135deg, var(--tenant-deep) 0%, var(--tenant-mid) 35%, var(--tenant-bright) 70%, var(--tenant-soft) 100%) !important;
-}
-
-.landing-regulasi {
-    background:
-        radial-gradient(120% 80% at 100% 0%, var(--tenant-bright) 0%, transparent 60%),
-        radial-gradient(120% 80% at 0% 100%, var(--tenant-mid) 0%, transparent 60%),
-        linear-gradient(135deg, var(--tenant-deep) 0%, var(--tenant-mid) 50%, var(--tenant-mid) 100%);
-}
-
-.landing-dana-desa {
-    margin: 0;
-    line-height: 0.92;
-    letter-spacing: -0.035em;
-    font-weight: 900;
-    font-style: italic;
-    color: var(--tenant-deep);
-    font-size: clamp(4.5rem, 12vw, 10rem);
-}
-
-.landing-badge-pill {
-    background: linear-gradient(120deg, var(--tenant-bright) 0%, var(--tenant-soft) 100%) !important;
-    box-shadow: 0 6px 18px rgb(17 122 74 / 30%);
-}
-
-/* Typography tokens — konsisten di seluruh landing */
-.t-eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; line-height: 1.2; }
-.t-tagline { font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.08em; line-height: 1.3; }
-.t-nav { font-size: 0.875rem; font-weight: 600; line-height: 1.3; }
-.t-body { font-size: 1rem; line-height: 1.7; font-weight: 400; }
-.t-body-lg { font-size: 1.0625rem; line-height: 1.75; font-weight: 400; }
-.t-card-title { font-size: 1.0625rem; font-weight: 700; line-height: 1.35; letter-spacing: -0.005em; }
-.t-step-num { font-size: 0.875rem; font-weight: 800; line-height: 1; }
-.t-stat-value { font-size: 1.625rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
-.t-stat-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; line-height: 1.3; }
-.t-section-eyebrow { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; line-height: 1.2; }
-.t-section-title { font-size: 1.875rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
-@media (min-width: 640px) { .t-section-title { font-size: 2.25rem; } }
-@media (min-width: 1024px) { .t-section-title { font-size: 2.5rem; } }
-.t-section-lead { font-size: 1rem; line-height: 1.7; font-weight: 400; }
-@media (min-width: 640px) { .t-section-lead { font-size: 1.0625rem; } }
-.t-h1 { font-size: 2.5rem; font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
-@media (min-width: 640px) { .t-h1 { font-size: 3.25rem; } }
-@media (min-width: 1024px) { .t-h1 { font-size: 3.75rem; } }
-@media (min-width: 1280px) { .t-h1 { font-size: 4.25rem; } }
-.t-btn { font-size: 0.9375rem; font-weight: 700; line-height: 1; }
-
-/* Container lebar ekstra besar untuk landing */
-.container-landing {
-    width: 100%;
-    margin-inline: auto;
-    max-width: 80rem;
-    padding-inline: 1rem;
-}
-@media (min-width: 640px) { .container-landing { padding-inline: 1.5rem; } }
-@media (min-width: 1024px) { .container-landing { padding-inline: 2rem; } }
-@media (min-width: 1280px) { .container-landing { max-width: 90rem; } }
-
-/* Animations */
-@keyframes fade-up {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-.anim-fade-up { animation: fade-up 0.5s ease-out both; }
-
-/* Mobile drawer transition */
-.drawer-enter-active,
-.drawer-leave-active {
-    transition: opacity 220ms ease, transform 220ms ease;
-}
-.drawer-enter-from,
-.drawer-leave-to {
-    opacity: 0;
-    transform: translateY(-8px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .drawer-enter-active,
-    .drawer-leave-active {
-        transition: none;
-    }
-    .anim-fade-up {
-        animation: none;
-    }
-}
-</style>
-
 <template>
-    <Head :title="`${organization.name} — Sistem Tata Kelola Keuangan & Dana Bergulir BUMDesma LKD`">
-        <meta head-key="description" name="description" :content="settings.hero_description ?? settings.about_short ?? `Situs resmi ${organization.name} — Sistem Tata Kelola Keuangan & Dana Bergulir BUMDesma LKD sesuai regulasi PP No. 11/2021.`" />
-        <meta head-key="og:title" property="og:title" :content="`${organization.name} — Situs Resmi`" />
-        <meta head-key="og:description" property="og:description" :content="settings.hero_description ?? settings.about_short ?? `Situs resmi ${organization.name} — pengelolaan dana bergulir masyarakat.`" />
+    <Head :title="`${orgLegalName} — Sistem Informasi Dana Bergulir Masyarakat`">
+        <meta head-key="description" name="description" :content="heroDescription" />
+        <meta head-key="og:title" property="og:title" :content="`${orgLegalName} — Situs Resmi`" />
+        <meta head-key="og:description" property="og:description" :content="heroDescription" />
         <meta head-key="og:type" property="og:type" content="website" />
         <meta head-key="og:url" property="og:url" :content="$page.url" />
-        <meta v-if="organization.logo_url" head-key="og:image" property="og:image" :content="organization.logo_url" />
+        <meta v-if="orgLogo" head-key="og:image" property="og:image" :content="orgLogo" />
         <meta head-key="twitter:card" name="twitter:card" content="summary_large_image" />
-        <meta head-key="twitter:title" name="twitter:title" :content="`${organization.name} — Situs Resmi`" />
-        <meta head-key="twitter:description" name="twitter:description" :content="settings.hero_description ?? settings.about_short ?? `Situs resmi ${organization.name}.`" />
     </Head>
 
-    <div class="flex min-h-screen flex-col bg-surface font-sans text-on-surface antialiased">
-        <!-- TOP ANNOUNCEMENT BAR -->
-        <div class="landing-topbar text-on-primary">
-            <div class="container-landing flex items-center justify-between gap-4 py-2.5">
-                <div class="flex min-w-0 items-center gap-2.5">
-                    <span class="grid size-7 shrink-0 place-items-center rounded-md bg-on-primary/15 backdrop-blur">
-                        <AppIcon name="verified" class="text-base leading-none" />
-                    </span>
-                    <p class="t-tagline truncate uppercase">
-                        Resmi · PP No. 11/2021 · Sistem Tata Kelola Dana Bergulir Nasional v2.6
-                    </p>
-                </div>
-                <div class="hidden shrink-0 items-center gap-1 sm:flex">
-                    <Link href="/berita" class="t-nav inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium text-on-primary/85 transition hover:bg-on-primary/10 hover:text-on-primary">
-                        <AppIcon name="article" class="text-base leading-none" />Berita
-                    </Link>
-                    <Link href="/kontak" class="t-nav inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium text-on-primary/85 transition hover:bg-on-primary/10 hover:text-on-primary">
-                        <AppIcon name="mail" class="text-base leading-none" />Kontak
-                    </Link>
-                    <Link href="/login" class="t-nav ml-1 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 font-bold text-emerald-900 shadow-md transition hover:bg-emerald-50 hover:shadow-lg">
-                        <AppIcon name="login" class="text-base leading-none" />Masuk Sistem
-                    </Link>
-                </div>
-            </div>
+    <div class="relative min-h-screen overflow-x-clip bg-slate-50 font-sans text-slate-900 antialiased selection:bg-emerald-700 selection:text-white scroll-smooth">
+        <!-- Animated gradient background -->
+        <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.09),_transparent_50%),radial-gradient(circle_at_bottom_left,_rgba(22,163,74,0.07),_transparent_50%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.07),_transparent_50%)]" />
+            <div class="float-orb absolute -top-32 right-1/4 h-[24rem] w-[24rem] rounded-full bg-gradient-to-br from-emerald-300/30 to-teal-300/30 blur-3xl sm:h-[28rem] sm:w-[28rem]" />
+            <div class="float-orb absolute top-1/2 -left-32 h-[20rem] w-[20rem] rounded-full bg-gradient-to-br from-emerald-300/25 to-teal-300/25 blur-3xl sm:h-[24rem] sm:w-[24rem]" />
+            <div class="float-orb absolute bottom-0 right-1/3 h-[18rem] w-[18rem] rounded-full bg-gradient-to-br from-amber-200/25 to-rose-200/25 blur-3xl sm:h-[20rem] sm:w-[20rem]" />
+            <div class="spin-slow absolute -top-40 -right-40 h-[28rem] w-[28rem] rounded-full opacity-40 sm:h-[36rem] sm:w-[36rem]"
+                 style="background: conic-gradient(from 0deg, transparent 0deg, rgba(16,185,129,0.07) 90deg, transparent 180deg, transparent 360deg);" />
+            <div class="spin-reverse absolute -bottom-40 -left-40 h-[24rem] w-[24rem] rounded-full opacity-30 sm:h-[32rem] sm:w-[32rem]"
+                 style="background: conic-gradient(from 180deg, transparent 0deg, rgba(22,163,74,0.06) 90deg, transparent 220deg, transparent 360deg);" />
+            <!-- Grid pattern -->
+            <div class="absolute inset-0 opacity-[0.4]"
+                 style="background-image: linear-gradient(rgba(15,23,42,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,0.04) 1px, transparent 1px); background-size: 56px 56px;" />
         </div>
 
-        <!-- MAIN HEADER -->
-        <header class="sticky top-0 z-40 border-b border-outline-variant/40 bg-surface-container-lowest/90 backdrop-blur-xl">
-            <div class="container-landing flex items-center justify-between gap-6 py-4">
-                <Link href="/" class="flex min-w-0 items-center gap-3">
-                    <div class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-emerald-900 shadow-md ring-1 ring-emerald-700/30">
-                        <img v-if="organization.logo_url" :src="organization.logo_url" :alt="`Logo ${organization.name}`" class="size-full object-contain">
-                        <span v-else class="text-xl font-extrabold leading-none text-white">{{ organization.name.charAt(0).toUpperCase() }}</span>
+        <!-- ============== NAVBAR ============== -->
+        <header
+            class="anim-fade fixed inset-x-0 top-0 z-50 transition-all duration-500"
+            :class="[scrolled ? 'bg-white/85 backdrop-blur-xl shadow-[0_1px_0_rgba(15,23,42,0.06),0_10px_30px_-12px_rgba(15,23,42,0.12)] border-b border-slate-200/70' : 'bg-transparent border-b border-slate-900/[0.06]', 'pt-[env(safe-area-inset-top)]']"
+        >
+            <div class="mx-auto grid max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-3.5 lg:px-8">
+                <Link href="/" class="group flex min-w-0 items-center gap-3">
+                    <div
+                        class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-emerald-700 to-green-600 text-white shadow-lg shadow-emerald-600/25 transition-all duration-500 group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-emerald-600/40 sm:size-11"
+                    >
+                        <img v-if="orgLogo" :src="orgLogo" :alt="`Logo ${orgLegalName}`" class="size-full object-contain" />
+                        <span v-else class="text-base font-black sm:text-lg">{{ orgInitial }}</span>
                     </div>
-                    <div class="min-w-0">
-                        <p class="truncate text-base font-bold leading-tight text-on-surface">{{ organization.name }}</p>
-                        <p v-if="organization.regency_name || organization.district_name" class="mt-0.5 truncate text-xs leading-snug text-on-surface-variant">
-                            {{ [organization.district_name, organization.regency_name].filter(Boolean).join(' · ') }}
-                        </p>
+                    <div class="min-w-0 hidden sm:block">
+                        <p class="truncate text-sm font-bold tracking-tight text-slate-900">{{ orgName }}</p>
+                        <p v-if="orgRegion" class="truncate text-[10.5px] font-semibold uppercase tracking-[0.18em] text-slate-500">{{ orgRegion }}</p>
                     </div>
                 </Link>
 
-                <nav class="hidden items-center gap-1 md:flex">
-                    <Link href="/" class="rounded-full px-4 py-2 t-nav text-on-surface transition hover:bg-emerald-50 hover:text-emerald-900">Beranda</Link>
-                    <Link href="#fitur" class="rounded-full px-4 py-2 t-nav text-on-surface-variant transition hover:bg-emerald-50 hover:text-emerald-900">Fitur</Link>
-                    <Link href="#alur" class="rounded-full px-4 py-2 t-nav text-on-surface-variant transition hover:bg-emerald-50 hover:text-emerald-900">Alur</Link>
-                    <Link href="#regulasi" class="rounded-full px-4 py-2 t-nav text-on-surface-variant transition hover:bg-emerald-50 hover:text-emerald-900">Regulasi</Link>
-                    <Link href="/berita" class="rounded-full px-4 py-2 t-nav text-on-surface-variant transition hover:bg-emerald-50 hover:text-emerald-900">Berita</Link>
-                    <Link href="/kontak" class="rounded-full px-4 py-2 t-nav text-on-surface-variant transition hover:bg-emerald-50 hover:text-emerald-900">Kontak</Link>
-                    <Link href="/login" class="ml-3 inline-flex items-center gap-2 rounded-full bg-emerald-900 px-5 py-2.5 t-nav font-bold text-white shadow-md transition hover:bg-emerald-800 hover:shadow-lg">
-                        <AppIcon name="login" class="text-base leading-none" />Masuk Sistem
-                    </Link>
-                </nav>
+                <span class="hidden lg:block" aria-hidden="true" />
 
-                <button
-                    class="grid size-11 place-items-center rounded-xl bg-surface-container text-on-surface transition hover:bg-surface-container-high md:hidden"
-                    :aria-label="mobileNavOpen ? 'Tutup menu' : 'Buka menu'"
-                    @click="mobileNavOpen = !mobileNavOpen"
-                >
-                    <AppIcon :name="mobileNavOpen ? 'close' : 'menu'" class="text-2xl leading-none" />
-                </button>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <nav class="hidden items-center gap-1 lg:flex">
+                        <a
+                            v-for="link in navAnchors"
+                            :key="link.id"
+                            :href="`#${link.id}`"
+                            @click.prevent="smoothScrollTo(link.id)"
+                            class="relative rounded-lg px-3 py-2 text-[13px] font-semibold transition-all duration-300"
+                            :class="activeSection === link.id ? 'text-emerald-700' : 'text-slate-600 hover:text-slate-900'"
+                        >
+                            {{ link.label }}
+                            <span
+                                class="absolute inset-x-3 -bottom-0.5 h-0.5 origin-left rounded-full bg-gradient-to-r from-emerald-700 to-teal-500 transition-transform duration-500"
+                                :class="activeSection === link.id ? 'scale-x-100' : 'scale-x-0'"
+                            />
+                        </a>
+                    </nav>
+
+                    <Link
+                        href="/login"
+                        class="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2.5 text-[12px] font-bold text-white shadow-lg shadow-slate-900/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/40 sm:px-4 sm:text-[13px]"
+                    >
+                        <span class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                        <AppIcon name="login" class="relative text-base" />
+                        <span class="relative hidden min-[420px]:inline">Masuk Sistem</span>
+                        <span class="relative min-[420px]:hidden">Masuk</span>
+                        <AppIcon name="arrow_forward" class="relative text-sm transition-transform duration-300 group-hover:translate-x-0.5" />
+                    </Link>
+
+                    <button
+                        type="button"
+                        class="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-slate-700 shadow-md shadow-slate-900/10 ring-1 ring-slate-200 transition-all duration-300 hover:bg-slate-50 hover:shadow-lg hover:shadow-slate-900/15 sm:size-11 lg:hidden"
+                        :aria-label="mobileNavOpen ? 'Tutup navigasi' : 'Buka navigasi'"
+                        @click="mobileNavOpen = !mobileNavOpen"
+                    >
+                        <AppIcon :name="mobileNavOpen ? 'close' : 'menu'" class="text-xl" />
+                    </button>
+                </div>
             </div>
 
-            <!-- Mobile drawer -->
             <transition name="drawer">
-                <nav v-if="mobileNavOpen" class="border-t border-emerald-900/15 bg-surface-container-lowest/95 backdrop-blur-xl md:hidden">
-                    <ul class="container-landing flex flex-col gap-1 py-3">
-                        <li>
-                            <Link href="/" class="flex items-center justify-between rounded-lg px-3 py-2.5 t-nav text-on-surface transition hover:bg-emerald-50" @click="mobileNavOpen = false">Beranda<AppIcon name="chevron_right" class="text-base text-outline" /></Link>
-                        </li>
-                        <li>
-                            <a href="#fitur" class="flex items-center justify-between rounded-lg px-3 py-2.5 t-nav text-on-surface-variant transition hover:bg-emerald-50" @click.prevent="smoothScrollTo('fitur')">Fitur<AppIcon name="chevron_right" class="text-base text-outline" /></a>
-                        </li>
-                        <li>
-                            <a href="#alur" class="flex items-center justify-between rounded-lg px-3 py-2.5 t-nav text-on-surface-variant transition hover:bg-emerald-50" @click.prevent="smoothScrollTo('alur')">Alur<AppIcon name="chevron_right" class="text-base text-outline" /></a>
-                        </li>
-                        <li>
-                            <a href="#regulasi" class="flex items-center justify-between rounded-lg px-3 py-2.5 t-nav text-on-surface-variant transition hover:bg-emerald-50" @click.prevent="smoothScrollTo('regulasi')">Regulasi<AppIcon name="chevron_right" class="text-base text-outline" /></a>
-                        </li>
-                        <li>
-                            <Link href="/berita" class="flex items-center justify-between rounded-lg px-3 py-2.5 t-nav text-on-surface-variant transition hover:bg-emerald-50" @click="mobileNavOpen = false">Berita<AppIcon name="chevron_right" class="text-base text-outline" /></Link>
-                        </li>
-                        <li>
-                            <Link href="/kontak" class="flex items-center justify-between rounded-lg px-3 py-2.5 t-nav text-on-surface-variant transition hover:bg-emerald-50" @click="mobileNavOpen = false">Kontak<AppIcon name="chevron_right" class="text-base text-outline" /></Link>
-                        </li>
-                        <li class="mt-2">
-                            <Link href="/login" class="flex items-center justify-center gap-2 rounded-full bg-emerald-900 px-5 py-3 t-nav font-bold text-white shadow-md" @click="mobileNavOpen = false">
-                                <AppIcon name="login" class="text-base leading-none" />Masuk Sistem
-                            </Link>
-                        </li>
-                    </ul>
-                </nav>
+                <div v-if="mobileNavOpen" class="border-t border-slate-200 bg-white/95 backdrop-blur-xl lg:hidden">
+                    <nav class="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
+                        <a
+                            v-for="link in navAnchors"
+                            :key="link.id"
+                            :href="`#${link.id}`"
+                            @click.prevent="smoothScrollTo(link.id)"
+                            class="rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-emerald-700"
+                        >{{ link.label }}</a>
+                    </nav>
+                </div>
             </transition>
         </header>
 
-        <main class="flex-1">
-            <!-- HERO -->
-            <section class="landing-hero">
-                <div class="pointer-events-none absolute -top-40 right-[-15%] size-[32rem] rounded-full bg-emerald-400/25 blur-3xl" />
-                <div class="pointer-events-none absolute bottom-[-20%] left-[-15%] size-[28rem] rounded-full bg-lime-400/25 blur-3xl" />
-                <div class="pointer-events-none absolute inset-0 -z-10 opacity-[0.06]" style="background-image: radial-gradient(circle, rgb(255 255 255 / 60%) 1px, transparent 1px); background-size: 28px 28px;" />
+        <main class="relative z-10">
+            <!-- ============== HERO ============== -->
+            <section class="relative px-4 pt-16 pb-10 sm:px-6 sm:pt-20 sm:pb-12 lg:px-8 lg:pt-24 lg:pb-14">
+                <div class="mx-auto max-w-5xl">
+                    <!-- Eyebrow badge — centered -->
+                    <div class="anim-fade-up mb-7 flex justify-center">
+                        <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-700 shadow-sm ring-1 ring-slate-200">
+                            <span class="relative grid size-1.5 place-items-center">
+                                <span class="absolute inset-0 animate-ping rounded-full bg-emerald-500/70" />
+                                <span class="relative size-1.5 rounded-full bg-emerald-500" />
+                            </span>
+                            Situs Resmi · {{ tenant?.code?.toUpperCase() || 'TENANT' }}
+                        </span>
+                    </div>
 
-                <div class="container-landing grid items-center gap-12 py-8 sm:gap-16 md:grid-cols-2 lg:grid-cols-12 lg:gap-14 lg:py-10">
-                    <!-- Left: copy -->
-                    <div class="lg:col-span-6 anim-fade-up">
-                        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-50 px-4 py-1.5 t-eyebrow text-emerald-900 backdrop-blur">
-                            <AppIcon name="verified" class="text-base leading-none" />
-                            {{ settings.hero_tagline ?? 'Resmi · PP No. 11/2021 · Sistem Tata Kelola Dana Bergulir Nasional v2.6' }}
-                        </div>
-
-                        <h1 class="mt-6 t-h1 text-on-surface">
-                            {{ organization.legal_name }}
+                    <div class="text-center">
+                        <h1 class="anim-fade-up break-words text-[1.6rem] font-black leading-[1.12] tracking-[-0.025em] text-slate-900 sm:text-3xl lg:text-4xl">
+                            {{ orgLegalName }}
                         </h1>
-
-                        <p class="mt-6 max-w-xl t-body-lg text-on-surface-variant">
-                            {{ settings.hero_description ?? `Sistem Tata Kelola Dana Bergulir Nasional versi 2.6 — transparan, akuntabel, dan modern; dirancang melayani masyarakat sesuai regulasi PP No. 11/2021.` }}
+                        <p class="anim-fade-up mx-auto mt-3 max-w-2xl text-[14.5px] font-medium leading-relaxed text-slate-700 sm:text-[15px]">
+                            {{ heroTagline }}
+                        </p>
+                        <p class="anim-fade-up mx-auto mt-3 max-w-2xl text-[13.5px] leading-relaxed text-slate-600 sm:text-[14px]">
+                            {{ heroDescription }}
                         </p>
 
-                        <div class="mt-9 flex flex-wrap items-center gap-3">
-                            <Link href="/login" class="landing-badge-pill inline-flex min-h-12 items-center gap-2 rounded-full bg-primary px-7 t-btn text-on-primary shadow-lg shadow-primary/30 transition hover:opacity-95 hover:shadow-xl hover:-translate-y-0.5">
-                                <AppIcon name="apartment" class="text-lg leading-none" />
-                                Portal Pengelolaan Keuangan
+                        <div class="anim-fade-up mt-7 flex flex-wrap items-center justify-center gap-2.5 sm:mt-8 sm:gap-3">
+                            <Link
+                                href="/login"
+                                class="group inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-gradient-to-r from-emerald-700 to-teal-500 px-4 py-2.5 text-[13px] font-bold text-white shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-600/40"
+                            >
+                                <AppIcon name="login" class="text-base" />
+                                Masuk Sistem
+                                <AppIcon name="arrow_forward" class="text-sm transition-transform duration-300 group-hover:translate-x-1" />
                             </Link>
-                            <a v-if="organization.phone" :href="`tel:${organization.phone}`" class="inline-flex min-h-12 items-center gap-2 rounded-full border border-emerald-700/40 bg-surface-container-lowest/85 px-6 t-nav font-semibold text-on-surface backdrop-blur transition hover:border-emerald-700/60 hover:bg-surface-container">
-                                <AppIcon name="call" class="text-lg leading-none" />
-                                Hubungi Kami
+                            <Link
+                                href="#layanan"
+                                @click.prevent="smoothScrollTo('layanan')"
+                                class="group inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-white px-4 py-2.5 text-[13px] font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md"
+                            >
+                                <AppIcon name="play_circle" class="text-base text-emerald-700" />
+                                Jelajahi Layanan
+                            </Link>
+                        </div>
+
+                        <!-- Quick info pills — centered -->
+                        <div v-if="orgPhone || orgEmail" class="anim-fade-up mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 px-2 text-[12.5px] text-slate-600 sm:mt-7 sm:text-[13px]">
+                            <a v-if="orgPhone" :href="`tel:${orgPhone}`" class="group inline-flex max-w-full items-center gap-2 transition-colors hover:text-emerald-700">
+                                <span class="grid size-7 shrink-0 place-items-center rounded-lg bg-white shadow-md shadow-slate-900/10 ring-1 ring-slate-200 transition-all group-hover:ring-emerald-200 group-hover:shadow-lg group-hover:shadow-emerald-600/20">
+                                    <AppIcon name="call" class="text-sm text-emerald-700" />
+                                </span>
+                                <span class="truncate font-semibold">{{ orgPhone }}</span>
+                            </a>
+                            <a v-if="orgEmail" :href="`mailto:${orgEmail}`" class="group inline-flex max-w-full items-center gap-2 transition-colors hover:text-emerald-700">
+                                <span class="grid size-7 shrink-0 place-items-center rounded-lg bg-white shadow-md shadow-slate-900/10 ring-1 ring-slate-200 transition-all group-hover:ring-emerald-200 group-hover:shadow-lg group-hover:shadow-emerald-600/20">
+                                    <AppIcon name="mail" class="text-sm text-emerald-700" />
+                                </span>
+                                <span class="truncate font-semibold">{{ orgEmail }}</span>
                             </a>
                         </div>
-
-                        <!-- Trust badges -->
-                        <div class="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3">
-                            <div class="flex items-center gap-2 text-on-surface-variant">
-                                <span class="grid size-7 place-items-center rounded-full bg-emerald-900 text-white">
-                                    <AppIcon name="check" class="text-base leading-none" />
-                                </span>
-                                <span class="text-sm font-semibold">Patuh PP No. 11/2021</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-on-surface-variant">
-                                <span class="grid size-7 place-items-center rounded-full bg-emerald-900 text-white">
-                                    <AppIcon name="check" class="text-base leading-none" />
-                                </span>
-                                <span class="text-sm font-semibold">Enkripsi &amp; Audit Log</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-on-surface-variant">
-                                <span class="grid size-7 place-items-center rounded-full bg-emerald-900 text-white">
-                                    <AppIcon name="check" class="text-base leading-none" />
-                                </span>
-                                <span class="text-sm font-semibold">Akses Cloud 24/7</span>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- Right: dashboard mockup -->
-                    <div class="relative lg:col-span-6">
-                        <div class="relative mx-auto max-w-xl">
-                            <!-- Decorative blobs -->
-                            <div class="absolute -top-8 -right-8 size-28 rounded-3xl bg-emerald-700/40 blur-2xl" />
-                            <div class="absolute -bottom-10 -left-10 size-36 rounded-full bg-emerald-900/25 blur-2xl" />
-
-                            <!-- Main card -->
-                            <div class="landing-hero-card relative overflow-hidden rounded-3xl border border-outline-variant/40 bg-surface-container-lowest shadow-2xl">
-                                <!-- Title bar -->
-                                <div class="flex items-center justify-between border-b border-outline-variant/40 bg-surface-container-low px-5 py-3">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="size-2.5 rounded-full bg-emerald-900/70" />
-                                        <span class="size-2.5 rounded-full bg-emerald-700/70" />
-                                        <span class="size-2.5 rounded-full bg-emerald-500/70" />
+                    <!-- Stats -->
+                    <div class="scale-group mt-14 sm:mt-20 lg:mt-24">
+                        <div class="reveal-scale relative">
+                            <div class="grid grid-cols-2 gap-y-8 gap-x-3 sm:gap-x-6 lg:grid-cols-4 lg:gap-y-0 lg:gap-x-0">
+                                <div
+                                    v-for="(s, idx) in stats"
+                                    :key="idx"
+                                    class="group relative min-w-0 px-2 sm:px-5 lg:px-6"
+                                    :class="[
+                                        idx === 0 ? 'lg:pl-0' : '',
+                                        idx === stats.length - 1 ? 'lg:pr-0' : '',
+                                    ]"
+                                >
+                                    <!-- Vertical divider on desktop (between items) -->
+                                    <span
+                                        v-if="idx > 0"
+                                        class="pointer-events-none absolute inset-y-3 left-0 hidden w-px bg-gradient-to-b from-transparent via-slate-300 to-transparent lg:block"
+                                        aria-hidden="true"
+                                    />
+                                    <!-- Top row: icon + number -->
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 text-emerald-700 ring-1 ring-emerald-100 transition-transform duration-500 group-hover:scale-110 sm:size-10">
+                                            <AppIcon :name="s.icon" class="text-base sm:text-lg" />
+                                        </span>
+                                        <span class="font-mono text-[10px] font-bold tracking-[0.18em] text-slate-400">0{{ idx + 1 }}</span>
                                     </div>
-                                    <span class="t-eyebrow text-on-surface-variant">siupk.next / dashboard</span>
-                                    <span class="size-5" />
+                                    <!-- Label -->
+                                    <p class="mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 sm:text-[10.5px] sm:tracking-[0.22em]">{{ s.top }}</p>
+                                    <!-- Value (big, gradient) -->
+                                    <div class="mt-2 flex items-baseline gap-1 sm:mt-2.5">
+                                        <span class="bg-gradient-to-br from-emerald-700 via-green-600 to-teal-500 bg-clip-text text-[1.9rem] font-black leading-[1.05] tracking-[-0.03em] text-transparent sm:text-[2.5rem]">{{ s.value }}</span>
+                                    </div>
+                                    <!-- Caption -->
+                                    <p class="mt-2.5 text-[12px] font-medium leading-[1.5] text-slate-500 sm:mt-3 sm:text-[13px]">{{ s.label }}</p>
                                 </div>
-
-                                <!-- Body -->
-                                <div class="space-y-5 p-6">
-                                    <!-- KPI row -->
-                                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                                        <div v-for="(k, i) in quickStats" :key="i" class="rounded-2xl border border-emerald-700/20 bg-surface-container-lowest/50 p-3.5">
-                                            <AppIcon :name="k.icon" class="text-xl leading-none text-emerald-900" />
-                                            <p class="mt-2 text-lg font-extrabold leading-tight text-on-surface">{{ k.value }}</p>
-                                            <p class="mt-0.5 text-[10px] font-medium leading-tight text-on-surface-variant">{{ k.label }}</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Chart placeholder -->
-                                    <div>
-                                        <div class="flex items-center justify-between">
-                                            <p class="t-eyebrow text-on-surface-variant">Penyaluran Bulanan</p>
-                                            <span class="text-[11px] font-bold text-emerald-800">+12,4% YoY</span>
-                                        </div>
-                                        <div class="mt-3 flex h-32 items-end gap-2">
-                                            <div v-for="(h, i) in [55, 38, 70, 48, 82, 64, 92, 76]" :key="i" class="flex-1 rounded-t-lg bg-gradient-to-t from-emerald-900 to-emerald-500 transition-all hover:opacity-80" :style="{ height: h + '%' }" />
-                                        </div>
-                                        <div class="mt-2 flex justify-between text-[10px] font-medium text-on-surface-variant">
-                                            <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>Mei</span><span>Jun</span><span>Jul</span><span>Agu</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Activity -->
-                                    <div class="space-y-2.5 border-t border-outline-variant/40 pt-4">
-                                        <div v-for="(item, i) in [
-                                            { color: 'bg-emerald-500', label: 'Penyaluran Kelompok Maju Bersama', amount: '+Rp 25.000.000' },
-                                            { color: 'bg-emerald-700', label: 'Angsuran Kelompok Lestari', amount: '+Rp 12.500.000' },
-                                            { color: 'bg-emerald-900', label: 'Verifikasi SPK Selesai', amount: '7 dokumen' },
-                                        ]" :key="i" class="flex items-center gap-3">
-                                            <span class="size-2 shrink-0 rounded-full" :class="item.color" />
-                                            <span class="flex-1 truncate text-xs font-medium text-on-surface">{{ item.label }}</span>
-                                            <span class="text-xs font-bold text-on-surface">{{ item.amount }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Floating notification -->
-                            <div class="absolute -bottom-5 -left-5 hidden w-60 rounded-2xl border border-emerald-500/30 bg-surface-container-lowest p-4 shadow-xl sm:block">
-                                <div class="flex items-center gap-2.5">
-                                    <AppIcon name="verified_user" tone="success" containerShape="pill" containerSize="9" />
-                                    <p class="text-xs font-bold leading-tight text-on-surface">Berita Acara Tersimpan</p>
-                                </div>
-                                <p class="mt-2 text-[11px] leading-relaxed text-on-surface-variant">
-                                    Penyaluran tahap II telah diverifikasi pengurus &amp; pendamping kecamatan.
-                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- STATS BAND -->
-            <section class="relative border-y border-emerald-900/15 bg-white">
-                <div class="container-landing grid divide-emerald-900/10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:divide-x">
-                    <div v-for="(stat, idx) in stats" :key="idx" class="flex items-center gap-4 px-2 py-8 lg:px-6">
-                        <span class="grid size-14 shrink-0 place-items-center rounded-full bg-emerald-900 text-white">
-                            <AppIcon :name="stat.icon" class="text-2xl leading-none" />
-                        </span>
-                        <div class="min-w-0">
-                            <p class="truncate text-3xl font-extrabold leading-none tracking-tight text-on-surface">{{ stat.value }}</p>
-                            <p class="mt-1.5 t-stat-label text-on-surface-variant">{{ stat.label }}</p>
-                        </div>
+            <!-- ============== SECTION DIVIDER 02 → 03 ============== -->
+            <div class="section-divider relative px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+                <div class="mx-auto max-w-7xl">
+                    <div class="relative flex items-center justify-center">
+                        <svg class="block h-2 w-full overflow-visible" viewBox="0 0 1000 8" preserveAspectRatio="none" aria-hidden="true">
+                            <defs>
+                                <linearGradient id="dividerGrad2" x1="0" x2="1" y1="0" y2="0">
+                                    <stop offset="0%" stop-color="#10b981" stop-opacity="0" />
+                                    <stop offset="15%" stop-color="#10b981" stop-opacity="0.55" />
+                                    <stop offset="50%" stop-color="#10b981" stop-opacity="0.7" />
+                                    <stop offset="85%" stop-color="#16a34a" stop-opacity="0.55" />
+                                    <stop offset="100%" stop-color="#16a34a" stop-opacity="0" />
+                                </linearGradient>
+                            </defs>
+                            <line class="divider-line" x1="0" y1="4" x2="1000" y2="4" stroke="url(#dividerGrad2)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="1000" stroke-dashoffset="1000" vector-effect="non-scaling-stroke" />
+                        </svg>
+                        <span class="divider-dot absolute left-1/2 top-1/2 grid size-2.5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 ring-4 ring-emerald-100" />
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- FITUR UTAMA -->
-            <section id="fitur" class="relative py-24 sm:py-32">
-                <div class="container-landing">
-                    <div class="mx-auto max-w-2xl text-center">
-                        <span class="inline-flex items-center gap-2 rounded-full bg-emerald-900 px-4 py-1.5 t-section-eyebrow text-white">
-                            <AppIcon name="auto_awesome" class="text-base leading-none" />Fitur Unggulan
-                        </span>
-                        <h2 class="mt-5 t-section-title text-on-surface">
-                            Satu platform untuk seluruh siklus tata kelola
-                        </h2>
-                        <p class="mx-auto mt-5 max-w-2xl t-section-lead text-on-surface-variant">
-                            Setiap modul dikembangkan bersama praktisi koperasi &amp; regulasi desa agar proses berjalan ringan, terukur, dan terdokumentasi.
+            <!-- ============== LAYANAN ============== -->
+            <section id="layanan" class="reveal-group scroll-mt-32 bg-gradient-to-b from-slate-50 via-white to-slate-50 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+                <div class="mx-auto max-w-7xl">
+                    <div class="grid items-end gap-5 lg:grid-cols-12 lg:gap-4">
+                        <div class="lg:col-span-7">
+                            <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-emerald-700 ring-1 ring-emerald-100 sm:text-[11px] sm:tracking-[0.18em]">
+                                <span class="grid size-1.5 place-items-center rounded-full bg-emerald-500" />
+                                01 · Layanan
+                            </div>
+                            <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
+                                Modul kelola dana
+                                <span class="block bg-gradient-to-r from-emerald-700 to-teal-600 bg-clip-text text-transparent">
+                                    siap pakai sejak hari pertama.
+                                </span>
+                            </h2>
+                        </div>
+                        <p class="anim-fade-up text-[13.5px] leading-relaxed text-slate-600 sm:text-[14px] lg:col-span-5">
+                            Dari verifikasi anggota hingga laporan keuangan tahunan, semua kebutuhan operasional BUMDesma tersedia dalam satu sistem yang saling terintegrasi.
                         </p>
                     </div>
 
-                    <div class="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        <article v-for="(feature, idx) in features" :key="idx" class="group relative flex flex-col overflow-hidden rounded-3xl border border-emerald-900/15 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:border-emerald-700/40 hover:shadow-xl">
-                            <div class="absolute -right-16 -top-16 size-40 rounded-full bg-emerald-900/5 transition group-hover:bg-emerald-900/10" />
+                    <div class="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3">
+                        <div
+                            v-for="(m, idx) in layananModul"
+                            :key="m.num"
+                            class="reveal-item group relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg ring-1 ring-slate-200/70 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl sm:p-6"
+                            :class="`shadow-${toneStyles[m.tone].defaultTone} hover:${toneStyles[m.tone].ring} hover:${toneStyles[m.tone].accent}`"
+                            :style="`box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 12px 32px -12px ${toneStyles[m.tone].shadowRgb};`"
+                        >
+                            <!-- Subtle glow -->
+                            <div
+                                class="absolute -top-16 -right-16 h-32 w-32 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-60"
+                                :class="`bg-gradient-to-br ${toneStyles[m.tone].grad}`"
+                            />
+
                             <div class="relative">
-                                <AppIcon :name="feature.icon" class="text-3xl leading-none text-emerald-900" />
-                                <h3 class="mt-6 t-card-title text-on-surface">{{ feature.title }}</h3>
-                                <p class="mt-3 text-sm leading-relaxed text-on-surface-variant">{{ feature.desc }}</p>
-                            </div>
-                            <div class="relative mt-8 inline-flex items-center gap-1.5 text-sm font-bold text-emerald-900">
-                                Pelajari
-                                <AppIcon name="arrow_forward" class="text-base leading-none transition group-hover:translate-x-1" />
-                            </div>
-                        </article>
-                    </div>
-                </div>
-            </section>
+                                <!-- Top row: tag label (left) + period (right) -->
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex min-w-0 items-center gap-2.5">
+                                        <span
+                                            class="grid size-9 shrink-0 place-items-center rounded-lg text-white shadow-sm transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 sm:size-10"
+                                            :class="`bg-gradient-to-br ${toneStyles[m.tone].grad}`"
+                                            :style="`box-shadow: 0 8px 16px -6px ${toneStyles[m.tone].shadowRgb};`"
+                                        >
+                                            <AppIcon :name="m.icon" class="text-base sm:text-[17px]" />
+                                        </span>
+                                        <p class="truncate text-[10.5px] font-bold uppercase tracking-[0.14em]" :class="toneStyles[m.tone].text">
+                                            {{ m.tag }}
+                                        </p>
+                                    </div>
+                                    <span class="shrink-0 text-[10.5px] font-semibold text-slate-400">· {{ m.num }}</span>
+                                </div>
 
-            <!-- ALUR LAYANAN -->
-            <section id="alur" class="relative bg-surface-container-low/40 py-24 sm:py-32">
-                <div class="container-landing">
-                    <div class="mx-auto max-w-2xl text-center">
-                        <span class="inline-flex items-center gap-2 rounded-full bg-emerald-900 px-4 py-1.5 t-section-eyebrow text-white">
-                            <AppIcon name="route" class="text-base leading-none" />Alur Layanan
-                        </span>
-                        <h2 class="mt-5 t-section-title text-on-surface">
-                            Dari musyawarah desa hingga pelaporan
-                        </h2>
-                        <p class="mx-auto mt-5 max-w-2xl t-section-lead text-on-surface-variant">
-                            Empat langkah sederhana yang merangkum keseluruhan proses layanan keuangan &amp; dana bergulir.
-                        </p>
-                    </div>
+                                <!-- Title (big, slate-900) -->
+                                <h3 class="mt-4 text-[1.25rem] font-black leading-tight tracking-[-0.015em] text-slate-900 sm:text-[1.4rem]">
+                                    {{ m.title }}
+                                </h3>
 
-                    <ol class="relative mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        <li v-for="(step, idx) in [
-                            { icon: 'forum', title: 'Musyawarah Desa', desc: 'Verifikasi calon anggota & rencana kebutuhan oleh pengurus & LKD.' },
-                            { icon: 'fact_check', title: 'Verifikasi & SPK', desc: 'Pemeriksaan data, berita acara, dan penandatanganan perjanjian.' },
-                            { icon: 'savings', title: 'Penyaluran & Angsuran', desc: 'Pencairan, jadwal angsuran, dan监控 kolektabilitas real-time.' },
-                            { icon: 'assignment_turned_in', title: 'Pelaporan', desc: 'Laporan keuangan, berita acara, dan dokumentasi tersimpan otomatis.' },
-                        ]" :key="idx" class="relative rounded-3xl border border-emerald-900/15 bg-white p-7 shadow-sm">
-                            <div class="absolute -top-4 left-7 grid size-10 place-items-center rounded-2xl bg-emerald-900 t-step-num text-white shadow-lg shadow-emerald-900/30">
-                                {{ idx + 1 }}
-                            </div>
-                            <div class="mt-3">
-                                <AppIcon :name="step.icon" class="text-3xl leading-none text-emerald-900" />
-                                <h3 class="mt-5 t-card-title text-on-surface">{{ step.title }}</h3>
-                                <p class="mt-3 text-sm leading-relaxed text-on-surface-variant">{{ step.desc }}</p>
-                            </div>
-                        </li>
-                    </ol>
-                </div>
-            </section>
+                                <!-- Description (muted) -->
+                                <p class="mt-1.5 text-[12.5px] leading-relaxed text-slate-500 sm:text-[13px]">{{ m.desc }}</p>
 
-            <!-- REGULASI -->
-            <section id="regulasi" class="landing-regulasi relative isolate overflow-hidden py-24 sm:py-28">
-                <div class="pointer-events-none absolute -top-32 left-1/3 size-96 rounded-full bg-white/8 blur-3xl" />
-                <div class="pointer-events-none absolute -bottom-32 right-1/4 size-96 rounded-full bg-white/8 blur-3xl" />
-
-                <div class="container-landing text-center">
-                    <p class="landing-dana-desa">Dana desa</p>
-                </div>
-            </section>
-
-            <!-- MODUL LENGKAP -->
-            <section class="py-24 sm:py-32">
-                <div class="container-landing">
-                    <div class="mx-auto max-w-2xl text-center">
-                        <span class="inline-flex items-center gap-2 rounded-full bg-emerald-900 px-4 py-1.5 t-section-eyebrow text-white">
-                            <AppIcon name="apps" class="text-base leading-none" />Modul Lengkap
-                        </span>
-                        <h2 class="mt-5 t-section-title text-on-surface">
-                            Modul yang siap pakai sejak hari pertama
-                        </h2>
-                        <p class="mx-auto mt-5 max-w-2xl t-section-lead text-on-surface-variant">
-                            Dari verifikasi anggota hingga laporan keuangan tahunan, semua kebutuhan operasional BUMDesma tersedia dalam satu sistem.
-                        </p>
-                    </div>
-
-                    <div class="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        <div v-for="(m, idx) in modules" :key="idx" class="flex gap-4 rounded-2xl border border-emerald-900/15 bg-white p-6 transition hover:border-emerald-700/40 hover:bg-emerald-50/40">
-                            <div class="shrink-0">
-                                <AppIcon :name="m.icon" class="text-3xl leading-none text-emerald-900" />
-                            </div>
-                            <div class="min-w-0">
-                                <h3 class="t-card-title text-on-surface">{{ m.title }}</h3>
-                                <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">{{ m.desc }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TENTANG & KONTAK -->
-            <section class="border-t border-emerald-900/15 bg-emerald-50/30 py-24 sm:py-28">
-                <div class="container-landing">
-                    <div v-if="settings.about_short" class="mb-8 rounded-3xl border border-emerald-900/15 bg-white p-8 shadow-sm">
-                        <div class="flex flex-col items-start gap-5 sm:flex-row sm:gap-6">
-                            <span class="grid size-16 shrink-0 place-items-center rounded-full bg-emerald-900 text-white">
-                                <AppIcon name="info" class="text-3xl leading-none" />
-                            </span>
-                            <div class="flex-1">
-                                <h2 class="text-xl font-bold tracking-tight text-on-surface">Tentang {{ organization.name }}</h2>
-                                <p class="mt-3 t-body text-on-surface-variant">{{ settings.about_short }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-                        <div class="rounded-3xl border border-emerald-900/15 bg-white p-7 shadow-sm">
-                            <span class="grid size-14 shrink-0 place-items-center rounded-full bg-emerald-900 text-white">
-                                <AppIcon name="place" class="text-2xl leading-none" />
-                            </span>
-                            <h2 class="mt-4 t-card-title text-on-surface">Alamat Sekretariat</h2>
-                            <p v-if="organization.address" class="mt-3 text-sm leading-relaxed text-on-surface-variant">{{ organization.address }}</p>
-                            <p v-else class="mt-3 text-sm italic text-on-surface-variant">Alamat belum dipublikasikan.</p>
-                        </div>
-
-                        <div class="rounded-3xl border border-emerald-900/15 bg-white p-7 shadow-sm">
-                            <span class="grid size-14 shrink-0 place-items-center rounded-full bg-emerald-900 text-white">
-                                <AppIcon name="contact_support" class="text-2xl leading-none" />
-                            </span>
-                            <h2 class="mt-4 t-card-title text-on-surface">Hubungi Kami</h2>
-                            <ul class="mt-4 space-y-3 text-sm">
-                                <li v-if="organization.phone" class="flex items-center gap-3 text-on-surface">
-                                    <span class="grid size-9 place-items-center rounded-full bg-emerald-900 text-white"><AppIcon name="call" class="text-base leading-none" /></span>
-                                    <span class="font-medium">{{ organization.phone }}</span>
-                                </li>
-                                <li v-if="organization.email" class="flex items-center gap-3 text-on-surface">
-                                    <span class="grid size-9 place-items-center rounded-full bg-emerald-900 text-white"><AppIcon name="mail" class="text-base leading-none" /></span>
-                                    <span class="font-medium">{{ organization.email }}</span>
-                                </li>
-                                <li v-if="organization.website" class="flex items-center gap-3 text-on-surface">
-                                    <span class="grid size-9 place-items-center rounded-full bg-emerald-900 text-white"><AppIcon name="language" class="text-base leading-none" /></span>
-                                    <span class="font-medium">{{ organization.website }}</span>
-                                </li>
-                                <li v-if="!organization.phone && !organization.email && !organization.website" class="italic text-on-surface-variant">
-                                    Kanal kontak belum dipublikasikan.
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div class="rounded-3xl border border-emerald-900/15 bg-white p-7 shadow-sm">
-                            <span class="grid size-14 shrink-0 place-items-center rounded-full bg-emerald-900 text-white">
-                                <AppIcon name="history" class="text-2xl leading-none" />
-                            </span>
-                            <h2 class="mt-4 t-card-title text-on-surface">Berdiri Sejak</h2>
-                            <p v-if="organization.operational_start_year" class="mt-3 text-sm leading-relaxed text-on-surface-variant">
-                                Sejak <span class="font-bold text-on-surface">{{ organization.operational_start_year }}</span> melayani tata kelola keuangan &amp; dana bergulir masyarakat.
-                            </p>
-                            <p v-else class="mt-3 text-sm italic text-on-surface-variant">Informasi tahun berdiri belum tersedia.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- CTA -->
-            <section class="py-24">
-                <div class="container-landing">
-                    <div class="landing-cta relative isolate overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-primary-deep to-primary-container px-8 py-16 text-on-primary shadow-2xl sm:px-14 sm:py-20">
-                        <div class="pointer-events-none absolute -top-32 right-0 size-96 rounded-full bg-on-primary/10 blur-3xl" />
-                        <div class="pointer-events-none absolute -bottom-32 left-0 size-96 rounded-full bg-on-primary/10 blur-3xl" />
-
-                        <div class="relative grid items-center gap-10 lg:grid-cols-2">
-                            <div>
-                                <span class="inline-flex items-center gap-2 rounded-full bg-on-primary/15 px-3 py-1.5 t-eyebrow backdrop-blur">
-                                    <AppIcon name="rocket_launch" class="text-base leading-none" />Mulai Sekarang
-                                </span>
-                                <h2 class="mt-5 t-section-title text-on-primary">
-                                    Siap mengelola BUMDesma secara modern?
-                                </h2>
-                                <p class="mt-5 max-w-xl t-body-lg text-on-primary/85">
-                                    Masuk ke portal sistem untuk mengelola data anggota, kelompok, penyaluran, dan laporan — semuanya dalam satu tempat.
+                                <!-- Period (right-aligned, smaller) -->
+                                <p class="mt-4 text-right text-[11px] font-medium text-slate-400">
+                                    Periode <span class="font-semibold text-slate-500">{{ m.period }}</span>
                                 </p>
+
+                                <!-- Divider -->
+                                <div class="my-4 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+
+                                <!-- Bottom stats: 2 angka seperti "19 Kelompok / 29 Individu" -->
+                                <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1.5">
+                                    <div v-for="(stat, si) in m.stats" :key="si" class="flex min-w-0 items-baseline gap-1">
+                                        <span
+                                            class="whitespace-nowrap text-[15px] font-black tabular-nums sm:text-[16px]"
+                                            :class="stat.highlight ? toneStyles[m.tone].text : 'text-slate-900'"
+                                        >{{ stat.value }}</span>
+                                        <span class="truncate text-[11.5px] font-medium text-slate-500 sm:text-[12px]">{{ stat.label }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Hover reveal: "Pelajari modul" -->
+                                <div class="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3 opacity-0 transition-all duration-500 group-hover:opacity-100">
+                                    <span class="text-[11.5px] font-semibold text-slate-500">Detail modul tersedia setelah login</span>
+                                    <span class="inline-flex items-center gap-1 text-[12px] font-bold" :class="toneStyles[m.tone].text">
+                                        Pelajari
+                                        <AppIcon name="arrow_forward" class="text-[13px] transition-transform duration-300 group-hover:translate-x-1" />
+                                    </span>
+                                </div>
                             </div>
-                            <div class="flex flex-wrap items-center justify-start gap-3 lg:justify-end">
-                                <Link href="/login" class="inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-7 t-btn text-emerald-900 shadow-lg transition hover:bg-emerald-50 hover:-translate-y-0.5">
-                                    <AppIcon name="login" class="text-lg leading-none" />Masuk Portal
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============== SECTION DIVIDER 03 → 04 ============== -->
+            <div class="section-divider relative px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+                <div class="mx-auto max-w-7xl">
+                    <div class="relative flex items-center justify-center">
+                        <svg class="block h-2 w-full overflow-visible" viewBox="0 0 1000 8" preserveAspectRatio="none" aria-hidden="true">
+                            <defs>
+                                <linearGradient id="dividerGrad3" x1="0" x2="1" y1="0" y2="0">
+                                    <stop offset="0%" stop-color="#f59e0b" stop-opacity="0" />
+                                    <stop offset="15%" stop-color="#f59e0b" stop-opacity="0.55" />
+                                    <stop offset="50%" stop-color="#ec4899" stop-opacity="0.7" />
+                                    <stop offset="85%" stop-color="#10b981" stop-opacity="0.55" />
+                                    <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+                                </linearGradient>
+                            </defs>
+                            <line class="divider-line" x1="0" y1="4" x2="1000" y2="4" stroke="url(#dividerGrad3)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="1000" stroke-dashoffset="1000" vector-effect="non-scaling-stroke" />
+                        </svg>
+                        <span class="divider-dot absolute left-1/2 top-1/2 grid size-2.5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 ring-4 ring-amber-100" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============== PRODUK · KELOMPOK & INDIVIDU ============== -->
+            <section id="produk" class="reveal-group scroll-mt-32 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+                <div class="mx-auto max-w-7xl">
+                    <div class="mx-auto max-w-3xl px-2 text-center sm:px-0">
+                        <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-amber-700 ring-1 ring-amber-100 sm:text-[11px] sm:tracking-[0.18em]">
+                            <span class="grid size-1.5 place-items-center rounded-full bg-amber-500" />
+                                02 · Produk Pinjaman
+                        </div>
+                        <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
+                            Dua skema, satu
+                            <span class="relative inline-block">
+                                <span class="absolute inset-x-0 bottom-1 h-3 bg-gradient-to-r from-emerald-200 to-green-200 sm:bottom-2 sm:h-4" />
+                                <span class="relative">tujuan.</span>
+                            </span>
+                        </h2>
+                        <p class="anim-fade-up mt-4 text-[14px] leading-relaxed text-slate-600 sm:mt-5 sm:text-[15px]">
+                            Pilih skema yang sesuai dengan kebutuhan dan profil risiko peminjam. Kedua jenis pinjaman tercatat otomatis dalam laporan.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 grid gap-5 lg:mt-10 lg:grid-cols-2">
+                        <div
+                            v-for="(p, idx) in produkCards"
+                            :key="p.key"
+                            class="reveal-item group relative overflow-hidden rounded-3xl bg-white p-5 shadow-lg shadow-emerald-600/[0.06] ring-1 ring-slate-200/70 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-600/15 sm:p-6"
+                        >
+                            <!-- Top color band -->
+                            <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r" :class="toneStyles[p.tone].grad" />
+                            <!-- Subtle glow -->
+                            <div class="absolute -top-20 -right-20 h-48 w-48 rounded-full opacity-30 blur-3xl transition-opacity duration-500 group-hover:opacity-50"
+                                 :class="`bg-gradient-to-br ${toneStyles[p.tone].grad}`" />
+
+                            <div class="relative">
+                                <!-- Header -->
+                                <div class="flex items-start justify-between gap-3 sm:gap-4">
+                                    <div class="flex min-w-0 items-center gap-3">
+                                        <span class="grid size-10 shrink-0 place-items-center rounded-xl text-white shadow-md transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 sm:size-11"
+                                              :class="`bg-gradient-to-br ${toneStyles[p.tone].grad}`"
+                                              :style="`box-shadow: 0 12px 24px -8px rgba(0,0,0,0.2);`">
+                                            <AppIcon :name="p.icon" class="text-lg sm:text-xl" />
+                                        </span>
+                                        <div class="min-w-0">
+                                            <p class="truncate text-[10px] font-bold uppercase tracking-[0.2em]" :class="toneStyles[p.tone].text">Pinjaman {{ p.key === 'kelompok' ? 'Kelompok' : 'Individu' }}</p>
+                                            <h3 class="truncate text-[15px] font-black tracking-tight text-slate-900 sm:text-base">{{ idx === 0 ? 'Solidaritas & gotong-royong' : 'Fleksibel & personal' }}</h3>
+                                        </div>
+                                    </div>
+                                    <span class="shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+                                          :class="`${toneStyles[p.tone].bg} ${toneStyles[p.tone].text}`">
+                                        {{ idx === 0 ? 'Rekomendasi' : 'Plafon Besar' }}
+                                    </span>
+                                </div>
+
+                                <p class="mt-5 text-[13.5px] leading-relaxed text-slate-600 sm:text-[14px]">
+                                    {{ p.ringkasan }}
+                                </p>
+                                <p class="mt-3 text-[12.5px] leading-relaxed text-slate-500 sm:text-[13px]">
+                                    {{ p.desc }}
+                                </p>
+
+                                <!-- Stats grid -->
+                                <div class="mt-4 grid grid-cols-2 gap-2.5">
+                                    <div
+                                        v-for="(s, i) in p.stats"
+                                        :key="i"
+                                        class="group/stat relative min-w-0 overflow-hidden rounded-xl bg-slate-50 p-3 shadow-sm shadow-slate-900/[0.05] ring-1 ring-slate-200/70 transition-all duration-300 hover:bg-white hover:shadow-md hover:shadow-emerald-600/10 sm:p-3.5"
+                                    >
+                                        <div class="flex min-w-0 items-center gap-2">
+                                            <span class="grid size-6 shrink-0 place-items-center rounded-lg text-white shadow-sm sm:size-7"
+                                                  :class="`bg-gradient-to-br ${toneStyles[p.tone].grad}`">
+                                                <AppIcon :name="s.icon" class="text-[10px] sm:text-xs" />
+                                            </span>
+                                            <span class="truncate text-[9.5px] font-bold uppercase tracking-[0.16em] text-slate-500 sm:text-[10px] sm:tracking-[0.18em]">{{ s.label }}</span>
+                                        </div>
+                                        <p class="mt-1.5 truncate text-[15px] font-black tracking-tight tabular-nums text-slate-900 sm:text-lg">{{ s.value }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Manfaat + Syarat -->
+                                <div class="mt-4 grid gap-2.5 sm:grid-cols-2">
+                                    <div class="rounded-2xl bg-gradient-to-br from-slate-50 to-white p-3.5 shadow-sm shadow-slate-900/[0.04] ring-1 ring-slate-200/70 sm:p-4">
+                                        <p class="text-[10px] font-bold uppercase tracking-[0.2em]" :class="toneStyles[p.tone].text">· Manfaat</p>
+                                        <ul class="mt-3 space-y-2">
+                                            <li v-for="(b, i) in p.manfaat" :key="i" class="flex items-start gap-2 text-[12.5px] leading-snug text-slate-700">
+                                                <span class="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full text-white"
+                                                      :class="`bg-gradient-to-br ${toneStyles[p.tone].grad}`">
+                                                    <AppIcon name="check" class="text-[9px] font-black" />
+                                                </span>
+                                                <span class="min-w-0">{{ b }}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="rounded-2xl bg-gradient-to-br from-slate-50 to-white p-3.5 shadow-sm shadow-slate-900/[0.04] ring-1 ring-slate-200/70 sm:p-4">
+                                        <p class="text-[10px] font-bold uppercase tracking-[0.2em]" :class="toneStyles[p.tone].text">· Syarat</p>
+                                        <ul class="mt-3 space-y-2">
+                                            <li v-for="(s, i) in p.syarat" :key="i" class="flex items-start gap-2 text-[12.5px] leading-snug text-slate-700">
+                                                <span class="mt-0.5 font-mono text-[10px] font-black tabular-nums" :class="toneStyles[p.tone].text">0{{ i + 1 }}</span>
+                                                <span class="min-w-0">{{ s }}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <!-- CTA -->
+                                <div class="mt-4 flex flex-col gap-2.5 border-t border-slate-200 pt-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                                    <span class="text-[12px] font-medium text-slate-500">Detail tersedia setelah login</span>
+                                    <Link href="/login" class="group/btn inline-flex shrink-0 items-center gap-1.5 text-[12.5px] font-bold transition-colors" :class="toneStyles[p.tone].text">
+                                        Lihat di sistem
+                                        <AppIcon name="arrow_forward" class="text-sm transition-transform duration-300 group-hover/btn:translate-x-1" />
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============== SECTION DIVIDER 04 → 05 ============== -->
+            <div class="section-divider relative px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+                <div class="mx-auto max-w-7xl">
+                    <div class="relative flex items-center justify-center">
+                        <svg class="block h-2 w-full overflow-visible" viewBox="0 0 1000 8" preserveAspectRatio="none" aria-hidden="true">
+                            <defs>
+                                <linearGradient id="dividerGrad4" x1="0" x2="1" y1="0" y2="0">
+                                    <stop offset="0%" stop-color="#16a34a" stop-opacity="0" />
+                                    <stop offset="15%" stop-color="#16a34a" stop-opacity="0.55" />
+                                    <stop offset="50%" stop-color="#10b981" stop-opacity="0.7" />
+                                    <stop offset="85%" stop-color="#10b981" stop-opacity="0.55" />
+                                    <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+                                </linearGradient>
+                            </defs>
+                            <line class="divider-line" x1="0" y1="4" x2="1000" y2="4" stroke="url(#dividerGrad4)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="1000" stroke-dashoffset="1000" vector-effect="non-scaling-stroke" />
+                        </svg>
+                        <span class="divider-dot absolute left-1/2 top-1/2 grid size-2.5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-br from-green-500 to-teal-500 ring-4 ring-green-100" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============== ALUR ============== -->
+            <section id="alur" class="reveal-group scroll-mt-32 bg-gradient-to-b from-slate-50 via-white to-slate-50 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+                <div class="mx-auto max-w-7xl">
+                    <div class="mx-auto max-w-3xl px-2 text-center sm:px-0">
+                        <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-green-800 ring-1 ring-green-100 sm:text-[11px] sm:tracking-[0.18em]">
+                            <span class="grid size-1.5 place-items-center rounded-full bg-green-500" />
+                                03 · Alur Layanan
+                        </div>
+                        <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
+                            Empat langkah mudah,
+                            <span class="block bg-gradient-to-r from-green-700 to-teal-500 bg-clip-text text-transparent">
+                                terdokumentasi otomatis.
+                            </span>
+                        </h2>
+                    </div>
+
+                    <div class="mt-8 lg:mt-10">
+                        <div class="grid gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:gap-3">
+                            <div
+                                v-for="(step, idx) in alur"
+                                :key="step.num"
+                                class="reveal-item group relative overflow-hidden rounded-xl bg-white p-4 shadow-lg shadow-green-600/[0.07] ring-1 ring-slate-200/70 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-green-600/20 hover:ring-green-200 sm:p-5 lg:p-6"
+                            >
+                                <div class="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br from-green-500/10 to-teal-500/10 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100" />
+                                <div class="relative">
+                                    <div class="flex items-center justify-between">
+                                        <span class="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-green-500 to-teal-500 text-white shadow-md shadow-green-600/25 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 sm:size-10">
+                                            <AppIcon :name="step.icon" class="text-base sm:text-[17px]" />
+                                        </span>
+                                        <span class="font-mono text-[11px] font-black tracking-wider text-slate-300">{{ step.num }}</span>
+                                    </div>
+                                    <h3 class="mt-4 text-[15px] font-black leading-tight text-slate-900 sm:text-base">{{ step.title }}</h3>
+                                    <p class="mt-2 text-[12.5px] leading-relaxed text-slate-600 sm:text-[13px]">{{ step.desc }}</p>
+                                    <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 text-[10px] font-bold uppercase tracking-[0.16em] sm:text-[10.5px] sm:tracking-[0.18em]">
+                                        <span class="rounded-md bg-slate-100 px-2 py-1 text-slate-700">{{ step.role }}</span>
+                                        <span class="text-slate-400">·</span>
+                                        <span class="text-green-700">{{ step.duration }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============== SECTION DIVIDER 05 → 06 ============== -->
+            <div class="section-divider relative px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+                <div class="mx-auto max-w-7xl">
+                    <div class="relative flex items-center justify-center">
+                        <svg class="block h-2 w-full overflow-visible" viewBox="0 0 1000 8" preserveAspectRatio="none" aria-hidden="true">
+                            <defs>
+                                <linearGradient id="dividerGrad5" x1="0" x2="1" y1="0" y2="0">
+                                    <stop offset="0%" stop-color="#475569" stop-opacity="0" />
+                                    <stop offset="15%" stop-color="#475569" stop-opacity="0.55" />
+                                    <stop offset="50%" stop-color="#1e293b" stop-opacity="0.75" />
+                                    <stop offset="85%" stop-color="#0f172a" stop-opacity="0.6" />
+                                    <stop offset="100%" stop-color="#0f172a" stop-opacity="0" />
+                                </linearGradient>
+                            </defs>
+                            <line class="divider-line" x1="0" y1="4" x2="1000" y2="4" stroke="url(#dividerGrad5)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="1000" stroke-dashoffset="1000" vector-effect="non-scaling-stroke" />
+                        </svg>
+                        <span class="divider-dot absolute left-1/2 top-1/2 grid size-2.5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-br from-slate-700 to-slate-900 ring-4 ring-slate-200" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============== REGULASI ============== -->
+            <section id="regulasi" class="reveal-group scroll-mt-32 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+                <div class="mx-auto max-w-7xl">
+                    <div class="grid items-end gap-5 lg:grid-cols-12 lg:gap-4">
+                        <div class="lg:col-span-7">
+                            <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-slate-200/70 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-slate-700 ring-1 ring-slate-300 sm:text-[11px] sm:tracking-[0.18em]">
+                                <span class="grid size-1.5 place-items-center rounded-full bg-slate-700" />
+                                04 · Standar &amp; Regulasi
+                            </div>
+                            <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
+                                Selaras dengan
+                                <span class="bg-gradient-to-r from-slate-700 via-slate-900 to-black bg-clip-text text-transparent">
+                                    kerangka hukum nasional.
+                                </span>
+                            </h2>
+                        </div>
+                        <p class="anim-fade-up text-[13.5px] leading-relaxed text-slate-600 sm:text-[14px] lg:col-span-5">
+                            Sistem mengikuti PP No. 11/2021, standar akuntansi SAK EP/ETAP, arsitektur basis data terisolasi per entitas, dan payment gateway nasional.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 lg:mt-12 lg:grid-cols-4">
+                        <div
+                            v-for="(r, i) in regulasi"
+                            :key="i"
+                            class="reveal-item group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 text-white shadow-xl shadow-slate-900/40 ring-1 ring-slate-700/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-900/50 sm:p-6"
+                        >
+                            <div class="absolute -top-16 -right-16 h-36 w-36 rounded-full opacity-30 blur-3xl transition-opacity duration-500 group-hover:opacity-60"
+                                 :class="`bg-gradient-to-br ${toneStyles[r.tone].grad}`" />
+                            <div class="relative">
+                                <div class="flex items-center justify-between">
+                                    <span class="grid size-10 place-items-center rounded-xl text-white shadow-md transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 sm:size-11"
+                                          :class="`bg-gradient-to-br ${toneStyles[r.tone].grad}`">
+                                        <AppIcon :name="r.icon" class="text-lg sm:text-xl" />
+                                    </span>
+                                    <span class="font-mono text-[11px] font-black tracking-wider text-slate-500">0{{ i + 1 }}</span>
+                                </div>
+                                <h3 class="mt-4 text-[15px] font-black leading-tight tracking-tight sm:text-base">{{ r.label }}</h3>
+                                <p class="mt-1 text-[10.5px] font-bold uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em]" :class="toneStyles[r.tone].text">{{ r.sub }}</p>
+                                <p class="mt-3 text-[12.5px] leading-relaxed text-slate-300">{{ r.desc }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============== CLOSING CTA ============== -->
+            <section class="reveal-group relative px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-16">
+                <div class="mx-auto max-w-5xl">
+                    <div class="scale-group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-emerald-950 to-green-950 p-6 text-center shadow-xl shadow-emerald-900/30 sm:p-10 lg:p-12">
+                        <!-- Glow -->
+                        <div class="absolute -top-32 left-1/4 h-72 w-72 rounded-full bg-emerald-500/40 blur-3xl" />
+                        <div class="absolute -bottom-32 right-1/4 h-72 w-72 rounded-full bg-green-500/40 blur-3xl" />
+                        <div class="absolute inset-0 opacity-30"
+                             style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0); background-size: 32px 32px;" />
+
+                        <div class="relative">
+                            <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-md ring-1 ring-white/20 sm:text-[11px] sm:tracking-[0.18em]">
+                                <span class="relative grid size-1.5 place-items-center">
+                                    <span class="absolute inset-0 animate-ping rounded-full bg-emerald-400/70" />
+                                    <span class="relative size-1.5 rounded-full bg-emerald-400" />
+                                </span>
+                                Akun Demo Tersedia
+                            </div>
+                            <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.025em] text-white sm:text-3xl lg:text-[2.25rem] lg:leading-[1.15]">
+                                Eksplorasi tata kelola
+                                <br class="hidden sm:block" />
+                                <span class="sm:hidden"> </span>
+                                <span class="bg-gradient-to-r from-emerald-300 via-green-300 to-teal-300 bg-clip-text text-transparent">
+                                    dana bergulir modern.
+                                </span>
+                            </h2>
+                            <p class="anim-fade-up mx-auto mt-5 max-w-2xl text-[13.5px] leading-relaxed text-emerald-100 sm:mt-6 sm:text-[15px]">
+                                Coba setiap modul dengan akun demo publik. Tidak ada data produksi yang disentuh — semua eksperimen terjadi di sandbox.
+                            </p>
+                            <div class="anim-fade-up mt-6 flex flex-col items-center justify-center gap-2.5 sm:mt-7 sm:flex-row sm:gap-3">
+                                <Link href="/login" class="group inline-flex w-full items-center justify-center gap-2.5 whitespace-nowrap rounded-lg bg-white px-5 py-3 text-[11.5px] font-black uppercase tracking-[0.14em] text-slate-900 shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-50 hover:shadow-emerald-600/40 sm:w-auto sm:py-2.5 sm:text-[12px]">
+                                    <AppIcon name="login" class="text-base" />
+                                    Masuk Sistem
+                                    <AppIcon name="arrow_forward" class="text-sm transition-transform duration-300 group-hover:translate-x-1" />
                                 </Link>
-                                <Link href="/kontak" class="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/40 px-6 t-nav font-bold text-white transition hover:bg-white/10">
-                                    <AppIcon name="support_agent" class="text-lg leading-none" />Konsultasi Gratis
+                                <Link v-if="orgPhone" :href="`tel:${orgPhone}`" class="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-white/30 bg-white/5 px-5 py-3 text-[11.5px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 sm:w-auto sm:py-2.5 sm:text-[12px]">
+                                    <AppIcon name="call" class="text-base" />
+                                    Hubungi Sekretariat
                                 </Link>
                             </div>
                         </div>
@@ -673,58 +961,152 @@ const modules = [
             </section>
         </main>
 
-        <!-- FOOTER -->
-        <footer class="border-t border-emerald-900/20 bg-white">
-            <div class="container-landing py-16">
-                <div class="grid gap-12 sm:grid-cols-2 md:grid-cols-4">
-                    <div class="md:col-span-2">
-                        <div class="flex items-center gap-3">
-                            <div class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-emerald-900 shadow-md ring-1 ring-emerald-700/30">
-                                <img v-if="organization.logo_url" :src="organization.logo_url" :alt="`Logo ${organization.name}`" class="size-full object-contain">
-                                <span v-else class="text-xl font-extrabold leading-none text-white">{{ organization.name.charAt(0).toUpperCase() }}</span>
+        <!-- ============== FOOTER ============== -->
+        <footer class="relative z-10 mt-10 border-t border-slate-200 bg-white/60 backdrop-blur-md sm:mt-12 pb-[max(0px,env(safe-area-inset-bottom))]">
+            <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-12">
+                    <div class="sm:col-span-2 lg:col-span-5">
+                        <Link href="/" class="group inline-flex items-center gap-3">
+                            <span class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-emerald-700 to-teal-500 text-white shadow-lg shadow-emerald-600/30 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-3 sm:size-11">
+                                <img v-if="orgLogo" :src="orgLogo" :alt="`Logo ${orgLegalName}`" class="size-full object-contain" />
+                                <span v-else class="text-base font-black">{{ orgInitial }}</span>
+                            </span>
+                            <div class="min-w-0 text-left">
+                                <span class="block truncate text-[15px] font-black tracking-tight text-slate-900 sm:text-base">{{ orgLegalName }}</span>
+                                <span v-if="orgRegion" class="block truncate text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 sm:tracking-[0.2em]">{{ orgRegion }}</span>
                             </div>
-                            <div class="min-w-0">
-                                <p class="truncate text-base font-bold leading-tight text-on-surface">{{ organization.name }}</p>
-                                <p v-if="organization.regency_name" class="mt-0.5 truncate text-xs leading-snug text-on-surface-variant">{{ organization.regency_name }}</p>
-                            </div>
-                        </div>
-                        <p v-if="settings.about_short" class="mt-5 max-w-md text-sm leading-relaxed text-on-surface-variant">{{ settings.about_short }}</p>
+                        </Link>
+                        <p v-if="props.settings?.about_short" class="mt-5 max-w-md text-[12.5px] leading-relaxed text-slate-600 sm:text-[13px]">
+                            {{ props.settings.about_short }}
+                        </p>
                     </div>
 
-                    <div>
-                        <p class="t-eyebrow text-emerald-900">Tautan</p>
-                        <ul class="mt-5 space-y-3 text-sm">
-                            <li><Link href="/" class="text-on-surface-variant transition hover:text-emerald-900">Beranda</Link></li>
-                            <li><Link href="#fitur" class="text-on-surface-variant transition hover:text-emerald-900">Fitur</Link></li>
-                            <li><Link href="#alur" class="text-on-surface-variant transition hover:text-emerald-900">Alur</Link></li>
-                            <li><Link href="#regulasi" class="text-on-surface-variant transition hover:text-emerald-900">Regulasi</Link></li>
-                            <li><Link href="/berita" class="text-on-surface-variant transition hover:text-emerald-900">Berita</Link></li>
-                            <li><Link href="/kontak" class="text-on-surface-variant transition hover:text-emerald-900">Kontak</Link></li>
+                    <div class="lg:col-span-3">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Tautan</p>
+                        <ul class="mt-4 space-y-2 text-[12.5px] text-slate-700 sm:text-[13px]">
+                            <li v-for="l in navAnchors" :key="l.id">
+                                <a :href="`#${l.id}`" @click.prevent="smoothScrollTo(l.id)" class="inline-flex items-center gap-1 transition-colors hover:text-emerald-700">
+                                    {{ l.label }}
+                                </a>
+                            </li>
                         </ul>
                     </div>
 
-                    <div>
-                        <p class="t-eyebrow text-emerald-900">Kontak</p>
-                        <ul class="mt-5 space-y-3 text-sm text-on-surface-variant">
-                            <li v-if="organization.phone" class="flex items-start gap-2.5"><AppIcon name="call" class="text-base leading-none text-emerald-900" /> {{ organization.phone }}</li>
-                            <li v-if="organization.email" class="flex items-start gap-2.5"><AppIcon name="mail" class="text-base leading-none text-emerald-900" /> {{ organization.email }}</li>
-                            <li v-if="organization.address" class="flex items-start gap-2.5"><AppIcon name="place" class="text-base leading-none text-emerald-900" /> <span>{{ organization.address }}</span></li>
+                    <div class="lg:col-span-4">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Sekretariat</p>
+                        <ul class="mt-4 space-y-2.5 text-[12.5px] text-slate-700 sm:text-[13px]">
+                            <li v-if="orgAddress" class="flex items-start gap-2.5">
+                                <AppIcon name="place" class="mt-0.5 shrink-0 text-base text-emerald-600" />
+                                <span class="min-w-0 break-words">{{ orgAddress }}</span>
+                            </li>
+                            <li v-if="orgPhone" class="flex items-start gap-2.5">
+                                <AppIcon name="call" class="mt-0.5 shrink-0 text-base text-emerald-600" />
+                                <span class="break-all">{{ orgPhone }}</span>
+                            </li>
+                            <li v-if="orgEmail" class="flex items-start gap-2.5">
+                                <AppIcon name="mail" class="mt-0.5 shrink-0 text-base text-emerald-600" />
+                                <span class="min-w-0 break-all">{{ orgEmail }}</span>
+                            </li>
                         </ul>
-                        <div v-if="settings.social?.facebook || settings.social?.instagram || settings.social?.youtube" class="mt-5 flex gap-2">
-                            <a v-if="settings.social?.facebook" :href="settings.social.facebook" target="_blank" rel="noopener" class="grid size-10 place-items-center rounded-full bg-emerald-50 text-emerald-900 transition hover:bg-emerald-900 hover:text-white" aria-label="Facebook"><AppIcon name="facebook" class="text-base leading-none" /></a>
-                            <a v-if="settings.social?.instagram" :href="settings.social.instagram" target="_blank" rel="noopener" class="grid size-10 place-items-center rounded-full bg-emerald-50 text-emerald-900 transition hover:bg-emerald-900 hover:text-white" aria-label="Instagram"><AppIcon name="photo_camera" class="text-base leading-none" /></a>
-                            <a v-if="settings.social?.youtube" :href="settings.social.youtube" target="_blank" rel="noopener" class="grid size-10 place-items-center rounded-full bg-emerald-50 text-emerald-900 transition hover:bg-emerald-900 hover:text-white" aria-label="YouTube"><AppIcon name="play_arrow" class="text-base leading-none" /></a>
-                        </div>
                     </div>
                 </div>
 
-                <div class="mt-12 flex flex-col items-center justify-between gap-2 pt-6 text-center sm:flex-row sm:text-left">
-                    <p class="text-xs text-on-surface-variant">
-                        © {{ new Date().getFullYear() }} <span class="font-semibold text-on-surface">siupk Next</span> · Sistem Tata Kelola Dana Bergulir Nasional v2.6
+                <div class="mt-6 flex flex-col items-center justify-between gap-2.5 border-t border-slate-200 pt-4 text-center sm:flex-row sm:gap-3 sm:text-left">
+                    <p class="text-[11.5px] text-slate-500 sm:text-[12px]">
+                        &copy; {{ new Date().getFullYear() }} {{ orgLegalName }}.
+                        <span v-if="props.settings?.footer_note"> · {{ props.settings.footer_note }}</span>
+                        <span v-else> · Dikelola dengan SIUPK Next.</span>
                     </p>
-                    <p v-if="settings.footer_note" class="text-xs text-on-surface-variant">{{ settings.footer_note }}</p>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 sm:tracking-[0.2em]">
+                        Powered by SIUPK Next
+                    </p>
                 </div>
             </div>
         </footer>
     </div>
 </template>
+
+<style scoped>
+.drawer-enter-active,
+.drawer-leave-active {
+    transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1), transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.drawer-enter-from,
+.drawer-leave-to {
+    opacity: 0;
+    transform: translateY(-12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .anim-fade,
+    .anim-fade-up,
+    .anim-scale,
+    .anim-slide,
+    .reveal-item,
+    .reveal-side,
+    .reveal-scale,
+    .float-orb,
+    .spin-slow,
+    .spin-reverse {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    .drawer-enter-active,
+    .drawer-leave-active {
+        transition: none;
+    }
+}
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

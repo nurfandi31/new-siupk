@@ -87,10 +87,10 @@ function formatDateTime(value) {
                                 name="q"
                                 :value="search"
                                 placeholder="Cari berita…"
-                                class="w-full rounded-full border border-outline-variant bg-surface-container-lowest py-2.5 pl-10 pr-4 text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:border-primary focus:outline-none"
+                                class="h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest pl-10 pr-4 text-sm text-primary placeholder:text-outline transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                             >
                         </div>
-                        <button type="submit" class="inline-flex min-h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-on-primary shadow-md transition hover:bg-primary-deep">
+                        <button type="submit" class="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary px-5 text-sm font-bold text-on-primary shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.97] active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
                             Cari
                         </button>
                     </form>

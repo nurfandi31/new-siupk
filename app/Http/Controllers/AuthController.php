@@ -16,7 +16,7 @@ use Inertia\Response;
 
 final class AuthController
 {
-    public function showLogin(): Response|RedirectResponse
+    public function showLogin(Request $request): Response|RedirectResponse
     {
         if (Auth::check()) {
             $user = Auth::user();
@@ -30,7 +30,14 @@ final class AuthController
             return redirect()->route('dashboard');
         }
 
-        return Inertia::render('Auth/Login');
+        $isDemo = $request->query('demo') === '1';
+
+        return Inertia::render('Auth/Login', [
+            'demo' => $isDemo ? [
+                'username' => 'admin',
+                'password' => 'password',
+            ] : null,
+        ]);
     }
 
     public function login(LoginRequest $request): RedirectResponse

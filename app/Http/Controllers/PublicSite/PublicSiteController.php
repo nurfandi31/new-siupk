@@ -45,7 +45,34 @@ final class PublicSiteController
             ]);
         }
 
+        if ($this->isDemoHost($request)) {
+            $site['demo'] = $this->resolveDemoData();
+        }
+
         return Inertia::render('PublicSite/TenantHome', $site);
+    }
+
+    private function isDemoHost(Request $request): bool
+    {
+        $host = strtolower(trim(explode(':', trim((string) $request->getHost()))[0]));
+
+        return $host === 'demo.siupknext.test';
+    }
+
+    /**
+     * Public credentials seeded for the bundled `demo` tenant. Surfaced on the
+     * demo landing so visitors can sign in with one click; rotate by changing
+     * the demo tenant password in the database.
+     *
+     * @return array<string, string>
+     */
+    private function resolveDemoData(): array
+    {
+        return [
+            'username' => 'admin',
+            'password' => 'password',
+            'login_url' => '/login?demo=1',
+        ];
     }
 
     /**
