@@ -4,7 +4,7 @@ import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
 import SmartDataTable from '../../../Components/SmartDataTable.vue';
-import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '../../../Layouts/TenantAdminLayout.vue';
 import { useCan } from '../../../composables/useCan';
 import { useConfirm } from '../../../composables/useConfirm';
 

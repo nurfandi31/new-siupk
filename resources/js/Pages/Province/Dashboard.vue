@@ -46,7 +46,7 @@ function applyFilter() {
 
                 <!-- Filters & PDF Pack -->
                 <div class="flex flex-wrap items-center gap-3">
-                    <div class="w-48">
+                    <div class="w-full sm:w-48">
                         <SmartSelect
                             v-model="selectedMonth"
                             :options="monthOptions"

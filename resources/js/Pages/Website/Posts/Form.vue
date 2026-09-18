@@ -8,7 +8,7 @@ import AppInput from '../../../Components/AppInput.vue';
 import AppRichEditor from '../../../Components/AppRichEditor.vue';
 import AppTextarea from '../../../Components/AppTextarea.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
-import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '../../../Layouts/TenantAdminLayout.vue';
 
 const props = defineProps({
     post: { type: Object, default: null },

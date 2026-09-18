@@ -14,7 +14,7 @@ import AppModal from '../../../Components/AppModal.vue';
 import AppRadioGroup from '../../../Components/AppRadioGroup.vue';
 import AppSwitch from '../../../Components/AppSwitch.vue';
 import AppTextarea from '../../../Components/AppTextarea.vue';
-import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '../../../Layouts/TenantAdminLayout.vue';
 
 const props = defineProps({
     instances: { type: Array, required: true },
@@ -326,8 +326,8 @@ const qrTone = computed(() => statusTone(qrStatus.value));
                     </AppBadge>
                 </div>
 
-                <div v-if="props.instances.length" class="overflow-x-auto">
-                    <table class="w-full min-w-[900px] text-left text-sm">
+    <div v-if="props.instances.length" class="overflow-x-auto">
+        <table class="w-full min-w-[40rem] text-left text-[11px] sm:min-w-[56rem] sm:text-sm">
                         <thead class="bg-surface-container-low text-sm">
                             <tr>
                                 <th class="px-4 py-3 font-bold text-primary">Instance</th>

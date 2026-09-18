@@ -6,7 +6,7 @@ import AppCard from '../../../Components/AppCard.vue';
 import AppFileUpload from '../../../Components/AppFileUpload.vue';
 import AppInput from '../../../Components/AppInput.vue';
 import AppTextarea from '../../../Components/AppTextarea.vue';
-import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '../../../Layouts/TenantAdminLayout.vue';
 
 const props = defineProps({
     settings: { type: Object, required: true },

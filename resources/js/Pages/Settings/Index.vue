@@ -16,7 +16,7 @@ import AppRichEditor from '../../Components/AppRichEditor.vue';
 import AppModal from '../../Components/AppModal.vue';
 import SignaturePad from '../../Components/SignaturePad.vue';
 import AppTabs from '../../Components/AppTabs.vue';
-import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '../../Layouts/TenantAdminLayout.vue';
 
 const props = defineProps({
     identity: { type: Object, required: true },

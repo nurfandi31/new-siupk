@@ -6,7 +6,7 @@ import AppDatePicker from '../../../Components/AppDatePicker.vue';
 import AppInput from '../../../Components/AppInput.vue';
 import AppRichEditor from '../../../Components/AppRichEditor.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
-import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '../../../Layouts/TenantAdminLayout.vue';
 
 const props = defineProps({
     page: { type: Object, default: null },

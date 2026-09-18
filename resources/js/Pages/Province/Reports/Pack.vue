@@ -62,8 +62,8 @@ const tabs = [
                 <div class="border-b border-outline-variant px-6 py-4">
                     <h2 class="font-bold text-primary text-lg">1. NERACA KONSOLIDASI PROVINSI</h2>
                 </div>
-                <div class="p-6">
-                    <table class="w-full text-left text-sm divide-y divide-outline-variant">
+                <div class="overflow-x-auto p-3 sm:p-6">
+                    <table class="w-full min-w-[36rem] text-left text-xs sm:text-sm divide-y divide-outline-variant">
                         <thead>
                             <tr class="bg-surface-container-low text-xs font-bold uppercase">
                                 <th class="px-4 py-3">Kode</th>
@@ -117,8 +117,8 @@ const tabs = [
                 <div class="border-b border-outline-variant px-6 py-4">
                     <h2 class="font-bold text-primary text-lg">2. LABA RUGI KONSOLIDASI PROVINSI</h2>
                 </div>
-                <div class="p-6">
-                    <table class="w-full text-left text-sm divide-y divide-outline-variant">
+                <div class="overflow-x-auto p-3 sm:p-6">
+                    <table class="w-full min-w-[36rem] text-left text-xs sm:text-sm divide-y divide-outline-variant">
                         <thead>
                             <tr class="bg-surface-container-low text-xs font-bold uppercase">
                                 <th class="px-4 py-3">Kode</th>
@@ -155,8 +155,8 @@ const tabs = [
                 <div class="border-b border-outline-variant px-6 py-4">
                     <h2 class="font-bold text-primary text-lg">3. LAPORAN ARUS KAS KONSOLIDASI</h2>
                 </div>
-                <div class="p-6">
-                    <table class="w-full text-left text-sm divide-y divide-outline-variant">
+                <div class="overflow-x-auto p-3 sm:p-6">
+                    <table class="w-full min-w-[28rem] text-left text-xs sm:text-sm divide-y divide-outline-variant">
                         <thead>
                             <tr class="bg-surface-container-low text-xs font-bold uppercase">
                                 <th class="px-4 py-3">Aktivitas</th>
@@ -179,8 +179,8 @@ const tabs = [
                 <div class="border-b border-outline-variant px-6 py-4">
                     <h2 class="font-bold text-primary text-lg">4. LAPORAN PERUBAHAN EKUITAS</h2>
                 </div>
-                <div class="p-6">
-                    <table class="w-full text-left text-sm divide-y divide-outline-variant">
+                <div class="overflow-x-auto p-3 sm:p-6">
+                    <table class="w-full min-w-[28rem] text-left text-xs sm:text-sm divide-y divide-outline-variant">
                         <thead>
                             <tr class="bg-surface-container-low text-xs font-bold uppercase">
                                 <th class="px-4 py-3">Komponen Ekuitas</th>

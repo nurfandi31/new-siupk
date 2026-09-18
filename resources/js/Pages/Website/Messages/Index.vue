@@ -6,7 +6,7 @@ import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
 import AppEmptyState from '../../../Components/AppEmptyState.vue';
 import AppModal from '../../../Components/AppModal.vue';
-import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '../../../Layouts/TenantAdminLayout.vue';
 import { useCan } from '../../../composables/useCan';
 import { useConfirm } from '../../../composables/useConfirm';
 
@@ -71,7 +71,7 @@ function markRead(row) {
                 <div class="p-6">
                     <div class="flex flex-wrap items-center gap-3">
                         <div class="flex min-w-[16rem] flex-1 items-center gap-2">
-                            <input v-model="q" type="search" placeholder="Cari nama / subjek / isi..." class="h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-base text-primary placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none" @keydown.enter="applySearch" />
+                            <input v-model="q" type="search" placeholder="Cari nama / subjek / isi..." class="h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm text-primary placeholder:text-outline transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none" @keydown.enter="applySearch" />
                             <AppButton variant="secondary" size="compact" icon="search" @click="applySearch">Cari</AppButton>
                         </div>
                     </div>
@@ -98,8 +98,8 @@ function markRead(row) {
                                     <p v-if="row.email || row.phone" class="text-xs text-on-surface-variant">{{ [row.email, row.phone].filter(Boolean).join(' · ') }}</p>
                                 </td>
                                 <td class="px-3 py-3">
-                                    <p class="max-w-[20rem] truncate font-medium">{{ row.subject || '—' }}</p>
-                                    <p class="max-w-[20rem] truncate text-xs text-on-surface-variant">{{ row.message }}</p>
+                                    <p class="max-w-[16rem] truncate font-medium sm:max-w-[20rem]">{{ row.subject || '—' }}</p>
+                                    <p class="max-w-[16rem] truncate text-xs text-on-surface-variant sm:max-w-[20rem]">{{ row.message }}</p>
                                 </td>
                                 <td class="px-3 py-3">
                                     <AppBadge :tone="row.is_read ? 'neutral' : 'warning'">{{ row.is_read ? 'Sudah dibaca' : 'Baru' }}</AppBadge>

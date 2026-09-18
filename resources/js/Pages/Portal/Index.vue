@@ -136,7 +136,7 @@ function formatDate(value) {
                         <div><dt class="text-on-surface-variant">Sisa Denda</dt><dd class="font-semibold">{{ money((selectedLoan?.penalty_due || 0) - (selectedLoan?.penalty_paid || 0)) }}</dd></div>
                     </dl>
                     <div class="overflow-x-auto rounded-xl bg-surface-container-low">
-                        <table class="w-full min-w-[42rem] text-left text-sm">
+                        <table class="w-full min-w-[32rem] text-left text-xs sm:min-w-[42rem] sm:text-sm">
                             <thead class="bg-surface-container-high text-xs uppercase text-on-surface-variant">
                                 <tr><th class="px-4 py-3">Angsuran</th><th class="px-4 py-3">Jatuh Tempo</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Dibayar Pada</th><th class="px-4 py-3 text-right">Pokok</th><th class="px-4 py-3 text-right">Jasa</th><th class="px-4 py-3 text-right">Denda</th><th class="px-4 py-3 text-right">Sisa</th></tr>
                             </thead>
