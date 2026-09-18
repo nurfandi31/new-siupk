@@ -24,6 +24,7 @@ Thumbs.db
 
 test-results/
 .claude/
+.opencode/
 
 *.sqlite
 *.sqlite-journal

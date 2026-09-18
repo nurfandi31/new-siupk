@@ -433,9 +433,6 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
     Route::get('/lending/proposals/{proposal}', [LoanController::class, 'show'])->name('lending.proposals.show');
     Route::get('/lending/proposals/{proposal}/edit', [LoanController::class, 'edit'])->name('lending.proposals.edit');
     Route::put('/lending/proposals/{proposal}', [LoanController::class, 'update'])->name('lending.proposals.update');
-    Route::post('/lending/proposals/{proposal}/submit', [LoanController::class, 'submit'])->name('lending.proposals.submit');
-    Route::post('/lending/proposals/{proposal}/approve', [LoanController::class, 'approve'])->name('lending.proposals.approve');
-    Route::post('/lending/proposals/{proposal}/reject', [LoanController::class, 'reject'])->name('lending.proposals.reject');
 
     Route::get('/lending/simulation', [LoanSimulationController::class, 'index'])->name('lending.simulation.index');
     Route::post('/lending/simulation/calculate', [LoanSimulationController::class, 'calculate'])->name('lending.simulation.calculate');
@@ -448,6 +445,7 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
     Route::get('/lending/loans/{loan}', [LoanController::class, 'show'])->name('lending.loans.show');
     Route::get('/lending/loans/{loan}/card', [LoanController::class, 'card'])->name('lending.loans.card');
     Route::get('/lending/loans/{loan}/card/reprint', [LoanController::class, 'cardReprint'])->name('lending.loans.card.reprint');
+    Route::get('/lending/loans/{loan}/settlement-letter', [LoanController::class, 'settlementLetter'])->name('lending.loans.settlement-letter');
     Route::get('/lending/loans/{loan}/edit', [LoanController::class, 'edit'])->name('lending.loans.edit');
     Route::get('/lending/loans/{loan}/documents/{type}', [LoanDocumentController::class, 'document'])
         ->where('type', '[a-z_]+')
@@ -458,8 +456,7 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
     Route::delete('/lending/loans/{loan}/beneficiaries/{member}', [LoanController::class, 'removeBeneficiary'])->name('lending.loans.beneficiaries.destroy');
     Route::patch('/lending/loans/{loan}/verify', [LoanController::class, 'verify'])->name('lending.loans.verify');
     Route::patch('/lending/loans/{loan}/approve', [LoanController::class, 'approve'])->name('lending.loans.approve');
-    Route::patch('/lending/loans/{loan}/disburse', [LoanController::class, 'disburse'])->name('lending.loans.disburse');
-    Route::post('/lending/loans/{loan}/disburse', [LoanController::class, 'disburse'])->name('lending.loans.disburse.post');
+        Route::patch('/lending/loans/{loan}/disburse', [LoanController::class, 'disburse'])->name('lending.loans.disburse');
     Route::patch('/lending/loans/{loan}/revert', [LoanController::class, 'revert'])->name('lending.loans.revert');
     Route::patch('/lending/loans/{loan}/committee', [LoanController::class, 'setCommittee'])->name('lending.loans.committee');
     Route::post('/lending/loans/{loan}/reschedule', [LoanController::class, 'reschedule'])->name('lending.loans.reschedule');
@@ -470,8 +467,31 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         ->name('lending.loans.beneficiaries.write-off');
     Route::patch('/lending/loans/{loan}/complete', [LoanController::class, 'complete'])->name('lending.loans.complete');
 
-    Route::get('/lending/payments/create', [LoanController::class, 'create'])->name('lending.payments.create');
-    Route::post('/lending/payments', [LoanController::class, 'store'])->name('lending.payments.store');
+    // Lending - Pinjaman Individu (perorangan)
+    Route::prefix('lending/member-loans')->name('lending.member-loans.')->group(function (): void {
+        Route::get('/', [LoanController::class, 'individualIndex'])->name('index');
+        Route::get('/create', [LoanController::class, 'individualCreate'])->name('create');
+        Route::post('/', [LoanController::class, 'individualStore'])->name('store');
+        Route::get('/{loan}', [LoanController::class, 'individualShow'])->name('show');
+        Route::get('/{loan}/card', [LoanController::class, 'individualCard'])->name('card');
+        Route::get('/{loan}/settlement-letter', [LoanController::class, 'individualSettlementLetter'])->name('settlement-letter');
+        Route::get('/{loan}/documents/{type}', [LoanDocumentController::class, 'document'])
+            ->name('documents.print');
+
+        // Status transitions (reuse LoanService yang sudah generik, hanya beda guard legacy_source)
+        Route::patch('/{loan}/verify', [LoanController::class, 'individualVerify'])->name('verify');
+        Route::patch('/{loan}/approve', [LoanController::class, 'individualApprove'])->name('approve');
+        Route::patch('/{loan}/disburse', [LoanController::class, 'individualDisburse'])->name('disburse');
+        Route::patch('/{loan}/revert', [LoanController::class, 'individualRevert'])->name('revert');
+        Route::patch('/{loan}/reject', [LoanController::class, 'individualReject'])->name('reject');
+        Route::patch('/{loan}/complete', [LoanController::class, 'individualComplete'])->name('complete');
+        Route::post('/{loan}/write-off', [LoanController::class, 'individualWriteOff'])->name('write-off');
+        Route::post('/{loan}/reschedule', [LoanController::class, 'individualReschedule'])->name('reschedule');
+        Route::post('/{loan}/cancel-reschedule', [LoanController::class, 'individualCancelReschedule'])->name('cancel-reschedule');
+    });
+
+    // /lending/payments/* dihapus — collision dengan create/store loan.
+    // Angsuran diposting via Accounting\JournalEntry routes yang sudah ada.
 
     Route::prefix('lending/reports')->name('lending.reports.')->group(function (): void {
         Route::get('/portfolio', [LoanReportController::class, 'portfolio'])->name('portfolio');

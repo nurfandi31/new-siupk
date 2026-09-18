@@ -22,6 +22,8 @@ final class LoanDisburseRequest extends FormRequest
             'disbursed_at' => ['required', 'date', 'before_or_equal:today'],
             'disbursement_account_row_id' => ['required', 'integer', Rule::exists(Account::class, 'row_id')->where(fn ($query) => $query->where('tenant_id', $tenantId)->where('is_active', true))],
             'disbursement_notes' => ['nullable', 'string', 'max:5000'],
+            'spk_no' => ['nullable', 'string', 'max:80'],
+            'disbursement_slot' => ['nullable', 'string', 'max:120'],
         ];
     }
 
@@ -31,6 +33,8 @@ final class LoanDisburseRequest extends FormRequest
             'disbursed_at' => 'tanggal cair',
             'disbursement_account_row_id' => 'sumber dana',
             'disbursement_notes' => 'catatan pencairan',
+            'spk_no' => 'nomor SPK',
+            'disbursement_slot' => 'waktu & tempat pencairan',
         ];
     }
 }

@@ -10,6 +10,7 @@ use App\Domain\Lending\Models\Loan;
 use App\Domain\Lending\Models\LoanProduct;
 use App\Domain\Lending\Services\LoanService;
 use App\Domain\Lending\Services\Reports\LoanCardService;
+use App\Domain\Lending\Services\Reports\MemberLoanCardService;
 use App\Domain\Membership\Models\Group;
 use App\Domain\Membership\Models\Member;
 use App\Domain\Membership\Models\OrganizationProfile;
@@ -17,6 +18,7 @@ use App\Http\Requests\Lending\LoanApproveRequest;
 use App\Http\Requests\Lending\LoanBeneficiaryWriteOffRequest;
 use App\Http\Requests\Lending\LoanDisburseRequest;
 use App\Http\Requests\Lending\LoanRequest;
+use App\Http\Requests\Lending\MemberLoanRequest;
 use App\Http\Requests\Lending\LoanRescheduleCancelRequest;
 use App\Http\Requests\Lending\LoanRescheduleRequest;
 use App\Http\Requests\Lending\LoanUpdateRequest;
@@ -458,6 +460,9 @@ final class LoanController
             'card_url' => $loan->installments->isNotEmpty()
                 ? route('lending.loans.card', ['loan' => $loan->row_id])
                 : null,
+            'settlement_letter_url' => in_array($loan->status, ['completed', 'written_off'], true)
+                ? route('lending.loans.settlement-letter', ['loan' => $loan->row_id])
+                : null,
             'disbursement_account' => $disbursementAccount?->only(['row_id', 'id', 'code', 'name', 'account_type']),
             'disbursementAccounts' => Account::query()
                 ->where('is_active', true)
@@ -504,6 +509,31 @@ final class LoanController
             $data,
             'kartu-angsuran-'.$loan->id.'.pdf',
             'landscape',
+        );
+    }
+
+    public function settlementLetter(Loan $loan, ReportPdf $pdf): HttpResponse|StreamedResponse
+    {
+        if ((string) $loan->legacy_source !== 'group_loan') {
+            abort(404);
+        }
+
+        $loan->load([
+            'product:row_id,code,name',
+            'borrower.group.village:row_id,name',
+            'committee',
+            'beneficiaries.member.person',
+        ]);
+
+        return $pdf->stream(
+            'reports.pdf.loan_settlement_kelompok',
+            [
+                'loan' => $loan,
+                'profile' => \App\Domain\Membership\Models\OrganizationProfile::query()->first(),
+                'as_of' => now()->toDateString(),
+            ],
+            'keterangan-lunas-kelompok-'.$loan->id.'.pdf',
+            'portrait',
         );
     }
 
@@ -1034,5 +1064,626 @@ final class LoanController
             $filename,
             'landscape'
         );
+    }
+
+    public function individualIndex(Request $request): Response
+    {
+        $tab = $request->query('tab', 'proposal');
+        $view = $request->query('view', 'table') === 'kanban' ? 'kanban' : 'table';
+        $search = trim((string) $request->query('search', ''));
+        $perPage = $this->perPage($request->query('per_page'));
+        $sort = $this->individualSort($tab, (string) $request->query('sort', ''));
+        $direction = $this->direction((string) $request->query('direction', 'desc'));
+
+        $query = Loan::query()
+            ->where('legacy_source', 'member_loan')
+            ->with([
+                'product:row_id,code,name',
+                'borrower.member.person',
+                'borrower.member.village:row_id,name',
+                'installments',
+                'statusHistories' => fn ($q) => $q->orderBy('changed_at'),
+            ]);
+
+        switch ($tab) {
+            case 'proposal':
+                $query->where('status', 'draft');
+                break;
+            case 'verifikasi':
+                $query->where('status', 'verified');
+                break;
+            case 'waiting':
+                $query->whereIn('status', ['waiting', 'approved']);
+                break;
+            case 'aktif':
+                $query->whereIn('status', ['active', 'disbursed'])
+                    ->whereHas('installments', fn ($q) => $q->whereRaw('principal_due > principal_paid'));
+                break;
+            case 'lunas':
+                $query->where(function ($q): void {
+                    $q->whereIn('status', ['completed', 'written_off', 'rescheduled'])
+                        ->orWhere(function ($inner): void {
+                            $inner->whereIn('status', ['active', 'disbursed'])
+                                ->whereDoesntHave('installments', fn ($inst) => $inst->whereRaw('principal_due > principal_paid'));
+                        });
+                });
+                break;
+            default:
+                $query->whereRaw('1 = 0');
+                break;
+        }
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search): void {
+                $q->where('loan_number', 'like', "%{$search}%")
+                    ->orWhereHas('borrower.member.person', fn ($p) => $p->where('full_name', 'like', "%{$search}%"))
+                    ->orWhereHas('borrower.member', fn ($m) => $m->where('member_number', 'like', "%{$search}%"))
+                    ->orWhereHas('product', fn ($p) => $p->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        $allowedSort = $this->individualSortOptions($tab);
+        $loans = $query->orderBy($sort ?: ($allowedSort[0] ?? 'proposed_at'), $direction)
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (Loan $loan): array => $this->presentIndividualLoan($loan));
+
+        return Inertia::render('Lending/MemberLoans/Index', [
+            'loans' => $loans,
+            'tab' => $tab,
+            'view' => $view,
+            'columns' => $this->individualColumns($tab),
+            'sortable' => $allowedSort,
+            'search' => $search,
+            'perPage' => $perPage,
+            'sort' => $sort,
+            'direction' => $direction,
+        ]);
+    }
+
+    public function individualCreate(TenantLoanProductProvisioner $provisioner): Response
+    {
+        if (LoanProduct::query()->active()->doesntExist()) {
+            $provisioner->ensureDefaults();
+        }
+
+        return Inertia::render('Lending/MemberLoans/Form', [
+            ...$this->individualFormOptions(),
+        ]);
+    }
+
+    public function individualStore(MemberLoanRequest $request, LoanService $loans): RedirectResponse
+    {
+        try {
+            $loan = $loans->createMemberProposal($request->validated(), (int) $request->user()->row_id);
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        }
+
+        return to_route('lending.member-loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Proposal pinjaman individu berhasil didaftarkan.');
+    }
+
+    public function individualShow(Request $request, Loan $loan): Response
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        $loan->load([
+            'product:row_id,code,name,default_interest_rate,default_term_months',
+            'borrower.member.person',
+            'borrower.member.village:row_id,name',
+            'installments',
+            'payments.allocations',
+            'statusHistories' => fn ($q) => $q->orderBy('changed_at'),
+            'statusHistories.changedByUser:row_id,name',
+        ]);
+
+        $disbursementAccount = $loan->disbursement_account_row_id
+            ? Account::query()->where('row_id', (int) $loan->disbursement_account_row_id)->first(['row_id', 'id', 'code', 'name', 'account_type'])
+            : null;
+
+        return Inertia::render('Lending/MemberLoans/Show', [
+            'loan' => $this->presentIndividualLoanDetail($loan),
+            'card_url' => $loan->installments->isNotEmpty()
+                ? route('lending.member-loans.card', ['loan' => $loan->row_id])
+                : null,
+            'settlement_letter_url' => in_array($loan->status, ['completed', 'written_off'], true)
+                ? route('lending.member-loans.settlement-letter', ['loan' => $loan->row_id])
+                : null,
+            'disbursement_account' => $disbursementAccount?->only(['row_id', 'id', 'code', 'name', 'account_type']),
+            'disbursementAccounts' => Account::query()
+                ->where('is_active', true)
+                ->where('code', 'like', '1.1.01.__')
+                ->where('code', 'not like', '1.1.01.00')
+                ->orderBy('code')
+                ->get(['row_id', 'code', 'name', 'account_type'])
+                ->map(fn (Account $account): array => [
+                    'row_id' => $account->row_id,
+                    'code' => $account->code,
+                    'name' => $account->name,
+                ])->all(),
+            'today' => now()->toDateString(),
+            'can' => [
+                'loans.verify' => $request->user()?->can('loans.verify') ?? false,
+                'loans.approve' => $request->user()?->can('loans.approve') ?? false,
+                'loans.disburse' => $request->user()?->can('loans.disburse') ?? false,
+                'loans.manage' => $request->user()?->can('loans.manage') ?? false,
+                'loans.write_off' => $request->user()?->can('loans.write_off') ?? false,
+                'loans.reschedule' => $request->user()?->can('loans.reschedule') ?? false,
+            ],
+        ]);
+    }
+
+    public function individualCard(Loan $loan, MemberLoanCardService $cards, ReportPdf $pdf): HttpResponse|StreamedResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        $loan->load(['installments']);
+        try {
+            $data = $cards->build($loan);
+        } catch (DomainException $e) {
+            abort(422, $e->getMessage());
+        }
+
+        return $pdf->stream(
+            'reports.pdf.loan_card_member',
+            $data,
+            'kartu-angsuran-individu-'.$loan->id.'.pdf',
+            'landscape',
+        );
+    }
+
+    public function individualSettlementLetter(Loan $loan, ReportPdf $pdf): HttpResponse|StreamedResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        $loan->load([
+            'product:row_id,code,name',
+            'borrower.member.person',
+            'borrower.member.address',
+            'borrower.member.village:row_id,name',
+        ]);
+
+        return $pdf->stream(
+            'reports.pdf.loan_settlement_member',
+            [
+                'loan' => $loan,
+                'profile' => \App\Domain\Membership\Models\OrganizationProfile::query()->first(),
+                'as_of' => now()->toDateString(),
+            ],
+            'keterangan-lunas-individu-'.$loan->id.'.pdf',
+            'portrait',
+        );
+    }
+
+    // ===== Status transitions for member loans =====
+    // Reuse LoanService methods (sudah generik) + guard legacy_source='member_loan'.
+
+    public function individualVerify(LoanVerifyRequest $request, Loan $loan, LoanService $loans): RedirectResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        $loans->verify($loan, $request->validated(), (int) $request->user()->row_id);
+
+        return to_route('lending.member-loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Pinjaman individu berhasil diverifikasi.');
+    }
+
+    public function individualApprove(Request $request, Loan $loan, LoanService $loans): RedirectResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'approved_at' => ['required', 'date', 'before_or_equal:today'],
+            'planned_disbursed_at' => ['required', 'date', 'after_or_equal:approved_at'],
+            'allocation_notes' => ['nullable', 'string', 'max:500'],
+            'term_months' => ['nullable', 'integer', 'min:1', 'max:120'],
+            'service_rate_total' => ['nullable', 'numeric', 'min:0', 'max:5000'],
+            'principal_frequency' => ['nullable', 'string', 'in:monthly,weekly,biweekly,at_maturity'],
+            'interest_frequency' => ['nullable', 'string', 'in:monthly,weekly,biweekly,at_maturity'],
+        ]);
+
+        $loans->approve($loan, $validated, (int) $request->user()->row_id);
+
+        return to_route('lending.member-loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Alokasi pinjaman individu berhasil ditetapkan.');
+    }
+
+    public function individualDisburse(LoanDisburseRequest $request, Loan $loan, LoanService $loans): RedirectResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        $loans->disburse($loan, $request->validated(), (int) $request->user()->row_id);
+
+        return to_route('lending.member-loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Pencairan pinjaman individu berhasil dicatat.');
+    }
+
+    public function individualRevert(Loan $loan, LoanService $loans): RedirectResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        $loans->revertToDraft($loan, (int) request()->user()->row_id);
+
+        return to_route('lending.member-loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Pinjaman dikembalikan ke status proposal.');
+    }
+
+    public function individualReject(Request $request, Loan $loan, LoanService $loans): RedirectResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        $request->validate([
+            'notes' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $loans->rejectMemberLoan($loan, (int) $request->user()->row_id, $request->input('notes'));
+
+        return to_route('lending.member-loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Pinjaman individu ditandai Tidak Layak.');
+    }
+
+    public function individualComplete(Request $request, Loan $loan, LoanService $loans): RedirectResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'completed_at' => ['required', 'date'],
+            'notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+            $loans->complete($loan, $validated, (int) $request->user()->row_id);
+        } catch (DomainException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return to_route('lending.member-loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Validasi pelunasan pinjaman individu berhasil disimpan.');
+    }
+
+    public function individualWriteOff(LoanWriteOffRequest $request, Loan $loan, LoanService $loans): RedirectResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        try {
+            $loans->writeOff($loan, $request->validated(), (int) $request->user()->row_id);
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return to_route('lending.member-loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Penghapusan piutang pinjaman individu berhasil dicatat.');
+    }
+
+    public function individualReschedule(LoanRescheduleRequest $request, Loan $loan, LoanService $loans): RedirectResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        try {
+            $newLoan = $loans->reschedule($loan, $request->validated(), (int) $request->user()->row_id);
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return to_route('lending.member-loans.show', ['loan' => $newLoan->row_id])
+            ->with('success', 'Reschedule pinjaman individu berhasil. Pinjaman baru dibuat dari sisa pokok.');
+    }
+
+    public function individualCancelReschedule(LoanRescheduleCancelRequest $request, Loan $loan, LoanService $loans): RedirectResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        try {
+            $oldLoan = $loans->cancelReschedule($loan, $request->validated(), (int) $request->user()->row_id);
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return to_route('lending.member-loans.show', ['loan' => $oldLoan->row_id])
+            ->with('success', 'Reschedule pinjaman individu berhasil dibatalkan.');
+    }
+
+    private function individualFormOptions(): array
+    {
+        return [
+            'products' => LoanProduct::query()->active()
+                ->whereIn('borrower_scope', ['member', 'both'])
+                ->orderBy('name')
+                ->get(['row_id', 'code', 'name', 'default_interest_rate', 'default_term_months', 'minimum_amount', 'maximum_amount', 'borrower_scope'])
+                ->toArray(),
+            'members' => Member::query()
+                ->where('status', 'active')
+                ->with(['person', 'village:row_id,name'])
+                ->orderBy('member_number')
+                ->limit(500)
+                ->get()
+                ->map(fn (Member $member): array => [
+                    'value' => (int) $member->row_id,
+                    'label' => ($member->person?->full_name ?? '—').' · '.$member->member_number,
+                    'nik' => $member->person?->national_identity_number,
+                    'member_number' => $member->member_number,
+                    'village' => $member->village?->name,
+                    'address' => $member->person?->address,
+                ])
+                ->values()
+                ->all(),
+        ];
+    }
+
+    private function individualSortOptions(string $tab): array
+    {
+        return match ($tab) {
+            'proposal' => ['proposed_at', 'proposed_amount', 'term_months'],
+            'verifikasi' => ['proposed_at', 'verified_at', 'verification_amount'],
+            'waiting' => ['funded_at', 'allocated_amount', 'term_months'],
+            'aktif' => ['disbursed_at', 'allocated_amount', 'next_due_date', 'principal_remaining'],
+            'lunas' => ['disbursed_at', 'completed_at', 'allocated_amount'],
+            default => [],
+        };
+    }
+
+    private function individualSort(string $tab, string $value): string
+    {
+        $allowed = $this->individualSortOptions($tab);
+
+        return in_array($value, $allowed, true) ? $value : '';
+    }
+
+    private function individualColumns(string $tab): array
+    {
+        $action = [['key' => 'actions', 'label' => '', 'sortable' => false, 'class' => 'text-right']];
+
+        return match ($tab) {
+            'proposal' => [
+                ['key' => 'member_name', 'label' => 'Anggota & Desa'],
+                ['key' => 'proposed_at', 'label' => 'Tgl Pengajuan', 'sortable' => true],
+                ['key' => 'proposed_amount', 'label' => 'Nominal Pengajuan', 'sortable' => true, 'class' => 'text-right'],
+                ['key' => 'service_rate', 'label' => 'Jasa'],
+                ['key' => 'term_months', 'label' => 'Jangka', 'sortable' => true, 'class' => 'text-right'],
+                ...$action,
+            ],
+            'verifikasi' => [
+                ['key' => 'member_name', 'label' => 'Anggota & Desa'],
+                ['key' => 'proposed_at', 'label' => 'Tgl Pengajuan', 'sortable' => true],
+                ['key' => 'verified_at', 'label' => 'Tgl Verifikasi', 'sortable' => true],
+                ['key' => 'verification_amount', 'label' => 'Nominal Verifikasi', 'sortable' => true, 'class' => 'text-right'],
+                ['key' => 'service_rate', 'label' => 'Jasa'],
+                ['key' => 'term_months', 'label' => 'Jangka', 'class' => 'text-right'],
+                ...$action,
+            ],
+            'waiting' => [
+                ['key' => 'member_name', 'label' => 'Anggota & Desa'],
+                ['key' => 'funded_at', 'label' => 'Tgl Pendanaan', 'sortable' => true],
+                ['key' => 'allocated_amount', 'label' => 'Alokasi', 'sortable' => true, 'class' => 'text-right'],
+                ['key' => 'service_rate', 'label' => 'Jasa'],
+                ['key' => 'term_months', 'label' => 'Jangka', 'class' => 'text-right'],
+                ...$action,
+            ],
+            'aktif' => [
+                ['key' => 'member_name', 'label' => 'Anggota & Desa'],
+                ['key' => 'disbursed_at', 'label' => 'Tgl Pencairan', 'sortable' => true],
+                ['key' => 'allocated_amount', 'label' => 'Alokasi', 'sortable' => true, 'class' => 'text-right'],
+                ['key' => 'principal_remaining', 'label' => 'Sisa Pokok', 'sortable' => true, 'class' => 'text-right'],
+                ['key' => 'next_due_date', 'label' => 'Angsuran Berikutnya', 'sortable' => true],
+                ...$action,
+            ],
+            'lunas' => [
+                ['key' => 'member_name', 'label' => 'Anggota & Desa'],
+                ['key' => 'disbursed_at', 'label' => 'Tgl Cair', 'sortable' => true],
+                ['key' => 'completed_at', 'label' => 'Tgl Lunas', 'sortable' => true],
+                ['key' => 'allocated_amount', 'label' => 'Alokasi', 'sortable' => true, 'class' => 'text-right'],
+                ['key' => 'total_interest_paid', 'label' => 'Total Jasa', 'class' => 'text-right'],
+                ...$action,
+            ],
+            default => [],
+        };
+    }
+
+    private function presentIndividualLoan(Loan $loan): array
+    {
+        $principalRemaining = 0.0;
+        $interestPaid = 0.0;
+        $nextDue = null;
+
+        foreach ($loan->installments as $installment) {
+            $principalRemaining += (float) $installment->principal_due - (float) $installment->principal_paid;
+            $interestPaid += (float) $installment->interest_paid;
+            if ($nextDue === null && (float) $installment->principal_due > (float) $installment->principal_paid) {
+                $nextDue = $installment->due_date;
+            }
+        }
+
+        $histories = $loan->statusHistories->keyBy('to_status');
+        $snapshot = function (string $key) use ($histories, $loan): ?float {
+            $row = $histories->get($key);
+            $value = $row?->principal_amount;
+            if ($value === null) {
+                $value = $loan->principal_amount;
+            }
+
+            return $value !== null ? (float) $value : null;
+        };
+
+        $serviceRate = (float) ($histories->get('draft')?->service_rate_total ?? $loan->service_rate_total ?? $loan->interest_rate ?? 0);
+        $termMonths = (int) ($histories->get('draft')?->term_months ?? $loan->term_months ?? 0);
+
+        $member = $loan->borrower?->member;
+        $person = $member?->person;
+
+        return [
+            'row_id' => $loan->row_id,
+            'id' => $loan->id,
+            'loan_number' => $loan->loan_number ?? '—',
+            'proposed_at' => $loan->proposed_at?->format('Y-m-d'),
+            'verified_at' => $loan->verified_at?->format('Y-m-d'),
+            'approved_at' => $loan->approved_at?->format('Y-m-d'),
+            'funded_at' => $loan->funded_at?->format('Y-m-d'),
+            'disbursed_at' => $loan->disbursed_at?->format('Y-m-d'),
+            'completed_at' => $loan->completed_at?->format('Y-m-d'),
+            'principal_amount' => (float) $loan->principal_amount,
+            'principal_remaining' => round($principalRemaining, 2),
+            'total_interest_paid' => round($interestPaid, 2),
+            'next_due_date' => $nextDue?->format('Y-m-d'),
+            'proposed_amount' => $snapshot('draft'),
+            'verification_amount' => $snapshot('verified'),
+            'allocated_amount' => $snapshot('active') ?? $snapshot('disbursed'),
+            'service_rate' => round($serviceRate, 2),
+            'term_months' => $termMonths,
+            'status' => $loan->status,
+            'product' => $loan->product?->only(['row_id', 'code', 'name']),
+            'member_name' => $person?->full_name ?? '—',
+            'member_number' => $member?->member_number,
+            'nik' => $person?->national_identity_number,
+            'village_name' => $member?->village?->name,
+            'address' => $person?->address,
+        ];
+    }
+
+    private function presentIndividualLoanDetail(Loan $loan): array
+    {
+        $principalRemaining = 0.0;
+        $interestPaid = 0.0;
+        $interestDue = 0.0;
+        $principalPaid = 0.0;
+        $nextDue = null;
+        $paidInstallments = 0;
+        $totalInstallments = $loan->installments->pluck('installment_number')->unique()->count();
+
+        $histories = $loan->statusHistories->keyBy('to_status');
+        $snapshot = function (string $key) use ($histories, $loan): ?float {
+            $row = $histories->get($key);
+            $value = $row?->principal_amount;
+            if ($value === null) {
+                $value = $loan->principal_amount;
+            }
+
+            return $value !== null ? (float) $value : null;
+        };
+
+        foreach ($loan->installments as $installment) {
+            $principalRemaining += (float) $installment->principal_due - (float) $installment->principal_paid;
+            $principalPaid += (float) $installment->principal_paid;
+            $interestPaid += (float) $installment->interest_paid;
+            $interestDue += (float) $installment->interest_due;
+            if ((float) $installment->principal_due > 0 && (float) $installment->principal_paid >= (float) $installment->principal_due) {
+                $paidInstallments++;
+            }
+            if ($nextDue === null && (float) $installment->principal_due > (float) $installment->principal_paid) {
+                $nextDue = $installment->due_date;
+            }
+        }
+
+        $member = $loan->borrower?->member;
+        $person = $member?->person;
+
+        $historiesArray = $loan->statusHistories->map(fn ($h): array => [
+            'from_status' => $h->from_status,
+            'to_status' => $h->to_status,
+            'principal_amount' => $h->principal_amount !== null ? (float) $h->principal_amount : null,
+            'notes' => $h->notes,
+            'term_months' => $h->term_months !== null ? (int) $h->term_months : null,
+            'service_rate_total' => $h->service_rate_total !== null ? (float) $h->service_rate_total : null,
+            'principal_frequency' => $h->principal_frequency,
+            'interest_frequency' => $h->interest_frequency,
+            'principal_grace_months' => $h->principal_grace_months !== null ? (int) $h->principal_grace_months : null,
+            'interest_grace_months' => $h->interest_grace_months !== null ? (int) $h->interest_grace_months : null,
+            'changed_at' => $h->changed_at?->format('Y-m-d H:i'),
+            'changed_by_user_id' => $h->changed_by_user_id,
+            'changed_by_user_name' => $h->changedByUser?->name,
+        ])->values()->all();
+
+        return [
+            'row_id' => $loan->row_id,
+            'id' => $loan->id,
+            'legacy_source' => $loan->legacy_source,
+            'loan_number' => $loan->loan_number,
+            'status' => $loan->status,
+            'proposed_at' => $loan->proposed_at?->format('Y-m-d'),
+            'verified_at' => $loan->verified_at?->format('Y-m-d'),
+            'approved_at' => $loan->approved_at?->format('Y-m-d'),
+            'funded_at' => $loan->funded_at?->format('Y-m-d'),
+            'disbursed_at' => $loan->disbursed_at?->format('Y-m-d'),
+            'completed_at' => $loan->completed_at?->format('Y-m-d'),
+            'principal_amount' => (float) $loan->principal_amount,
+            'principal_remaining' => round($principalRemaining, 2),
+            'principal_paid' => round($principalPaid, 2),
+            'total_interest_due' => round($interestDue, 2),
+            'total_interest_paid' => round($interestPaid, 2),
+            'proposed_amount' => $snapshot('draft'),
+            'verification_amount' => $snapshot('verified'),
+            'allocated_amount' => $snapshot('active') ?? $snapshot('disbursed'),
+            'service_rate_total' => (float) $loan->service_rate_total,
+            'term_months' => (int) $loan->term_months,
+            'installment_method' => $loan->installment_method,
+            'principal_frequency' => $loan->principal_frequency,
+            'interest_frequency' => $loan->interest_frequency,
+            'principal_grace_months' => (int) ($loan->principal_grace_months ?? 0),
+            'interest_grace_months' => (int) ($loan->interest_grace_months ?? 0),
+            'rounding_step' => $loan->rounding_step !== null ? (int) $loan->rounding_step : null,
+            'verification_notes' => $loan->verification_notes,
+            'guidance_notes' => $loan->guidance_notes,
+            'disbursement_notes' => $loan->disbursement_notes,
+            'disbursement_account_row_id' => $loan->disbursement_account_row_id,
+            'rescheduled_from_loan_row_id' => $loan->rescheduled_from_loan_row_id !== null ? (int) $loan->rescheduled_from_loan_row_id : null,
+            'next_due_date' => $nextDue?->format('Y-m-d'),
+            'paid_installments' => $paidInstallments,
+            'total_installments' => $totalInstallments,
+            'progress_percent' => $totalInstallments > 0 ? (int) round(($paidInstallments / $totalInstallments) * 100) : 0,
+            'product' => $loan->product?->only(['row_id', 'code', 'name', 'default_interest_rate', 'default_term_months']),
+            'member' => $member ? [
+                'row_id' => (int) $member->row_id,
+                'member_number' => $member->member_number,
+                'full_name' => $person?->full_name,
+                'nik' => $person?->national_identity_number,
+                'address' => $person?->address,
+                'village' => $member->village?->only(['row_id', 'name']),
+            ] : null,
+            'installments' => $loan->installments->map(fn ($i): array => [
+                'row_id' => $i->row_id,
+                'installment_number' => (int) $i->installment_number,
+                'component' => $i->component,
+                'due_date' => $i->due_date?->format('Y-m-d'),
+                'principal_due' => (float) $i->principal_due,
+                'interest_due' => (float) $i->interest_due,
+                'principal_paid' => (float) $i->principal_paid,
+                'interest_paid' => (float) $i->interest_paid,
+                'status' => $i->status,
+                'paid_at' => $i->paid_at?->format('Y-m-d H:i'),
+            ])->values()->all(),
+            'payments' => $loan->payments->map(fn ($p): array => [
+                'row_id' => $p->row_id,
+                'paid_at' => $p->paid_at?->format('Y-m-d'),
+                'amount' => (float) $p->amount,
+                'principal_paid' => (float) $p->allocations->where('component', 'principal')->sum('amount'),
+                'interest_paid' => (float) $p->allocations->where('component', 'interest')->sum('amount'),
+                'payment_method' => $p->payment_method,
+            ])->values()->all(),
+            'status_histories' => $historiesArray,
+        ];
     }
 }

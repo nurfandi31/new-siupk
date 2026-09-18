@@ -19,6 +19,7 @@ use App\Http\Requests\Lending\LoanRescheduleRequest;
 use App\Http\Requests\Lending\LoanUpdateRequest;
 use App\Http\Requests\Lending\LoanVerifyRequest;
 use App\Http\Requests\Lending\LoanWriteOffRequest;
+use App\Http\Requests\Lending\MemberLoanRequest;
 use App\Http\Requests\MasterData\GroupRequest;
 use App\Http\Requests\MasterData\MemberRequest;
 use App\Http\Requests\MasterData\OtherInstitutionRequest;
@@ -69,6 +70,10 @@ return [
         'loans.approve',
         'loans.disburse',
         'loans.manage',
+        'loans.write_off',
+        'loans.reschedule',
+        'loans.reschedule_director',
+        'loans.complete_director',
         // Accounting
         'journals.view',
         'journals.create',
@@ -195,6 +200,32 @@ return [
                 'village_user.access',
             ],
         ],
+        'direktur_lembaga' => [
+            'name' => 'Direktur Lembaga',
+            'is_system' => true,
+            'permissions' => [
+                'members.view',
+                'groups.view',
+                'villages.view',
+                'institutions.view',
+                'loans.view',
+                'loans.verify',
+                'loans.approve',
+                'loans.disburse',
+                'loans.manage',
+                'loans.write_off',
+                'loans.reschedule',
+                'loans.reschedule_director',
+                'loans.complete_director',
+                'journals.view',
+                'reports.view',
+                'reports.manage',
+                'budgeting.view',
+                'messages.send',
+                'assistant.use',
+                'settings.manage',
+            ],
+        ],
         'anggota' => [
             'name' => 'Anggota',
             'is_system' => true,
@@ -219,6 +250,8 @@ return [
         '/master-data/institutions' => 'institutions.view',
         '/lending/loans/create' => 'loans.propose',
         '/lending/loans' => 'loans.view',
+        '/lending/member-loans/create' => 'loans.propose',
+        '/lending/member-loans' => 'loans.view',
         '/lending/reports' => 'loans.view',
         '/lending/simulation' => 'loans.view',
         '/accounting/journals' => 'journals.view',
@@ -250,6 +283,7 @@ return [
         AggregateJournalRequest::class => 'journals.create',
         LoanInstallmentJournalRequest::class => 'installments.record',
         LoanRequest::class => 'loans.propose',
+        MemberLoanRequest::class => 'loans.propose',
         LoanVerifyRequest::class => 'loans.verify',
         LoanApproveRequest::class => 'loans.approve',
         LoanDisburseRequest::class => 'loans.disburse',
