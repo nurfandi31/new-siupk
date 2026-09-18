@@ -72,18 +72,10 @@ final class LppReportService
             ->orderBy('g.name')
             ->orderBy('l.id');
 
-        $loans = $loansQuery->get([
-            'l.row_id',
-            'l.id',
-            'l.loan_number',
-            'l.loan_product_row_id',
-            'l.disbursed_at',
-            'l.principal_amount',
-            'g.row_id as group_row_id',
-            'g.name as group_name',
-            'v.row_id as village_row_id',
-            'v.name as village_name',
-        ]);
+        $loans = $loansQuery
+            ->selectRaw('l.row_id, l.id, l.loan_number, l.loan_product_row_id, l.disbursed_at, l.principal_amount, g.row_id as group_row_id, g.name as group_name, v.row_id as village_row_id, v.name as village_name')
+            ->selectRaw('(select count(*) from loan_beneficiaries lb where lb.tenant_id = l.tenant_id and lb.loan_row_id = l.row_id) as beneficiary_count')
+            ->get();
 
         $loanRowIds = $loans->pluck('row_id')->map(fn ($id) => (int) $id)->all();
 
@@ -193,7 +185,7 @@ final class LppReportService
                 }
 
                 $alokasi = (float) $loan->principal_amount;
-                $borrowerCount = max(1, (int) ($loan->borrower_count ?? 1));
+                $borrowerCount = max(1, (int) ($loan->beneficiary_count ?? 1));
 
                 // Hitung target s.d. bulan ini
                 $loanInsts = $instByLoan->get($loan->row_id) ?? collect();
@@ -370,20 +362,10 @@ final class LppReportService
             ->orderBy('g.name')
             ->orderBy('l.id');
 
-        $loans = $loansQuery->get([
-            'l.row_id',
-            'l.id',
-            'l.loan_number',
-            'l.loan_product_row_id',
-            'l.disbursed_at',
-            'l.principal_amount',
-            'l.borrower_count',
-            'g.row_id as group_row_id',
-            'g.name as group_name',
-            'g.code as group_code',
-            'v.row_id as village_row_id',
-            'v.name as village_name',
-        ]);
+        $loans = $loansQuery
+            ->selectRaw('l.row_id, l.id, l.loan_number, l.loan_product_row_id, l.disbursed_at, l.principal_amount, g.row_id as group_row_id, g.name as group_name, g.code as group_code, v.row_id as village_row_id, v.name as village_name')
+            ->selectRaw('(select count(*) from loan_beneficiaries lb where lb.tenant_id = l.tenant_id and lb.loan_row_id = l.row_id) as beneficiary_count')
+            ->get();
 
         $loanRowIds = $loans->pluck('row_id')->map(fn ($id) => (int) $id)->all();
 
@@ -492,7 +474,7 @@ final class LppReportService
                 }
 
                 $alokasi = (float) $loan->principal_amount;
-                $borrowerCount = max(1, (int) ($loan->borrower_count ?? 1));
+                $borrowerCount = max(1, (int) ($loan->beneficiary_count ?? 1));
 
                 $loanInsts = $instByLoan->get($loan->row_id) ?? collect();
                 $targetPokok = 0.0;

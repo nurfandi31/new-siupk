@@ -69,6 +69,13 @@ final class LoanDocumentService
         ['key' => 'rekening_koran',               'label' => 'Rekening Koran Pinjaman',       'stage' => 'disbursement', 'view' => 'reports.pdf.loan_documents.rekening_koran',               'signature' => null,                'orientation' => 'portrait',  'icon' => 'account_balance'],
         ['key' => 'pernyataan_peminjam',          'label' => 'Surat Pengakuan Utang Peminjam', 'stage' => 'disbursement', 'view' => 'reports.pdf.loan_documents.pernyataan_peminjam',          'signature' => 'default',           'orientation' => 'portrait',  'icon' => 'history_edu'],
         ['key' => 'daftar_hadir_pencairan',       'label' => 'Daftar Hadir Pencairan',        'stage' => 'disbursement', 'view' => 'reports.pdf.loan_documents.daftar_hadir_pencairan',       'signature' => null,                'orientation' => 'portrait',  'icon' => 'event_available'],
+
+        // Iterasi 5 — Cetakan khusus Pinjaman Individu (member_loan)
+        ['key' => 'spk_individu',                'label' => 'Surat Perjanjian Kredit Individu', 'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.spk_individu',          'signature' => 'perjanjian_kredit', 'orientation' => 'portrait',  'icon' => 'gavel'],
+        ['key' => 'kuitansi_pencairan_individu', 'label' => 'Kuitansi Pencairan Individu',      'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.kuitansi_pencairan_individu', 'signature' => 'kwitansi',          'orientation' => 'portrait',  'icon' => 'receipt_long'],
+        ['key' => 'berita_acara_pencairan_individu', 'label' => 'Berita Acara Pencairan Individu', 'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.berita_acara_pencairan_individu', 'signature' => 'perjanjian_kredit', 'orientation' => 'portrait',  'icon' => 'fact_check'],
+        ['key' => 'tanda_terima_jaminan',        'label' => 'Tanda Terima Jaminan',              'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.tanda_terima_jaminan',     'signature' => 'default',            'orientation' => 'portrait',  'icon' => 'inventory_2'],
+        ['key' => 'bukti_pengembalian_jaminan',  'label' => 'Bukti Pengembalian Jaminan',        'stage' => 'individual_settlement',    'view' => 'reports.pdf.loan_documents.bukti_pengembalian_jaminan', 'signature' => 'default',            'orientation' => 'portrait',  'icon' => 'assignment_return'],
     ];
 
     /**
@@ -80,11 +87,15 @@ final class LoanDocumentService
         'proposal' => ['draft', 'verified', 'waiting', 'approved', 'active', 'disbursed', 'completed'],
         'verification' => ['verified', 'waiting', 'approved', 'active', 'disbursed', 'completed'],
         'disbursement' => ['waiting', 'approved', 'active', 'disbursed', 'completed'],
+        // Cetakan khusus individu (legacy_source='member_loan')
+        'individual_disbursement' => ['waiting', 'approved', 'active', 'disbursed', 'completed'],
+        'individual_settlement' => ['completed', 'written_off'],
     ];
 
     public function __construct(
         private readonly SignatureTemplateService $signatures,
         private readonly SignatureImageService $signatureImages,
+        private readonly SpkTokenResolver $tokenResolver,
     ) {}
 
     /**
@@ -93,8 +104,18 @@ final class LoanDocumentService
     public function availableDocuments(Loan $loan): array
     {
         $status = (string) $loan->status;
+        $isMemberLoan = (string) $loan->legacy_source === 'member_loan';
         $out = [];
         foreach (self::DOCUMENTS as $doc) {
+            // Filter stage khusus individu
+            if (str_starts_with($doc['stage'], 'individual_') && ! $isMemberLoan) {
+                continue;
+            }
+            // Stage individu tidak ditampilkan untuk kelompok
+            if (in_array($doc['stage'], ['proposal', 'verification', 'disbursement'], true) && $isMemberLoan) {
+                // Pinjaman individu hanya menampilkan keys dengan stage individual_*
+                continue;
+            }
             if (in_array($status, self::STAGE_ALLOWED_STATUS[$doc['stage']] ?? [], true)) {
                 $out[] = $doc;
             }
@@ -126,16 +147,30 @@ final class LoanDocumentService
      */
     public function payload(Loan $loan, string $documentKey): array
     {
-        $loan->loadMissing([
-            'product:row_id,code,name,default_interest_rate,default_term_months',
-            'borrower.group:row_id,name,code,address,organization_unit_row_id',
-            'borrower.group.village:row_id,name',
-            'borrower.group.village.parent:row_id,name',
-            'committee',
-            'beneficiaries.member.person',
-            'beneficiaries.member.guarantor.person',
-            'installments',
-        ]);
+        $isIndividual = (string) $loan->legacy_source === 'member_loan';
+
+        if ($isIndividual) {
+            $loan->loadMissing([
+                'product:row_id,code,name,default_interest_rate,default_term_months',
+                'borrower.member.person',
+                'borrower.member.address',
+                'borrower.member.village:row_id,name',
+                'borrower.member.village.parent:row_id,name',
+                'borrower.member.guarantor.person',
+                'installments',
+            ]);
+        } else {
+            $loan->loadMissing([
+                'product:row_id,code,name,default_interest_rate,default_term_months',
+                'borrower.group:row_id,name,code,address,organization_unit_row_id',
+                'borrower.group.village:row_id,name',
+                'borrower.group.village.parent:row_id,name',
+                'committee',
+                'beneficiaries.member.person',
+                'beneficiaries.member.guarantor.person',
+                'installments',
+            ]);
+        }
 
         $meta = $this->resolve($documentKey);
         $tokens = $this->tokenReplacer($loan);
@@ -144,7 +179,9 @@ final class LoanDocumentService
         return [
             'identity' => $this->identityBlock(),
             'loan' => $this->loanBlock($loan),
+            'loan_obj' => $loan,
             'group' => $this->groupBlock($loan),
+            'individual' => $this->individualBlock($loan),
             'committee' => $this->committeeBlock($loan),
             'beneficiaries' => $this->beneficiariesBlock($loan),
             'installments' => $this->installmentsBlock($loan),
@@ -163,6 +200,9 @@ final class LoanDocumentService
      */
     public function tokenReplacer(Loan $loan): array
     {
+        $isIndividual = (string) $loan->legacy_source === 'member_loan';
+
+        // Token dasar (legacy compat dengan Blade existing)
         $profile = OrganizationProfile::query()->first();
         $group = $loan->borrower?->group;
         $village = $group?->village;
@@ -172,7 +212,7 @@ final class LoanDocumentService
         $firstPerson = $firstBeneficiary?->member?->person;
         $firstGuarantor = $firstBeneficiary?->member?->guarantor;
 
-        return [
+        $base = [
             // Lembaga
             '{nama_lembaga}' => (string) ($profile?->legal_name ?: config('app.name')),
             '{nama_singkat}' => (string) ($profile?->short_name ?? ''),
@@ -216,6 +256,12 @@ final class LoanDocumentService
             '{pemanfaat_penjamin}' => (string) ($firstGuarantor?->person?->full_name ?? ''),
             '{pemanfaat_alokasi}' => $this->money((float) ($firstBeneficiary?->allocated_amount ?? 0)),
         ];
+
+        // Merge token tambahan dari SpkTokenResolver (kolom baru di OrganizationProfile,
+        // collateral individu, dll.) — tidak override token base.
+        $extra = $this->tokenResolver->resolve($loan, $isIndividual);
+
+        return array_merge($extra, $base);
     }
 
     /**
@@ -326,6 +372,48 @@ final class LoanDocumentService
             'village' => $group?->village?->name,
             'district' => $group?->village?->parent?->name,
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function individualBlock(Loan $loan): array
+    {
+        $member = $loan->borrower?->member;
+        $person = $member?->person;
+        $guarantor = $member?->guarantor?->person;
+
+        return [
+            'row_id' => $member?->row_id,
+            'name' => (string) ($person?->full_name ?? ''),
+            'nik' => (string) ($person?->national_identity_number ?? ''),
+            'birth_place' => (string) ($person?->birth_place ?? ''),
+            'birth_date' => $person?->birth_date?->toDateString(),
+            'gender' => (string) ($person?->gender ?? ''),
+            'address' => (string) ($member?->address?->address_line ?? ''),
+            'phone' => (string) ($person?->phone ?? ''),
+            'village' => (string) ($member?->village?->name ?? ''),
+            'district' => (string) ($member?->village?->parent?->name ?? ''),
+            'guarantor_name' => (string) ($guarantor?->full_name ?? ''),
+            'guarantor_nik' => (string) ($guarantor?->national_identity_number ?? ''),
+            'collateral' => is_array($loan->collateral) ? $loan->collateral : [],
+            'collateral_type_label' => $this->collateralTypeLabel($loan->collateral),
+        ];
+    }
+
+    private function collateralTypeLabel(mixed $collateral): string
+    {
+        if (! is_array($collateral)) {
+            return 'Lain-lain';
+        }
+
+        return match ($collateral['type'] ?? null) {
+            'tanah' => 'Surat Tanah',
+            'bpkb' => 'BPKB Kendaraan',
+            'sk' => 'SK Pegawai',
+            'cash' => 'Simpanan',
+            default => 'Lain-lain',
+        };
     }
 
     /**
