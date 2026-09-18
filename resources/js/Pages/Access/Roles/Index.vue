@@ -4,7 +4,7 @@ import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
 import AppIcon from '../../../Components/AppIcon.vue';
-import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '../../../Layouts/TenantAdminLayout.vue';
 
 const props = defineProps({
     roles: { type: Array, required: true },

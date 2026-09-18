@@ -8,7 +8,7 @@ import AppDatePicker from '../../../Components/AppDatePicker.vue';
 import AppIcon from '../../../Components/AppIcon.vue';
 import AppInput from '../../../Components/AppInput.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
-import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '../../../Layouts/TenantAdminLayout.vue';
 
 const props = defineProps({
     user: { type: Object, default: null },

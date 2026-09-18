@@ -8,7 +8,7 @@ import AppIcon from '../../../Components/AppIcon.vue';
 import AppInput from '../../../Components/AppInput.vue';
 import AppModal from '../../../Components/AppModal.vue';
 import SmartDataTable from '../../../Components/SmartDataTable.vue';
-import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import AuthenticatedLayout from '../../../Layouts/TenantAdminLayout.vue';
 
 const props = defineProps({
     users: { type: Object, required: true },
