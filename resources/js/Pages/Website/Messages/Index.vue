@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -26,8 +26,15 @@ const detail = ref(null);
 const showDetail = ref(false);
 
 function applySearch() {
-    router.get(route('website.messages.index'), { q: q.value || undefined }, { preserveState: true, preserveScroll: true });
+    router.get(route('website.messages.index'), { q: q.value || undefined }, { preserveState: true, preserveScroll: true, replace: true });
 }
+
+let searchTimer;
+watch(q, (v) => {
+    if (v === props.search) return;
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applySearch, 350);
+});
 
 function openDetail(row) {
     detail.value = row;
@@ -70,8 +77,8 @@ function markRead(row) {
             <AppCard :padded="false">
                 <div class="p-6">
                     <div class="flex flex-wrap items-center gap-3">
-                        <div class="flex min-w-[16rem] flex-1 items-center gap-2">
-                            <input v-model="q" type="search" placeholder="Cari nama / subjek / isi..." class="h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm text-primary placeholder:text-outline transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none" @keydown.enter="applySearch" />
+                        <div class="flex items-center gap-2">
+                            <input v-model="q" type="search" placeholder="Cari nama / subjek / isi..." class="h-10 w-64 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-sm text-primary placeholder:text-outline transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none" @keydown.enter="applySearch" />
                             <AppButton variant="secondary" size="compact" icon="search" @click="applySearch">Cari</AppButton>
                         </div>
                     </div>
