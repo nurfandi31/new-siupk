@@ -3,6 +3,198 @@
 Semua perubahan penting pada proyek **siupk Next** didokumentasikan dalam berkas ini.
 Format penulisan mengikuti panduan [Keep a Changelog](https://keepachangelog.com/id/1.0.0/).
 
+## [Unreleased] — Paritas Dokumen PDF Pinjaman (1:1 dengan Pacuan)
+
+### Added
+- **4 dokumen PDF khusus individu** (paritas `PinjamanIndividuController` pacuan):
+  - **Analisa & Keputusan Kredit** (`analisis_keputusan_kredit`) — form analisa kelayakan kredit individu lengkap dengan: data pokok peminjam (NIK, TTL, JK, alamat, penjamin), permohonan pinjaman (plafon, suku jasa, angsuran), perhitungan kredit (flat rate, jangka, plafon maksimum), rekomendasi pemberian kredit (jenis, plafon, suku, jangka, angsuran). Stage `individual_verification`.
+  - **Surat Pemberitahuan Kredit (SP2K)** (`surat_pemberitahuan`) — surat persetujuan perjanjian kredit dengan rincian fasilitas (plafon, jangka, jenis, suku jasa, cara penarikan/pembayaran/pengikat, syarat lainnya). Stage `individual_disbursement`.
+  - **Surat Pengikat Diri Penjamin** (`pengikat_diri_penjamin`) — pernyataan penjamin (biasanya pasangan) untuk mengikat diri membayar tagihan jika debitur wanprestasi. Stage `individual_disbursement`.
+  - **Surat Pernyataan Suami/Istri** (`surat_pernyataan_suami`) — persetujuan pasangan atas pinjaman yang diajukan. Stage `individual_disbursement`.
+- **Migration** `2026_09_22_000002_add_officer_identity_to_organization_profiles.php` — tambah kolom identitas pejabat struktural: `manager_nik`, `manager_position`, `manager_address`, `secretary_nik`, `treasurer_nik`, `kepala_desa_name`, `kepala_desa_nip`, `court_of_jurisdiction`, `institution_level_1`/`2`/`3`.
+- **Token baru di `LoanDocumentService::tokenReplacer` & `SpkTokenResolver`:**
+  - `{kepala_lembaga_nik}`, `{kepala_lembaga_jabatan}`, `{kepala_lembaga_alamat}` — NIK/jabatan/alamat direktur Lembaga.
+  - `{sekretaris_lembaga_nik}`, `{bendahara_lembaga_nik}` — NIK sekretaris & bendahara.
+  - `{kades}`, `{nip_kades}` — nama & NIP Kepala Desa (override dari `village.leader_name`).
+  - `{pengadilan_negeri}` — yurisdiksi hukum untuk klausul arbitrase SPK.
+  - `{sebutan_level_1}`, `{sebutan_level_2}`, `{sebutan_level_3}` — sebutan struktural Lembaga (paritas pacuan `$kec->sebutan_level_*`).
+  - `{penjamin_nama}`, `{penjamin_nik}`, `{suami_nama}`, `{suami_nik}` — data penjamin/suami untuk dokumen individu.
+  - `{peminjam_nama}`, `{peminjam_nik}`, `{peminjam_hp}`, `{peminjam_alamat}` — alias untuk konsistensi dokumen individu.
+
+### Changed
+- **Paritas placeholder `{{ '' }}` → token binding** di 9 blade alias kelompok/individu:
+  - `spk.blade.php` — PIHAK PERTAMA (nama/NIK/alamat direktur), PIHAK KEDUA detail, Pasal 2 ayat 3 (angsuran pokok + jasa + terbilang), Pengadilan Negeri, tanda tangan Pihak Pertama.
+  - `kuitansi_pencairan.blade.php` — Telah Diterima Dari, Uang Sebanyak (terbilang), Dikeluarkan Oleh + Diterima Oleh (3 kolom: direktur/bendahara/ketua), nama direktur & bendahara.
+  - `kuitansi_anggota.blade.php` — Telah Diterima Dari, Uang Sebanyak (terbilang per anggota), alamat lengkap + desa per kuitansi.
+  - `berita_acara_pencairan.blade.php` — field 1 (sebutan desa), 4 (tgl berdiri), 7 (jenis usaha), 8 (jenis kegiatan), 9 (tingkat kelompok), 10 (fungsi kelompok), 12 (phone kelompok), 14 (no HP ketua), 15 (sistem angsuran), HP per anggota di tabel rincian, direktur di tanda tangan.
+  - `kartu_angsuran_anggota.blade.php` — telpon kelompok, suffix "bulan", tanggal angsuran default, catatan lembaga, nama pemanfaat di tanda tangan.
+  - `daftar_pemanfaat.blade.php` — sistem angsuran, kolom JK, kolom Usia (calculated dari birth_date).
+  - `pernyataan_tanggung_renteng.blade.php` — kolom JK per anggota, hapus placeholder kosong, kepala desa + NIP di blok tanda tangan.
+  - `peserta_asuransi.blade.php` — field Desa, Jangka, Sistem Bagi Hasil, TTL per anggota (birth_place + birth_date_label), direktur Lembaga.
+- **`LoanDocumentService::payload()` — expose field tambahan**:
+  - Block `group`: tambah `phone`, `established_at`, `established_label`, `business_type`, `activity_type`, `level`, `function` (resolved via DB untuk handle global scope TenantScope).
+  - Block `beneficiaries`: tambah `phone`, `address`, `village`, `gender`, `birth_date`, `birth_date_label`, `birth_place`, `guarantor_phone`, `guarantor_nik`.
+  - Top-level: tambah `profile` (OrganizationProfile) — dipakai oleh blade individu yang sebelumnya gagal render karena undefined variable.
+- **`LoanDocumentController::document()`** — tambah validasi stage vs `legacy_source`: pinjaman perorangan tidak dapat membuka dokumen kelompok stage `proposal`/`verification`/`disbursement`, dan sebaliknya. Response 422 dengan label jelas.
+
+### Fixed
+- **Duplikat token `{kades}`/`{nip_kades}` di `SpkTokenResolver`** — yang menang dulunya dari `village->leader_name`, sekarang konsisten dari profile `kepala_desa_name` (lebih reliable, override via array_merge).
+- **Parse error ternary tanpa else-branch** di `LoanDocumentService::tokenReplacer` (`$individualGuarantor = $isIndividual ? ... : null`).
+
+### Test Coverage (Penambahan)
+- 5 test baru di `LoanDocumentTest` khusus 4 dokumen individu (registry, payload, token, endpoint PDF, reject cross-source): PASS.
+- 4 test paritas alias blade:
+  - `test_alias_documents_have_no_empty_placeholders` — render 8 blade utama dan assert tidak ada `{{ '' }}` tersisa.
+  - `test_new_officer_tokens_resolve_in_token_replacer` — verifikasi token baru direktur/kades/pengadilan_negeri.
+  - `test_beneficiary_block_exposes_extended_profile_fields` — verifikasi phone, gender, birth_date, birth_place di payload beneficiaries.
+  - `test_group_block_exposes_classification_fields` — verifikasi business_type, activity_type, level, function, established_at, established_label.
+- 2 test paritas konten HTML (visual rendering assertion per-blade, paritas 1:1 dengan pacuan):
+  - `test_individual_documents_html_content_parity_with_pacuan` — render 4 blade individu baru dan cek string kunci (section I-IV, BUDI SANTOSO, SITI AMINAH, ucapkan `Delapan Juta Rupiah`, 8 poin fasilitas kredit, dst).
+  - `test_alias_documents_html_content_parity_with_pacuan` — render 9 blade alias dan cek string kunci (PIHAK PERTAMA, "Telah Diterima Dari", "Uang Sebanyak", "Dikeluarkan Oleh", pertanian/simpan pinjam/madya/produktif, "Koperasi Maju Bersama", "15 Mei 1985", dst).
+- **Total Lending test suite: 111/112 PASS** (1 fail pre-existing `LoanProposalRegistrationTest::test_index_lists_loans_filtered_by_tabs` — `LoanAlreadyActiveException`, bukan regression).
+- **LoanDocumentTest saja: 21/21 PASS (413 assertions)** — semua dokumen 13 (4 baru + 9 alias) terverifikasi render HTML paritas pacuan.
+
+## [Unreleased] — Audit & Pemisahan Laporan Kelompok vs Individu
+
+Mencakup 9 area: dashboard breakdown, permission nav_map, dan filter K/I untuk seluruh laporan Lending (Portfolio, Schedule vs Actual, LPP, Kolektibilitas, CKPN) plus Simulation & UI menu.
+
+### Added
+- **Filter scope Kelompok/Individu di semua laporan Lending:**
+  - `LoanPortfolioReportService::build(?string $asOf, string $filter, ?string $borrowerScope)` — terima parameter `borrowerScope` (`null`/`'group'`/`'member'`) memfilter `loans.legacy_source`.
+  - `LoanScheduleVsActualService::build(int $year, int $month, ?string $borrowerScope)` — filter K/I.
+  - `LppReportService::buildDesa(int $year, int $month, ?string $productCode, ?string $borrowerScope)` — filter K/I; tambah join `members.organization_unit_row_id` untuk desa individu.
+  - `CollectibilityReportService::buildDesa/buildCadangan(int $year, int $month, ?string $productCode, ?string $borrowerScope)` — filter K/I; tambah join member village.
+- **Method baru khusus Individu:**
+  - `LppReportService::buildIndividu(int $year, int $month, ?string $productCode)` — LPP rincian per pinjaman individu dengan field `member_name`, `member_number`, `nik`, desa dari `members.organization_unit_row_id`. Selalu filter `legacy_source='member_loan'`.
+  - `CollectibilityReportService::buildIndividu(int $year, int $month, ?string $productCode)` — kolektibilitas per anggota individu, hitung kolek 1/2/3 sederhana (lancar/diragukan/macet) per pinjaman.
+- **Routes baru (`routes/web.php`):**
+  - `GET /lending/reports/lpp-individual` & `/pdf` → `LoanReportController::lppIndividu/...Pdf`.
+  - `GET /lending/reports/kolek-individual` & `/pdf` → `LoanReportController::kolekIndividu/...Pdf`.
+  - `GET /lending/reports/cadangan-penghapusan-individual` & `/pdf` → `LoanReportController::cadanganPenghapusanIndividu/...Pdf`.
+- **Vue pages baru:**
+  - `resources/js/Pages/Lending/Reports/LppIndividu.vue` — mirror LppKelompok.vue tapi kolom Peminjam + NIK, tanpa Pmf (perorangan).
+  - `resources/js/Pages/Lending/Reports/KolekIndividu.vue` — kolektibilitas per peminjam.
+  - `resources/js/Pages/Lending/Reports/CadanganPenghapusanIndividu.vue` — CKPN khusus individu.
+  - `resources/js/Pages/Lending/Reports/LppKelompok.vue` (existing) — `filters.scope` di-pass untuk filter K/I.
+  - `resources/js/Pages/Lending/Simulation/Index.vue` — tambah radio button **Tipe Peminjam** (Semua/Kelompok/Individu) filter `loan_products.borrower_scope` (member/group/both).
+- **PDF template baru:**
+  - `resources/views/reports/pdf/lending/lpp_individu.blade.php` — header "DAFTAR PERKEMBANGAN PIUTANG (LPP) RINCIAN INDIVIDU", kolom Peminjam/NIK/Pencairan/Alokasi.
+- **Auth menu baru di `AuthenticatedLayout.vue`:**
+  - Sub-menu **LPP (Perkembangan Piutang)** → Rekap Desa / Rincian Kelompok / Rincian Individu.
+  - Sub-menu **Kolektibilitas** → Rekap Desa / Rincian Individu.
+  - Entry langsung: **Cadangan Penghapusan (CKPN)** + **CKPN Pinjaman Individu**.
+- **Test coverage baru:**
+  - `tests/Feature/Lending/LppReportScopeTest.php` — 2 test (scope filter untuk buildDesa, buildIndividu return hanya member_loan): **PASS (15 assertions)**.
+  - `tests/Feature/Lending/LoanPortfolioReportTest.php` — tambah `test_portfolio_scope_member_filter_excludes_group_loans` (validasi via `legacy_source` di rows): **PASS**.
+  - `tests/Unit/Access/PermissionConfigTest.php` — tambah `test_installment_individual_route_is_in_nav_map` & `test_dashboard_service_uses_member_loan_enum_not_individual_loan`: **PASS**.
+
+### Changed
+- **`LoanReportController::portfolio/scheduleVsActual/lppDesa/lppKelompok/kolekDesa/cadanganPenghapusan`** — terima query param `?scope=all|group|member`, default `all`. Method `borrowerScope()` helper validasi whitelist.
+- **`AuthenticatedLayout.vue` menu Pelaporan** — di-restructure untuk nested children (parent LPP & Kolek expand jadi subgroup Desa/Kelompok/Individu).
+- **`LppReportService::buildDesa`** — logika fallback desa: individu pakai desa anggota (`member_village_name`), kelompok pakai desa group (`village_name`).
+- **`CollectibilityReportService::buildDesa`** — sama, fallback desa by `legacy_source`.
+
+### Fixed
+- **🔴 BUG `DashboardService` enum invalid:** query `activeLoanBreakdown()` line 159 & `memberBreakdown()` line 210 pakai literal `'individual_loan'` yang **TIDAK ADA** di enum DB (CHECK constraint hanya izinkan `'member_loan'` & `'group_loan'`). Hasilnya individu count selalu 0 di dashboard. Fix: ganti ke `'member_loan'`. Validasi via `test_dashboard_service_uses_member_loan_enum_not_individual_loan`.
+- **🔴 BUG `nav_map` missing installment-individual:** route `/accounting/journal-entries/installment-individual` tidak ada di `config/permissions.php` nav_map, akibatnya user dengan `installments.record` (kasir) tidak melihat menu ini di sidebar. Fix: tambah entry `'/accounting/journal-entries/installment-individual' => 'installments.record'`.
+- **`LoanPortfolioReportService::build()`** — tambah `legacy_source` ke rows output agar frontend bisa membedakan kelompok/individu (berguna untuk filter UI & display label).
+
+### Validation Status
+- **Unit tests:** 49/49 PASS (152 assertions).
+- **Accounting tests:** 68/68 PASS (421 assertions).
+- **Lending tests terkait perubahan:** 80/80 PASS (InstalmentIndividual 7 + InstallmentSystems 18 + LoanProposalDeletion 5 + LoanBeneficiaryWriteOff 12 + MemberLoanLifecycle 12 + LoanAuditHistory 2 + LoanDocument 21 + LoanScheduleVsActual 2 + LppReportScope 2 + LoanPortfolioReport 5 + LoanSimulation 8 — total 94 assertions di subset ini).
+- Pre-existing failure tidak terkait: `LoanProposalRegistrationTest::test_index_lists_loans_filtered_by_tabs` — gagal juga di git HEAD dengan `LoanAlreadyActiveException`.
+
+## [Unreleased] — Split Menu Jurnal Angsuran (Kelompok vs Individu)
+
+### Added
+- **Split menu "Jurnal Angsuran" menjadi 2 entri terpisah** (paritas legacy SIUPK `TransaksiController::jurnalAngsuran` & `jurnalAngsuranIndividu`):
+  - **Backend** — `JournalEntryController::installment(string $type = 'group')` filter `loans.legacy_source`:
+    - `type='group'` → `legacy_source != 'member_loan'` atau NULL → route `/accounting/journal-entries/installment` (default).
+    - `type='individual'` → `legacy_source = 'member_loan'` → route `/accounting/journal-entries/installment-individual`.
+  - Method baru `JournalEntryController::individualInstallment()` (shortcut → `installment('individual')`).
+  - Helper privat `resolveIndividualSubject($tenantId, $loanId)` — ambil label nama anggota + NIK untuk dropdown "Pinjaman Perorangan".
+  - `loanOptions` sekarang punya field tambahan `subject_label` & `is_individual` agar UI tahu subject (kelompok/perorangan).
+- **Vue page** `Accounting/JournalEntries/InstallmentIndividual.vue` — mirror `Installment.vue` tapi untuk pinjaman perorangan: tanpa "Detail Kelompok", tanpa "Catatan Per-Anggota" (1 peminjam saja), auto-deskripsi `Angsuran {PRODUCT} ke-{N} Individu a/n {Nama}`.
+- **Menu navbar Keuangan → Transaksi** di `AuthenticatedLayout.vue:338` & `Accounting/Journals/Index.vue:204` dipecah jadi 2 entry:
+  - "Jurnal Angsuran Kelompok" → `/accounting/journal-entries/installment`
+  - "Jurnal Angsuran Individu" → `/accounting/journal-entries/installment-individual`
+- **Test backend** `InstallmentIndividualRouteTest` (4 tests, 61 assertions): verifikasi filter `legacy_source` benar antara route kelompok vs individu, label `subject_label` menampilkan nama+NIK anggota, dan `borrower_member_row_id` di-expose agar frontend bisa auto-fill field Penyetor.
+
+### Fixed
+- **Bug #1 (kritis) — POST `/installment-individual` 404 Method Not Allowed**:
+  - Tambah `Route::post('/journal-entries/installment-individual', ...)` di `routes/web.php:536` (named `journal-entries.installment-individual.store`).
+  - Method baru `JournalEntryController::storeIndividualInstallment()` di-refactor dari `storeInstallment()` lewat helper `processInstallmentSubmission(string $redirectRoute)` agar tidak duplikasi logic WA notification, journal entry flash, dan receipt URL.
+- **Bug #3 — Submit jurnal individu me-redirect ke halaman kelompok**:
+  - `processInstallmentSubmission()` sekarang menerima parameter `redirectRoute`, sehingga submit dari halaman individu akan redirect ke `accounting.journal-entries.installment-individual` (UX benar, state form kembali ke halaman yg benar).
+- **Bug #2/#5 — JOIN `loan_borrowers` tanpa deduplication**:
+  - Query di `JournalEntryController::installment()` refactor dari `LEFT JOIN + GROUP BY` (raw MySQL ONLY_FULL_GROUP_BY fragile) menjadi **subquery agregat** `leftJoinSub(MIN(group_row_id), MIN(member_row_id) GROUP BY loan_row_id)`. Aman untuk MySQL strict mode + SQLite, dan tidak menggandakan loan row.
+- **Bug #4 — `form.reference` kosong di halaman Individu**:
+  - Backend tambah `borrower_member_row_id` di setiap `loanOptions[].borrower_member_row_id` agar frontend bisa auto-fill field Penyetor.
+  - Frontend `InstallmentIndividual.vue` watch `form.loan_id` → auto-set `form.reference = borrower_member_row_id`. Hidden input `<input type="hidden" :value="form.reference">` ditambahkan agar field ini ke-serialize.
+- **Bug #6 — `description` kosong setelah submit sukses**:
+  - `InstallmentIndividual.vue::submit()` setelah `form.reset('description')` manual re-call `form.description = autoGenerateDescription()` karena watch `[selectedLoan, autoInstallment]` tidak trigger saat form di-reset tanpa perubahan loan/tanggal.
+- **Bug #7 — `loan_installments.principal_paid` tidak ter-update untuk individu**:
+  - `processInstallmentSubmission()` setelah `recordInstallmentPayment`:
+    1. Auto-construct `member_allocations` dari `borrower_member_row_id` (frontend tidak kirim karena 1 peminjam).
+    2. Re-call `recordInstallmentPayment` agar `loan_installment_tracking` ter-insert (parity dengan kelompok).
+    3. Update `loan_installments` dengan `principal_paid += principal_amount`, `interest_paid += interest_amount`, `penalty_paid += penalty_amount` agar Sisa Pokok di dropdown akurat.
+- **Bug #9 — Cross-route guard tidak ada**:
+  - `LoanInstallmentJournalRequest::expectedLoanScope()` deteksi route via `$request->route()->getName()`. `Rule::exists(Loan::class, ...)` di-scope sesuai route: route `/installment-individual` butuh `legacy_source='member_loan'`; route `/installment` butuh `legacy_source != 'member_loan'` (atau NULL). User tak bisa submit loan kelompok ke endpoint individu dan sebaliknya — FormRequest redirect dengan `errors.loan_id`.
+- **Build error pre-existing di `MemberLoans/Show.vue:228`** — extra `});` dari indentasi tidak konsisten, build gagal sebelum fix ini.
+
+## [Unreleased] — Paritas Penuh Pinjaman Individu (1:1 dengan Pacuan)
+
+### Added
+- **Paritas Penuh Pinjaman Individu (perorangan) — logika 1:1 dengan pacuan `PinjamanIndividuController::generate()`:**
+  - `MemberLoanScheduleCalculator` direwrite sebagai salinan persis rumus pacuan line 2317-2607: `tempo_pokok`/`tempo_jasa` (sistem 11/12/14/15/20 + default), `wajib_jasa = alokasi_jasa/tempo_jasa`, `wajib_pokok = pembulatan(alokasi/tempo, mode_kec)`, magic formula `jangka==24` (pembulatan `-500`/`5000`, adjustment ±5000 untuk alokasi 6/8/12/14/18 juta), tanggal `+x*7 days` untuk sistem 12 (mingguan), override `jadwal_angsuran_desa`, `batas_angsuran` kecamatan, end-of-month handling, header row ke-0 + baris angsuran 1..N (paritas `RencanaAngsuranI` pacuan).
+  - Kolom `running_principal` & `running_interest` ditambahkan ke `loan_installments` (paritas `target_pokok`/`target_jasa` pacuan) untuk audit kumulatif per baris angsuran.
+  - `LoanService::createMemberProposal()` sekarang memakai `MemberLoanScheduleCalculator` sejak create — jadwal angsuran pacuan-style terbentuk bahkan sebelum verifikasi.
+  - `LoanService::approve()` jalur individu me-regenerate jadwal via kalkulator pacuan-style (override `generatePrincipalSchedule`/`generateInterestSchedule` generic).
+  - `LoanService::reschedule()` jalur individu me-regenerate jadwal pinjaman baru via kalkulator pacuan-style.
+  - Mapping string frekuensi Next → id sistem angsuran pacuan (`mapFrequencyToSystemId()`): `'weekly'→12, 'biweekly'→14, 'monthly'→1, 'bimonthly'→2, 'quarterly'→3, 'every_6_months'→6, 'every_12_months'→15, 'every_24_months'→20, dst.`.
+- **Akun COA piutang perorangan + CKPN:**
+  - `DefaultChartOfAccountsProvisioner` menambah akun `1.1.03.09` (Piutang Perorangan Pokok), `1.1.03.10` (Piutang Jasa Perorangan), `1.1.04.08`/`1.1.04.09` (CKPN Pokok/Jasa Perorangan), dan `4.1.01.07` (Pendapatan Jasa Piutang Perorangan) + `4.1.01.08` (Pendapatan Denda Piutang Perorangan).
+- **Produk pinjaman `pi` (Pinjaman Individu):**
+  - `TenantLoanProductProvisioner` menambah produk `pi` default dengan `borrower_scope='member'` (peminjam perorangan) — plafon 500rb–50jt, jasa 1.5%/bulan, tenor 12 bulan.
+- **Field-field pacuan pada pinjaman individu:**
+  - `loans.collateral` (JSON: `type`, `description`, `value`, `reference`, `recorded_at`) — diset saat registrasi proposal (paritas `data_jaminan` pacuan yang disimpan sebagai JSON).
+  - `loans.verification_remarks` — catatan verifikasi awal (paritas `catatan_verifikasi` pacuan).
+  - `loans.spk_no`, `loans.disbursement_slot`, `loans.funding_source` — sudah ter-handle di method `disburse()`.
+- **Validasi form individu:**
+  - `MemberLoanRequest` menambah rules untuk `collateral.*` (jenis, deskripsi, nilai, nomor dokumen) dan `verification_remarks`. Method `normalized()` mengembalikan payload siap-pakai untuk service.
+  - `LoanDisburseRequest` menambah validasi `verification_remarks` & `funding_source`.
+- **Route web individu:** seluruh endpoint `lending/member-loans/*` (verify, approve, disburse, revert, reject, complete, write-off, reschedule, cancel-reschedule, card, settlement-letter, documents) sudah lengkap dan ter-guard `legacy_source='member_loan'`.
+
+### Fixed
+- **`MemberLoanCardService` import salah namespace** (`App\Models\Tenant\OrganizationProfile` → `App\Domain\Membership\Models\OrganizationProfile`) — kartu angsuran individu sebelumnya gagal dengan `Class not found`.
+- **`createMemberProposal` schema mapping:** cast `loans.collateral` ke `array`, cast `loans.funding_source` ke `integer` agar persistensi JSON/INT konsisten.
+- **Pembulatan konsistensi pacuan:** helper `pembulatan()` di `MemberLoanScheduleCalculator` rewrite mengikuti `Keuangan::pembulatan` line 34-75 (auto/keatas/kebawah dengan `$ratusan` substring quirk pacuan).
+- **Eligibility checker:** dokumentasi disempurnakan — anggota dengan pinjaman berstatus terminal (`completed`/`written_off`/`rescheduled`/`rejected`) boleh mengajukan proposal baru (sesuai SOP BUMDesma).
+
+### Changed
+- **`MemberLoanLifecycleTest`** (14 test, 111 assertions) menggantikan test kosong sebagai paritas pinjaman individu:
+  - `test_create_member_proposal_persists_collateral_and_individual_schedule` — collateral JSON + jadwal pacuan-style.
+  - `test_member_proposal_schedule_handles_jangka_24_with_magic_formula` — magic formula `jangka==24` (alokasi 8jt, adjustment -5000) menghasilkan total pokok tutup pas 8jt.
+  - `test_verify_to_waiting_to_disburse_to_complete_lifecycle_for_individual` — lifecycle P→V→W→A→L paritas pacuan, simpan SPK/disbursement_slot/verification_remarks.
+  - `test_reject_member_loan_sets_rejected_status_only_from_pre_active_status` — pacuan `tidakLayak()` (status='T'/'rejected').
+  - `test_collateral_helper_normalizes_various_input_shapes` — 5 bentuk input (array lengkap, JSON string, null/string kosong, tipe invalid, semua field kosong).
+  - `test_member_loan_card_service_renders_pdf_for_individual` — kartu angsuran individu (Blade `loan_card_member`).
+  - `test_member_loan_index_lists_only_member_loans` — Index filter `legacy_source='member_loan'`.
+  - `test_member_loan_endpoints_404_for_group_loans` — guard route individu untuk loan kelompok.
+  - `test_write_off_for_individual_creates_pacuan_style_journal` — pacuan `hapus()` (status='H'/'written_off') + jurnal allowance↔receivable.
+  - `test_reschedule_for_individual_uses_pacuan_schedule_calculator` — pacuan `rescedule()` (status='R'/'rescheduled' + pinjaman baru dengan `tgl_tunggu`/`tgl_cair` lengkap).
+  - `test_revert_member_loan_returns_to_draft_status` — pacuan `kembaliProposal()` (status='P'/'draft').
+  - `test_record_installment_payment_for_individual_posts_correct_journal` — pacuan `TransaksiController::angsuran` (debit kas, kredit piutang+jasa+denda).
+  - `test_individual_schedule_parity_with_single_member_group_loan` — paritas aggregate total pokok+jasa antara pinjaman individu dan kelompok dengan parameter identik (paritas nominal per-bulan masih berbeda karena kelompok Next belum migrasi ke kalkulator pacuan-style — lihat catatan di test).
+  - `test_individual_schedule_uses_weekly_dates_for_sistem_12` — sistem angsuran 12 (mingguan): tanggal jatuh tempo `+x*7 days` dari override jadwal desa, paritas pacuan baris 2515-2518.
+
+- **Test infrastructure:** `BuildsTenantTestDatabase` retry `migrate:fresh` hingga 3× dan membersihkan file DB SQLite (-journal/-shm/-wal) untuk cegah "database disk image is malformed" intermiten.
+
+### Known Gap
+- **Pinjaman kelompok belum migrasi ke `MemberLoanScheduleCalculator`** (masih pakai `generatePrincipalSchedule`/`generateInterestSchedule` generik). Aggregate total pokok+jasa paritas dengan individu (test `test_individual_schedule_parity_*`), tapi nominal per-bulan bisa berbeda karena kelompok tidak ter-apply magic formula `jangka==24` dan pembulatan per kecamatan.
+- **Dokumen PDF 30+ (`coverProposal`, `BA musyawarah`, `verifikasi`, `SPK`, `kuitansi`, dll)** untuk individu belum dimigrasi — kartu angsuran (`card`) & keterangan lunas (`settlement-letter`) sudah, sisanya di luar scope sesi ini.
+
 ## [2026-09-10]
 
 ### Added

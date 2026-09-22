@@ -9,6 +9,9 @@
     $signatureHtml = $signature ?? '';
     $installments = $installments ?? [];
     $barisAngsuran = max(1, (int) ceil(count($installments) / 2));
+
+    // Tanggal angsuran default (default: tanggal cair; paritas pacuan pakai jadwal_angsuran_desa)
+    $defaultInstallmentDay = $installments[0]['due_date_label'] ?? $disbursementDate;
 @endphp
 
 <!DOCTYPE html>
@@ -130,7 +133,7 @@
                 <tr>
                     <td>Telpon/SMS</td>
                     <td align="center">:</td>
-                    <td>{{ '' }}</td>
+                    <td>{{ $group['phone'] ?: '—' }}</td>
                     <td>Pemanfaat</td>
                     <td align="center">:</td>
                     <td style="font-weight: bold;">{{ $b['name'] }}</td>
@@ -156,11 +159,10 @@
                     <td align="center">:</td>
 
                     <td style="display: inline-block;">
-                        {{ number_format((float) $angsuran, 0, ',', '.') }} /
-                        {{ '' }}
+                        Rp {{ number_format((float) $angsuran, 0, ',', '.') }} / bulan
                     </td>
                     <td colspan="3">
-                        Angsuran pada tanggal {{ '' }}
+                        Angsuran pada tanggal {{ $defaultInstallmentDay }}
                     </td>
                 </tr>
                 <tr>
@@ -281,16 +283,17 @@
                     <td colspan="3" style="font-weight: bold;" height="30">&nbsp;</td>
                     <td width="5%" rowspan="5">&nbsp;</td>
                 </tr>
-                <tr>
-                    <td width="350" rowspan="3">
-                        <div>Lembar 1 : Untuk Kelompok</div>
-                        <div>Lembar 2 : Arsip Lembaga</div>
-                    </td>
-                    <td style="font-weight: bold; font-size: 12px;" width="350" align="center">Ketua Kelompok</td>
-                    <td style="font-weight: bold; font-size: 12px;" width="350" align="center">
-                        <div>Anggota Pemanfaat</div>
-                    </td>
-                </tr>
+                  <tr>
+                      <td width="350" rowspan="3">
+                          <div>Lembar 1 : Untuk Kelompok</div>
+                          <div>Lembar 2 : Arsip Lembaga</div>
+                      </td>
+                      <td style="font-weight: bold; font-size: 12px;" width="350" align="center">Ketua Kelompok</td>
+                      <td style="font-weight: bold; font-size: 12px;" width="350" align="center">
+                          <div>Anggota Pemanfaat</div>
+                          <div style="margin-top: 36px; font-weight: normal;">{{ $b['name'] }}</div>
+                      </td>
+                  </tr>
                 <tr>
                     <td colspan="2" height="50"></td>
                 </tr>
@@ -319,11 +322,11 @@
                                 {{ $identity['legal_name'] }}</li>
                         </ol>
                     </td>
-                    <td>
-                        <div style="display: flex; height: 100%; justify-content: center; align-items: center;">
-                            {{ '' }}
-                        </div>
-                    </td>
+                      <td>
+                          <div style="display: flex; height: 100%; justify-content: center; align-items: center;">
+                              {{ $identity['legal_name'] }}
+                          </div>
+                      </td>
                 </tr>
             </table>
         </main>

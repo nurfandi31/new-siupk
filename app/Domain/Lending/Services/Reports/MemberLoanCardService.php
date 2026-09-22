@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Lending\Services\Reports;
 
 use App\Domain\Lending\Models\Loan;
-use App\Models\Tenant\OrganizationProfile;
+use App\Domain\Membership\Models\OrganizationProfile;
 use DomainException;
 
 /**

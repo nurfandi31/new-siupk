@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Lending\Services\Reports;
 
 use App\Domain\Lending\Models\Loan;
+use App\Domain\Membership\Models\GroupOfficer;
 use App\Domain\Membership\Models\OrganizationProfile;
 use Carbon\CarbonImmutable;
 
@@ -53,6 +54,18 @@ final class SpkTokenResolver
         $treasurerTitle = (string) ($profile?->treasurer_title ?? 'Bendahara');
         $verifierTitle = (string) ($profile?->verifier_title ?? 'Verifikator');
 
+        $managerNik = (string) ($profile?->manager_nik ?? '');
+        $managerPosition = (string) ($profile?->manager_position ?? $managerTitle);
+        $managerAddress = (string) ($profile?->manager_address ?? $profile?->address ?? '');
+        $secretaryNik = (string) ($profile?->secretary_nik ?? '');
+        $treasurerNik = (string) ($profile?->treasurer_nik ?? '');
+        $kadesName = (string) ($profile?->kepala_desa_name ?? '');
+        $kadesNip = (string) ($profile?->kepala_desa_nip ?? '');
+        $courtOfJurisdiction = (string) ($profile?->court_of_jurisdiction ?? '');
+        $level1 = (string) ($profile?->institution_level_1 ?? 'Lembaga');
+        $level2 = (string) ($profile?->institution_level_2 ?? 'Pengurus');
+        $level3 = (string) ($profile?->institution_level_3 ?? 'Pengurus Harian');
+
         $collateral = $loan->collateral;
         $collateralLabel = $this->collateralLabel($collateral);
         $collateralDetail = $this->collateralDetail($collateral);
@@ -74,14 +87,27 @@ final class SpkTokenResolver
             // Pejabat (customizable, fallback ke default)
             '{kepala_lembaga}' => $managerName,
             '{jabatan_kepala}' => $managerTitle,
+            '{kepala_lembaga_nik}' => $managerNik,
+            '{kepala_lembaga_jabatan}' => $managerPosition,
+            '{kepala_lembaga_alamat}' => $managerAddress,
             '{sekretaris_lembaga}' => $secretaryName,
             '{jabatan_sekretaris}' => $secretaryTitle,
+            '{sekretaris_lembaga_nik}' => $secretaryNik,
             '{bendahara_lembaga}' => $treasurerName,
             '{jabatan_bendahara}' => $treasurerTitle,
+            '{bendahara_lembaga_nik}' => $treasurerNik,
             '{verifikator}' => $verifierName,
             '{jabatan_verifikator}' => $verifierTitle,
             '{nama_pengawas}' => $verifierName,
             '{jabatan_pengawas}' => $verifierTitle,
+
+            // Pejabat struktural — akan di-override oleh base token jika ada
+            // (base lebih diprioritaskan via array_merge di LoanDocumentService).
+            // Di sini kita sediakan sebagai fallback dari profile (kepala_desa_*).
+            '{pengadilan_negeri}' => $courtOfJurisdiction,
+            '{sebutan_level_1}' => $level1,
+            '{sebutan_level_2}' => $level2,
+            '{sebutan_level_3}' => $level3,
 
             // Kelompok
             '{nama_kelompok}' => (string) ($group?->name ?? ''),
@@ -90,8 +116,6 @@ final class SpkTokenResolver
             '{desa}' => (string) ($village?->name ?? ''),
             '{sebutan_desa}' => (string) ($village?->name ?? ''),
             '{kecamatan}' => (string) ($district?->name ?? ''),
-            '{kades}' => (string) ($village?->leader_name ?? ''),
-            '{nip_kades}' => (string) ($village?->leader_nip ?? ''),
 
             // Pengurus kelompok aktif (existing compat)
             '{nama_ketua}' => $this->activeOfficerName($group?->row_id, 'chair'),
@@ -179,7 +203,7 @@ final class SpkTokenResolver
             return '';
         }
 
-        $officer = \App\Domain\Membership\Models\GroupOfficer::query()
+        $officer = GroupOfficer::query()
             ->where('group_row_id', $groupRowId)
             ->where('position', $position)
             ->whereNull('ended_at')
@@ -210,9 +234,6 @@ final class SpkTokenResolver
         };
     }
 
-    /**
-     * @param  mixed  $collateral
-     */
     private function collateralDetail(mixed $collateral): string
     {
         if (! is_array($collateral)) {
@@ -229,9 +250,6 @@ final class SpkTokenResolver
         return implode(' | ', $parts);
     }
 
-    /**
-     * @param  mixed  $collateral
-     */
     private function collateralValue(mixed $collateral): float
     {
         if (is_array($collateral)) {

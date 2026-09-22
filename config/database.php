@@ -34,6 +34,9 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            'busy_timeout' => env('PLATFORM_DB_DRIVER') === 'sqlite' ? 60000 : null,
+            'journal_mode' => env('PLATFORM_DB_DRIVER') === 'sqlite' ? 'wal' : null,
+            'synchronous' => env('PLATFORM_DB_DRIVER') === 'sqlite' ? 'normal' : null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]) : [],
@@ -55,6 +58,9 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            'busy_timeout' => env('TENANT_DB_DRIVER') === 'sqlite' ? 60000 : null,
+            'journal_mode' => env('TENANT_DB_DRIVER') === 'sqlite' ? 'wal' : null,
+            'synchronous' => env('TENANT_DB_DRIVER') === 'sqlite' ? 'normal' : null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]) : [],

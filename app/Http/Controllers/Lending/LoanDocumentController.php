@@ -38,6 +38,17 @@ final class LoanDocumentController
             abort(422, $e->getMessage());
         }
 
+        // Dokumen berkstage 'individual_*' hanya untuk pinjaman perorangan.
+        // Dokumen dengan stage kelompok (proposal/verification/disbursement)
+        // ditolak untuk pinjaman perorangan (lihat LoanDocumentService::availableDocuments).
+        $isIndividualLoan = (string) $loan->legacy_source === 'member_loan';
+        if (str_starts_with((string) $meta['stage'], 'individual_') && ! $isIndividualLoan) {
+            abort(422, 'Dokumen '.strtoupper($meta['label']).' hanya tersedia untuk pinjaman perorangan.');
+        }
+        if (! str_starts_with((string) $meta['stage'], 'individual_') && $isIndividualLoan) {
+            abort(422, 'Dokumen '.strtoupper($meta['label']).' tidak tersedia untuk pinjaman perorangan.');
+        }
+
         return $this->pdf->stream(
             $meta['view'],
             $payload,

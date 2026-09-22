@@ -9,9 +9,13 @@
     $documentTitle = $document['label'] ?? '';
     $signatureHtml = $signature ?? '';
     $alokasi = number_format((float) $loan['principal_amount'], 0, ',', '.');
+    $alokasiTerbilang = IndonesianNumber::spelledOut((float) $loan['principal_amount']);
     $beneficiaryCount = count($beneficiaries);
     $minus = 0;
     $disbursedYmd = $loan['disbursed_at'] ?? '';
+
+    $managerName = $tokens['{kepala_lembaga}'] ?? '';
+    $lembagaLevel1 = $tokens['{sebutan_level_1}'] ?? 'Lembaga';
 @endphp
 
 <style>
@@ -95,11 +99,11 @@
     {{ IndonesianNumber::spelledOut((float) IndonesianDate::day($disbursedYmd)) }} bulan {{ IndonesianDate::monthName($disbursedYmd) }} tahun
     {{ IndonesianNumber::spelledOut((float) IndonesianDate::year($disbursedYmd)) }}, telah diadakan pencairan dana perguliran
     {{ $identity['legal_name'] }} {{ $identity['district_name'] }} kepada Kelompok
-    {{ $group['name'] }} {{ '' }}
+    {{ $group['name'] }}
     {{ $group['village'] }} {{ $identity['district_name'] }} bertempat di
-    {{ '' }},
+    Kantor {{ $identity['legal_name'] }},
     sebesar Rp.
-    {{ $alokasi }} ({{ '' }} Rupiah), sesuai dengan
+    {{ $alokasi }} ({{ $alokasiTerbilang }} Rupiah), sesuai dengan
     Register Piutang pada Data Base Piutang Nomor nomor : {{ $group['code'] }} dan Surat Perjanjian
     Kredit (SPK) nomor: {{ $loan['loan_number'] }}.
 </div>
@@ -109,7 +113,7 @@
     <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 11px;">
         <tr>
             <td width="10" align="center">1.</td>
-            <td width="100">{{ '' }}</td>
+            <td width="100">Desa</td>
             <td width="10" align="center">:</td>
             <td>
                 <b>{{ $group['village'] }}</b>
@@ -119,7 +123,7 @@
             <td width="100">Tingkat Kelompok</td>
             <td width="10" align="center">:</td>
             <td>
-                <b>{{ '' }}</b>
+                <b>{{ $group['level'] ?: '—' }}</b>
             </td>
         </tr>
         <tr>
@@ -134,7 +138,7 @@
             <td>Fungsi Kelompok</td>
             <td align="center">:</td>
             <td>
-                <b>{{ '' }}</b>
+                <b>{{ $group['function'] ?: '—' }}</b>
             </td>
         </tr>
         <tr>
@@ -157,14 +161,14 @@
             <td>Tanggal Berdiri</td>
             <td align="center">:</td>
             <td>
-                <b>{{ '' }}</b>
+                <b>{{ $group['established_label'] ?: '—' }}</b>
             </td>
 
             <td align="center">12.</td>
             <td>Nomor Kontak</td>
             <td align="center">:</td>
             <td>
-                <b>{{ $identity['phone'] }}</b>
+                <b>{{ $group['phone'] ?: '—' }}</b>
             </td>
         </tr>
         <tr>
@@ -187,14 +191,14 @@
             <td>Jenis Piutang</td>
             <td align="center">:</td>
             <td>
-                <b>{{ $loan['product_code'] }} Orang</b>
+                <b>{{ $loan['product_name'] }}</b>
             </td>
 
             <td align="center">14.</td>
             <td>Alokasi Piutang</td>
             <td align="center">:</td>
             <td>
-                <b>{{ $alokasi }}</b>
+                <b>Rp {{ $alokasi }}</b>
             </td>
         </tr>
         <tr>
@@ -202,14 +206,14 @@
             <td>Jenis Usaha</td>
             <td align="center">:</td>
             <td>
-                <b>{{ '' }}</b>
+                <b>{{ $group['business_type'] ?: '—' }}</b>
             </td>
 
             <td align="center">15.</td>
             <td>Jangka Sistem</td>
             <td align="center">:</td>
             <td>
-                <b>{{ $loan['term_months'] }} / {{ '' }}</b>
+                <b>{{ $loan['term_months'] }} bulan</b>
             </td>
         </tr>
         <tr>
@@ -217,14 +221,14 @@
             <td>Jenis Kegiatan</td>
             <td align="center">:</td>
             <td>
-                <b>{{ '' }}</b>
+                <b>{{ $group['activity_type'] ?: '—' }}</b>
             </td>
 
             <td align="center">16.</td>
             <td>Prosentase Jasa</td>
             <td align="center">:</td>
             <td>
-                <b>{{ number_format((float) $tokens['{jasa_persen}'] / max(1, $loan['term_months']), 2) }}%</b>
+                <b>{{ number_format((float) $tokens['{jasa_persen}'] / max(1, $loan['term_months']), 2) }}% per bulan</b>
             </td>
         </tr>
     </table>
@@ -255,8 +259,8 @@
                 <td align="center">{{ $no }}</td>
                 <td align="center">{{ $b['nik'] }}</td>
                 <td>{{ $b['name'] }}</td>
-                <td align="center">{{ '' }}</td>
-                <td>{{ $group['address'] }}</td>
+                <td align="center">{{ $b['phone'] ?: '—' }}</td>
+                <td>{{ trim(($b['address'] ?? '').' '.($b['village'] ?? '')) }}</td>
                 <td align="right">{{ number_format((float) $b['allocated_amount'], 0, ',', '.') }}</td>
             </tr>
         @endforeach
@@ -289,20 +293,20 @@
                             </td>
                         </tr>
                         <tr>
+                            <td align="center">
+                                {{ $lembagaLevel1 }} {{ $identity['legal_name'] }}
+                            </td>
+                            <td colspan="2" align="center">Ketua Kelompok</td>
+                        </tr>
+                        <tr>
                             <td colspan="3" height="40">&nbsp;</td>
                         </tr>
                         <tr>
                             <td align="center" style="font-weight: bold;">
-                                {{ '' }}
+                                {{ $managerName }}
                             </td>
                             <td colspan="2" align="center" style="font-weight: bold;">{{ $committeeChair }}
                             </td>
-                        </tr>
-                        <tr>
-                            <td align="center">
-                                {{ '' }}
-                            </td>
-                            <td colspan="2" align="center">Ketua Kelompok</td>
                         </tr>
                     </table>
                 @endif

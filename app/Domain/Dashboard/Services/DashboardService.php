@@ -156,7 +156,7 @@ final class DashboardService
             ->whereIn('l.status', self::ACTIVE_LOAN_STATUSES)
             ->selectRaw("
                 SUM(CASE WHEN b.group_row_id IS NOT NULL OR l.legacy_source = 'group_loan' THEN 1 ELSE 0 END) AS kelompok,
-                SUM(CASE WHEN (b.member_row_id IS NOT NULL AND (b.group_row_id IS NULL OR l.legacy_source = 'individual_loan')) THEN 1 ELSE 0 END) AS individu
+                SUM(CASE WHEN (b.member_row_id IS NOT NULL AND (b.group_row_id IS NULL OR l.legacy_source = 'member_loan')) THEN 1 ELSE 0 END) AS individu
             ")
             ->first();
 
@@ -192,7 +192,7 @@ final class DashboardService
         $kelompok = (int) Group::query()->where('status', 'active')->count();
 
         // Individu = anggota aktif yang pernah tercatat sebagai borrower pada loan individu
-        // (loan_borrowers dengan group_row_id NULL ATAU loan.legacy_source = 'individual_loan').
+        // (loan_borrowers dengan group_row_id NULL ATAU loan.legacy_source = 'member_loan').
         $individu = (int) DB::connection('tenant')
             ->table('members as m')
             ->join('loan_borrowers as b', function ($join): void {
@@ -207,7 +207,7 @@ final class DashboardService
             ->where('m.status', 'active')
             ->where(function ($q): void {
                 $q->whereNull('b.group_row_id')
-                    ->orWhere('l.legacy_source', 'individual_loan');
+                    ->orWhere('l.legacy_source', 'member_loan');
             })
             ->distinct()
             ->count('m.row_id');

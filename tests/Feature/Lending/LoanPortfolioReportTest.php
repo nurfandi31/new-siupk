@@ -126,6 +126,77 @@ final class LoanPortfolioReportTest extends TestCase
             ->assertHeader('content-type', 'application/pdf');
     }
 
+    public function test_portfolio_scope_member_filter_excludes_group_loans(): void
+    {
+        $groupLoan = $this->seedActiveLoanWithOverdue();
+
+        // Seed member loan (individu).
+        $memberLoan = Loan::query()->create([
+            'legacy_source' => 'member_loan',
+            'loan_product_row_id' => $this->productId,
+            'sequence_number' => 100,
+            'loan_number' => 'PK-RPT-IND-1',
+            'proposed_at' => '2026-01-01',
+            'disbursed_at' => '2026-01-15',
+            'principal_amount' => 2000000,
+            'interest_rate' => 1.5,
+            'term_months' => 12,
+            'installment_method' => 'flat',
+            'status' => 'active',
+        ]);
+        LoanBorrower::query()->create([
+            'loan_row_id' => $memberLoan->row_id,
+            'group_row_id' => null,
+            'member_row_id' => 999,
+        ]);
+        // Installments agar loan tidak di-skip di service (line ~176).
+        foreach ([1, 2] as $n) {
+            LoanInstallment::query()->create([
+                'loan_row_id' => $memberLoan->row_id,
+                'component' => 'principal',
+                'installment_number' => $n,
+                'due_date' => '2026-08-15',
+                'principal_due' => 1000000,
+                'principal_paid' => 0,
+                'interest_due' => 0,
+                'interest_paid' => 0,
+                'penalty_due' => 0,
+                'penalty_paid' => 0,
+                'status' => 'pending',
+            ]);
+        }
+        LoanInstallment::query()->create([
+            'loan_row_id' => $memberLoan->row_id,
+            'component' => 'interest',
+            'installment_number' => 2,
+            'due_date' => '2026-08-15',
+            'principal_due' => 0,
+            'principal_paid' => 0,
+            'interest_due' => 30000,
+            'interest_paid' => 0,
+            'penalty_due' => 0,
+            'penalty_paid' => 0,
+            'status' => 'pending',
+        ]);
+
+        $all = app(LoanPortfolioReportService::class)->build('2026-07-28', 'all', null);
+        $memberOnly = app(LoanPortfolioReportService::class)->build('2026-07-28', 'all', 'member');
+        $groupOnly = app(LoanPortfolioReportService::class)->build('2026-07-28', 'all', 'group');
+
+        self::assertSame(2, $all['totals']['count'], 'Scope null = semua');
+        self::assertSame(1, $memberOnly['totals']['count'], 'Scope member = hanya individu');
+        self::assertSame(1, $groupOnly['totals']['count'], 'Scope group = hanya kelompok');
+
+        // Validasi dengan legacy_source (lebih reliable daripada id, yang auto-increment per scope sequence).
+        $memberLegacy = array_column($memberOnly['rows'], 'legacy_source');
+        self::assertContains('member_loan', $memberLegacy, 'scope=member harus berisi member_loan');
+        self::assertNotContains('group_loan', $memberLegacy, 'scope=member TIDAK boleh berisi group_loan');
+
+        $groupLegacy = array_column($groupOnly['rows'], 'legacy_source');
+        self::assertContains('group_loan', $groupLegacy, 'scope=group harus berisi group_loan');
+        self::assertNotContains('member_loan', $groupLegacy, 'scope=group TIDAK boleh berisi member_loan');
+    }
+
     private function seedActiveLoanWithOverdue(): Loan
     {
         $loan = Loan::query()->create([

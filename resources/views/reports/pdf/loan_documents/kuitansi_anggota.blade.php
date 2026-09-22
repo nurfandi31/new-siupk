@@ -1,7 +1,10 @@
 @php
+    use App\Support\IndonesianNumber;
+
     $committeeChair = $tokens['{nama_ketua}'] ?? '';
     $documentTitle = $document['label'] ?? '';
     $signatureHtml = $signature ?? '';
+    $lembagaLabel = trim(($tokens['{sebutan_level_3}'] ?? '').' '.($identity['legal_name'] ?? ''));
 @endphp
 
 <style>
@@ -84,14 +87,14 @@
                             <td width="90">Telah Diterima Dari</td>
                             <td width="10" align="center">:</td>
                             <td class="b">
-                                <b>{{ '' }}</b>
+                                <b>{{ $lembagaLabel }}</b>
                             </td>
                         </tr>
                         <tr>
                             <td>Uang Sebanyak</td>
                             <td align="center">:</td>
                             <td class="b">
-                                <b>{{ '' }} Rupiah</b>
+                                <b>{{ IndonesianNumber::spelledOut((float) $b['allocated_amount']) }} Rupiah</b>
                             </td>
                         </tr>
                         <tr>
@@ -105,7 +108,8 @@
                             <td colspan="2">&nbsp;</td>
                             <td class="b">
                                 <b>
-                                    a.n. {{ $b['name'] }} NIK. {{ $b['nik'] }}
+                                    a.n. {{ $b['name'] }} NIK. {{ $b['nik'] }}<br>
+                                    Beralamat di {{ $b['alamat'] ?? '' }} {{ $b['desa'] ?? '' }}
                                 </b>
                             </td>
                         </tr>

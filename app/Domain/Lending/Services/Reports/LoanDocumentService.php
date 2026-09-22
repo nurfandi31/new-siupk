@@ -9,8 +9,10 @@ use App\Domain\Documents\Services\SignatureTemplateService;
 use App\Domain\Lending\Models\Loan;
 use App\Domain\Membership\Models\GroupOfficer;
 use App\Domain\Membership\Models\OrganizationProfile;
+use App\Support\IndonesianDate;
 use Carbon\CarbonImmutable;
 use DomainException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -76,6 +78,12 @@ final class LoanDocumentService
         ['key' => 'berita_acara_pencairan_individu', 'label' => 'Berita Acara Pencairan Individu', 'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.berita_acara_pencairan_individu', 'signature' => 'perjanjian_kredit', 'orientation' => 'portrait',  'icon' => 'fact_check'],
         ['key' => 'tanda_terima_jaminan',        'label' => 'Tanda Terima Jaminan',              'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.tanda_terima_jaminan',     'signature' => 'default',            'orientation' => 'portrait',  'icon' => 'inventory_2'],
         ['key' => 'bukti_pengembalian_jaminan',  'label' => 'Bukti Pengembalian Jaminan',        'stage' => 'individual_settlement',    'view' => 'reports.pdf.loan_documents.bukti_pengembalian_jaminan', 'signature' => 'default',            'orientation' => 'portrait',  'icon' => 'assignment_return'],
+
+        // Iterasi 6 — Cetakan individu kelengkapan SPK & penjamin (paritas pacuan)
+        ['key' => 'analisis_keputusan_kredit',   'label' => 'Analisa & Keputusan Kredit',         'stage' => 'individual_verification', 'view' => 'reports.pdf.loan_documents.analisis_keputusan_kredit',   'signature' => null,                 'orientation' => 'portrait',  'icon' => 'analytics'],
+        ['key' => 'surat_pemberitahuan',         'label' => 'Surat Pemberitahuan Kredit (SP2K)', 'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.surat_pemberitahuan',         'signature' => 'default',            'orientation' => 'portrait',  'icon' => 'campaign'],
+        ['key' => 'pengikat_diri_penjamin',      'label' => 'Surat Pengikat Diri Penjamin',       'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.pengikat_diri_sebagai_penjamin', 'signature' => 'default',      'orientation' => 'portrait',  'icon' => 'volunteer_activism'],
+        ['key' => 'surat_pernyataan_suami',      'label' => 'Surat Pernyataan Suami/Istri',       'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.surat_pernyataan_suami',     'signature' => 'default',            'orientation' => 'portrait',  'icon' => 'favorite'],
     ];
 
     /**
@@ -88,6 +96,7 @@ final class LoanDocumentService
         'verification' => ['verified', 'waiting', 'approved', 'active', 'disbursed', 'completed'],
         'disbursement' => ['waiting', 'approved', 'active', 'disbursed', 'completed'],
         // Cetakan khusus individu (legacy_source='member_loan')
+        'individual_verification' => ['verified', 'waiting', 'approved', 'active', 'disbursed', 'completed'],
         'individual_disbursement' => ['waiting', 'approved', 'active', 'disbursed', 'completed'],
         'individual_settlement' => ['completed', 'written_off'],
     ];
@@ -162,11 +171,17 @@ final class LoanDocumentService
         } else {
             $loan->loadMissing([
                 'product:row_id,code,name,default_interest_rate,default_term_months',
-                'borrower.group:row_id,name,code,address,organization_unit_row_id',
+                'borrower.group:row_id,name,code,address,organization_unit_row_id,phone,established_at',
+                'borrower.group.businessType:row_id,code,name',
+                'borrower.group.activityType:row_id,code,name',
+                'borrower.group.level:row_id,code,name',
+                'borrower.group.functionType:row_id,code,name',
                 'borrower.group.village:row_id,name',
                 'borrower.group.village.parent:row_id,name',
                 'committee',
                 'beneficiaries.member.person',
+                'beneficiaries.member.address',
+                'beneficiaries.member.village:row_id,name',
                 'beneficiaries.member.guarantor.person',
                 'installments',
             ]);
@@ -175,9 +190,11 @@ final class LoanDocumentService
         $meta = $this->resolve($documentKey);
         $tokens = $this->tokenReplacer($loan);
         $signature = $this->renderSignatureForDocument($meta, $loan);
+        $profile = OrganizationProfile::query()->first();
 
         return [
             'identity' => $this->identityBlock(),
+            'profile' => $profile,
             'loan' => $this->loanBlock($loan),
             'loan_obj' => $loan,
             'group' => $this->groupBlock($loan),
@@ -211,6 +228,20 @@ final class LoanDocumentService
         $firstBeneficiary = $loan->beneficiaries->sortBy('row_id')->first();
         $firstPerson = $firstBeneficiary?->member?->person;
         $firstGuarantor = $firstBeneficiary?->member?->guarantor;
+
+        $individualMember = $isIndividual ? $loan->borrower?->member : null;
+        $individualPerson = $isIndividual ? $individualMember?->person : null;
+        $individualGuarantor = $isIndividual ? $individualMember?->guarantor?->person : null;
+
+        // Pejabat struktural (override SpkTokenResolver via array_merge).
+        $kadesName = (string) ($profile?->kepala_desa_name ?? '');
+        $kadesNip = (string) ($profile?->kepala_desa_nip ?? '');
+        $managerNik = (string) ($profile?->manager_nik ?? '');
+        $managerPosition = (string) ($profile?->manager_position ?? '');
+        $managerAddress = (string) ($profile?->manager_address ?? '');
+        $courtOfJurisdiction = (string) ($profile?->court_of_jurisdiction ?? '');
+        $level1 = (string) ($profile?->institution_level_1 ?? 'Lembaga');
+        $level3 = (string) ($profile?->institution_level_3 ?? 'Pengelola');
 
         $base = [
             // Lembaga
@@ -255,6 +286,26 @@ final class LoanDocumentService
             '{pemanfaat_nik}' => (string) ($firstPerson?->national_identity_number ?? ''),
             '{pemanfaat_penjamin}' => (string) ($firstGuarantor?->person?->full_name ?? ''),
             '{pemanfaat_alokasi}' => $this->money((float) ($firstBeneficiary?->allocated_amount ?? 0)),
+
+            // Pejabat struktural (override SpkTokenResolver via array_merge).
+            '{kades}' => $kadesName,
+            '{nip_kades}' => $kadesNip,
+            '{kepala_lembaga_nik}' => $managerNik,
+            '{kepala_lembaga_jabatan}' => $managerPosition,
+            '{kepala_lembaga_alamat}' => $managerAddress,
+            '{pengadilan_negeri}' => $courtOfJurisdiction,
+            '{sebutan_level_1}' => $level1,
+            '{sebutan_level_3}' => $level3,
+
+            // Khusus Pinjaman Individu — penjamin & pasangan (paritas pacuan)
+            '{penjamin_nama}' => (string) ($individualGuarantor?->full_name ?? ''),
+            '{penjamin_nik}' => (string) ($individualGuarantor?->national_identity_number ?? ''),
+            '{suami_nama}' => (string) ($individualGuarantor?->full_name ?? ''),
+            '{suami_nik}' => (string) ($individualGuarantor?->national_identity_number ?? ''),
+            '{peminjam_nama}' => (string) ($individualPerson?->full_name ?? ''),
+            '{peminjam_nik}' => (string) ($individualPerson?->national_identity_number ?? ''),
+            '{peminjam_hp}' => (string) ($individualPerson?->phone ?? ''),
+            '{peminjam_alamat}' => trim(($individualMember?->address?->address_line ?? '').' '.($individualMember?->village?->name ?? '')),
         ];
 
         // Merge token tambahan dari SpkTokenResolver (kolom baru di OrganizationProfile,
@@ -364,11 +415,41 @@ final class LoanDocumentService
     {
         $group = $loan->borrower?->group;
 
+        // Refresh model untuk pastikan field ter-update (test pakai DB::table update
+        // yang tidak invalidate Eloquent cache).
+        if ($group) {
+            $group->refresh();
+        }
+
+        // Relasi klasifikasi: baca langsung via DB untuk menghindari masalah global scope.
+        $groupId = $group?->row_id;
+        $businessTypeName = $groupId && $group->business_type_row_id
+            ? DB::connection('tenant')->table('business_types')->where('row_id', $group->business_type_row_id)->value('name')
+            : null;
+        $activityTypeName = $groupId && $group->activity_type_row_id
+            ? DB::connection('tenant')->table('activity_types')->where('row_id', $group->activity_type_row_id)->value('name')
+            : null;
+        $groupLevelName = $groupId && $group->group_level_row_id
+            ? DB::connection('tenant')->table('group_levels')->where('row_id', $group->group_level_row_id)->value('name')
+            : null;
+        $groupFunctionName = $groupId && $group->group_function_row_id
+            ? DB::connection('tenant')->table('group_functions')->where('row_id', $group->group_function_row_id)->value('name')
+            : null;
+
         return [
             'row_id' => $group?->row_id,
             'name' => (string) ($group?->name ?? ''),
             'code' => (string) ($group?->code ?? ''),
             'address' => (string) ($group?->address ?? ''),
+            'phone' => (string) ($group?->phone ?? ''),
+            'established_at' => $group?->established_at?->toDateString(),
+            'established_label' => $group?->established_at
+                ? IndonesianDate::latin((string) $group->established_at->toDateString())
+                : '',
+            'business_type' => $businessTypeName,
+            'activity_type' => $activityTypeName,
+            'level' => $groupLevelName,
+            'function' => $groupFunctionName,
             'village' => $group?->village?->name,
             'district' => $group?->village?->parent?->name,
         ];
@@ -455,15 +536,27 @@ final class LoanDocumentService
         foreach ($loan->beneficiaries as $i => $b) {
             $person = $b->member?->person;
             $guarantor = $b->member?->guarantor?->person;
+            $address = $b->member?->address;
             $rows[] = [
                 'no' => $i + 1,
                 'member_row_id' => $b->member_row_id,
                 'name' => (string) ($person?->full_name ?? '—'),
                 'nik' => (string) ($person?->national_identity_number ?? ''),
+                'phone' => (string) ($person?->phone ?? ''),
+                'address' => (string) ($address?->address_line ?? ''),
+                'village' => (string) ($b->member?->village?->name ?? ''),
+                'gender' => (string) ($person?->gender ?? ''),
+                'birth_date' => $person?->birth_date?->toDateString(),
+                'birth_date_label' => $person?->birth_date
+                    ? IndonesianDate::latin((string) $person->birth_date->toDateString())
+                    : '',
+                'birth_place' => (string) ($person?->birth_place ?? ''),
                 'proposed_amount' => (float) ($b->proposed_amount ?? 0),
                 'verified_amount' => (float) ($b->verified_amount ?? 0),
                 'allocated_amount' => (float) ($b->allocated_amount ?? 0),
                 'guarantor' => (string) ($guarantor?->full_name ?? ''),
+                'guarantor_phone' => (string) ($guarantor?->phone ?? ''),
+                'guarantor_nik' => (string) ($guarantor?->national_identity_number ?? ''),
                 'identity_photo_data' => $this->identityPhotoData($person?->identity_photo_path),
             ];
         }

@@ -1,6 +1,7 @@
 <script setup>
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import PublicSiteHeader from '@/Components/PublicSiteHeader.vue';
 
 const props = defineProps({
     organization: { type: Object, required: true },
@@ -45,20 +46,7 @@ const social = computed(() => props.settings?.social ?? {});
     </Head>
 
     <div class="min-h-screen bg-surface">
-        <header class="sticky top-0 z-10 border-b border-outline-variant bg-surface/80 backdrop-blur">
-            <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-                <a href="/" class="flex items-center gap-3">
-                    <img v-if="organization.logo_url" :src="organization.logo_url" :alt="orgName" class="size-9 rounded-lg object-contain" />
-                    <span class="font-extrabold tracking-tight text-primary">{{ orgName }}</span>
-                </a>
-                <nav class="flex items-center gap-5 text-sm font-semibold">
-                    <a href="/" class="text-on-surface-variant hover:text-primary">Beranda</a>
-                    <a href="/berita" class="text-on-surface-variant hover:text-primary">Berita</a>
-                    <a href="/kontak" class="text-primary">Kontak</a>
-                    <a href="/login" class="rounded-full bg-primary px-4 py-2 text-on-primary hover:bg-primary/90">Masuk Sistem</a>
-                </nav>
-            </div>
-        </header>
+        <PublicSiteHeader :organization="organization" active="kontak" />
 
         <main class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
             <div class="grid gap-8 lg:grid-cols-5">

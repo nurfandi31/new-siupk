@@ -6,6 +6,7 @@ import AppCard from '../../../Components/AppCard.vue';
 import AppDatePicker from '../../../Components/AppDatePicker.vue';
 import AppCurrencyInput from '../../../Components/AppCurrencyInput.vue';
 import AppInput from '../../../Components/AppInput.vue';
+import AppTextarea from '../../../Components/AppTextarea.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
 import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
 
@@ -113,7 +114,27 @@ const form = useForm({
     principal_grace_months: 0,
     interest_grace_months: 0,
     rounding_step: '',
+    collateral: {
+        type: 'kendaraan',
+        description: '',
+        value: '',
+        reference: '',
+    },
+    verification_remarks: '',
 });
+
+const collateralTypeOptions = [
+    { value: 'kendaraan', label: 'Kendaraan (BPKB)' },
+    { value: 'sertifikat_tanah', label: 'Sertifikat Tanah' },
+    { value: 'bpkb', label: 'BPKB (tanpa kendaraan)' },
+    { value: 'lainnya', label: 'Lainnya' },
+];
+
+const hasCollateral = computed(() =>
+    String(form.collateral.description ?? '').trim() !== ''
+    || (form.collateral.value !== '' && form.collateral.value !== null)
+    || String(form.collateral.reference ?? '').trim() !== ''
+);
 
 const selectedProduct = computed(() => props.products.find((p) => String(p.row_id) === String(selectedProductId.value)) || null);
 const selectedMember = computed(() => props.members.find((m) => String(m.value) === String(selectedMemberId.value)) || null);
@@ -228,6 +249,35 @@ function submit() {
                             <SmartSelect v-model="form.interest_grace_months" label="Grace Period Jasa" :options="graceOptions" required :error="form.errors.interest_grace_months" />
                             <SmartSelect v-model="form.rounding_step" label="Pembulatan Angsuran" :options="roundingOptions" :error="form.errors.rounding_step" />
                         </div>
+                    </section>
+
+                    <section class="border-t border-outline-variant pt-4">
+                        <h2 class="font-semibold text-primary">Jaminan (Collateral)</h2>
+                        <p class="mt-1 text-sm text-on-surface-variant">
+                            Opsional. Catat agunan pokok yang dijaminkan anggota untuk pinjaman individu ini. Data akan tersimpan sebagai JSON dan dicetak pada dokumen SPK &amp; Kartu Angsuran.
+                        </p>
+                        <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                            <SmartSelect v-model="form.collateral.type" label="Jenis Jaminan" :options="collateralTypeOptions" :error="form.errors['collateral.type']" />
+                            <AppInput v-model="form.collateral.reference" label="Nomor Dokumen (BPKB / SHM)" icon="tag" maxlength="120" :error="form.errors['collateral.reference']" placeholder="Contoh: BP-1234-XX" />
+                            <AppCurrencyInput v-model="form.collateral.value" label="Estimasi Nilai" icon="payments" :min="0" :error="form.errors['collateral.value']" />
+                            <AppInput v-model="form.collateral.description" label="Keterangan" icon="description" maxlength="500" :error="form.errors['collateral.description']" placeholder="Mis. Sepeda motor Honda Beat 2022" />
+                        </div>
+                        <p v-if="!hasCollateral" class="mt-2 text-xs text-on-surface-variant">Belum ada jaminan dicatat — dapat ditambahkan saat verifikasi.</p>
+                    </section>
+
+                    <section class="border-t border-outline-variant pt-4">
+                        <h2 class="font-semibold text-primary">Catatan Verifikasi (Opsional)</h2>
+                        <p class="mt-1 text-sm text-on-surface-variant">Catatan awal untuk verifikator (mis. sumber dana, riwayat tunggakan, dll).</p>
+                        <AppTextarea
+                            v-model="form.verification_remarks"
+                            label=""
+                            hide-label
+                            placeholder="Catatan tambahan untuk verifikator lapangan..."
+                            :rows="2"
+                            :maxlength="2000"
+                            :error="form.errors.verification_remarks"
+                            class="mt-3"
+                        />
                     </section>
 
                     <div class="flex justify-end gap-3 border-t border-outline-variant pt-4">

@@ -23,7 +23,7 @@ final class LoanScheduleVsActualService
     /**
      * @return array<string, mixed>
      */
-    public function build(int $year, int $month): array
+    public function build(int $year, int $month, ?string $borrowerScope = null): array
     {
         $month = max(1, min(12, $month));
         $year = max(2000, min(2100, $year));
@@ -61,6 +61,15 @@ final class LoanScheduleVsActualService
             ->whereIn('l.status', self::ACTIVE_LIKE)
             ->where('i.due_date', '>=', $fromStr)
             ->where('i.due_date', '<', $untilStr)
+            ->when($borrowerScope === 'group', function ($q): void {
+                $q->where(function ($w): void {
+                    $w->whereNull('l.legacy_source')
+                        ->orWhere('l.legacy_source', 'group_loan');
+                });
+            })
+            ->when($borrowerScope === 'member', function ($q): void {
+                $q->where('l.legacy_source', 'member_loan');
+            })
             ->groupBy('l.row_id', 'l.id', 'l.loan_number', 'g.name', 'p.code')
             ->orderBy('g.name')
             ->orderBy('l.id')

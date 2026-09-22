@@ -45,11 +45,73 @@ final class PublicSiteController
             ]);
         }
 
+        $site['recent_posts'] = $this->resolveRecentPosts();
+        $site['recent_pages'] = $this->resolveRecentPages();
+        $site['contact'] = $this->resolveContactInfo();
+
         if ($this->isDemoHost($request)) {
             $site['demo'] = $this->resolveDemoData();
         }
 
         return Inertia::render('PublicSite/TenantHome', $site);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function resolveRecentPosts(): array
+    {
+        return SitePost::query()
+            ->published()
+            ->orderByDesc('published_at')
+            ->limit(3)
+            ->get(['row_id', 'slug', 'title', 'excerpt', 'cover_image_path', 'published_at'])
+            ->map(fn (SitePost $post): array => [
+                'slug' => $post->slug,
+                'title' => $post->title,
+                'excerpt' => $post->excerpt,
+                'cover_image_url' => $post->cover_image_path !== null ? Storage::disk('public')->url($post->cover_image_path) : null,
+                'published_at' => $post->published_at?->toIso8601String(),
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function resolveRecentPages(): array
+    {
+        return SitePage::query()
+            ->published()
+            ->orderBy('slug')
+            ->limit(6)
+            ->get(['row_id', 'slug', 'title', 'meta_description'])
+            ->map(fn (SitePage $page): array => [
+                'slug' => $page->slug,
+                'title' => $page->title,
+                'excerpt' => $page->meta_description,
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function resolveContactInfo(): array
+    {
+        $settings = SiteSetting::query()->first();
+
+        return [
+            'phone' => $settings?->contact_phone,
+            'email' => $settings?->contact_email,
+            'address' => $settings?->contact_address,
+            'social' => [
+                'facebook' => $settings?->facebook_url,
+                'instagram' => $settings?->instagram_url,
+                'youtube' => $settings?->youtube_url,
+            ],
+            'store_url' => route('public.contact.store'),
+        ];
     }
 
     private function isDemoHost(Request $request): bool
@@ -73,6 +135,48 @@ final class PublicSiteController
             'password' => 'password',
             'login_url' => '/login?demo=1',
         ];
+    }
+
+    /**
+     * Public static-pages index for the resolved tenant domain. Pages are
+     * curated content the admin maintains (profil, layanan, AD/ART, dll.)
+     * and stay paginated like the blog index for consistency.
+     */
+    public function pages(Request $request): Response|RedirectResponse
+    {
+        if ($this->shouldRedirectToVendor($request)) {
+            return redirect()->route('home');
+        }
+
+        $context = app(TenantContext::class);
+        $site = $this->resolveTenantSite($context);
+
+        if ($site === null) {
+            return Inertia::render('Home', ['name' => config('app.name'), 'status' => 'ok']);
+        }
+
+        $search = trim((string) $request->query('q', ''));
+
+        $pages = SitePage::query()
+            ->published()
+            ->when($search !== '', fn ($query) => $query->where(fn ($q) => $q
+                ->where('title', 'like', "%{$search}%")
+                ->orWhere('meta_description', 'like', "%{$search}%")))
+            ->orderBy('title')
+            ->paginate(12)
+            ->withQueryString()
+            ->through(fn (SitePage $page): array => [
+                'slug' => $page->slug,
+                'title' => $page->title,
+                'excerpt' => $page->meta_description,
+                'updated_at' => $page->updated_at?->toIso8601String(),
+            ]);
+
+        return Inertia::render('PublicSite/PagesIndex', [
+            ...$site,
+            'pages' => $pages,
+            'search' => $search,
+        ]);
     }
 
     /**
@@ -275,6 +379,7 @@ final class PublicSiteController
             }
 
             $urls[] = route('public.posts');
+            $urls[] = route('public.pages');
         }
 
         return response()

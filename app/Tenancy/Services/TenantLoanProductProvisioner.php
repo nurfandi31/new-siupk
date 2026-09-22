@@ -14,7 +14,7 @@ final readonly class TenantLoanProductProvisioner
     {
         $tenantId = app(TenantContext::class)->id();
         DB::connection('tenant')->transaction(function (): void {
-            LoanProduct::query()->whereNotIn('code', ['spp', 'uep', 'pl'])->delete();
+            LoanProduct::query()->whereNotIn('code', ['spp', 'uep', 'pl', 'pi'])->delete();
 
             $this->ensure(LoanProduct::class, [
                 'spp' => [
@@ -43,6 +43,15 @@ final readonly class TenantLoanProductProvisioner
                     'minimum_amount' => 5000000,
                     'maximum_amount' => 200000000,
                     'borrower_scope' => 'group',
+                ],
+                'pi' => [
+                    'name' => 'PI (Pinjaman Individu / Perorangan)',
+                    'interest_method' => 'flat',
+                    'default_interest_rate' => 1.5000,
+                    'default_term_months' => 12,
+                    'minimum_amount' => 500000,
+                    'maximum_amount' => 50000000,
+                    'borrower_scope' => 'member',
                 ],
             ]);
         });

@@ -15,7 +15,6 @@ use App\Domain\Lending\Models\LoanCommittee;
 use App\Domain\Lending\Models\LoanInstallment;
 use App\Domain\Lending\Models\LoanProduct;
 use App\Domain\Lending\Models\LoanWriteOff;
-use App\Domain\Lending\Services\MemberLoanScheduleCalculator;
 use App\Domain\Membership\Models\Group;
 use App\Domain\Membership\Models\Member;
 use App\Services\TenantSettingService;
@@ -32,6 +31,7 @@ final class LoanService
         'spp' => '1.1.03.01',
         'uep' => '1.1.03.02',
         'pl' => '1.1.03.03',
+        'pi' => '1.1.03.09',
     ];
 
     /** Default allowance (cadangan kerugian) accounts per loan product code. */
@@ -39,6 +39,7 @@ final class LoanService
         'spp' => '1.1.04.01',
         'uep' => '1.1.04.02',
         'pl' => '1.1.04.03',
+        'pi' => '1.1.04.08',
     ];
 
     /** Default revenue (jasa) accounts per loan product code. */
@@ -46,6 +47,7 @@ final class LoanService
         'spp' => '4.1.01.01',
         'uep' => '4.1.01.02',
         'pl' => '4.1.01.03',
+        'pi' => '4.1.01.07',
     ];
 
     /** Default penalty accounts per loan product code. */
@@ -235,6 +237,8 @@ final class LoanService
             $principalRatePerPeriod = $principalPeriods > 0 ? round($serviceRateTotal / $principalPeriods, 4) : 0.0;
             $interestRatePerPeriod = $interestPeriods > 0 ? round($serviceRateTotal / $interestPeriods, 4) : 0.0;
 
+            $collateral = $this->normalizeCollateral($data['collateral'] ?? null);
+
             $loan = Loan::query()->create([
                 'legacy_source' => 'member_loan',
                 'loan_product_row_id' => $product->row_id,
@@ -250,6 +254,8 @@ final class LoanService
                 'principal_grace_months' => $principalGraceMonths,
                 'interest_grace_months' => $interestGraceMonths,
                 'rounding_step' => isset($data['rounding_step']) && $data['rounding_step'] !== '' ? (int) $data['rounding_step'] : null,
+                'collateral' => $collateral,
+                'verification_remarks' => $data['verification_remarks'] ?? null,
                 'status' => 'draft',
                 'created_by_user_id' => $userId,
             ]);
@@ -259,8 +265,17 @@ final class LoanService
                 'group_row_id' => null,
             ]);
 
-            $this->generatePrincipalSchedule($loan, $principal, $principalPeriods, $principalRatePerPeriod, $principalFreq, $data['proposed_at'], $principalGraceMonths);
-            $this->generateInterestSchedule($loan, $principal, $interestPeriods, $interestRatePerPeriod, $method, $interestFreq, $data['proposed_at'], $interestGraceMonths);
+            $this->regenerateIndividualSchedule(
+                loan: $loan,
+                principal: $principal,
+                termMonths: $term,
+                serviceRateTotal: $serviceRateTotal,
+                principalFrequency: $this->mapFrequencyToSystemId($principalFreq),
+                interestFrequency: $this->mapFrequencyToSystemId($interestFreq),
+                principalGraceMonths: $principalGraceMonths,
+                interestGraceMonths: $interestGraceMonths,
+                disbursementDate: CarbonImmutable::parse((string) $data['proposed_at']),
+            );
 
             $loan->statusHistories()->create([
                 'from_status' => null,
@@ -514,8 +529,8 @@ final class LoanService
                     principal: (float) $loan->principal_amount,
                     termMonths: $termMonths,
                     serviceRateTotal: $serviceRateTotal,
-                    principalFrequency: $principalFrequency,
-                    interestFrequency: $interestFrequency,
+                    principalFrequency: $this->mapFrequencyToSystemId($principalFrequency),
+                    interestFrequency: $this->mapFrequencyToSystemId($interestFrequency),
                     principalGraceMonths: $principalGraceMonths,
                     interestGraceMonths: $interestGraceMonths,
                     disbursementDate: CarbonImmutable::parse((string) $data['planned_disbursed_at']),
@@ -617,6 +632,10 @@ final class LoanService
                 'status' => 'active',
                 'spk_no' => $data['spk_no'] ?? $loan->spk_no,
                 'disbursement_slot' => $data['disbursement_slot'] ?? $loan->disbursement_slot,
+                'funding_source' => array_key_exists('funding_source', $data) && $data['funding_source'] !== null && $data['funding_source'] !== ''
+                    ? (int) $data['funding_source']
+                    : $loan->funding_source,
+                'verification_remarks' => $data['verification_remarks'] ?? $loan->verification_remarks,
             ]);
 
             $loan->statusHistories()->create([
@@ -680,6 +699,109 @@ final class LoanService
         return array_key_exists($key, $data) && $data[$key] !== null && $data[$key] !== ''
             ? (float) $data[$key]
             : $fallback;
+    }
+
+    /**
+     * Map nilai frekuensi (string/Next) ke sistem angsuran id (integer/pacuan).
+     *
+     * Pacuan memakai id integer 1/2/3/6/12/14/15/20 untuk 23 sistem angsuran legacy.
+     * Next menyimpan frekuensi sebagai string ('weekly', 'biweekly', 'monthly', dst).
+     * Untuk dipakai oleh MemberLoanScheduleCalculator yang expect pacuan-style integer id,
+     * string frekuensi dipetakan ke id yang relevan.
+     */
+    private function mapFrequencyToSystemId(string $frequency): string
+    {
+        // Kalau sudah berupa id integer (legacy import / direct call), kembalikan apa adanya.
+        if (preg_match('/^\d+$/', $frequency) === 1) {
+            return $frequency;
+        }
+
+        return match ($frequency) {
+            'weekly' => '12',           // Mingguan (+x*7 days)
+            'biweekly' => '14',         // 2-mingguan
+            'monthly' => '1',           // Bulanan
+            'bimonthly' => '2',         // 2-bulanan
+            'quarterly' => '3',         // 3-bulanan (triwulan)
+            'every_4_months' => '4',
+            'every_5_months' => '5',
+            'every_6_months' => '6',     // Semester
+            'every_7_months' => '7',
+            'every_8_months' => '8',
+            'every_9_months' => '9',
+            'every_10_months' => '10',
+            'every_11_months' => '11',   // khusus pacuan: jangka += 24
+            'every_12_months' => '15',   // pacuan: grace 2 bulan
+            'every_24_months' => '20',   // pacuan: grace 12 bulan
+            'every_36_months' => '20',   // map ke 20 (grace 12) — fallback
+            'at_maturity' => '15',       // sekaligus di akhir → map ke grace-2 style
+            default => $frequency,
+        };
+    }
+
+    /**
+     * Normalisasi data jaminan (collateral) dari payload Form Request menjadi array siap JSON.
+     *
+     * Struktur collateral yang didukung (legacy pacuan):
+     *  - type        : 'kendaraan' | 'sertifikat_tanah' | 'bpkb' | 'lainnya'
+     *  - description : string deskripsi (mis. "Sertifikat Hak Milik No. 123")
+     *  - value       : float estimasi nilai jaminan (Rupiah)
+     *  - reference   : string nomor dokumen (opsional, mis. No. BPKB / No. SHM)
+     *
+     * Mendukung tiga bentuk input:
+     *  1. Array asosiatif dengan key di atas.
+     *  2. JSON string valid.
+     *  3. Null / string kosong → null.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function normalizeCollateral(mixed $raw): ?array
+    {
+        if ($raw === null || $raw === '') {
+            return null;
+        }
+
+        if (is_string($raw)) {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                $raw = $decoded;
+            } else {
+                return null;
+            }
+        }
+
+        if (! is_array($raw) || $raw === []) {
+            return null;
+        }
+
+        $type = isset($raw['type']) ? trim((string) $raw['type']) : 'lainnya';
+        $allowedTypes = ['kendaraan', 'sertifikat_tanah', 'bpkb', 'lainnya'];
+        if (! in_array($type, $allowedTypes, true)) {
+            $type = 'lainnya';
+        }
+
+        $description = isset($raw['description']) ? trim((string) $raw['description']) : null;
+        $value = isset($raw['value']) && $raw['value'] !== '' && $raw['value'] !== null ? (float) $raw['value'] : null;
+        $reference = isset($raw['reference']) ? trim((string) $raw['reference']) : null;
+
+        // Normalisasi: string kosong ('') diperlakukan sebagai null
+        if ($description === '') {
+            $description = null;
+        }
+        if ($reference === '') {
+            $reference = null;
+        }
+
+        if ($description === null && $value === null && $reference === null) {
+            return null;
+        }
+
+        return [
+            'type' => $type,
+            'description' => $description,
+            'value' => $value,
+            'reference' => $reference,
+            'recorded_at' => now()->toDateString(),
+        ];
     }
 
     private function resolveRevenueAccount(string $productCode): Account
@@ -1361,13 +1483,13 @@ final class LoanService
             }
 
             if ($isMemberLoan) {
-                $calc = app(\App\Domain\Lending\Services\MemberLoanScheduleCalculator::class);
+                $calc = app(MemberLoanScheduleCalculator::class);
                 $calc->recalculate(
                     loan: $newLoan,
                     term: $term,
                     principal: $principalRemaining,
-                    principalSystem: $principalFreq,
-                    interestSystem: $interestFreq,
+                    principalSystem: $this->mapFrequencyToSystemId($principalFreq),
+                    interestSystem: $this->mapFrequencyToSystemId($interestFreq),
                     serviceRateTotal: $serviceRateTotal,
                     interestMethod: $method,
                     disbursementDate: $rescheduledAt,

@@ -42,6 +42,12 @@ final class MemberLoanRequest extends FormRequest
             'principal_grace_months' => ['nullable', 'integer', 'min:0', 'max:120'],
             'interest_grace_months' => ['nullable', 'integer', 'min:0', 'max:120'],
             'rounding_step' => ['nullable', 'integer', 'in:0,100,500,1000,5000,10000,50000'],
+            'collateral' => ['nullable'],
+            'collateral.type' => ['nullable', 'string', 'in:kendaraan,sertifikat_tanah,bpkb,lainnya'],
+            'collateral.description' => ['nullable', 'string', 'max:500'],
+            'collateral.value' => ['nullable', 'numeric', 'min:0', 'max:9999999999999.99'],
+            'collateral.reference' => ['nullable', 'string', 'max:120'],
+            'verification_remarks' => ['nullable', 'string', 'max:2000'],
         ];
     }
 
@@ -60,6 +66,38 @@ final class MemberLoanRequest extends FormRequest
             'principal_grace_months' => 'grace period pokok',
             'interest_grace_months' => 'grace period jasa',
             'rounding_step' => 'pembulatan angsuran',
+            'collateral.type' => 'jenis jaminan',
+            'collateral.description' => 'deskripsi jaminan',
+            'collateral.value' => 'nilai jaminan',
+            'collateral.reference' => 'nomor dokumen jaminan',
+            'verification_remarks' => 'catatan verifikasi',
         ];
+    }
+
+    /**
+     * Siapkan payload yang sudah ternormalisasi untuk LoanService::createMemberProposal.
+     *
+     * @return array<string, mixed>
+     */
+    public function normalized(): array
+    {
+        $data = $this->validated();
+        $collateral = null;
+
+        if ($this->has('collateral') && is_array($this->input('collateral'))) {
+            $raw = $this->input('collateral');
+            if (($raw['description'] ?? '') !== '' || (isset($raw['value']) && $raw['value'] !== '' && $raw['value'] !== null) || ($raw['reference'] ?? '') !== '') {
+                $collateral = [
+                    'type' => $raw['type'] ?? 'lainnya',
+                    'description' => $raw['description'] ?? null,
+                    'value' => isset($raw['value']) && $raw['value'] !== '' ? (float) $raw['value'] : null,
+                    'reference' => $raw['reference'] ?? null,
+                ];
+            }
+        }
+
+        $data['collateral'] = $collateral;
+
+        return $data;
     }
 }

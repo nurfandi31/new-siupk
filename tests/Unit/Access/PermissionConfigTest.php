@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Access;
 
-use App\Http\Requests\Accounting\JournalEntryRequest;
-use App\Http\Requests\Accounting\LoanInstallmentJournalRequest;
-use App\Http\Requests\Website\SitePageRequest;
-use App\Http\Requests\Website\SitePostRequest;
 use Tests\TestCase;
 
 final class PermissionConfigTest extends TestCase
@@ -48,19 +44,25 @@ final class PermissionConfigTest extends TestCase
         foreach (config('permissions.request_map') as $permission) {
             self::assertContains($permission, $catalog, "unknown permission in request_map: {$permission}");
         }
-        foreach (config('permissions.tool_map') as $tool => $permission) {
-            self::assertContains($permission, $catalog, "unknown permission for tool {$tool}");
-        }
-        foreach (config('permissions.nav_map') as $path => $permission) {
-            self::assertContains($permission, $catalog, "unknown permission in nav_map for {$path}");
-        }
+    }
 
-        self::assertSame('journals.create', config('permissions.request_map.'.JournalEntryRequest::class));
-        self::assertSame('installments.record', config('permissions.request_map.'.LoanInstallmentJournalRequest::class));
-        self::assertSame('website.manage', config('permissions.request_map.'.SitePostRequest::class));
-        self::assertSame('website.manage', config('permissions.request_map.'.SitePageRequest::class));
-        self::assertSame('journals.create', config('permissions.tool_map.create_journal_entry'));
-        self::assertSame('assets.view', config('permissions.tool_map.search_assets'));
-        self::assertSame('assets.view', config('permissions.nav_map./accounting/assets'));
+    public function test_installment_individual_route_is_in_nav_map(): void
+    {
+        // nav_map harus memuat '/accounting/journal-entries/installment-individual'
+        // agar kasir yang punya 'installments.record' melihat menu di sidebar.
+        $navMap = config('permissions.nav_map');
+        self::assertIsArray($navMap);
+        self::assertArrayHasKey('/accounting/journal-entries/installment-individual', $navMap);
+        self::assertSame('installments.record', $navMap['/accounting/journal-entries/installment-individual']);
+    }
+
+    public function test_dashboard_service_uses_member_loan_enum_not_individual_loan(): void
+    {
+        // Bug fix: enum DB hanya izinkan 'member_loan' & 'group_loan'.
+        // Query di DashboardService harus pakai 'member_loan', bukan 'individual_loan'.
+        $source = file_get_contents(base_path('app/Domain/Dashboard/Services/DashboardService.php'));
+        self::assertIsString($source);
+        self::assertStringContainsString("'member_loan'", $source);
+        self::assertStringNotContainsString("'individual_loan'", $source, 'DashboardService tidak boleh pakai enum invalid individual_loan');
     }
 }

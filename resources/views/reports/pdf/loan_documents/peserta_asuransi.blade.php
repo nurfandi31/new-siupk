@@ -11,6 +11,9 @@
     $jasaPersen = (float) $tokens['{jasa_persen}'];
     $termMonths = (int) $loan['term_months'];
     $alokasiTotal = 0;
+
+    $managerName = $tokens['{kepala_lembaga}'] ?? '';
+    $lembagaLevel1 = $tokens['{sebutan_level_1}'] ?? 'Lembaga';
 @endphp
 
 <style>
@@ -113,16 +116,16 @@
     </tr>
     <tr>
         <td>
-            {{ '' }}
+            Desa
         </td>
         <td align="center">:</td>
         <td>
             <b>{{ $group['village'] }}</b>
         </td>
-        <td>Alokasi Piutang</td>
+        <td>Jangka</td>
         <td align="center">:</td>
         <td>
-            <b>{{ '' }} ({{ $termMonths }} Bulan)</b>
+            <b>{{ $termMonths }} Bulan</b>
         </td>
     </tr>
     <tr>
@@ -134,7 +137,7 @@
         <td>Sistem Bagi Hasil</td>
         <td align="center">:</td>
         <td>
-            <b>{{ number_format($jasaPersen / max(1, $termMonths), 2) }}%/Bulan, {{ '' }}</b>
+            <b>{{ number_format($jasaPersen / max(1, $termMonths), 2) }}%/Bulan flat</b>
         </td>
     </tr>
 </table>
@@ -169,12 +172,13 @@
             $tJasa += $jasa;
             $tPokok += $pokok;
             $tAsuransi += $asuransi;
+            $ttl = trim(($b['birth_place'] ?? '').', '.($b['birth_date_label'] ?? ''), ', ');
         @endphp
         <tr>
             <td align="center">{{ $no++ }}</td>
             <td>{{ $b['name'] }}</td>
             <td>
-                {{ '' }}, {{ '' }}
+                {{ $ttl ?: '—' }}
             </td>
             <td align="right">{{ number_format((float) $pokok, 0, ',', '.') }}</td>
             <td align="right">{{ number_format((float) $jasa, 0, ',', '.') }}</td>
@@ -207,7 +211,7 @@
     </tr>
     <tr>
         <td align="center" colspan="5">
-            {{ '' }}
+            {{ $lembagaLevel1 }} {{ $identity['legal_name'] }}
         </td>
         <td align="center" colspan="3">
             Ketua Kelompok {{ $group['name'] }}
@@ -218,7 +222,7 @@
     </tr>
     <tr>
         <td align="center" colspan="5">
-            <b>{{ '' }}</b>
+            <b>{{ $managerName }}</b>
         </td>
         <td align="center" colspan="3">
             <b>{{ $committeeChair }}</b>

@@ -7,20 +7,18 @@ namespace App\Domain\Lending\Services;
 use App\Domain\Lending\Exceptions\LoanAlreadyActiveException;
 use App\Domain\Lending\Models\Loan;
 use App\Domain\Membership\Models\Member;
-use App\Domain\Membership\Models\GroupMembership;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Cegah pinjaman ganda untuk anggota / kelompok.
  *
- * Pattern pacuan (PinjamanIndividuController::store):
- * - Cek anggota belum punya pinjaman aktif di status P/V/W (di scope kecamatan).
- * - Cek data_pemanfaat.lokasi != current (kalau lintas kecamatan).
+ * Paritas pacuan: pinjaman bertumpuk pada satu anggota hanya boleh jika pinjaman sebelumnya sudah
+ * berada di status terminal (L/Lunas, R/Reschedule, H/Hapus, T/Tidak Layak) atau belum pernah
+ * ada sama sekali. Status draft/proposal yang masih terbuka tetap dianggap "sedang berjalan"
+ * dan wajib diselesaikan (atau ditolak) sebelum pengajuan baru.
  *
- * siupknext equivalent:
- * - Query Loan via LoanBorrower.member_row_id / LoanBorrower.group_row_id.
- * - Status yang dianggap "active" (memblokir): draft, verified, waiting, approved, active, disbursed.
- * - Status terminal (tidak memblokir): completed, written_off, rescheduled, rejected.
+ * Status yang memblokir pengajuan baru: draft, verified, waiting, approved, active, disbursed.
+ * Status terminal yang TIDAK memblokir: completed, written_off, rescheduled, rejected.
  */
 final class LoanEligibilityChecker
 {

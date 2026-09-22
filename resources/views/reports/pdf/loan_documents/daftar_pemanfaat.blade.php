@@ -99,7 +99,7 @@
         <td>{{ $group['address'] }}</td>
         <td>Sistem Angs.</td>
         <td align="right">:</td>
-        <td>{{ '' }}</td>
+        <td>{{ $loan_obj->principal_frequency === 'monthly' ? 'Bulanan' : ucfirst((string) $loan_obj->principal_frequency) }}</td>
     </tr>
     <tr>
         <td>Tgl. Proposal</td>
@@ -130,12 +130,23 @@
     </tr>
 
     @foreach ($beneficiaries as $b)
+        @php
+            $genderLabel = $b['gender'] === 'L' ? 'L' : ($b['gender'] === 'P' ? 'P' : '—');
+            $age = '—';
+            if (! empty($b['birth_date'])) {
+                try {
+                    $age = (string) \Carbon\CarbonImmutable::parse($b['birth_date'])->age;
+                } catch (\Throwable) {
+                    $age = '—';
+                }
+            }
+        @endphp
         <tr>
             <td class="t l b" height="15" align="center">{{ $loop->iteration }}</td>
             <td class="t l b">{{ $b['nik'] }}</td>
             <td class="t l b">{{ $b['name'] }}</td>
-            <td class="t l b" align="center">{{ '' }}</td>
-            <td class="t l b">{{ '' }}</td>
+            <td class="t l b" align="center">{{ $genderLabel }}</td>
+            <td class="t l b">{{ $age }}</td>
             <td class="t l b">{{ $b['guarantor'] }}</td>
             <td class="t l b" align="right">{{ number_format((float) $b['proposed_amount'], 0, ',', '.') }}</td>
             <td class="t l b r">&nbsp;</td>

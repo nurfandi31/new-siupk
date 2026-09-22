@@ -146,9 +146,33 @@ final class JournalEntryController
         return redirect()->route('accounting.journal-entries.create');
     }
 
-    public function installment(Request $request, TenantContext $context): Response
+    public function installment(Request $request, TenantContext $context, string $type = 'group'): Response
     {
         $tenantId = $context->id();
+
+        // type: 'group' (default, kelompok) atau 'individual' (perorangan).
+        // Filter berdasarkan `loans.legacy_source` — paritas dengan pacuan yang
+        // punya route jurnal_angsuran terpisah untuk kelompok vs individu.
+        if (! in_array($type, ['group', 'individual'], true)) {
+            $type = 'group';
+        }
+
+        // Pakai subquery agregat untuk borrower info agar:
+        // 1. Tidak menggandakan loan row (loan dengan multi-borrower tidak dobel).
+        // 2. Kompatibel dengan MySQL ONLY_FULL_GROUP_BY (semua kolom SELECT non-aggregate
+        //    keluar dari subquery atau dari tabel loans/loan_products yang di-join biasa).
+        // 3. Untuk member_loan, ambil borrower row pertama (peminjam utama diasumsikan
+        //    single-borrower — tidak ada konsep penjamin untuk pinjaman perorangan).
+        $borrowerSub = DB::connection('tenant')
+            ->table('loan_borrowers')
+            ->selectRaw('loan_row_id, MIN(group_row_id) AS group_row_id, MIN(member_row_id) AS member_row_id')
+            ->where('tenant_id', $tenantId)
+            ->groupBy('loan_row_id');
+
+        $groupNameSub = DB::connection('tenant')
+            ->table('groups')
+            ->selectRaw('row_id, name')
+            ->where('tenant_id', $tenantId);
 
         $loans = DB::connection('tenant')
             ->table('loans as l')
@@ -156,18 +180,30 @@ final class JournalEntryController
                 $join->on('p.row_id', '=', 'l.loan_product_row_id')
                     ->where('p.tenant_id', '=', $tenantId);
             })
-            ->leftJoin('loan_borrowers as lb', function ($join) use ($tenantId): void {
-                $join->on('lb.loan_row_id', '=', 'l.row_id')
-                    ->where('lb.tenant_id', '=', $tenantId);
-            })
-            ->leftJoin('groups as g', function ($join) use ($tenantId): void {
-                $join->on('g.row_id', '=', 'lb.group_row_id')
-                    ->where('g.tenant_id', '=', $tenantId);
-            })
+            ->leftJoinSub($borrowerSub, 'lb', 'lb.loan_row_id', '=', 'l.row_id')
+            ->leftJoinSub($groupNameSub, 'g', 'g.row_id', '=', 'lb.group_row_id')
             ->where('l.tenant_id', $tenantId)
             ->whereIn('l.status', ['active', 'disbursed'])
+            ->when($type === 'individual', function ($query): void {
+                $query->where('l.legacy_source', 'member_loan');
+            })
+            ->when($type === 'group', function ($query): void {
+                $query->where(function ($q): void {
+                    $q->whereNull('l.legacy_source')->orWhere('l.legacy_source', '!=', 'member_loan');
+                });
+            })
             ->orderByDesc('l.disbursed_at')
-            ->get(['l.row_id', 'l.id', 'l.loan_number', 'l.principal_amount', 'l.disbursed_at', 'p.code as product_code', 'lb.group_row_id', 'g.name as group_name']);
+            ->get([
+                'l.row_id',
+                'l.id',
+                'l.loan_number',
+                'l.principal_amount',
+                'l.disbursed_at',
+                'p.code as product_code',
+                'lb.group_row_id',
+                'lb.member_row_id',
+                'g.name as group_name',
+            ]);
 
         $loanRowIds = $loans->pluck('row_id')->all();
 
@@ -183,20 +219,30 @@ final class JournalEntryController
                 ->pluck('total_paid', 'loan_row_id')
                 ->all();
 
-        $loanOptions = $loans->map(function ($loan) use ($totalsPaid): array {
+        $loanOptions = $loans->map(function ($loan) use ($totalsPaid, $type, $tenantId): array {
             $paid = (float) ($totalsPaid[$loan->row_id] ?? 0);
             $sisa = round((float) $loan->principal_amount - $paid, 2);
+
+            // Untuk individu, label menampilkan nomor SPK + identitas anggota
+            // (LoanService.generate sudah set loan_number untuk member_loan).
+            $isIndividual = $type === 'individual';
+            $subjectLabel = $isIndividual
+                ? $this->resolveIndividualSubject($tenantId, (int) $loan->row_id)
+                : (string) ($loan->group_name ?? '-');
 
             return [
                 'value' => (int) $loan->row_id,
                 'label' => sprintf(
-                    'Loan #%d · %s · Sisa Pokok %s',
-                    (int) $loan->id,
+                    '%s · %s · Sisa Pokok %s',
+                    $loan->loan_number ?: 'Loan #'.(int) $loan->id,
                     strtoupper((string) $loan->product_code),
                     'Rp '.number_format($sisa, 0, ',', '.'),
                 ),
                 'product_code' => (string) $loan->product_code,
                 'group_name' => $loan->group_name ? (string) $loan->group_name : null,
+                'borrower_member_row_id' => $loan->member_row_id ? (int) $loan->member_row_id : null,
+                'subject_label' => $subjectLabel,
+                'is_individual' => $isIndividual,
                 'sisa_pokok' => $sisa,
                 'loan_number' => $loan->loan_number,
             ];
@@ -267,13 +313,55 @@ final class JournalEntryController
 
         $peminjamOptions = $this->buildPeminjamOptions($loanRowIds, $tenantId);
 
-        return Inertia::render('Accounting/JournalEntries/Installment', [
+        return Inertia::render($type === 'individual' ? 'Accounting/JournalEntries/InstallmentIndividual' : 'Accounting/JournalEntries/Installment', [
             'loanOptions' => $loanOptions,
             'installmentOptions' => $installmentOptions,
             'cashAccounts' => $cashAccounts,
             'peminjamOptions' => $peminjamOptions,
             'today' => now()->toDateString(),
         ]);
+    }
+
+    /**
+     * Pintasan ke jurnal angsuran khusus pinjaman perorangan (member_loan).
+     * Setara `installment('individual')` — dipisah supaya menu navbar bisa
+     * link langsung ke halaman khusus individu (paritas pacuan route
+     * /transaksi/jurnal_angsuran_individu).
+     */
+    public function individualInstallment(Request $request, TenantContext $context): Response
+    {
+        return $this->installment($request, $context, 'individual');
+    }
+
+    /**
+     * Ambil label subjek pinjaman perorangan (nama anggota + NIK) untuk
+     * ditampilkan di daftar pilihan loan. Dipakai agar operator tahu
+     * pinjaman perorangan milik siapa.
+     */
+    private function resolveIndividualSubject(int $tenantId, int $loanRowId): string
+    {
+        $row = DB::connection('tenant')
+            ->table('loan_borrowers as b')
+            ->join('members as m', function ($join) use ($tenantId): void {
+                $join->on('m.row_id', '=', 'b.member_row_id')
+                    ->where('m.tenant_id', '=', $tenantId);
+            })
+            ->join('people as p', function ($join) use ($tenantId): void {
+                $join->on('p.row_id', '=', 'm.person_row_id')
+                    ->where('p.tenant_id', '=', $tenantId);
+            })
+            ->where('b.tenant_id', $tenantId)
+            ->where('b.loan_row_id', $loanRowId)
+            ->whereNotNull('b.member_row_id')
+            ->first(['p.full_name', 'p.national_identity_number']);
+
+        if ($row === null) {
+            return '—';
+        }
+
+        $nik = trim((string) ($row->national_identity_number ?? ''));
+
+        return $nik !== '' ? sprintf('%s (NIK %s)', (string) $row->full_name, $nik) : (string) $row->full_name;
     }
 
     /**
@@ -364,9 +452,107 @@ final class JournalEntryController
         LoanService $loanService,
         WhatsappNotificationService $notices,
     ): RedirectResponse {
+        return $this->processInstallmentSubmission(
+            $request,
+            $loanService,
+            $notices,
+            redirectRoute: 'accounting.journal-entries.installment',
+        );
+    }
+
+    /**
+     * Submit jurnal angsuran khusus pinjaman perorangan (member_loan).
+     * Paritas pacuan /transaksi/jurnal_angsuran_individu_process — handler
+     * terpisah supaya redirect kembali ke halaman individual.
+     */
+    public function storeIndividualInstallment(
+        LoanInstallmentJournalRequest $request,
+        LoanService $loanService,
+        WhatsappNotificationService $notices,
+    ): RedirectResponse {
+        return $this->processInstallmentSubmission(
+            $request,
+            $loanService,
+            $notices,
+            redirectRoute: 'accounting.journal-entries.installment-individual',
+        );
+    }
+
+    /**
+     * Shared submission handler untuk jurnal angsuran kelompok & individu.
+     */
+    private function processInstallmentSubmission(
+        LoanInstallmentJournalRequest $request,
+        LoanService $loanService,
+        WhatsappNotificationService $notices,
+        string $redirectRoute,
+    ): RedirectResponse {
         $data = $request->validated();
+
+        // Cross-route guard sudah ditangani oleh FormRequest (lihat
+        // LoanInstallmentJournalRequest::expectedLoanScope). Di sini cukup pakai
+        // hasil validasi — loan_id pasti sudah sesuai dengan scope route.
+
+        $loanRowId = (int) $data['loan_id'];
+        $isMemberLoan = $redirectRoute === 'accounting.journal-entries.installment-individual';
+
         $userId = (int) $request->user()->row_id;
+
+        // Untuk pinjaman perorangan, bila frontend tidak mengirim member_allocations
+        // (karena 1 peminjam), auto-construct dari borrower_member_row_id + reference
+        // dan update loan_installments.principal_paid/interest_paid agar Sisa Pokok
+        // di dropdown akurat untuk pembayaran berikutnya. LoanService tidak menyentuh
+        // loan_installments — pre-existing behavior untuk kelompok yang manual.
+        if ($isMemberLoan && empty($data['member_allocations'])) {
+            $borrowerMemberRowId = DB::connection('tenant')
+                ->table('loan_borrowers')
+                ->where('loan_row_id', $loanRowId)
+                ->whereNotNull('member_row_id')
+                ->orderBy('row_id')
+                ->value('member_row_id');
+            if ($borrowerMemberRowId !== null) {
+                $data['member_allocations'] = [[
+                    'member_row_id' => (int) $borrowerMemberRowId,
+                    'principal_paid' => (float) ($data['principal_amount'] ?? 0),
+                    'interest_paid' => (float) ($data['interest_amount'] ?? 0),
+                    'penalty_paid' => (float) ($data['penalty_amount'] ?? 0),
+                ]];
+                // Frontend mengirim `reference` (= borrower_member_row_id) untuk field
+                // penyetor. Pastikan konsisten dengan auto-constructed allocation.
+                $data['reference'] = (int) $borrowerMemberRowId;
+            }
+        }
+
         $posted = $loanService->recordInstallmentPayment($data, $userId);
+
+        // Untuk individu: setelah recordInstallmentPayment (yang insert loan_installment_tracking),
+        // update loan_installments agar Sisa Pokok di dropdown akurat.
+        if ($isMemberLoan && ! empty($data['member_allocations']) && isset($data['installment_number'])) {
+            $principalAmount = (float) ($data['principal_amount'] ?? 0);
+            $interestAmount = (float) ($data['interest_amount'] ?? 0);
+            $penaltyAmount = (float) ($data['penalty_amount'] ?? 0);
+            DB::connection('tenant')
+                ->table('loan_installments')
+                ->where('tenant_id', app(TenantContext::class)->id())
+                ->where('loan_row_id', $loanRowId)
+                ->where('installment_number', (int) $data['installment_number'])
+                ->where('component', 'principal')
+                ->update([
+                    'principal_paid' => DB::raw('principal_paid + '.$principalAmount),
+                    'updated_at' => now(),
+                ]);
+            DB::connection('tenant')
+                ->table('loan_installments')
+                ->where('tenant_id', app(TenantContext::class)->id())
+                ->where('loan_row_id', $loanRowId)
+                ->where('installment_number', (int) $data['installment_number'])
+                ->where('component', 'interest')
+                ->update([
+                    'interest_paid' => DB::raw('interest_paid + '.$interestAmount),
+                    'penalty_paid' => DB::raw('penalty_paid + '.$penaltyAmount),
+                    'updated_at' => now(),
+                ]);
+        }
 
         $waMessage = null;
         try {
@@ -413,7 +599,7 @@ final class JournalEntryController
             'receipt_url' => route('accounting.journal-entries.installment.receipt', ['entry' => $posted->row_id]),
         ]);
 
-        return redirect()->route('accounting.journal-entries.installment');
+        return redirect()->route($redirectRoute);
     }
 
     public function installmentReceipt(

@@ -1,7 +1,13 @@
 # GAP ANALYSIS: Pinjaman Individu — siupk (pacuan) vs siupknext
 
 Tanggal analisis: 2026-09-18
-Status update: 2026-09-18 — selector: REUSE existing LoanService + guard legacy_source di tiap controller method. Lihat section K di bawah untuk ringkasan eksekusi.
+Tanggal update status: 2026-09-22 — **PARITAS LOGIKA PENCAPAIAN: jadwal angsuran 1:1 dengan pacuan; alur penuh (P/V/W/A/L/R/H/T/revert) selesai; 14 test paritas pass (111 assertions)**.
+
+Lihat juga:
+- `tests/Feature/Lending/MemberLoanLifecycleTest.php` — 14 test paritas
+- `app/Domain/Lending/Services/MemberLoanScheduleCalculator.php` — salinan rumus pacuan line 2317-2607
+- `CHANGELOG.md` [Unreleased] — detail teknis seluruh perubahan
+
 Spesifikasi sumber: `C:\laragon\www\siupk\app\Http\Controllers\PinjamanIndividuController.php` (2845 baris) + `PinjamanAnggotaController.php`
 Spesifikasi target: `C:\laragon\www\siupknext\app\Http\Controllers\Lending\LoanController.php` + `app\Domain\Lending\Services\LoanService.php`
 
@@ -197,16 +203,32 @@ Pacuan membedakan **PinjamanBertahap** (cash bertahap) — field `tgl_dana` vs `
 
 ## I. RENCANA EKSEKUSI
 
-Tahap 1 — Schema migration:
-- Tambah kolom `verified_at`, `approved_at`, `spk_number`, `source`, `disbursed_location`, `disbursed_time`, `collateral` (json nullable) ke `loans`.
-- Tambah status enum `rejected` di `loans.status`.
+Tahap 1 — Schema migration: ✅ SELESAI
+- ✅ Kolom `verified_at`, `approved_at` sudah ada (sebelumnya).
+- ✅ Kolom `spk_no`, `disbursement_slot`, `funding_source` sudah ada di migration `2026_09_18_000001_add_individual_loan_fields.php`.
+- ✅ Kolom `collateral` (JSON), `verification_remarks` sudah ada.
+- ✅ Status `rejected` di-handle oleh `LoanService::rejectMemberLoan()` — schema `loans.status` adalah string tanpa enum constraint, jadi `rejected` sudah bisa ditulis.
+- ✅ Kolom `running_principal` & `running_interest` di `loan_installments` ditambah di migration `2026_09_22_000001_add_running_totals_to_loan_installments.php` (paritas `target_pokok`/`target_jasa` pacuan).
 
-Tahap 2 — Servis `MemberLoanScheduleCalculator`:
-- Copy persis rumus `generate()` pacuan.
-- Test dengan sample 12/24/36 bulan, flat/sliding, sistem 11/12/14/15/20.
+Tahap 2 — Servis `MemberLoanScheduleCalculator`: ✅ SELESAI
+- ✅ Rumus pacuan line 2317-2607 disalin 1:1 — `tempo_pokok`/`tempo_jasa`, magic `jangka==24`, mode mingguan (sistem 12 → +x*7 days), override jadwal desa, `batas_angsuran`, end-of-month handling.
+- ✅ Test 12/24 bulan dengan flat & sliding — `test_create_member_proposal_persists_collateral_and_individual_schedule`, `test_member_proposal_schedule_handles_jangka_24_with_magic_formula`, `test_individual_schedule_uses_weekly_dates_for_sistem_12`.
 
-Tahap 3 — Controller methods (view + update) untuk V/W/A/L/R/H/T.
-Tahap 4 — Flow bayar angsuran individu.
-Tahap 5 — Kartu angsuran PDF.
-Tahap 6 — Keterangan lunas PDF.
-Tahap 7 — Dokumen PDF batch.
+Tahap 3 — Controller methods V/W/A/L/R/H/T: ✅ SELESAI
+- ✅ `individualVerify`, `individualApprove`, `individualDisburse`, `individualRevert`, `individualReject`, `individualComplete`, `individualWriteOff`, `individualReschedule`, `individualCancelReschedule`.
+- ✅ Guard `legacy_source='member_loan'` di tiap method controller.
+- ✅ Test `test_verify_to_waiting_to_disburse_to_complete_lifecycle_for_individual`, `test_reject_member_loan_sets_rejected_status_only_from_pre_active_status`, `test_write_off_for_individual_creates_pacuan_style_journal`, `test_reschedule_for_individual_uses_pacuan_schedule_calculator`, `test_revert_member_loan_returns_to_draft_status`.
+
+Tahap 4 — Bayar angsuran individu: ✅ SELESAI
+- ✅ `recordInstallmentPayment()` di `LoanService` sudah generik — handle individu & kelompok via `loan_row_id` (menggantikan `id_pinj_i` pacuan).
+- ✅ Test `test_record_installment_payment_for_individual_posts_correct_journal` — jurnal debit kas, kredit piutang+jasa+denda (paritas `TransaksiController::angsuran` pacuan).
+
+Tahap 5 — Kartu angsuran PDF: ✅ SELESAI
+- ✅ `individualCard` route + `MemberLoanCardService` + Blade `reports.pdf.loan_card_member`.
+- ✅ Test `test_member_loan_card_service_renders_pdf_for_individual`.
+
+Tahap 6 — Keterangan Lunas PDF: ✅ SELESAI
+- ✅ `individualSettlementLetter` route + Blade `reports.pdf.loan_settlement_member`.
+
+Tahap 7 — Dokumen PDF batch (30+): ⏳ BELUM
+- ⏳ `coverProposal`, `BA musyawarah`, `verifikasi`, `SPK`, `kuitansi`, dll. — di luar scope sesi ini. Dapat di-batch di iterasi berikutnya jika diperlukan untuk paritas penuh.

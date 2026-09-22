@@ -16,6 +16,21 @@ final class LoanInstallmentJournalRequest extends FormRequest
 {
     use AuthorizesPermission;
 
+    /**
+     * Tentukan scope loan berdasarkan route name. Dipakai oleh rules() untuk
+     * memvalidasi loan_id sesuai dengan route (kelompok vs individu).
+     */
+    private function expectedLoanScope(): string
+    {
+        $route = $this->route();
+        $name = $route?->getName();
+        if ($name === 'accounting.journal-entries.installment-individual.store') {
+            return 'member_loan';
+        }
+
+        return 'group_loan';
+    }
+
     public function rules(): array
     {
         $tenantId = app(TenantContext::class)->id();
@@ -29,9 +44,25 @@ final class LoanInstallmentJournalRequest extends FormRequest
         $memberExists = Rule::exists(Member::class, 'row_id')
             ->where(fn ($query) => $query->where('tenant_id', $tenantId)->where('status', 'active'));
 
+        // Validasi loan_id + cross-route guard sekaligus:
+        // - Route /installment-individual hanya boleh loan dengan legacy_source='member_loan'.
+        // - Route /installment hanya boleh loan dengan legacy_source != 'member_loan' atau NULL.
+        $expectedScope = $this->expectedLoanScope();
+        $loanExists = Rule::exists(Loan::class, 'row_id')
+            ->where(function ($query) use ($expectedScope): void {
+                $query->where('tenant_id', app(TenantContext::class)->id());
+                if ($expectedScope === 'member_loan') {
+                    $query->where('legacy_source', 'member_loan');
+                } else {
+                    $query->where(function ($q): void {
+                        $q->whereNull('legacy_source')->orWhere('legacy_source', '!=', 'member_loan');
+                    });
+                }
+            });
+
         return [
             'transaction_date' => ['required', 'date', 'before_or_equal:today'],
-            'loan_id' => ['required', 'integer', Rule::exists(Loan::class, 'row_id')],
+            'loan_id' => ['required', 'integer', $loanExists],
             'installment_row_id' => ['nullable', 'integer'],
             'installment_number' => ['nullable', 'integer', 'min:1'],
             'principal_amount' => ['required', 'numeric', 'min:1'],

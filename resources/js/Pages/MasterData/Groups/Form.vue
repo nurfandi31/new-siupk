@@ -63,6 +63,9 @@ const businessOptions = computed(() => props.businessTypes.map(option));
 const activityOptions = computed(() => props.activityTypes.map(option));
 const levelOptions = computed(() => props.groupLevels.map(option));
 const functionOptions = computed(() => props.groupFunctions.map(option));
+const memberHint = computed(() => selectedMembers.value.length >= 3
+    ? `${selectedMembers.value.length} anggota dipilih (memenuhi syarat).`
+    : `Minimal 3 anggota. Saat ini: ${selectedMembers.value.length}.`);
 
 function option(item) { return { value: item.row_id, label: item.name }; }
 function localIsoDate() {
@@ -159,58 +162,84 @@ searchMembers();
     <Head :title="editing ? 'Edit Kelompok' : 'Tambah Kelompok'" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
-            <header class="mb-6"><h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit Kelompok' : 'Tambah Kelompok' }}</h1><p class="mt-1 text-on-surface-variant">Kelola identitas, anggota, dan pengurus kelompok.</p></header>
+            <header class="mb-6">
+                <h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit Kelompok' : 'Tambah Kelompok' }}</h1>
+                <p class="mt-1 text-on-surface-variant">Kelola identitas, anggota, dan pengurus kelompok.</p>
+            </header>
+
             <AppCard>
-                <form class="space-y-5" @submit.prevent="submit">
-                    <section>
-                        <h2 class="font-semibold text-primary">Identitas Kelompok</h2>
-                        <div class="mt-3 grid gap-4 sm:grid-cols-2" :class="editing ? 'xl:grid-cols-4' : 'xl:grid-cols-3'">
-                            <AppInput v-if="editing" :model-value="group.code" label="Kode Kelompok" icon="tag" readonly />
-                            <AppInput v-model="form.name" label="Nama Kelompok" icon="groups" required :error="form.errors.name" />
-                            <SmartSelect v-model="form.village_id" label="Desa" :options="villageOptions" searchable required :error="form.errors.village_id" />
-                            <AppDatePicker v-model="form.established_at" label="Tanggal Berdiri" :max="today" clearable :error="form.errors.established_at" />
-                        </div>
-                        <div class="mt-4 grid gap-4 xl:grid-cols-3">
-                            <AppInput v-model="form.address" label="Alamat" icon="home" placeholder="Masukkan alamat lengkap kelompok" :error="form.errors.address" />
-                            <AppInput v-model="form.phone" label="No. HP" icon="phone" type="tel" :error="form.errors.phone" />
-                            <AppSwitch v-model="isActive" label="Kelompok aktif" description="Kelompok tersedia untuk proses siupk." icon="toggle_on" />
-                        </div>
-                    </section>
+                <form class="space-y-4" @submit.prevent="submit">
+                    <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        <AppInput v-if="editing" :model-value="group.code" label="Kode Kelompok" icon="tag" readonly />
+                        <AppInput v-model="form.name" label="Nama Kelompok" icon="groups" required :error="form.errors.name" />
+                        <SmartSelect v-model="form.village_id" label="Desa" :options="villageOptions" searchable required :error="form.errors.village_id" />
+                        <AppDatePicker v-model="form.established_at" label="Tanggal Berdiri" :max="today" clearable :error="form.errors.established_at" />
+                        <SmartSelect v-model="form.business_type_id" label="Jenis Usaha" :options="businessOptions" required :error="form.errors.business_type_id" />
+                        <SmartSelect v-model="form.activity_type_id" label="Jenis Kegiatan" :options="activityOptions" required :error="form.errors.activity_type_id" />
+                        <SmartSelect v-model="form.group_level_id" label="Tingkatan" :options="levelOptions" required :error="form.errors.group_level_id" />
+                        <SmartSelect v-model="form.group_function_id" label="Fungsi Kelompok" :options="functionOptions" required :error="form.errors.group_function_id" />
+                    </fieldset>
 
-                    <section class="border-t border-outline-variant pt-4">
-                        <h2 class="font-semibold text-primary">Klasifikasi</h2>
-                        <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            <SmartSelect v-model="form.business_type_id" label="Jenis Usaha" :options="businessOptions" required :error="form.errors.business_type_id" />
-                            <SmartSelect v-model="form.activity_type_id" label="Jenis Kegiatan" :options="activityOptions" required :error="form.errors.activity_type_id" />
-                            <SmartSelect v-model="form.group_level_id" label="Tingkatan" :options="levelOptions" required :error="form.errors.group_level_id" />
-                            <SmartSelect v-model="form.group_function_id" label="Fungsi Kelompok" :options="functionOptions" required :error="form.errors.group_function_id" />
-                        </div>
-                    </section>
+                    <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        <AppInput v-model="form.address" label="Alamat" icon="home" placeholder="Alamat lengkap kelompok" :error="form.errors.address" />
+                        <AppInput v-model="form.phone" label="No. HP" icon="phone" type="tel" :error="form.errors.phone" />
+                        <AppSwitch v-model="isActive" label="Kelompok Aktif" description="Tersedia untuk proses siupk." icon="toggle_on" field />
+                    </fieldset>
 
-                    <section class="border-t border-outline-variant pt-4">
-                        <h2 class="font-semibold text-primary">Anggota Kelompok</h2>
-                        <p class="mt-1 text-sm text-on-surface-variant">Tambahkan minimal tiga anggota aktif.</p>
-                        <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
-                            <div class="flex-1"><SmartSelect v-model="candidateId" label="Cari Anggota" :options="memberOptions" searchable :loading="memberLoading" :empty-action-label="memberSearchEmpty && memberSearch ? 'Daftarkan anggota baru' : null" placeholder="Cari NIK atau nama" @search-change="updateMemberSearch" @search="searchMembers" @empty-action="openQuickMember" /></div>
-                            <AppButton variant="secondary" size="large" icon="person_add" :disabled="!candidateId" @click="addMember">Tambahkan</AppButton>
+                    <fieldset class="grid gap-4 xl:grid-cols-3">
+                        <div class="xl:col-span-2">
+                            <SmartSelect
+                                v-model="candidateId"
+                                label="Cari Anggota"
+                                :options="memberOptions"
+                                :loading="memberLoading"
+                                :hint="memberHint"
+                                :empty-action-label="memberSearchEmpty && memberSearch ? 'Daftarkan anggota baru' : null"
+                                placeholder="Cari NIK atau nama"
+                                searchable
+                                @search-change="updateMemberSearch"
+                                @search="searchMembers"
+                                @empty-action="openQuickMember"
+                            />
                         </div>
-                        <p v-if="memberError" class="mt-2 text-sm text-error">{{ memberError }}</p>
-                        <div class="mt-3 overflow-x-auto rounded-xl border border-outline-variant">
-                            <table class="w-full text-left text-sm"><thead class="bg-surface-container-low"><tr><th class="px-4 py-3">NIK</th><th class="px-4 py-3">Nama</th><th class="px-4 py-3 text-right">Aksi</th></tr></thead><tbody><tr v-for="member in selectedMembers" :key="member.value" class="border-t border-outline-variant"><td class="px-4 py-3">{{ member.nik }}</td><td class="px-4 py-3 font-semibold">{{ member.name }}</td><td class="px-4 py-3 text-right"><AppButton variant="ghost" size="compact" icon="close" aria-label="Hapus anggota" @click="removeMember(member.value)">Hapus</AppButton></td></tr><tr v-if="!selectedMembers.length"><td colspan="3" class="px-4 py-6 text-center text-on-surface-variant">Belum ada anggota dipilih.</td></tr></tbody></table>
+                        <div class="flex items-end">
+                            <AppButton variant="secondary" size="large" icon="person_add" :disabled="!candidateId" class="w-full" @click="addMember">Tambahkan</AppButton>
                         </div>
-                    </section>
+                    </fieldset>
 
-                    <section class="border-t border-outline-variant pt-4">
-                        <h2 class="font-semibold text-primary">Pengurus Kelompok</h2>
-                        <p class="mt-1 text-sm text-on-surface-variant">Ketua, sekretaris, dan bendahara wajib berbeda.</p>
-                        <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            <SmartSelect v-model="form.chair_id" label="Ketua" :options="selectedOptions" :excluded-values="[form.secretary_id, form.treasurer_id].filter(Boolean)" searchable required :error="form.errors.chair_id" />
-                            <SmartSelect v-model="form.secretary_id" label="Sekretaris" :options="selectedOptions" :excluded-values="[form.chair_id, form.treasurer_id].filter(Boolean)" searchable required :error="form.errors.secretary_id" />
-                            <SmartSelect v-model="form.treasurer_id" label="Bendahara" :options="selectedOptions" :excluded-values="[form.chair_id, form.secretary_id].filter(Boolean)" searchable required :error="form.errors.treasurer_id" />
-                        </div>
-                    </section>
+                    <p v-if="memberError" class="-mt-2 text-sm text-error">{{ memberError }}</p>
 
-                    <div class="flex justify-end gap-3"><Link :href="path"><AppButton variant="secondary">Batal</AppButton></Link><AppButton type="submit" :loading="form.processing" icon="save">Simpan</AppButton></div>
+                    <div v-if="selectedMembers.length" class="overflow-x-auto rounded-xl border border-outline-variant">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-surface-container-low">
+                                <tr>
+                                    <th class="px-4 py-3">NIK</th>
+                                    <th class="px-4 py-3">Nama</th>
+                                    <th class="px-4 py-3 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="member in selectedMembers" :key="member.value" class="border-t border-outline-variant">
+                                    <td class="px-4 py-3">{{ member.nik }}</td>
+                                    <td class="px-4 py-3 font-semibold">{{ member.name }}</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <AppButton variant="ghost" size="compact" icon="close" aria-label="Hapus anggota" @click="removeMember(member.value)">Hapus</AppButton>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        <SmartSelect v-model="form.chair_id" label="Ketua" :options="selectedOptions" :excluded-values="[form.secretary_id, form.treasurer_id].filter(Boolean)" placeholder="Pilih ketua" required searchable :error="form.errors.chair_id" />
+                        <SmartSelect v-model="form.secretary_id" label="Sekretaris" :options="selectedOptions" :excluded-values="[form.chair_id, form.treasurer_id].filter(Boolean)" placeholder="Pilih sekretaris" required searchable :error="form.errors.secretary_id" />
+                        <SmartSelect v-model="form.treasurer_id" label="Bendahara" :options="selectedOptions" :excluded-values="[form.chair_id, form.secretary_id].filter(Boolean)" placeholder="Pilih bendahara" required searchable :error="form.errors.treasurer_id" />
+                    </fieldset>
+
+                    <div class="flex justify-end gap-3 border-t border-outline-variant pt-4">
+                        <Link :href="path"><AppButton variant="secondary">Batal</AppButton></Link>
+                        <AppButton type="submit" :loading="form.processing" icon="save">Simpan</AppButton>
+                    </div>
                 </form>
             </AppCard>
         </div>

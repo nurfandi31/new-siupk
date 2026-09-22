@@ -16,10 +16,7 @@ const today = localIsoDate();
 const defaultBirthDate = (() => {
     const date = new Date();
     date.setFullYear(date.getFullYear() - 20);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 })();
 const resolvedMemberId = ref(props.member?.row_id || null);
 const editing = computed(() => Boolean(resolvedMemberId.value));
@@ -30,10 +27,7 @@ let lookupController = null;
 
 function localIsoDate() {
     const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 function fields(member = null) {
@@ -62,12 +56,12 @@ function fields(member = null) {
 const form = useForm(fields(props.member));
 const genderOptions = [{ value: 'L', label: 'Laki-laki', icon: 'male' }, { value: 'P', label: 'Perempuan', icon: 'female' }];
 const statusOptions = [{ value: 'active', label: 'Aktif' }, { value: 'exited', label: 'Keluar' }, { value: 'deceased', label: 'Meninggal' }];
+const villageOptions = computed(() => props.villages.map((village) => ({ value: village.row_id, label: village.name })));
 
 const lastLookedUpNik = ref('');
 
 watch(() => form.nik, async (nik) => {
     if (props.member) return;
-
     if (!/^\d{16}$/.test(nik)) {
         lookupController?.abort();
         lookupController = null;
@@ -75,16 +69,12 @@ watch(() => form.nik, async (nik) => {
         lookupError.value = '';
         return;
     }
-
     if (nik === lastLookedUpNik.value) return;
-
     lookupController?.abort();
     lookupError.value = '';
-
     const controller = new AbortController();
     lookupController = controller;
     lookupLoading.value = true;
-
     try {
         const response = await fetch(`${path}/lookup?nik=${encodeURIComponent(nik)}`, {
             headers: { Accept: 'application/json' },
@@ -131,55 +121,46 @@ function submit() {
             </header>
 
             <AppCard>
-                <form class="space-y-5" @submit.prevent="submit">
+                <form class="space-y-4" @submit.prevent="submit">
                     <div v-if="memberFound" role="status" class="flex items-center gap-3 rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-sm font-semibold text-primary">
                         <span class="material-symbols-outlined text-secondary" aria-hidden="true">person_check</span>
                         NIK sudah terdaftar. Data anggota telah dimuat dan akan diperbarui saat disimpan.
                     </div>
 
-                    <section>
-                        <h2 class="font-semibold text-primary">Identitas Anggota</h2>
-                        <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            <AppInput v-model="form.nik" label="NIK" icon="badge" inputmode="numeric" maxlength="16" required :hint="lookupLoading ? 'Memeriksa data anggota…' : null" :error="form.errors.nik || lookupError" />
-                            <AppInput v-model="form.name" label="Nama Lengkap" icon="person" required :error="form.errors.name" />
-                            <AppRadioGroup v-model="form.gender" label="Jenis Kelamin" :options="genderOptions" required :error="form.errors.gender" />
-                            <AppInput v-model="form.family_card_number" label="Nomor KK" icon="badge" inputmode="numeric" maxlength="16" :error="form.errors.family_card_number" />
-                        </div>
-                        <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            <AppInput v-model="form.birth_place" label="Tempat Lahir" icon="location_on" :error="form.errors.birth_place" />
-                            <AppDatePicker v-model="form.birth_date" label="Tanggal Lahir" icon="calendar_month" placeholder="Pilih tanggal lahir" :max="today" clearable :error="form.errors.birth_date" />
-                            <AppInput v-model="form.phone" label="No. HP" icon="phone" type="tel" :error="form.errors.phone" />
-                            <SmartSelect v-model="form.status" label="Status" :options="statusOptions" required :error="form.errors.status" />
-                        </div>
-                    </section>
+                    <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        <AppInput v-model="form.nik" label="NIK" icon="badge" inputmode="numeric" maxlength="16" required :hint="lookupLoading ? 'Memeriksa data anggota…' : null" :error="form.errors.nik || lookupError" />
+                        <AppInput v-model="form.name" label="Nama Lengkap" icon="person" required :error="form.errors.name" />
+                        <AppInput v-model="form.family_card_number" label="Nomor KK" icon="badge" inputmode="numeric" maxlength="16" :error="form.errors.family_card_number" />
+                        <AppRadioGroup v-model="form.gender" label="Jenis Kelamin" :options="genderOptions" required :error="form.errors.gender" />
+                        <AppInput v-model="form.birth_place" label="Tempat Lahir" icon="location_on" :error="form.errors.birth_place" />
+                        <AppDatePicker v-model="form.birth_date" label="Tanggal Lahir" icon="calendar_month" placeholder="Pilih tanggal lahir" :max="today" clearable :error="form.errors.birth_date" />
+                        <AppInput v-model="form.phone" label="No. HP" icon="phone" type="tel" :error="form.errors.phone" />
+                        <SmartSelect v-model="form.status" label="Status" :options="statusOptions" required :error="form.errors.status" />
+                        <AppDatePicker v-model="form.registered_at" label="Tanggal Terdaftar" icon="event" placeholder="Pilih tanggal terdaftar" :max="today" required :error="form.errors.registered_at" />
+                    </fieldset>
 
-                    <section class="border-t border-outline-variant pt-4">
-                        <h2 class="font-semibold text-primary">Alamat dan Registrasi</h2>
-                        <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            <AppInput v-model="form.address" label="Alamat" icon="home" required :error="form.errors.address" />
-                            <SmartSelect v-model="form.village_id" label="Desa" :options="villages.map((village) => ({ value: village.row_id, label: village.name }))" placeholder="Pilih desa" required :error="form.errors.village_id" searchable />
-                            <AppDatePicker v-model="form.registered_at" label="Tanggal Terdaftar" icon="event" placeholder="Pilih tanggal terdaftar" :max="today" required :error="form.errors.registered_at" />
-                        </div>
-                    </section>
+                    <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        <AppInput v-model="form.address" label="Alamat" icon="home" required :error="form.errors.address" />
+                        <SmartSelect v-model="form.village_id" label="Desa" :options="villageOptions" placeholder="Pilih desa" required :error="form.errors.village_id" searchable />
+                        <AppSwitch v-model="form.has_guarantor" label="Tambah Penjamin" description="Aktifkan untuk menambahkan penjamin." icon="verified_user" field />
+                    </fieldset>
 
-                    <section class="border-t border-outline-variant pt-4">
-                        <AppSwitch v-model="form.has_guarantor" label="Penjamin" description="Opsional, satu penjamin." icon="verified_user" />
-                        <div v-if="form.has_guarantor" class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            <AppInput v-model="form.guarantor_nik" label="NIK Penjamin" icon="badge" inputmode="numeric" maxlength="16" required :error="form.errors.guarantor_nik" />
-                            <AppInput v-model="form.guarantor_name" label="Nama Penjamin" icon="person" required :error="form.errors.guarantor_name" />
-                            <AppInput v-model="form.guarantor_relationship" label="Hubungan" icon="family_restroom" required :error="form.errors.guarantor_relationship" />
-                        </div>
-                    </section>
+                    <fieldset v-if="form.has_guarantor" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        <AppInput v-model="form.guarantor_nik" label="NIK Penjamin" icon="badge" inputmode="numeric" maxlength="16" required :error="form.errors.guarantor_nik" />
+                        <AppInput v-model="form.guarantor_name" label="Nama Penjamin" icon="person" required :error="form.errors.guarantor_name" />
+                        <AppInput v-model="form.guarantor_relationship" label="Hubungan" icon="family_restroom" required placeholder="Contoh: Saudara, Tetangga" :error="form.errors.guarantor_relationship" />
+                    </fieldset>
 
-                    <section class="border-t border-outline-variant pt-4">
-                        <AppSwitch v-model="form.has_business" label="Usaha" description="Opsional, satu usaha utama." icon="storefront" />
-                        <div v-if="form.has_business" class="mt-3 grid gap-4 sm:grid-cols-2">
-                            <AppInput v-model="form.business_name" label="Nama Usaha" icon="storefront" required :error="form.errors.business_name" />
-                            <AppInput v-model="form.business_description" label="Deskripsi Usaha" icon="description" :error="form.errors.business_description" />
-                        </div>
-                    </section>
+                    <fieldset v-if="form.has_guarantor" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        <AppSwitch v-model="form.has_business" label="Tambah Usaha" description="Aktifkan untuk menambahkan usaha utama." icon="storefront" field />
+                    </fieldset>
 
-                    <div class="flex justify-end gap-3">
+                    <fieldset v-if="form.has_business" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        <AppInput v-model="form.business_name" label="Nama Usaha" icon="storefront" required :error="form.errors.business_name" />
+                        <AppInput v-model="form.business_description" label="Deskripsi Usaha" icon="description" placeholder="Contoh: Warung sembako, Pertanian padi" :error="form.errors.business_description" />
+                    </fieldset>
+
+                    <div class="flex justify-end gap-3 border-t border-outline-variant pt-4">
                         <Link :href="path"><AppButton variant="secondary">Batal</AppButton></Link>
                         <AppButton type="submit" :loading="form.processing || lookupLoading" :disabled="lookupLoading" icon="save">Simpan</AppButton>
                     </div>

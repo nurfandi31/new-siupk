@@ -26,7 +26,7 @@ Aplikasi pembaruan **siupk (Sistem Informasi Dana Bergulir Masyarakat / BUMDesma
    - Isolasi data berbasis `tenant_id` + komposit Foreign Key + Shard Connection Manager.
 3. **100% Paritas Laporan Legacy siupk ( SA K EP / PP No. 11/2021)**:
    - **10 Laporan Akuntansi Core**: Neraca, Laba Rugi, Buku Besar, Arus Kas, Perubahan Ekuitas, CALK, Neraca Saldo, Jurnal Transaksi, Bukti Kas (BKM/BKK/BM), Kuitansi Angsuran.
-   - **6 Laporan Piutang & Kolektibilitas**: Portofolio Aging (per Desa/Kelompok), Rencana vs Realisasi, LPP Rekap Desa, LPP Rincian Kelompok, Kolektibilitas Desa, Cadangan Penghapusan Piutang (CKPN).
+   - **6 Laporan Piutang & Kolektibilitas**: Portofolio Aging (Semua/Kelompok/Individu), Rencana vs Realisasi (Semua/Kelompok/Individu), LPP Rekap Desa, LPP Rincian Kelompok, LPP Rincian Individu, Kolektibilitas Desa, Kolektibilitas Rincian Individu, Cadangan Penghapusan Piutang (CKPN) per Kelompok/Individu.
    - **3 Analisis Kinerja & Aset**: Penilaian Tingkat Kesehatan Usaha, Rekap Aset Tetap, Rekap Aset Tak Berwujud.
    - **5 Dokumen Paket LPJ Tahunan**: Cover Buku LPJ, Surat Pengantar, Berita Acara Pengesahan, MoU Kerjasama Antar Desa, Annual LPJ Pack Hub.
    - **37 Dokumen Perguliran Pinjaman**: Form Komite, SPK, Rekomendasi Kredit, Surat Kuasa, Tanggung Renteng, Jadwal Angsuran, Kartu Pinjaman.

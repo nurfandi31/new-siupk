@@ -257,6 +257,7 @@ return [
         '/accounting/journals' => 'journals.view',
         '/accounting/assets' => 'assets.view',
         '/accounting/journal-entries/installment' => 'installments.record',
+        '/accounting/journal-entries/installment-individual' => 'installments.record',
         '/accounting/journal-entries' => 'journals.create',
         '/accounting/chart-of-accounts' => 'journals.view',
         '/accounting/period-close' => 'period_close.view',

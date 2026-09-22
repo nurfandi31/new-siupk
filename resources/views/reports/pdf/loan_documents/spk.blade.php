@@ -11,6 +11,27 @@
     $signatureHtml = $signature ?? '';
     $alokasi = number_format((float) $loan['principal_amount'], 0, ',', '.');
     $jangka = (int) $loan['term_months'];
+
+    // PIHAK PERTAMA (direktur/manager Lembaga)
+    $pihakPertamaNama = $tokens['{kepala_lembaga}'] ?? '';
+    $pihakPertamaJabatan = $tokens['{jabatan_kepala}'] ?? 'Direktur';
+    $pihakPertamaNik = $tokens['{kepala_lembaga_nik}'] ?? '';
+    $pihakPertamaAlamat = $tokens['{kepala_lembaga_alamat}'] ?? ($identity['address'] ?? '');
+
+    // Angsuran per bulan (untuk Pasal 2 ayat 3)
+    $installment = (float) ($loan_obj->installment_amount ?? 0);
+    $installmentFmt = number_format($installment, 0, ',', '.');
+    $principalPerMonth = $installment * 0.7;
+    $principalPerMonthFmt = number_format($principalPerMonth, 0, ',', '.');
+    $interestPerMonth = max(0, $installment - $principalPerMonth);
+    $interestPerMonthFmt = number_format($interestPerMonth, 0, ',', '.');
+
+    // Pengadilan Negeri
+    $pengadilanNegeri = $tokens['{pengadilan_negeri}'] ?? ($identity['regency_name'] ?? '');
+
+    // Terbilang alokasi
+    $alokasiTerbilang = IndonesianNumber::spelledOut((float) $loan['principal_amount']);
+    $jangkaTerbilang = IndonesianNumber::spelledOut((float) $jangka);
 @endphp
 
 <style>
@@ -107,22 +128,22 @@
     <tr>
         <td width="90">Nama Lengkap</td>
         <td width="10" align="center">:</td>
-        <td>{{ '' }}</td>
+        <td>{{ $pihakPertamaNama }}</td>
     </tr>
     <tr>
         <td>Jabatan</td>
         <td align="center">:</td>
-        <td>{{ '' }} {{ $identity['legal_name'] }}</td>
+        <td>{{ $pihakPertamaJabatan }} {{ $identity['legal_name'] }}</td>
     </tr>
     <tr>
         <td>NIK</td>
         <td align="center">:</td>
-        <td>{{ '' }}</td>
+        <td>{{ $pihakPertamaNik ?: '—' }}</td>
     </tr>
     <tr>
         <td>Alamat</td>
         <td align="center">:</td>
-        <td>{{ '' }}</td>
+        <td>{{ $pihakPertamaAlamat }}</td>
     </tr>
 </table>
 
@@ -168,7 +189,7 @@
 
 <div style="text-align: justify; font-size: 14px;">
     Bertindak untuk dan atas nama kelompok {{ $loan['product_code'] }} {{ $group['name'] }} yang
-    berkedudukan di {{ $group['address'] }} {{ '' }}
+    berkedudukan di {{ $group['address'] }}
     {{ $group['village'] }} {{ $identity['district_name'] }}, dan beserta anggota yang
     memberikan kuasa secara tertulis sebagaimana Surat Kuasa terlampir sebagai bagian yang tidak terpisahkan dari
     dokumen perjanjian kredit ini, selanjutnya disebut PIHAK KEDUA.
@@ -192,7 +213,7 @@
             @endphp
 
             Pihak Pertama {{ $text }} Rp.
-            {{ $alokasi }} ({{ '' }} Rupiah) yaitu
+            {{ $alokasi }} ({{ $alokasiTerbilang }}) yaitu
             jumlah
             yang telah diputuskan dalam rapat penetapan pendanaan, berdasarkan permohonan dari Pihak Kedua dan para
             pemberi kuasa yang dilakukan secara kelompok sesuai Surat Permohonan Kredit tanggal
@@ -234,7 +255,7 @@
                 kelompok sebagaimana kelompok {{ $group['name'] }} adalah termasuk dalam kategori
                 kelompok yang sepakat memberikan dukungan operasional dan pengembangan kepada
                 {{ $identity['legal_name'] }} secara progresif proporsional berupa jasa piutang sebesar
-                {{ number_format((float) $tokens['{jasa_persen}'] / max(1, $jangka), 2) }}% {{ '' }}
+                {{ number_format((float) $tokens['{jasa_persen}'] / max(1, $jangka), 2) }}%
                 per-bulan
                 dikalikan
                 pokok
@@ -242,10 +263,10 @@
             </li>
             <li>
                 Kelompok menyepakati akan melakukan angsuran kredit dalam jangka waktu {{ $jangka }}
-                ({{ '' }}) bulan dengan cara membayar angsuran Pokok
-                {{ '' }} ({{ '' }}) dan angsuran
+                ({{ $jangkaTerbilang }}) bulan dengan cara membayar angsuran Pokok
+                Rp {{ $principalPerMonthFmt }} ({{ IndonesianNumber::spelledOut($principalPerMonth) }}) dan angsuran
                 jasa
-                {{ '' }} ({{ '' }}) sebagaimana
+                Rp {{ $interestPerMonthFmt }} ({{ IndonesianNumber::spelledOut($interestPerMonth) }}) sebagaimana
                 jadwal
                 angsuran terlampir yang tidak terpisahkan dari Surat Perjanjian Kredit (SPK).
             </li>
@@ -286,8 +307,8 @@
                                     utang-piutang ini, akan diselesaikan secara musyawarah untuk mencapai kata
                                     sepakat.
                                     Apabila tidak
-                                    dapat dicapai kata sepakat, kedua belah pihak setuju untuk menunjuk Pengadilan
-                                    Negeri {{ $identity['regency_name'] }}
+                                    dapat dicapai kata sepakat, kedua belah pihak setuju untuk menunjuk                                     Pengadilan
+                                    Negeri {{ $pengadilanNegeri }}
                                     sebagai upaya hukum menyelesaikan persengketaan tersebut.
                                 </li>
                                 <li>
@@ -320,7 +341,7 @@
                         </tr>
                         <tr>
                             <td align="center">
-                                <b>{{ '' }}</b>
+                                <b>{{ $pihakPertamaNama }}</b>
                             </td>
                             <td align="center">
                                 <b>{{ $committeeChair }}</b>

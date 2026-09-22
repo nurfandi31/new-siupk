@@ -35,6 +35,8 @@ final class Loan extends TenantModel
             'principal_amount' => 'decimal:2',
             'interest_rate' => 'decimal:4',
             'service_rate_total' => 'decimal:4',
+            'collateral' => 'array',
+            'funding_source' => 'integer',
         ];
     }
 

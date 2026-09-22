@@ -23,6 +23,8 @@ final class LoanInstallment extends TenantModel
             'interest_paid' => 'decimal:2',
             'penalty_due' => 'decimal:2',
             'penalty_paid' => 'decimal:2',
+            'running_principal' => 'decimal:2',
+            'running_interest' => 'decimal:2',
         ];
     }
 

@@ -24,6 +24,7 @@ const { money } = useMoney();
 
 const form = reactive({
     selectedProduct: '',
+    borrower_type: 'all',
     borrower_name: '',
     principal_amount: Number(props.defaultSimulation.parameters.principal_amount || 10000000),
     term_months: Number(props.defaultSimulation.parameters.term_months || 12),
@@ -40,14 +41,31 @@ const form = reactive({
 
 const copied = ref(false);
 
-const productOptions = computed(() => [
-    { value: '', label: 'Kustom / Input Manual' },
-    ...props.products.map((p) => ({
-        value: p.code,
-        label: `${p.name} (${p.code})`,
-        data: p,
-    })),
-]);
+const productOptions = computed(() => {
+    const filtered = form.borrower_type === 'all'
+        ? props.products
+        : props.products.filter((p) => {
+            const scope = p.borrower_scope || 'both';
+            if (form.borrower_type === 'kelompok') {
+                return scope === 'group' || scope === 'both';
+            }
+            return scope === 'member' || scope === 'both';
+        });
+    return [
+        { value: '', label: 'Kustom / Input Manual' },
+        ...filtered.map((p) => ({
+            value: p.code,
+            label: `${p.name} (${p.code})`,
+            data: p,
+        })),
+    ];
+});
+
+const borrowerTypeOptions = [
+    { value: 'all', label: 'Semua', description: 'Produk kelompok & individu' },
+    { value: 'kelompok', label: 'Kelompok', description: 'Hanya produk pinjaman kelompok' },
+    { value: 'individu', label: 'Individu', description: 'Hanya produk pinjaman individu' },
+];
 
 function onProductChange(code) {
     if (!code) return;
@@ -456,6 +474,27 @@ Est. Angsuran/Bln: ${money(s.estimated_monthly)}`;
                                 placeholder="Contoh: Kelompok Mawar 01 / Ibu Siti"
                                 icon="person"
                             />
+
+                            <div class="space-y-1.5">
+                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tipe Peminjam</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button
+                                        v-for="opt in borrowerTypeOptions"
+                                        :key="opt.value"
+                                        type="button"
+                                        @click="form.borrower_type = opt.value"
+                                        :class="[
+                                            'flex flex-col items-start gap-0.5 rounded-lg border p-3 text-left transition',
+                                            form.borrower_type === opt.value
+                                                ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                                                : 'border-outline-variant/40 hover:bg-surface-variant/30',
+                                        ]"
+                                    >
+                                        <span class="text-sm font-semibold">{{ opt.label }}</span>
+                                        <span class="text-[11px] text-on-surface-variant">{{ opt.description }}</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </AppCard>
 

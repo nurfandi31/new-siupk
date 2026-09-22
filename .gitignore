@@ -37,3 +37,9 @@ test-results/
 **/.dart_tool/
 mobile/build/
 mobile/.flutter-plugins*
+
+# SQLite test databases (auto-generated, kept out of VCS)
+*_test.sqlite
+*_test.sqlite-journal
+*_test.sqlite-shm
+*_test.sqlite-wal

@@ -298,7 +298,7 @@ const sections = [
             },
             {
                 key: 'loans',
-                label: 'Pinjaman / Perguliran',
+                label: 'Pinjaman',
                 icon: 'account_balance',
                 children: [
                     {
@@ -335,7 +335,15 @@ const sections = [
                     { label: 'Daftar Jurnal', href: '/accounting/journals' },
                     { label: 'Daftar Inventaris', href: '/accounting/assets' },
                     { label: 'Jurnal Umum', href: '/accounting/journal-entries/create' },
-                    { label: 'Jurnal Angsuran', href: '/accounting/journal-entries/installment' },
+                    {
+                        key: 'jurnal-angsuran',
+                        label: 'Jurnal Angsuran',
+                        icon: 'payments',
+                        children: [
+                            { label: 'Kelompok', href: '/accounting/journal-entries/installment' },
+                            { label: 'Individu', href: '/accounting/journal-entries/installment-individual' },
+                        ],
+                    },
                 ],
             },
             { label: 'Bagan Akun', icon: 'account_tree', href: '/accounting/chart-of-accounts' },
@@ -357,6 +365,27 @@ const sections = [
                     { label: 'Ringkasan Laporan', href: '/accounting/reports', exact: true },
                     { label: 'Portofolio Pinjaman', href: '/lending/reports/portfolio' },
                     { label: 'Rencana vs Realisasi', href: '/lending/reports/schedule-vs-actual' },
+                    {
+                        key: 'lpp',
+                        label: 'LPP (Perkembangan Piutang)',
+                        icon: 'trending_up',
+                        children: [
+                            { label: 'Rekap Desa', href: '/lending/reports/lpp-desa' },
+                            { label: 'Rincian Kelompok', href: '/lending/reports/lpp-kelompok' },
+                            { label: 'Rincian Individu', href: '/lending/reports/lpp-individu' },
+                        ],
+                    },
+                    {
+                        key: 'kolek',
+                        label: 'Kolektibilitas',
+                        icon: 'fact_check',
+                        children: [
+                            { label: 'Rekap Desa', href: '/lending/reports/kolek-desa' },
+                            { label: 'Rincian Individu', href: '/lending/reports/kolek-individu' },
+                        ],
+                    },
+                    { label: 'Cadangan Penghapusan (CKPN)', href: '/lending/reports/cadangan-penghapusan' },
+                    { label: 'CKPN Pinjaman Individu', href: '/lending/reports/cadangan-penghapusan-individu' },
                     { label: 'Jurnal Transaksi', href: '/accounting/reports/journals' },
                     { label: 'Neraca Saldo', href: '/accounting/reports/trial-balance' },
                     { label: 'Neraca', href: '/accounting/reports/balance-sheet' },

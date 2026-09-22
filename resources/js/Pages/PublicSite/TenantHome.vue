@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import gsap from 'gsap';
 import AppIcon from '@/Components/AppIcon.vue';
@@ -8,11 +8,45 @@ const props = defineProps({
     organization: { type: Object, required: true },
     tenant: { type: Object, required: true },
     settings: { type: Object, default: () => ({}) },
+    recent_posts: { type: Array, default: () => [] },
+    recent_pages: { type: Array, default: () => [] },
+    contact: { type: Object, default: () => ({}) },
 });
+
+const page = usePage();
+const flashSuccess = computed(() => page.props.flash?.success ?? null);
+const flashError = computed(() => page.props.flash?.error ?? null);
+
+const messageForm = useForm({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: '',
+    website: '',
+});
+const messageSending = ref(false);
+
+function submitMessage() {
+    messageSending.value = true;
+    messageForm.post(route('public.contact.store'), {
+        preserveScroll: true,
+        onSuccess: () => messageForm.reset('name', 'email', 'phone', 'subject', 'message', 'website'),
+        onFinish: () => { messageSending.value = false; },
+    });
+}
+
+function formatPostDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 const mobileNavOpen = ref(false);
 const activeSection = ref('');
 const scrolled = ref(false);
+const showScrollTop = ref(false);
 const cursorX = ref(-100);
 const cursorY = ref(-100);
 const hoverTarget = ref(false);
@@ -30,6 +64,11 @@ function onGlobalMouseMove(e) {
 
 function onScroll() {
     scrolled.value = window.scrollY > 12;
+    showScrollTop.value = window.scrollY > 480;
+}
+
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 const orgName = computed(() => props.organization?.name || 'BUMDesma LKD');
@@ -64,7 +103,9 @@ const navAnchors = [
     { id: 'layanan', label: 'Layanan' },
     { id: 'produk', label: 'Produk' },
     { id: 'alur', label: 'Alur' },
-    { id: 'regulasi', label: 'Regulasi' },
+    { id: 'berita', label: 'Berita' },
+    { id: 'halaman', label: 'Halaman' },
+    { id: 'kontak', label: 'Kontak' },
 ];
 
 const stats = [
@@ -198,10 +239,14 @@ onMounted(() => {
         if (!prefersReducedMotion) {
             // Hero entrance
             const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-            tl.fromTo('.anim-fade', { opacity: 0 }, { opacity: 1, duration: 0.45, stagger: 0.03, delay: 0.05 })
-              .fromTo('.anim-fade-up', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.55, stagger: 0.05 }, '-=0.2')
-              .fromTo('.anim-scale', { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.6, ease: 'expo.out', stagger: 0.06 }, '-=0.3')
-              .fromTo('.anim-slide', { opacity: 0, x: -12 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.04 }, '-=0.35');
+            tl.fromTo('.anim-fade', { opacity: 0 }, { opacity: 1, duration: 0.45, stagger: 0.03, delay: 0.05 }, 0)
+              .fromTo('.anim-fade-up', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.55, stagger: 0.05 }, 0.05);
+            if (document.querySelector('.anim-scale')) {
+                tl.fromTo('.anim-scale', { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.6, ease: 'expo.out', stagger: 0.06 }, '-=0.3');
+            }
+            if (document.querySelector('.anim-slide')) {
+                tl.fromTo('.anim-slide', { opacity: 0, x: -12 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.04 }, '<');
+            }
 
             // Floating decorative orbs
             gsap.to('.float-orb', {
@@ -915,45 +960,332 @@ onUnmounted(() => {
                 </div>
             </section>
 
-            <!-- ============== CLOSING CTA ============== -->
-            <section class="reveal-group relative px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-16">
-                <div class="mx-auto max-w-5xl">
-                    <div class="scale-group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-emerald-950 to-green-950 p-6 text-center shadow-xl shadow-emerald-900/30 sm:p-10 lg:p-12">
-                        <!-- Glow -->
-                        <div class="absolute -top-32 left-1/4 h-72 w-72 rounded-full bg-emerald-500/40 blur-3xl" />
-                        <div class="absolute -bottom-32 right-1/4 h-72 w-72 rounded-full bg-green-500/40 blur-3xl" />
-                        <div class="absolute inset-0 opacity-30"
-                             style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0); background-size: 32px 32px;" />
-
-                        <div class="relative">
-                            <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-md ring-1 ring-white/20 sm:text-[11px] sm:tracking-[0.18em]">
-                                <span class="relative grid size-1.5 place-items-center">
-                                    <span class="absolute inset-0 animate-ping rounded-full bg-emerald-400/70" />
-                                    <span class="relative size-1.5 rounded-full bg-emerald-400" />
-                                </span>
-                                Akun Demo Tersedia
+            <!-- ============== BERITA (POSTS) ============== -->
+            <section id="berita" class="reveal-group scroll-mt-32 bg-gradient-to-b from-slate-50 via-white to-slate-50 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+                <div class="mx-auto max-w-7xl">
+                    <div class="grid items-end gap-5 lg:grid-cols-12 lg:gap-4">
+                        <div class="lg:col-span-7">
+                            <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-emerald-700 ring-1 ring-emerald-200 sm:text-[11px] sm:tracking-[0.18em]">
+                                <span class="grid size-1.5 place-items-center rounded-full bg-emerald-500" />
+                                05 · Kabar &amp; Pengumuman
                             </div>
-                            <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.025em] text-white sm:text-3xl lg:text-[2.25rem] lg:leading-[1.15]">
-                                Eksplorasi tata kelola
-                                <br class="hidden sm:block" />
-                                <span class="sm:hidden"> </span>
-                                <span class="bg-gradient-to-r from-emerald-300 via-green-300 to-teal-300 bg-clip-text text-transparent">
-                                    dana bergulir modern.
+                            <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
+                                Berita &amp;
+                                <span class="bg-gradient-to-r from-emerald-700 via-teal-600 to-emerald-500 bg-clip-text text-transparent">
+                                    pengumuman terbaru.
                                 </span>
                             </h2>
-                            <p class="anim-fade-up mx-auto mt-5 max-w-2xl text-[13.5px] leading-relaxed text-emerald-100 sm:mt-6 sm:text-[15px]">
-                                Coba setiap modul dengan akun demo publik. Tidak ada data produksi yang disentuh — semua eksperimen terjadi di sandbox.
+                        </div>
+                        <p class="anim-fade-up text-[13.5px] leading-relaxed text-slate-600 sm:text-[14px] lg:col-span-5">
+                            Update harian dari sekretariat: berita kegiatan, pengumuman, dan dokumentasi perguliran dana yang dipublikasikan lewat panel admin.
+                        </p>
+                    </div>
+
+                    <div v-if="recent_posts && recent_posts.length > 0" class="mt-8 grid gap-4 sm:mt-10 lg:mt-12 md:grid-cols-3">
+                        <Link
+                            v-for="post in recent_posts"
+                            :key="post.slug"
+                            :href="`/berita/${post.slug}`"
+                            class="reveal-item group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-md shadow-slate-900/[0.04] ring-1 ring-slate-200 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-900/10 hover:ring-emerald-200"
+                        >
+                            <div class="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-emerald-100 via-emerald-50 to-teal-50">
+                                <img v-if="post.cover_image_url" :src="post.cover_image_url" :alt="post.title" class="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                                <div v-else class="grid size-full place-items-center">
+                                    <AppIcon name="article" class="text-5xl text-emerald-300" />
+                                </div>
+                                <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-slate-900/40 to-transparent" />
+                            </div>
+                            <div class="flex flex-1 flex-col p-5">
+                                <p class="text-[10.5px] font-bold uppercase tracking-[0.16em] text-emerald-700">{{ formatPostDate(post.published_at) }}</p>
+                                <h3 class="mt-2 line-clamp-2 text-[15.5px] font-black leading-tight tracking-tight text-slate-900 sm:text-base">{{ post.title }}</h3>
+                                <p v-if="post.excerpt" class="mt-2 line-clamp-3 text-[12.5px] leading-relaxed text-slate-600 sm:text-[13px]">{{ post.excerpt }}</p>
+                                <span class="mt-4 inline-flex items-center gap-1.5 text-[12px] font-bold text-emerald-700 transition-transform duration-300 group-hover:translate-x-0.5">
+                                    Baca selengkapnya
+                                    <AppIcon name="arrow_forward" class="text-sm" />
+                                </span>
+                            </div>
+                        </Link>
+                    </div>
+
+                    <div v-else class="reveal-item mt-8 grid place-items-center rounded-2xl border border-dashed border-slate-300 bg-white/60 p-10 text-center sm:mt-10 lg:mt-12">
+                        <div class="grid size-12 place-items-center rounded-xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+                            <AppIcon name="campaign" class="text-2xl" />
+                        </div>
+                        <p class="mt-4 text-[14px] font-bold text-slate-900">Belum ada publikasi berita.</p>
+                        <p class="mt-1 max-w-md text-[12.5px] text-slate-600">Berita akan tampil di sini setelah admin mengirim publikasi melalui menu <strong>Website → Berita</strong>.</p>
+                    </div>
+
+                    <div v-if="recent_posts && recent_posts.length > 0" class="mt-8 flex justify-center sm:mt-10">
+                        <Link href="/berita" class="group inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-[13px] font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-50 hover:text-emerald-700 hover:shadow-md">
+                            Lihat semua berita
+                            <AppIcon name="arrow_forward" class="text-sm transition-transform duration-300 group-hover:translate-x-1" />
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============== HALAMAN STATIS (PAGES) ============== -->
+            <!-- ============== HALAMAN STATIS (PAGES) ============== -->
+            <section id="halaman" class="reveal-group scroll-mt-32 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+                <div class="mx-auto max-w-7xl">
+                    <div class="flex flex-wrap items-end justify-between gap-5">
+                        <div class="max-w-2xl">
+                            <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-amber-700 ring-1 ring-amber-200 sm:text-[11px] sm:tracking-[0.18em]">
+                                <span class="grid size-1.5 place-items-center rounded-full bg-amber-500" />
+                                06 · Halaman Informasi
+                            </div>
+                            <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
+                                Halaman
+                                <span class="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-500 bg-clip-text text-transparent">
+                                    profil &amp; layanan.
+                                </span>
+                            </h2>
+                            <p class="anim-fade-up mt-3 text-[13.5px] leading-relaxed text-slate-600 sm:text-[14px]">
+                                Halaman statis yang dikelola admin: profil lembaga, layanan, AD/ART, dan dokumen publik lain yang dapat diakses pengunjung.
                             </p>
-                            <div class="anim-fade-up mt-6 flex flex-col items-center justify-center gap-2.5 sm:mt-7 sm:flex-row sm:gap-3">
-                                <Link href="/login" class="group inline-flex w-full items-center justify-center gap-2.5 whitespace-nowrap rounded-lg bg-white px-5 py-3 text-[11.5px] font-black uppercase tracking-[0.14em] text-slate-900 shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-50 hover:shadow-emerald-600/40 sm:w-auto sm:py-2.5 sm:text-[12px]">
-                                    <AppIcon name="login" class="text-base" />
-                                    Masuk Sistem
-                                    <AppIcon name="arrow_forward" class="text-sm transition-transform duration-300 group-hover:translate-x-1" />
-                                </Link>
-                                <Link v-if="orgPhone" :href="`tel:${orgPhone}`" class="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-white/30 bg-white/5 px-5 py-3 text-[11.5px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10 sm:w-auto sm:py-2.5 sm:text-[12px]">
-                                    <AppIcon name="call" class="text-base" />
-                                    Hubungi Sekretariat
-                                </Link>
+                        </div>
+                        <Link href="/halaman" class="anim-fade-up group inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3.5 py-2 text-[11.5px] font-bold uppercase tracking-[0.14em] text-amber-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-50 hover:shadow-md">
+                            Lihat semua halaman
+                            <AppIcon name="arrow_forward" class="text-xs transition-transform duration-300 group-hover:translate-x-0.5" />
+                        </Link>
+                    </div>
+
+                    <div v-if="recent_pages && recent_pages.length > 0" class="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3">
+                        <Link
+                            v-for="page in recent_pages"
+                            :key="page.slug"
+                            :href="`/p/${page.slug}`"
+                            class="reveal-item group flex items-start gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-50/50 hover:shadow-md hover:ring-amber-200 sm:p-5"
+                        >
+                            <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 text-amber-700 ring-1 ring-amber-200 transition-transform duration-300 group-hover:scale-110 sm:size-11">
+                                <AppIcon name="description" class="text-lg sm:text-xl" />
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-[14px] font-black leading-tight tracking-tight text-slate-900 sm:text-[15px]">{{ page.title }}</h3>
+                                <p v-if="page.excerpt" class="mt-1 line-clamp-2 text-[11.5px] leading-relaxed text-slate-600 sm:text-[12px]">{{ page.excerpt }}</p>
+                                <span class="mt-2 inline-flex items-center gap-1 text-[11.5px] font-bold text-amber-700">
+                                    Buka halaman
+                                    <AppIcon name="arrow_forward" class="text-xs transition-transform duration-300 group-hover:translate-x-0.5" />
+                                </span>
+                            </div>
+                        </Link>
+                    </div>
+
+                    <!-- Empty state when admin has not published any pages yet -->
+                    <div v-else class="reveal-item mt-8 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-amber-200 bg-amber-50/40 p-8 text-center sm:mt-10 sm:p-10">
+                        <span class="grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 text-amber-700 ring-1 ring-amber-200">
+                            <AppIcon name="description" class="text-2xl" />
+                        </span>
+                        <div class="max-w-md">
+                            <p class="text-[14px] font-black text-slate-900">Belum ada halaman yang dipublikasikan</p>
+                            <p class="mt-1 text-[12.5px] leading-relaxed text-slate-600">
+                                Halaman akan tampil di sini setelah admin mempublikasikan halaman melalui menu <strong>Website → Halaman</strong>. Contoh: profil lembaga, layanan, AD/ART.
+                            </p>
+                        </div>
+                        <Link href="/halaman" class="mt-1 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-600 to-orange-600 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                            Buka halaman indeks
+                            <AppIcon name="arrow_forward" class="text-xs" />
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============== KONTAK + DEMO ============== -->
+            <section id="kontak" class="reveal-group scroll-mt-32 relative overflow-hidden px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+                <!-- Soft gradient background that frames both panels -->
+                <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(14,165,233,0.10),transparent_55%),radial-gradient(ellipse_at_bottom_right,rgba(16,185,129,0.10),transparent_55%)]" />
+                <div class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
+
+                <div class="relative mx-auto max-w-7xl">
+                    <!-- ====== HEADER ====== -->
+                    <div class="anim-fade-up max-w-2xl">
+                        <div class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-slate-700 ring-1 ring-slate-200 backdrop-blur-sm sm:text-[11px] sm:tracking-[0.18em]">
+                            <span class="grid size-1.5 place-items-center rounded-full bg-gradient-to-r from-sky-500 to-emerald-500" />
+                            07 · Hubungi &amp; Coba Langsung
+                        </div>
+                        <h2 class="mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2.05rem]">
+                            Kirim pesan atau
+                            <span class="bg-gradient-to-r from-sky-700 via-blue-600 to-emerald-600 bg-clip-text text-transparent">
+                                eksplorasi langsung.
+                            </span>
+                        </h2>
+                    </div>
+
+                    <!-- ====== DUAL PANEL ====== -->
+                    <div class="relative mt-8 sm:mt-10 lg:mt-12">
+                        <!-- Connector pill (desktop only) -->
+                        <div class="pointer-events-none absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
+                            <div class="grid size-12 place-items-center rounded-full bg-white shadow-lg ring-1 ring-slate-200">
+                                <span class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">atau</span>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-6 lg:grid-cols-2 lg:gap-8">
+                            <!-- ============ KIRI: FORM PESAN ============ -->
+                            <div class="reveal-item relative overflow-hidden rounded-3xl bg-white p-6 shadow-xl shadow-slate-900/[0.06] ring-1 ring-slate-200/80 sm:p-7">
+                                <!-- Decorative top accent -->
+                                <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500" />
+
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-3">
+                                        <span class="grid size-11 place-items-center rounded-xl bg-gradient-to-br from-sky-100 to-blue-100 text-sky-700 ring-1 ring-sky-200">
+                                            <AppIcon name="send" class="text-lg" />
+                                        </span>
+                                        <div class="min-w-0">
+                                            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-sky-700">Saluran 01</p>
+                                            <h3 class="text-[15px] font-black tracking-tight text-slate-900">Kirim Pesan</h3>
+                                        </div>
+                                    </div>
+                                    <span class="hidden rounded-full bg-emerald-50 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-700 ring-1 ring-emerald-200 sm:inline-flex">Respons &lt; 24 jam</span>
+                                </div>
+
+                                <p class="mt-3 text-[12.5px] leading-relaxed text-slate-600">
+                                    Pesan akan tersimpan di menu <strong>Pesan Masuk</strong> admin sekretariat.
+                                </p>
+
+                                <!-- Info strip -->
+                                <div v-if="contact.address || contact.phone || contact.email || contact.social?.facebook || contact.social?.instagram || contact.social?.youtube" class="mt-4 flex flex-wrap gap-1.5">
+                                    <a v-if="contact.phone" :href="`tel:${contact.phone}`" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10.5px] font-bold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-100">
+                                        <AppIcon name="call" class="text-xs" />{{ contact.phone }}
+                                    </a>
+                                    <a v-if="contact.email" :href="`mailto:${contact.email}`" class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[10.5px] font-bold text-amber-700 ring-1 ring-amber-200 transition hover:bg-amber-100">
+                                        <AppIcon name="mail" class="text-xs" />{{ contact.email }}
+                                    </a>
+                                    <span v-if="contact.address" class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-[10.5px] font-bold text-sky-700 ring-1 ring-sky-200">
+                                        <AppIcon name="place" class="text-xs" />{{ contact.address }}
+                                    </span>
+                                    <a v-if="contact.social?.facebook" :href="contact.social.facebook" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10.5px] font-bold text-white transition hover:bg-sky-600" aria-label="Facebook">Facebook</a>
+                                    <a v-if="contact.social?.instagram" :href="contact.social.instagram" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10.5px] font-bold text-white transition hover:bg-rose-600" aria-label="Instagram">Instagram</a>
+                                    <a v-if="contact.social?.youtube" :href="contact.social.youtube" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10.5px] font-bold text-white transition hover:bg-red-600" aria-label="YouTube">YouTube</a>
+                                </div>
+
+                                <!-- Form -->
+                                <div class="mt-4">
+                                    <div v-if="flashSuccess" class="mb-3 rounded-xl bg-success-container px-3 py-2.5 text-[12.5px] font-medium text-on-success-container">{{ flashSuccess }}</div>
+                                    <div v-if="flashError" class="mb-3 rounded-xl bg-error-container px-3 py-2.5 text-[12.5px] font-medium text-on-error-container">{{ flashError }}</div>
+
+                                    <form class="space-y-2.5" @submit.prevent="submitMessage">
+                                        <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+                                            <label for="hp-website">Website</label>
+                                            <input id="hp-website" v-model="messageForm.website" type="text" tabindex="-1" autocomplete="off" />
+                                        </div>
+
+                                        <div class="grid gap-2.5 sm:grid-cols-2">
+                                            <div>
+                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">Nama <span class="text-error">*</span></label>
+                                                <input v-model="messageForm.name" type="text" maxlength="120" required placeholder="Nama lengkap" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
+                                                <p v-if="messageForm.errors.name" class="ml-1 mt-0.5 text-[10.5px] text-error">{{ messageForm.errors.name }}</p>
+                                            </div>
+                                            <div>
+                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">Email</label>
+                                                <input v-model="messageForm.email" type="email" maxlength="255" placeholder="nama@email.com" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
+                                                <p v-if="messageForm.errors.email" class="ml-1 mt-0.5 text-[10.5px] text-error">{{ messageForm.errors.email }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid gap-2.5 sm:grid-cols-2">
+                                            <div>
+                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">Telepon</label>
+                                                <input v-model="messageForm.phone" type="text" maxlength="40" placeholder="08xx-xxxx-xxxx" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
+                                                <p v-if="messageForm.errors.phone" class="ml-1 mt-0.5 text-[10.5px] text-error">{{ messageForm.errors.phone }}</p>
+                                            </div>
+                                            <div>
+                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">Subjek</label>
+                                                <input v-model="messageForm.subject" type="text" maxlength="200" placeholder="Perihal pesan" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
+                                                <p v-if="messageForm.errors.subject" class="ml-1 mt-0.5 text-[10.5px] text-error">{{ messageForm.errors.subject }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">Pesan <span class="text-error">*</span></label>
+                                            <textarea v-model="messageForm.message" rows="3" maxlength="5000" required placeholder="Tulis pesan Anda di sini..." class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"></textarea>
+                                            <p v-if="messageForm.errors.message" class="ml-1 mt-0.5 text-[10.5px] text-error">{{ messageForm.errors.message }}</p>
+                                        </div>
+
+                                        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                                            <p class="inline-flex items-center gap-1 text-[10.5px] text-slate-500">
+                                                <AppIcon name="lock" class="text-xs" />Pesan terenkripsi, hanya admin yang dapat membaca.
+                                            </p>
+                                            <button type="submit" :disabled="messageSending || messageForm.processing" class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-sky-700 to-blue-600 px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-md shadow-sky-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-sky-600/40 disabled:opacity-60">
+                                                <span v-if="messageSending || messageForm.processing" class="size-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                                <AppIcon v-else name="send" class="text-sm" />
+                                                Kirim Pesan
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- ============ KANAN: AKUN DEMO CTA ============ -->
+                            <div class="reveal-item relative flex flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950 p-6 text-white shadow-xl shadow-emerald-900/30 ring-1 ring-white/10 sm:p-7">
+                                <!-- Glow -->
+                                <div class="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-emerald-500/30 blur-3xl" />
+                                <div class="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-sky-500/20 blur-3xl" />
+                                <div class="absolute inset-0 opacity-[0.18]"
+                                     style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0); background-size: 28px 28px;" />
+
+                                <div class="relative flex flex-1 flex-col">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div class="flex items-center gap-3">
+                                            <span class="grid size-11 place-items-center rounded-xl bg-white/10 text-white ring-1 ring-white/20 backdrop-blur-md">
+                                                <AppIcon name="rocket_launch" class="text-lg" />
+                                            </span>
+                                            <div class="min-w-0">
+                                                <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">Saluran 02</p>
+                                                <h3 class="text-[15px] font-black tracking-tight text-white">Akun Demo</h3>
+                                            </div>
+                                        </div>
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-300 ring-1 ring-emerald-400/30">
+                                            <span class="relative grid size-1.5 place-items-center">
+                                                <span class="absolute inset-0 animate-ping rounded-full bg-emerald-400/70" />
+                                                <span class="relative size-1.5 rounded-full bg-emerald-400" />
+                                            </span>
+                                            Sandbox
+                                        </span>
+                                    </div>
+
+                                    <p class="mt-3 text-[12.5px] leading-relaxed text-emerald-100/90">
+                                        Coba setiap modul dengan akun demo publik — semua eksperimen terjadi di sandbox tanpa menyentuh data produksi.
+                                    </p>
+
+                                    <!-- Quick stats -->
+                                    <div class="mt-4 grid grid-cols-3 gap-2">
+                                        <div class="rounded-xl bg-white/[0.06] p-3 ring-1 ring-white/10 backdrop-blur-sm">
+                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">Modul</p>
+                                            <p class="mt-1 text-[18px] font-black leading-none tracking-tight">4</p>
+                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">inti</p>
+                                        </div>
+                                        <div class="rounded-xl bg-white/[0.06] p-3 ring-1 ring-white/10 backdrop-blur-sm">
+                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">Laporan</p>
+                                            <p class="mt-1 text-[18px] font-black leading-none tracking-tight">30+</p>
+                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">PDF siap cetak</p>
+                                        </div>
+                                        <div class="rounded-xl bg-white/[0.06] p-3 ring-1 ring-white/10 backdrop-blur-sm">
+                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">Role</p>
+                                            <p class="mt-1 text-[18px] font-black leading-none tracking-tight">5</p>
+                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">sistem default</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Feature checklist -->
+                                    <ul class="mt-4 space-y-1.5 text-[12px] text-emerald-50/85">
+                                        <li class="flex items-start gap-2"><span class="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40"><AppIcon name="check" class="text-[10px] text-emerald-300" /></span>Simulasi kredit, angsuran, kolektibilitas</li>
+                                        <li class="flex items-start gap-2"><span class="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40"><AppIcon name="check" class="text-[10px] text-emerald-300" /></span>Jurnal otomatis &amp; tutup buku akhir periode</li>
+                                        <li class="flex items-start gap-2"><span class="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40"><AppIcon name="check" class="text-[10px] text-emerald-300" /></span>Multi-role: admin, kasir, ketua, pengawas</li>
+                                    </ul>
+
+                                    <div class="mt-5 flex flex-1 flex-col justify-end gap-2.5">
+                                        <Link v-if="orgPhone" :href="`tel:${orgPhone}`" class="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/20 bg-white/[0.04] px-5 py-3 text-[11.5px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/10">
+                                            <AppIcon name="call" class="text-base" />
+                                            Telepon Sekretariat
+                                        </Link>
+                                        <Link href="/berita" class="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/20 bg-white/[0.04] px-5 py-3 text-[11.5px] font-bold uppercase tracking-[0.14em] text-emerald-100 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/10 hover:text-white">
+                                            <AppIcon name="campaign" class="text-base" />
+                                            Kabar Terbaru
+                                            <AppIcon name="arrow_forward" class="text-sm transition-transform duration-300 group-hover:translate-x-1" />
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -963,66 +1295,94 @@ onUnmounted(() => {
 
         <!-- ============== FOOTER ============== -->
         <footer class="relative z-10 mt-10 border-t border-slate-200 bg-white/60 backdrop-blur-md sm:mt-12 pb-[max(0px,env(safe-area-inset-bottom))]">
-            <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-12">
-                    <div class="sm:col-span-2 lg:col-span-5">
-                        <Link href="/" class="group inline-flex items-center gap-3">
-                            <span class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-emerald-700 to-teal-500 text-white shadow-lg shadow-emerald-600/30 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-3 sm:size-11">
+            <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+                    <!-- Brand ringkas -->
+                    <div class="flex min-w-0 items-start gap-3 lg:max-w-sm lg:shrink-0">
+                        <Link href="/" class="group flex shrink-0 items-center gap-2.5">
+                            <span class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-emerald-700 to-teal-500 text-white shadow-md shadow-emerald-600/30 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-3">
                                 <img v-if="orgLogo" :src="orgLogo" :alt="`Logo ${orgLegalName}`" class="size-full object-contain" />
-                                <span v-else class="text-base font-black">{{ orgInitial }}</span>
+                                <span v-else class="text-sm font-black">{{ orgInitial }}</span>
                             </span>
                             <div class="min-w-0 text-left">
-                                <span class="block truncate text-[15px] font-black tracking-tight text-slate-900 sm:text-base">{{ orgLegalName }}</span>
-                                <span v-if="orgRegion" class="block truncate text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 sm:tracking-[0.2em]">{{ orgRegion }}</span>
+                                <span class="block truncate text-[13.5px] font-black tracking-tight text-slate-900">{{ orgLegalName }}</span>
+                                <span v-if="orgRegion" class="block truncate text-[9.5px] font-bold uppercase tracking-[0.18em] text-slate-500">{{ orgRegion }}</span>
                             </div>
                         </Link>
-                        <p v-if="props.settings?.about_short" class="mt-5 max-w-md text-[12.5px] leading-relaxed text-slate-600 sm:text-[13px]">
-                            {{ props.settings.about_short }}
-                        </p>
                     </div>
 
-                    <div class="lg:col-span-3">
-                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Tautan</p>
-                        <ul class="mt-4 space-y-2 text-[12.5px] text-slate-700 sm:text-[13px]">
-                            <li v-for="l in navAnchors" :key="l.id">
-                                <a :href="`#${l.id}`" @click.prevent="smoothScrollTo(l.id)" class="inline-flex items-center gap-1 transition-colors hover:text-emerald-700">
-                                    {{ l.label }}
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                    <!-- Tautan + Sekretariat inline -->
+                    <div class="flex min-w-0 flex-1 flex-col gap-3">
+                        <!-- Baris 1: Tautan horizontal (wrap) -->
+                        <div class="flex flex-wrap items-center gap-x-1 gap-y-1.5 text-[11.5px] sm:text-[12px]">
+                            <span class="mr-1 text-[9.5px] font-black uppercase tracking-[0.2em] text-slate-400">Tautan</span>
+                            <a v-for="l in navAnchors" :key="l.id" :href="`#${l.id}`" @click.prevent="smoothScrollTo(l.id)" class="rounded-full px-2 py-0.5 font-semibold text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700">
+                                {{ l.label }}
+                            </a>
+                            <span class="mx-0.5 text-slate-300">·</span>
+                            <Link href="/berita" class="rounded-full px-2 py-0.5 font-semibold text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700">Berita</Link>
+                            <Link href="/halaman" class="rounded-full px-2 py-0.5 font-semibold text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700">Halaman</Link>
+                            <Link href="/kontak" class="rounded-full px-2 py-0.5 font-semibold text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700">Kontak</Link>
+                            <Link href="/login" class="ml-auto inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10.5px] font-black uppercase tracking-[0.14em] text-white transition-all hover:-translate-y-0.5 hover:bg-slate-800">
+                                <AppIcon name="login" class="text-xs" />Masuk
+                            </Link>
+                        </div>
 
-                    <div class="lg:col-span-4">
-                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Sekretariat</p>
-                        <ul class="mt-4 space-y-2.5 text-[12.5px] text-slate-700 sm:text-[13px]">
-                            <li v-if="orgAddress" class="flex items-start gap-2.5">
-                                <AppIcon name="place" class="mt-0.5 shrink-0 text-base text-emerald-600" />
-                                <span class="min-w-0 break-words">{{ orgAddress }}</span>
-                            </li>
-                            <li v-if="orgPhone" class="flex items-start gap-2.5">
-                                <AppIcon name="call" class="mt-0.5 shrink-0 text-base text-emerald-600" />
-                                <span class="break-all">{{ orgPhone }}</span>
-                            </li>
-                            <li v-if="orgEmail" class="flex items-start gap-2.5">
-                                <AppIcon name="mail" class="mt-0.5 shrink-0 text-base text-emerald-600" />
-                                <span class="min-w-0 break-all">{{ orgEmail }}</span>
-                            </li>
-                        </ul>
+                        <!-- Baris 2: Sekretariat chip horizontal -->
+                        <div v-if="orgAddress || orgPhone || orgEmail" class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-600 sm:text-[11.5px]">
+                            <span class="text-[9.5px] font-black uppercase tracking-[0.2em] text-slate-400">Sekretariat</span>
+                            <span v-if="orgPhone" class="inline-flex items-center gap-1">
+                                <AppIcon name="call" class="text-xs text-emerald-600" />
+                                <a :href="`tel:${orgPhone}`" class="font-semibold hover:text-emerald-700">{{ orgPhone }}</a>
+                            </span>
+                            <span v-if="orgPhone && (orgEmail || orgAddress)" class="text-slate-300">·</span>
+                            <span v-if="orgEmail" class="inline-flex items-center gap-1">
+                                <AppIcon name="mail" class="text-xs text-emerald-600" />
+                                <a :href="`mailto:${orgEmail}`" class="break-all font-semibold hover:text-emerald-700">{{ orgEmail }}</a>
+                            </span>
+                            <span v-if="orgEmail && orgAddress" class="text-slate-300">·</span>
+                            <span v-if="orgAddress" class="inline-flex min-w-0 items-center gap-1">
+                                <AppIcon name="place" class="shrink-0 text-xs text-emerald-600" />
+                                <span class="truncate font-semibold">{{ orgAddress }}</span>
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="mt-6 flex flex-col items-center justify-between gap-2.5 border-t border-slate-200 pt-4 text-center sm:flex-row sm:gap-3 sm:text-left">
-                    <p class="text-[11.5px] text-slate-500 sm:text-[12px]">
+                <!-- Bottom bar -->
+                <div class="mt-5 flex flex-col items-center justify-between gap-1.5 border-t border-slate-200 pt-3 text-center sm:flex-row sm:gap-3 sm:text-left">
+                    <p class="text-[11px] text-slate-500 sm:text-[11.5px]">
                         &copy; {{ new Date().getFullYear() }} {{ orgLegalName }}.
                         <span v-if="props.settings?.footer_note"> · {{ props.settings.footer_note }}</span>
                         <span v-else> · Dikelola dengan SIUPK Next.</span>
                     </p>
-                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 sm:tracking-[0.2em]">
+                    <p class="text-[9.5px] font-bold uppercase tracking-[0.2em] text-slate-400">
                         Powered by SIUPK Next
                     </p>
                 </div>
             </div>
         </footer>
+
+        <!-- Scroll-to-top floating button -->
+        <Transition
+            enter-active-class="transition-all duration-300 ease-out"
+            leave-active-class="transition-all duration-200 ease-in"
+            enter-from-class="translate-y-3 scale-90 opacity-0"
+            enter-to-class="translate-y-0 scale-100 opacity-100"
+            leave-from-class="translate-y-0 scale-100 opacity-100"
+            leave-to-class="translate-y-3 scale-90 opacity-0"
+        >
+            <button
+                v-show="showScrollTop"
+                type="button"
+                @click="scrollToTop"
+                class="fixed bottom-5 right-5 z-50 inline-flex size-12 items-center justify-center rounded-full bg-emerald-700 text-white shadow-md ring-1 ring-emerald-700/20 transition hover:-translate-y-0.5 hover:bg-emerald-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:bottom-6 sm:right-6"
+                aria-label="Kembali ke atas halaman"
+                title="Kembali ke atas"
+            >
+                <AppIcon name="arrow_upward" class="text-2xl" />
+            </button>
+        </Transition>
     </div>
 </template>
 

@@ -88,6 +88,9 @@ Route::get('/berita', [PublicSiteController::class, 'posts'])
 Route::get('/berita/{slug}', [PublicSiteController::class, 'post'])
     ->middleware('public.site')
     ->name('public.post');
+Route::get('/halaman', [PublicSiteController::class, 'pages'])
+    ->middleware('public.site')
+    ->name('public.pages');
 Route::get('/p/{slug}', [PublicSiteController::class, 'page'])
     ->middleware('public.site')
     ->name('public.page');
@@ -456,7 +459,7 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
     Route::delete('/lending/loans/{loan}/beneficiaries/{member}', [LoanController::class, 'removeBeneficiary'])->name('lending.loans.beneficiaries.destroy');
     Route::patch('/lending/loans/{loan}/verify', [LoanController::class, 'verify'])->name('lending.loans.verify');
     Route::patch('/lending/loans/{loan}/approve', [LoanController::class, 'approve'])->name('lending.loans.approve');
-        Route::patch('/lending/loans/{loan}/disburse', [LoanController::class, 'disburse'])->name('lending.loans.disburse');
+    Route::patch('/lending/loans/{loan}/disburse', [LoanController::class, 'disburse'])->name('lending.loans.disburse');
     Route::patch('/lending/loans/{loan}/revert', [LoanController::class, 'revert'])->name('lending.loans.revert');
     Route::patch('/lending/loans/{loan}/committee', [LoanController::class, 'setCommittee'])->name('lending.loans.committee');
     Route::post('/lending/loans/{loan}/reschedule', [LoanController::class, 'reschedule'])->name('lending.loans.reschedule');
@@ -502,10 +505,16 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::get('/lpp-desa/pdf', [LoanReportController::class, 'lppDesaPdf'])->name('lpp-desa.pdf');
         Route::get('/lpp-kelompok', [LoanReportController::class, 'lppKelompok'])->name('lpp-kelompok');
         Route::get('/lpp-kelompok/pdf', [LoanReportController::class, 'lppKelompokPdf'])->name('lpp-kelompok.pdf');
+        Route::get('/lpp-individu', [LoanReportController::class, 'lppIndividu'])->name('lpp-individu');
+        Route::get('/lpp-individu/pdf', [LoanReportController::class, 'lppIndividuPdf'])->name('lpp-individu.pdf');
         Route::get('/kolek-desa', [LoanReportController::class, 'kolekDesa'])->name('kolek-desa');
         Route::get('/kolek-desa/pdf', [LoanReportController::class, 'kolekDesaPdf'])->name('kolek-desa.pdf');
+        Route::get('/kolek-individu', [LoanReportController::class, 'kolekIndividu'])->name('kolek-individu');
+        Route::get('/kolek-individu/pdf', [LoanReportController::class, 'kolekIndividuPdf'])->name('kolek-individu.pdf');
         Route::get('/cadangan-penghapusan', [LoanReportController::class, 'cadanganPenghapusan'])->name('cadangan-penghapusan');
         Route::get('/cadangan-penghapusan/pdf', [LoanReportController::class, 'cadanganPenghapusanPdf'])->name('cadangan-penghapusan.pdf');
+        Route::get('/cadangan-penghapusan-individu', [LoanReportController::class, 'cadanganPenghapusanIndividu'])->name('cadangan-penghapusan-individu');
+        Route::get('/cadangan-penghapusan-individu/pdf', [LoanReportController::class, 'cadanganPenghapusanIndividuPdf'])->name('cadangan-penghapusan-individu.pdf');
     });
 
     // Accounting
@@ -531,7 +540,9 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::get('/journal-entries/create', [JournalEntryController::class, 'create'])->name('journal-entries.create');
         Route::post('/journal-entries', [JournalEntryController::class, 'store'])->name('journal-entries.store');
         Route::get('/journal-entries/installment', [JournalEntryController::class, 'installment'])->name('journal-entries.installment');
+        Route::get('/journal-entries/installment-individual', [JournalEntryController::class, 'individualInstallment'])->name('journal-entries.installment-individual');
         Route::post('/journal-entries/installment', [JournalEntryController::class, 'storeInstallment'])->name('journal-entries.installment.store');
+        Route::post('/journal-entries/installment-individual', [JournalEntryController::class, 'storeIndividualInstallment'])->name('journal-entries.installment-individual.store');
         Route::get('/journal-entries/{entry}/installment-receipt', [JournalEntryController::class, 'installmentReceipt'])->name('journal-entries.installment.receipt');
         Route::get('/loans/{loan}/group-detail', [JournalEntryController::class, 'loanGroupDetail'])->name('loans.group-detail');
         Route::get('/loans/{loan}/installment-history', [JournalEntryController::class, 'loanInstallmentHistory'])->name('loans.installment-history');

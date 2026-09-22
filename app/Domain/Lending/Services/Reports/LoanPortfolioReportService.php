@@ -32,7 +32,7 @@ final class LoanPortfolioReportService
      *   aging: list<array{key: string, label: string, count: int, principal: float, overdue: float}>
      * }
      */
-    public function build(?string $asOf = null, string $filter = 'all'): array
+    public function build(?string $asOf = null, string $filter = 'all', ?string $borrowerScope = null): array
     {
         $asOfDate = $this->resolveAsOf($asOf);
         $asOfStr = $asOfDate->toDateString();
@@ -59,6 +59,15 @@ final class LoanPortfolioReportService
             })
             ->where('l.tenant_id', $tenantId)
             ->whereIn('l.status', self::ACTIVE)
+            ->when($borrowerScope === 'group', function ($q): void {
+                $q->where(function ($w): void {
+                    $w->whereNull('l.legacy_source')
+                        ->orWhere('l.legacy_source', 'group_loan');
+                });
+            })
+            ->when($borrowerScope === 'member', function ($q): void {
+                $q->where('l.legacy_source', 'member_loan');
+            })
             ->orderBy('v.name')
             ->orderBy('g.name')
             ->orderBy('l.id')
@@ -69,6 +78,7 @@ final class LoanPortfolioReportService
                 'l.status',
                 'l.disbursed_at',
                 'l.principal_amount',
+                'l.legacy_source',
                 'g.name as group_name',
                 'v.name as village_name',
                 'p.code as product_code',
@@ -191,6 +201,7 @@ final class LoanPortfolioReportService
             $rows[] = [
                 'row_id' => (int) $loan->row_id,
                 'id' => (int) $loan->id,
+                'legacy_source' => (string) ($loan->legacy_source ?? ''),
                 'loan_number' => $loan->loan_number ?: ('#'.$loan->id),
                 'group_name' => $loan->group_name ?: '—',
                 'village_name' => $village,

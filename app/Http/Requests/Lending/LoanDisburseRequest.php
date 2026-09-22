@@ -24,6 +24,8 @@ final class LoanDisburseRequest extends FormRequest
             'disbursement_notes' => ['nullable', 'string', 'max:5000'],
             'spk_no' => ['nullable', 'string', 'max:80'],
             'disbursement_slot' => ['nullable', 'string', 'max:120'],
+            'verification_remarks' => ['nullable', 'string', 'max:2000'],
+            'funding_source' => ['nullable', 'integer', 'min:0', 'max:65535'],
         ];
     }
 
@@ -35,6 +37,8 @@ final class LoanDisburseRequest extends FormRequest
             'disbursement_notes' => 'catatan pencairan',
             'spk_no' => 'nomor SPK',
             'disbursement_slot' => 'waktu & tempat pencairan',
+            'verification_remarks' => 'catatan verifikasi',
+            'funding_source' => 'sumber dana (kode)',
         ];
     }
 }

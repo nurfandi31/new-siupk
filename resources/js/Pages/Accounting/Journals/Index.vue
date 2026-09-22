@@ -201,7 +201,10 @@ function submitBulkReverse() {
                         <AppButton variant="secondary" icon="add" size="compact">Jurnal Umum</AppButton>
                     </a>
                     <a v-if="can('installments.record')" href="/accounting/journal-entries/installment">
-                        <AppButton icon="payments" size="compact">Jurnal Angsuran</AppButton>
+                        <AppButton icon="payments" size="compact">Jurnal Angsuran Kelompok</AppButton>
+                    </a>
+                    <a v-if="can('installments.record')" href="/accounting/journal-entries/installment-individual">
+                        <AppButton icon="person" size="compact">Jurnal Angsuran Individu</AppButton>
                     </a>
                 </div>
             </header>

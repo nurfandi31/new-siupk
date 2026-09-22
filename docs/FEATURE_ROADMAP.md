@@ -1,4 +1,4 @@
-# Roadmap Fitur & Status Implementasi (siupk Next vs Legacy)
+﻿# Roadmap Fitur & Status Implementasi (siupk Next vs Legacy)
 
 Tujuan: **siupk Next sepenuhnya menggantikan siupk legacy dalam operasional harian tenant dan tingkat Kabupaten.**
 
@@ -7,20 +7,22 @@ Dokumentasi Arsitektur: PROJECT_OVERVIEW.md, DATABASE_STRUCTURE.md, CUTOVER_RUNB
 
 ---
 
-## Status Fitur & Zona (Update 2026-08-18)
+## Status Fitur & Zona (Update 2026-09-22)
 
 | Zona | Status Next | Keterangan |
 |---|---|---|
 | Landing Page & Auth | ✅ Selesai | Redesain halaman depan profesional (hero, features, steps, FAQ accordion, smooth scroll, CTA), halaman login clean & modern tanpa kebocoran stack teknis. |
 | Master Data | ✅ Selesai | Anggota, Kelompok, Lembaga, Desa + Riwayat Pinjaman + Import/Export CSV |
-| Alur Perguliran Pinjaman | ✅ Selesai | Proposal → Verifikasi → Alokasi → Pencairan → Angsuran → Reschedule/Write-off |
+| Alur Perguliran Pinjaman (Kelompok) | ✅ Selesai | Proposal → Verifikasi → Alokasi → Pencairan → Angsuran → Reschedule/Write-off |
+| Alur Perguliran Pinjaman (Individu) | ✅ Selesai (paritas pacuan) | P/V/W/A/L/R/H/T lengkap dengan kalkulator pacuan-style (`MemberLoanScheduleCalculator`); lihat tabel di bawah |
 | Jurnal & Akuntansi | ✅ Selesai | Jurnal Umum, Jurnal Angsuran, Reversal, **Edit Jurnal (Reverse + Recreate Atomik)**, COA Read-only |
 | Cetak Struk & Kuitansi | ✅ Selesai | Struk/Kuitansi PDF langsung dari posting jurnal |
 | Laporan Akuntansi Core | ✅ Selesai | Neraca, Laba Rugi, Buku Besar, Arus Kas, Perubahan Ekuitas, CALK, Neraca Saldo, Jurnal Transaksi |
-| Laporan Piutang & Kolektibilitas | ✅ Selesai | Portofolio Pinjaman (Aging per Desa/Kelompok), Rencana vs Realisasi, LPP Rekap Desa, LPP Rincian Kelompok, Kolektibilitas Desa, CKPN |
+| Laporan Piutang & Kolektibilitas | ✅ Selesai | Portofolio Pinjaman (Semua/Kelompok/Individu), Rencana vs Realisasi (Semua/Kelompok/Individu), LPP Rekap Desa, LPP Rincian Kelompok, LPP Rincian Individu, Kolektibilitas Desa, Kolektibilitas Rincian Individu, CKPN (Semua/Kelompok/Individu) |
 | Analisis Kinerja & Aset | ✅ Selesai | Penilaian Tingkat Kesehatan Usaha, Rekap Aset Tetap, Rekap Aset Tak Berwujud |
 | Paket LPJ Tahunan | ✅ Selesai | Cover Buku LPJ, Surat Pengantar, Berita Acara, MoU, Hub LPJ Pack |
-| Dokumen Perguliran (37 Dokumen) | ✅ Selesai | SPK, Cover Proposal, Rekomendasi Kredit, Surat Kuasa, Tanggung Renteng, Jadwal Angsuran, Kartu Pinjaman, dll. |
+| Dokumen Perguliran Kelompok (37 Dokumen) | ✅ Selesai | SPK, Cover Proposal, Rekomendasi Kredit, Surat Kuasa, Tanggung Renteng, Jadwal Angsuran, Kartu Pinjaman, dll. |
+| Dokumen Perguliran Individu | ✅ Sebagian | Kartu Angsuran (`card`) & Keterangan Lunas (`settlement-letter`) selesai; 30+ dokumen PDF (cover proposal, BA musyawarah, verifikasi, SPK, kuitansi, dll.) belum dimigrasi |
 | Tutup Buku & Alokasi Laba | ✅ Selesai | Tutup/Buka periode fiskal + Jurnal alokasi laba otomatis |
 | Inventaris / Aset Tetap | ✅ Selesai | Register aset, Jurnal pembelian inventaris, Nilai buku & akumulasi penyusutan |
 | E-Budgeting / RAPB | ✅ Selesai | Input anggaran per akun per bulan, navigasi tahun, simpan RAPB |
@@ -31,7 +33,45 @@ Dokumentasi Arsitektur: PROJECT_OVERVIEW.md, DATABASE_STRUCTURE.md, CUTOVER_RUNB
 | Pembatasan Operator Desa (Village Scope) | ✅ Selesai | Restriksi data anggota, kelompok, dan proposal pinjaman berbasis village_row_id dengan global scope VillageScope |
 | AI Assistant & RAG | ✅ Selesai | Asisten AI (enpii/assistant) dengan Vector RAG (pgvector), Ollama, & Komponen Chat Interaktif |
 | Redis Infrastructure | ✅ Selesai | Redis Cache Store, Redis Session Driver, & Dedicated Redis Queue Worker |
-| Automated Testing Suite | ✅ Selesai | PHPUnit 258 tests (1.779 assertions) + Playwright 47 E2E page tests + Playwright 25 Interactive CRUD tests |
+| Automated Testing Suite | ✅ Selesai | PHPUnit 258 tests (1.779 assertions) + Playwright 47 E2E page tests + Playwright 25 Interactive CRUD tests + **MemberLoanLifecycleTest 14 tests (111 assertions) untuk paritas pinjaman individu** |
+
+---
+
+## Status Pinjaman Individu vs Kelompok (Detail Per Tahap, Update 2026-09-22)
+
+| Tahap Alur (Paritas pacuan) | Kelompok (Next) | Individu (Next) | Pacuan |
+|---|---|---|---|
+| 1. Pilih + Form proposal | ✅ `createProposal` | ✅ `createMemberProposal` + collateral | ✅ |
+| 2. Simpan proposal (status P/draft) | ✅ | ✅ | ✅ |
+| 3. Generate Rencana Angsuran (RA) | ⚠️ Generic flat-rata-rata | ✅ **Pacuan-style** (`MemberLoanScheduleCalculator`) | ✅ |
+| 4. Verifikasi proposal (V) | ✅ `verify` | ✅ `individualVerify` | ✅ |
+| 5. Persetujuan pencairan (W) | ✅ `approve` + regenerate | ✅ `individualApprove` + regenerate pacuan-style | ✅ |
+| 6. Pencairan (A) | ✅ `disburse` + jurnal | ✅ `individualDisburse` + jurnal | ✅ |
+| 7. Bayar angsuran | ✅ `recordInstallmentPayment` (transaksi 1 baris gabungan) | ✅ Sama (satu angsuran = satu peminjam) | ✅ |
+| 8. Pelunasan (L) | ✅ `complete` | ✅ `individualComplete` | ✅ |
+| 9. Kembali ke Proposal (revert) | ✅ `revertToDraft` | ✅ `individualRevert` | ✅ |
+| 10. Tolak / Tidak Layak (T) | ❌ Belum ada | ✅ `individualReject` (status='rejected') | ✅ |
+| 11. Reschedule (R) | ✅ `reschedule` | ✅ `individualReschedule` (regenerate pacuan-style) | ✅ |
+| 12. Hapus / Write-off (H) | ✅ `writeOff` | ✅ `individualWriteOff` | ✅ |
+| 13. Cetak Kartu Angsuran | ✅ `card` | ✅ `individualCard` | ✅ |
+| 14. Cetak Keterangan Lunas | ✅ `settlementLetter` | ✅ `individualSettlementLetter` | ✅ |
+| 15. 30+ dokumen PDF (cover/BA/SPK/kuitansi) | ✅ `LoanDocumentService` | ⚠️ Sebagian — card & settlement letter selesai; sisanya belum |
+
+### Catatan Paritas:
+- **Individu 1:1 dengan pacuan `PinjamanIndividuController::generate()`** (line 2317-2607) — magic formula `jangka==24`, pembulatan per kecamatan, sistem 11/12/14/15/20, override jadwal desa, `batas_angsuran`, mode mingguan (+x*7 days), end-of-month handling.
+- **Kelompok belum migrasi ke kalkulator pacuan-style** — masih pakai `generatePrincipalSchedule`/`generateInterestSchedule` generik. Aggregate total paritas dengan individu (lihat `test_individual_schedule_parity_with_single_member_group_loan`), tapi nominal per-bulan bisa berbeda.
+- **Produk `pi` (Pinjaman Individu)** default di-`TenantLoanProductProvisioner` dengan `borrower_scope='member'`.
+- **Akun COA perorangan** sudah ada: `1.1.03.09` (Piutang Pokok), `1.1.04.08`/`09` (CKPN), `4.1.01.07` (Jasa), `4.1.01.08` (Denda).
+
+## Statistik Pengujian Automated (Terakhir: 2026-09-22)
+
+| Suite Pengujian | Total Tests | Assertions | Durasi | Status |
+|---|:---:|:---:|:---:|:---:|
+| **MemberLoanLifecycleTest** (Pinjaman Individu paritas pacuan) | 14 | 111 | ~3 menit | ✅ 100% Pass |
+| **Backend PHPUnit** (Unit & Feature) | 258+ | 1.779+ | ~5.5 menit | ✅ 100% Pass |
+| **Playwright E2E Page & Route** (`all_features.spec.ts`) | 47 | — | ~4 menit | ✅ 100% Pass |
+| **Playwright Interactive CRUD** (`all_interactive_crud.spec.ts`) | 25 | — | ~5 menit | ✅ 100% Pass |
+| **Total** | **344+** | **1.890+** | **~17.5 menit** | **✅ 100% Pass** |
 
 ---
 

@@ -1,4 +1,6 @@
 @php
+    use App\Support\IndonesianNumber;
+
     $committeeChair = $tokens['{nama_ketua}'] ?? '';
     $committeeSecretary = $tokens['{nama_sekretaris}'] ?? '';
     $committeeTreasurer = $tokens['{nama_bendahara}'] ?? '';
@@ -6,6 +8,13 @@
     $documentTitle = $document['label'] ?? '';
     $signatureHtml = $signature ?? '';
     $alokasi = number_format((float) $loan['principal_amount'], 0, ',', '.');
+    $alokasiTerbilang = IndonesianNumber::spelledOut((float) $loan['principal_amount']);
+
+    $lembagaLevel1 = $tokens['{sebutan_level_1}'] ?? 'Lembaga';
+    $lembagaLevel3 = $tokens['{sebutan_level_3}'] ?? 'Pengelola';
+    $managerName = $tokens['{kepala_lembaga}'] ?? '';
+    $bendaharaName = $tokens['{bendahara_lembaga}'] ?? '';
+    $lembagaLabel = trim(($tokens['{sebutan_level_3}'] ?? '').' '.($identity['legal_name'] ?? ''));
 @endphp
 
 <style>
@@ -84,21 +93,21 @@
             <td width="90">Telah Diterima Dari</td>
             <td width="10" align="center">:</td>
             <td class="b">
-                <b>{{ '' }}</b>
+                <b>{{ $lembagaLabel }}</b>
             </td>
         </tr>
         <tr>
             <td>Uang Sebanyak</td>
             <td align="center">:</td>
             <td class="b">
-                <b>{{ '' }} Rupiah</b>
+                <b>{{ $alokasiTerbilang }} Rupiah</b>
             </td>
         </tr>
         <tr>
             <td>Untuk Pembayaran</td>
             <td align="center">:</td>
             <td class="b">
-                <b>Pencairan Piutang Kel. {{ $group['name'] }}</b>
+                <b>Pencairan Pinjaman Kel. {{ $group['name'] }}</b>
             </td>
         </tr>
         <tr>
@@ -106,7 +115,6 @@
             <td class="b">
                 <b>
                     Beralamat Di {{ $group['address'] }}
-                    {{ '' }}
                     {{ $group['village'] }}
                 </b>
             </td>
@@ -150,7 +158,10 @@
                 </td>
             </tr>
             <tr>
-                <td align="center" colspan="6">
+                <td align="center" colspan="3">
+                    Setuju Dibayarkan
+                </td>
+                <td align="center" colspan="3">
                     Dikeluarkan Oleh
                 </td>
                 <td align="center" colspan="3">
@@ -159,10 +170,10 @@
             </tr>
             <tr>
                 <td align="center" colspan="3">
-                    {{ '' }}
+                    {{ $lembagaLevel1 }}
                 </td>
                 <td align="center" colspan="3">
-                    {{ '' }}
+                    {{ $lembagaLevel3 }}
                 </td>
                 <td align="center" colspan="3">
                     Ketua Kelompok
@@ -173,10 +184,10 @@
             </tr>
             <tr>
                 <td align="center" colspan="3">
-                    <b>{{ '' }}</b>
+                    <b>{{ $managerName }}</b>
                 </td>
                 <td align="center" colspan="3">
-                    <b>{{ '' }}</b>
+                    <b>{{ $bendaharaName }}</b>
                 </td>
                 <td align="center" colspan="3">
                     <b>{{ $committeeChair }}</b>

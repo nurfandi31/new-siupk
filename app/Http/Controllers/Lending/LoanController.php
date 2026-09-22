@@ -18,12 +18,12 @@ use App\Http\Requests\Lending\LoanApproveRequest;
 use App\Http\Requests\Lending\LoanBeneficiaryWriteOffRequest;
 use App\Http\Requests\Lending\LoanDisburseRequest;
 use App\Http\Requests\Lending\LoanRequest;
-use App\Http\Requests\Lending\MemberLoanRequest;
 use App\Http\Requests\Lending\LoanRescheduleCancelRequest;
 use App\Http\Requests\Lending\LoanRescheduleRequest;
 use App\Http\Requests\Lending\LoanUpdateRequest;
 use App\Http\Requests\Lending\LoanVerifyRequest;
 use App\Http\Requests\Lending\LoanWriteOffRequest;
+use App\Http\Requests\Lending\MemberLoanRequest;
 use App\Support\ReportPdf;
 use App\Tenancy\Services\TenantLoanProductProvisioner;
 use DomainException;
@@ -529,7 +529,7 @@ final class LoanController
             'reports.pdf.loan_settlement_kelompok',
             [
                 'loan' => $loan,
-                'profile' => \App\Domain\Membership\Models\OrganizationProfile::query()->first(),
+                'profile' => OrganizationProfile::query()->first(),
                 'as_of' => now()->toDateString(),
             ],
             'keterangan-lunas-kelompok-'.$loan->id.'.pdf',
@@ -1155,8 +1155,8 @@ final class LoanController
     public function individualStore(MemberLoanRequest $request, LoanService $loans): RedirectResponse
     {
         try {
-            $loan = $loans->createMemberProposal($request->validated(), (int) $request->user()->row_id);
-        } catch (\DomainException $e) {
+            $loan = $loans->createMemberProposal($request->normalized(), (int) $request->user()->row_id);
+        } catch (DomainException $e) {
             return back()->with('error', $e->getMessage())->withInput();
         }
 
@@ -1254,7 +1254,7 @@ final class LoanController
             'reports.pdf.loan_settlement_member',
             [
                 'loan' => $loan,
-                'profile' => \App\Domain\Membership\Models\OrganizationProfile::query()->first(),
+                'profile' => OrganizationProfile::query()->first(),
                 'as_of' => now()->toDateString(),
             ],
             'keterangan-lunas-individu-'.$loan->id.'.pdf',

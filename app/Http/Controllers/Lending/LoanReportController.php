@@ -32,10 +32,11 @@ final class LoanReportController
     {
         $this->authorize($request);
         [$asOf, $filter] = $this->filters($request);
+        $scope = $this->borrowerScope($request);
 
         return Inertia::render('Lending/Reports/Portfolio', [
-            ...$this->portfolio->build($asOf, $filter),
-            'filters' => ['as_of' => $asOf, 'filter' => $filter],
+            ...$this->portfolio->build($asOf, $filter, $scope),
+            'filters' => ['as_of' => $asOf, 'filter' => $filter, 'scope' => $scope],
         ]);
     }
 
@@ -43,7 +44,8 @@ final class LoanReportController
     {
         $this->authorize($request);
         [$asOf, $filter] = $this->filters($request);
-        $data = $this->portfolio->build($asOf, $filter);
+        $scope = $this->borrowerScope($request);
+        $data = $this->portfolio->build($asOf, $filter, $scope);
 
         return $this->pdf->stream(
             'reports.pdf.loan_portfolio',
@@ -57,10 +59,11 @@ final class LoanReportController
     {
         $this->authorize($request);
         [$year, $month] = $this->yearMonth($request);
+        $scope = $this->borrowerScope($request);
 
         return Inertia::render('Lending/Reports/ScheduleVsActual', [
-            ...$this->scheduleVsActual->build($year, $month),
-            'filters' => ['year' => $year, 'month' => $month],
+            ...$this->scheduleVsActual->build($year, $month, $scope),
+            'filters' => ['year' => $year, 'month' => $month, 'scope' => $scope],
         ]);
     }
 
@@ -68,7 +71,8 @@ final class LoanReportController
     {
         $this->authorize($request);
         [$year, $month] = $this->yearMonth($request);
-        $data = $this->scheduleVsActual->build($year, $month);
+        $scope = $this->borrowerScope($request);
+        $data = $this->scheduleVsActual->build($year, $month, $scope);
 
         return $this->pdf->stream(
             'reports.pdf.loan_schedule_vs_actual',
@@ -83,10 +87,11 @@ final class LoanReportController
         $this->authorize($request);
         [$year, $month] = $this->yearMonth($request);
         $product = $request->query('product', 'all');
+        $scope = $this->borrowerScope($request);
 
         return Inertia::render('Lending/Reports/LppDesa', [
-            ...$this->lpp->buildDesa($year, $month, is_string($product) ? $product : null),
-            'filters' => ['year' => $year, 'month' => $month, 'product' => $product],
+            ...$this->lpp->buildDesa($year, $month, is_string($product) ? $product : null, $scope),
+            'filters' => ['year' => $year, 'month' => $month, 'product' => $product, 'scope' => $scope],
         ]);
     }
 
@@ -95,7 +100,8 @@ final class LoanReportController
         $this->authorize($request);
         [$year, $month] = $this->yearMonth($request);
         $product = $request->query('product', 'all');
-        $data = $this->lpp->buildDesa($year, $month, is_string($product) ? $product : null);
+        $scope = $this->borrowerScope($request);
+        $data = $this->lpp->buildDesa($year, $month, is_string($product) ? $product : null, $scope);
 
         return $this->pdf->stream(
             'reports.pdf.lending.lpp_desa',
@@ -110,10 +116,11 @@ final class LoanReportController
         $this->authorize($request);
         [$year, $month] = $this->yearMonth($request);
         $product = $request->query('product', 'all');
+        $scope = $this->borrowerScope($request);
 
         return Inertia::render('Lending/Reports/LppKelompok', [
             ...$this->lpp->buildKelompok($year, $month, is_string($product) ? $product : null),
-            'filters' => ['year' => $year, 'month' => $month, 'product' => $product],
+            'filters' => ['year' => $year, 'month' => $month, 'product' => $product, 'scope' => $scope],
         ]);
     }
 
@@ -122,6 +129,7 @@ final class LoanReportController
         $this->authorize($request);
         [$year, $month] = $this->yearMonth($request);
         $product = $request->query('product', 'all');
+        $scope = $this->borrowerScope($request);
         $data = $this->lpp->buildKelompok($year, $month, is_string($product) ? $product : null);
 
         return $this->pdf->stream(
@@ -132,15 +140,43 @@ final class LoanReportController
         );
     }
 
-    public function kolekDesa(Request $request): InertiaResponse
+    public function lppIndividu(Request $request): InertiaResponse
     {
         $this->authorize($request);
         [$year, $month] = $this->yearMonth($request);
         $product = $request->query('product', 'all');
 
-        return Inertia::render('Lending/Reports/KolekDesa', [
-            ...$this->collectibility->buildDesa($year, $month, is_string($product) ? $product : null),
+        return Inertia::render('Lending/Reports/LppIndividu', [
+            ...$this->lpp->buildIndividu($year, $month, is_string($product) ? $product : null),
             'filters' => ['year' => $year, 'month' => $month, 'product' => $product],
+        ]);
+    }
+
+    public function lppIndividuPdf(Request $request): Response|StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+        $data = $this->lpp->buildIndividu($year, $month, is_string($product) ? $product : null);
+
+        return $this->pdf->stream(
+            'reports.pdf.lending.lpp_individu',
+            $data,
+            sprintf('lpp-individu-%04d-%02d.pdf', $year, $month),
+            'landscape',
+        );
+    }
+
+    public function kolekDesa(Request $request): InertiaResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+        $scope = $this->borrowerScope($request);
+
+        return Inertia::render('Lending/Reports/KolekDesa', [
+            ...$this->collectibility->buildDesa($year, $month, is_string($product) ? $product : null, $scope),
+            'filters' => ['year' => $year, 'month' => $month, 'product' => $product, 'scope' => $scope],
         ]);
     }
 
@@ -149,7 +185,8 @@ final class LoanReportController
         $this->authorize($request);
         [$year, $month] = $this->yearMonth($request);
         $product = $request->query('product', 'all');
-        $data = $this->collectibility->buildDesa($year, $month, is_string($product) ? $product : null);
+        $scope = $this->borrowerScope($request);
+        $data = $this->collectibility->buildDesa($year, $month, is_string($product) ? $product : null, $scope);
 
         return $this->pdf->stream(
             'reports.pdf.lending.kolek_desa',
@@ -159,15 +196,43 @@ final class LoanReportController
         );
     }
 
-    public function cadanganPenghapusan(Request $request): InertiaResponse
+    public function kolekIndividu(Request $request): InertiaResponse
     {
         $this->authorize($request);
         [$year, $month] = $this->yearMonth($request);
         $product = $request->query('product', 'all');
 
-        return Inertia::render('Lending/Reports/CadanganPenghapusan', [
-            ...$this->collectibility->buildCadangan($year, $month, is_string($product) ? $product : null),
+        return Inertia::render('Lending/Reports/KolekIndividu', [
+            ...$this->collectibility->buildIndividu($year, $month, is_string($product) ? $product : null),
             'filters' => ['year' => $year, 'month' => $month, 'product' => $product],
+        ]);
+    }
+
+    public function kolekIndividuPdf(Request $request): Response|StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+        $data = $this->collectibility->buildIndividu($year, $month, is_string($product) ? $product : null);
+
+        return $this->pdf->stream(
+            'reports.pdf.lending.kolek_individu',
+            $data,
+            sprintf('kolektibilitas-individu-%04d-%02d.pdf', $year, $month),
+            'landscape',
+        );
+    }
+
+    public function cadanganPenghapusan(Request $request): InertiaResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+        $scope = $this->borrowerScope($request);
+
+        return Inertia::render('Lending/Reports/CadanganPenghapusan', [
+            ...$this->collectibility->buildCadangan($year, $month, is_string($product) ? $product : null, $scope),
+            'filters' => ['year' => $year, 'month' => $month, 'product' => $product, 'scope' => $scope],
         ]);
     }
 
@@ -176,12 +241,40 @@ final class LoanReportController
         $this->authorize($request);
         [$year, $month] = $this->yearMonth($request);
         $product = $request->query('product', 'all');
-        $data = $this->collectibility->buildCadangan($year, $month, is_string($product) ? $product : null);
+        $scope = $this->borrowerScope($request);
+        $data = $this->collectibility->buildCadangan($year, $month, is_string($product) ? $product : null, $scope);
 
         return $this->pdf->stream(
             'reports.pdf.lending.cadangan_penghapusan',
             $data,
             sprintf('cadangan-penghapusan-ckpn-%04d-%02d.pdf', $year, $month),
+            'landscape',
+        );
+    }
+
+    public function cadanganPenghapusanIndividu(Request $request): InertiaResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+
+        return Inertia::render('Lending/Reports/CadanganPenghapusanIndividu', [
+            ...$this->collectibility->buildIndividu($year, $month, is_string($product) ? $product : null),
+            'filters' => ['year' => $year, 'month' => $month, 'product' => $product],
+        ]);
+    }
+
+    public function cadanganPenghapusanIndividuPdf(Request $request): Response|StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+        $data = $this->collectibility->buildIndividu($year, $month, is_string($product) ? $product : null);
+
+        return $this->pdf->stream(
+            'reports.pdf.lending.cadangan_penghapusan_individu',
+            $data,
+            sprintf('cadangan-penghapusan-ckpn-individu-%04d-%02d.pdf', $year, $month),
             'landscape',
         );
     }
@@ -226,5 +319,19 @@ final class LoanReportController
         }
 
         return [$year, $month];
+    }
+
+    /**
+     * Scope filter untuk Kelompok vs Individu.
+     * Valid values: 'all' (null), 'group', 'member'.
+     */
+    private function borrowerScope(Request $request): ?string
+    {
+        $scope = (string) $request->query('scope', 'all');
+        if (! in_array($scope, ['all', 'group', 'member'], true)) {
+            $scope = 'all';
+        }
+
+        return $scope === 'all' ? null : $scope;
     }
 }

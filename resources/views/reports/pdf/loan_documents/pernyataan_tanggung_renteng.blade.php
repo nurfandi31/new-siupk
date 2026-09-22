@@ -5,6 +5,8 @@
     $disbursementDate = $tokens['{tgl_cair}'] ?? '';
     $documentTitle = $document['label'] ?? '';
     $signatureHtml = $signature ?? '';
+
+    $kadesName = $tokens['{kades}'] ?? '';
 @endphp
 
 <style>
@@ -102,7 +104,7 @@
                 <td align="center">{{ $nomor }}.</td>
                 <td align="center">{{ $b['nik'] }}</td>
                 <td>{{ $b['name'] }}</td>
-                <td align="center">{{ '' }}</td>
+                <td align="center">{{ $b['gender'] === 'L' ? 'L' : ($b['gender'] === 'P' ? 'P' : '—') }}</td>
                 <td>{{ $nomor }}.</td>
             </tr>
 
@@ -114,7 +116,7 @@
 </div>
 <div style="text-align: justify; font-size: 14px;">
     Selaku anggota pemanfaat dari Nama Kelompok {{ $group['name'] }} yang beralamatkan di
-    {{ $group['address'] }} {{ '' }}
+    {{ $group['address'] }}
     {{ $group['village'] }}.
 </div>
 <div style="text-align: justify; font-size: 14px;">
@@ -170,8 +172,8 @@
                     </tr>
                     <tr>
                         <td align="center">
-                            {{ '' }}
-                            {{ $group['village'] }}
+                            {{ $kadesName ?: 'Kepala Desa' }}
+                            {{ $group['village'] ? ' '.$group['village'] : '' }}
                         </td>
                         <td align="center">{{ $group['name'] }}</td>
                     </tr>
@@ -180,7 +182,7 @@
                     </tr>
                     <tr>
                         <td align="center">
-                            <b>{{ '' }}</b>
+                            <b>{{ $kadesName ?: '________________' }}</b>
                         </td>
                         <td align="center">
                             <b>{{ $committeeChair }}</b>

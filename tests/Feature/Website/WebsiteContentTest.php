@@ -412,4 +412,154 @@ final class WebsiteContentTest extends TestCase
             ...$overrides,
         ];
     }
+
+    public function test_landing_includes_recent_posts_pages_and_contact_payload(): void
+    {
+        $this->activateTenantDomain();
+        $this->seedPublicPosts();
+        DB::connection('tenant')->table('site_pages')->insert($this->pageRow(1, [
+            'slug' => 'tentang-kami',
+            'title' => 'Tentang Kami',
+            'meta_description' => 'Profil lembaga.',
+            'status' => 'published',
+        ]));
+        DB::connection('tenant')->table('site_settings')->insert([
+            'tenant_id' => $this->testTenant->row_id,
+            'contact_phone' => '081234567890',
+            'contact_email' => 'kontak@example.test',
+            'contact_address' => 'Jl. Desa Sukamaju No. 1',
+            'facebook_url' => 'https://facebook.com/example',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->get('http://bumdes-sukamaju.test/')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('PublicSite/TenantHome')
+                ->where('recent_posts.0.slug', 'laporan-tahunan')
+                ->where('recent_posts.0.title', 'Laporan Tahunan')
+                ->has('recent_posts', 1)
+                ->has('recent_pages', 1)
+                ->where('recent_pages.0.slug', 'tentang-kami')
+                ->where('contact.phone', '081234567890')
+                ->where('contact.email', 'kontak@example.test')
+                ->where('contact.address', 'Jl. Desa Sukamaju No. 1')
+                ->where('contact.social.facebook', 'https://facebook.com/example')
+                ->etc());
+    }
+
+    public function test_landing_passes_empty_collections_when_admin_has_no_content(): void
+    {
+        $this->activateTenantDomain();
+
+        $this->get('http://bumdes-sukamaju.test/')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('PublicSite/TenantHome')
+                ->where('recent_posts', [])
+                ->where('recent_pages', [])
+                ->has('contact.phone')
+                ->has('contact.email')
+                ->has('contact.address')
+                ->has('contact.social.facebook')
+                ->has('contact.store_url')
+                ->etc());
+    }
+
+    public function test_public_pages_index_lists_published_pages_only(): void
+    {
+        $this->activateTenantDomain();
+        DB::connection('tenant')->table('site_pages')->insert($this->pageRow(1, [
+            'slug' => 'tentang-kami',
+            'title' => 'Tentang Kami',
+            'meta_description' => 'Profil lembaga.',
+            'status' => 'published',
+            'published_at' => now(),
+        ]));
+        DB::connection('tenant')->table('site_pages')->insert($this->pageRow(2, [
+            'slug' => 'layanan',
+            'title' => 'Layanan',
+            'meta_description' => 'Daftar layanan.',
+            'status' => 'published',
+            'published_at' => now(),
+        ]));
+        DB::connection('tenant')->table('site_pages')->insert($this->pageRow(3, [
+            'slug' => 'draf-rahasia',
+            'title' => 'Draf',
+            'meta_description' => 'Tidak tampil.',
+            'status' => 'draft',
+        ]));
+
+        $this->get('http://bumdes-sukamaju.test/halaman')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('PublicSite/PagesIndex')
+                ->where('pages.total', 2)
+                ->where('search', '')
+                ->has('pages.data', 2));
+
+        // Draft slug must not appear in the list.
+        $response = $this->get('http://bumdes-sukamaju.test/halaman')->assertOk();
+        $content = $response->getContent();
+        self::assertStringNotContainsString('draf-rahasia', $content);
+        self::assertStringNotContainsString('Draf', $content);
+    }
+
+    public function test_public_pages_search_filters_results(): void
+    {
+        $this->activateTenantDomain();
+        DB::connection('tenant')->table('site_pages')->insert($this->pageRow(1, [
+            'slug' => 'tentang-kami',
+            'title' => 'Tentang Kami',
+            'meta_description' => 'Profil lembaga.',
+            'status' => 'published',
+            'published_at' => now(),
+        ]));
+        DB::connection('tenant')->table('site_pages')->insert($this->pageRow(2, [
+            'slug' => 'layanan',
+            'title' => 'Layanan Pinjaman',
+            'meta_description' => 'Syarat dan ketentuan.',
+            'status' => 'published',
+            'published_at' => now(),
+        ]));
+
+        $this->get('http://bumdes-sukamaju.test/halaman?q=pinjaman')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('PublicSite/PagesIndex')
+                ->where('pages.total', 1)
+                ->where('pages.data.0.slug', 'layanan')
+                ->where('search', 'pinjaman'));
+
+        $this->get('http://bumdes-sukamaju.test/halaman?q=tidak-ada')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('PublicSite/PagesIndex')
+                ->where('pages.total', 0)
+                ->where('search', 'tidak-ada'));
+    }
+
+    public function test_public_pages_index_renders_empty_state_when_no_pages(): void
+    {
+        $this->activateTenantDomain();
+
+        $this->get('http://bumdes-sukamaju.test/halaman')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('PublicSite/PagesIndex')
+                ->where('pages.total', 0)
+                ->where('pages.data', [])
+                ->where('search', ''));
+    }
+
+    public function test_sitemap_includes_pages_index(): void
+    {
+        $this->activateTenantDomain();
+
+        $xml = $this->get('http://bumdes-sukamaju.test/sitemap.xml')->assertOk()->getContent();
+        self::assertStringContainsString('<loc>', $xml);
+        self::assertStringContainsString('/berita</loc>', $xml);
+        self::assertStringContainsString('/halaman</loc>', $xml);
+    }
 }

@@ -37,17 +37,59 @@ trait BuildsTenantTestDatabase
         DB::connection('platform')->disconnect();
         DB::connection('tenant')->disconnect();
 
-        Artisan::call('migrate:fresh', [
-            '--database' => 'platform',
-            '--path' => 'database/migrations/platform',
-            '--force' => true,
-        ]);
+        // SQLite-only: hapus file DB lama untuk cegah "disk image is malformed"
+        // yang muncul bila test sebelumnya crash sebelum koneksi tertutup bersih.
+        $platformDb = (string) config('database.connections.platform.database');
+        $tenantDb = (string) config('database.connections.tenant.database');
+        foreach ([
+            database_path($platformDb),
+            database_path($tenantDb),
+        ] as $dbPath) {
+            if (is_string($dbPath) && $dbPath !== '' && file_exists($dbPath)) {
+                @unlink($dbPath);
+            }
+            // SQLite kadang membuat file -journal/-shm/-wal bila koneksi tak tertutup.
+            foreach ([$dbPath.'-journal', $dbPath.'-shm', $dbPath.'-wal'] as $sibling) {
+                if (file_exists($sibling)) {
+                    @unlink($sibling);
+                }
+            }
+        }
 
-        Artisan::call('migrate:fresh', [
-            '--database' => 'tenant',
-            '--path' => 'database/migrations/shard',
-            '--force' => true,
-        ]);
+        // SQLite punya masalah intermiten "disk image is malformed" bila ALTER TABLE gagal
+        // dalam transaction besar. Retry migrate:fresh sampai 3× sebelum menyerah.
+        $maxAttempts = 3;
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            try {
+                Artisan::call('migrate:fresh', [
+                    '--database' => 'platform',
+                    '--path' => 'database/migrations/platform',
+                    '--force' => true,
+                ]);
+                Artisan::call('migrate:fresh', [
+                    '--database' => 'tenant',
+                    '--path' => 'database/migrations/shard',
+                    '--force' => true,
+                ]);
+                break;
+            } catch (\Throwable $e) {
+                if ($attempt >= $maxAttempts) {
+                    throw $e;
+                }
+                DB::connection('platform')->disconnect();
+                DB::connection('tenant')->disconnect();
+                foreach ([database_path($platformDb), database_path($tenantDb)] as $dbPath) {
+                    if (file_exists($dbPath)) {
+                        @unlink($dbPath);
+                    }
+                    foreach ([$dbPath.'-journal', $dbPath.'-shm', $dbPath.'-wal'] as $sibling) {
+                        if (file_exists($sibling)) {
+                            @unlink($sibling);
+                        }
+                    }
+                }
+            }
+        }
 
         $this->testTenant = Tenant::query()->create([
             'public_id' => (string) Str::ulid(),
@@ -98,5 +140,19 @@ trait BuildsTenantTestDatabase
     protected function clearTenantTestContext(): void
     {
         app(TenantContext::class)->clear();
+
+        // SQLite: setelah test sebelumnya DB di-unlink+rebuild oleh setUp berikutnya,
+        // connection lama masih pegang handle ke file yang sudah dihapus.
+        // Disconnect agar query berikutnya re-open dengan state file baru.
+        try {
+            DB::connection('platform')->disconnect();
+        } catch (\Throwable) {
+            // ignore - tidak ada connection aktif
+        }
+        try {
+            DB::connection('tenant')->disconnect();
+        } catch (\Throwable) {
+            // ignore - tidak ada connection aktif
+        }
     }
 }
