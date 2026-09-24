@@ -43,7 +43,7 @@ const sections = [
     {
         label: 'Pengaturan',
         items: [
-            { label: 'Pengaturan', icon: 'settings', href: '/settings' },
+            { label: 'Pengaturan', icon: 'settings', href: '/settings', exact: true },
             { label: 'WhatsApp Gateway', icon: 'chat', href: '/settings/whatsapp' },
         ],
     },

@@ -2,6 +2,24 @@
 
 declare(strict_types=1);
 
+use App\Domain\Accounting\Controllers\Reports\BudgetingController;
+use App\Domain\Accounting\Controllers\Reports\InvoiceController;
+use App\Domain\Accounting\Controllers\Reports\SimpananController;
+use App\Domain\Regulatory\Controllers\Ojk\ActiveLoansController;
+use App\Domain\Regulatory\Controllers\Ojk\AllowanceController;
+use App\Domain\Regulatory\Controllers\Ojk\BalanceSheetController;
+use App\Domain\Regulatory\Controllers\Ojk\CollectibilityController;
+use App\Domain\Regulatory\Controllers\Ojk\CollectibilityV2Controller;
+use App\Domain\Regulatory\Controllers\Ojk\CoverController;
+use App\Domain\Regulatory\Controllers\Ojk\IncomeStatementController;
+use App\Domain\Regulatory\Controllers\Ojk\LoansReceivedController;
+use App\Domain\Regulatory\Controllers\Ojk\PaidGroupLoansController;
+use App\Domain\Regulatory\Controllers\Ojk\PaidIndividuLoansController;
+use App\Domain\Regulatory\Controllers\Ojk\ProfileController as OjkProfileController;
+use App\Domain\Regulatory\Controllers\Ojk\SavingsController;
+use App\Domain\Regulatory\Controllers\Ojk\SavingsInterestController;
+use App\Domain\Regulatory\Controllers\Ojk\SavingsReceivablesController;
+use App\Domain\Supervisor\Controllers\NoteController as SupervisorNoteController;
 use App\Http\Controllers\Access\TenantRoleManagementController;
 use App\Http\Controllers\Access\TenantUserManagementController;
 use App\Http\Controllers\Accounting\CashEvidenceController;
@@ -11,6 +29,7 @@ use App\Http\Controllers\Accounting\JournalEntryController;
 use App\Http\Controllers\Accounting\PeriodCloseController;
 use App\Http\Controllers\Accounting\ReportController;
 use App\Http\Controllers\Accounting\TaxEstimateController;
+use App\Http\Controllers\Accounting\YearEndReportController;
 use App\Http\Controllers\Admin\AiAssistantController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -41,6 +60,16 @@ use App\Http\Controllers\Lending\LoanController;
 use App\Http\Controllers\Lending\LoanDocumentController;
 use App\Http\Controllers\Lending\LoanReportController;
 use App\Http\Controllers\Lending\LoanSimulationController;
+use App\Http\Controllers\Lending\Reports\ActiveGroupsReportController;
+use App\Http\Controllers\Lending\Reports\ActiveMembersReportController;
+use App\Http\Controllers\Lending\Reports\DueTodayReportController;
+use App\Http\Controllers\Lending\Reports\NearSettlementReportController;
+use App\Http\Controllers\Lending\Reports\OverdueReportController;
+use App\Http\Controllers\Lending\Reports\PaidLoansReportController;
+use App\Http\Controllers\Lending\Reports\ScheduleVsActualIndividuReportController;
+use App\Http\Controllers\Lending\Reports\WeeklyReportController;
+use App\Http\Controllers\Lending\Reports\WriteOffsIndividuReportController;
+use App\Http\Controllers\Lending\Reports\WriteOffsReportController;
 use App\Http\Controllers\MasterData\GroupController;
 use App\Http\Controllers\MasterData\MemberController;
 use App\Http\Controllers\MasterData\OtherInstitutionController;
@@ -476,6 +505,9 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::get('/create', [LoanController::class, 'individualCreate'])->name('create');
         Route::post('/', [LoanController::class, 'individualStore'])->name('store');
         Route::get('/{loan}', [LoanController::class, 'individualShow'])->name('show');
+        Route::get('/{loan}/edit', [LoanController::class, 'individualEdit'])->name('edit');
+        Route::put('/{loan}', [LoanController::class, 'individualUpdate'])->name('update');
+        Route::delete('/{loan}', [LoanController::class, 'individualDestroy'])->name('destroy');
         Route::get('/{loan}/card', [LoanController::class, 'individualCard'])->name('card');
         Route::get('/{loan}/settlement-letter', [LoanController::class, 'individualSettlementLetter'])->name('settlement-letter');
         Route::get('/{loan}/documents/{type}', [LoanDocumentController::class, 'document'])
@@ -515,6 +547,96 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::get('/cadangan-penghapusan/pdf', [LoanReportController::class, 'cadanganPenghapusanPdf'])->name('cadangan-penghapusan.pdf');
         Route::get('/cadangan-penghapusan-individu', [LoanReportController::class, 'cadanganPenghapusanIndividu'])->name('cadangan-penghapusan-individu');
         Route::get('/cadangan-penghapusan-individu/pdf', [LoanReportController::class, 'cadanganPenghapusanIndividuPdf'])->name('cadangan-penghapusan-individu.pdf');
+
+        // Daftar Pinjaman Lunas — PaidLoansReportController
+        Route::get('/paid', [PaidLoansReportController::class, 'index'])->name('paid');
+        Route::get('/paid/pdf', [PaidLoansReportController::class, 'pdf'])->name('paid.pdf');
+
+        // Kelompok Aktif — ActiveGroupsReportController
+        Route::get('/groups/active', [ActiveGroupsReportController::class, 'index'])->name('groups.active');
+        Route::get('/groups/active/pdf', [ActiveGroupsReportController::class, 'pdf'])->name('groups.active.pdf');
+
+        // Pemanfaat Aktif — ActiveMembersReportController
+        Route::get('/members/active', [ActiveMembersReportController::class, 'index'])->name('members.active');
+        Route::get('/members/active/pdf', [ActiveMembersReportController::class, 'pdf'])->name('members.active.pdf');
+
+        // Daftar per-tahapan pipeline: Proposal / Verifikasi / Waiting List
+        Route::get('/proposals', [LoanReportController::class, 'proposals'])->name('proposals');
+        Route::get('/proposals/pdf', [LoanReportController::class, 'proposalsPdf'])->name('proposals.pdf');
+        Route::get('/proposals/excel', [LoanReportController::class, 'proposalsExcel'])->name('proposals.excel');
+
+        Route::get('/verifications', [LoanReportController::class, 'verifications'])->name('verifications');
+        Route::get('/verifications/pdf', [LoanReportController::class, 'verificationsPdf'])->name('verifications.pdf');
+        Route::get('/verifications/excel', [LoanReportController::class, 'verificationsExcel'])->name('verifications.excel');
+
+        Route::get('/waiting-list', [LoanReportController::class, 'waitingList'])->name('waiting-list');
+        Route::get('/waiting-list/pdf', [LoanReportController::class, 'waitingListPdf'])->name('waiting-list.pdf');
+        Route::get('/waiting-list/excel', [LoanReportController::class, 'waitingListExcel'])->name('waiting-list.excel');
+
+        // Tagihan Jatuh Tempo Hari Ini — DueTodayReportController
+        Route::get('/due-today', [DueTodayReportController::class, 'index'])->name('due-today');
+        Route::get('/due-today/pdf', [DueTodayReportController::class, 'pdf'])->name('due-today.pdf');
+        Route::get('/due-today/excel', [DueTodayReportController::class, 'excel'])->name('due-today.excel');
+
+        // Daftar Tunggakan — OverdueReportController
+        Route::get('/overdue', [OverdueReportController::class, 'index'])->name('overdue');
+        Route::get('/overdue/pdf', [OverdueReportController::class, 'pdf'])->name('overdue.pdf');
+        Route::get('/overdue/excel', [OverdueReportController::class, 'excel'])->name('overdue.excel');
+
+        // Rencana & Realisasi Individu — ScheduleVsActualIndividuReportController
+        Route::get('/schedule-vs-actual-individu', [ScheduleVsActualIndividuReportController::class, 'index'])
+            ->name('schedule-vs-actual-individu');
+        Route::get('/schedule-vs-actual-individu/pdf', [ScheduleVsActualIndividuReportController::class, 'pdf'])
+            ->name('schedule-vs-actual-individu.pdf');
+        Route::get('/schedule-vs-actual-individu/excel', [ScheduleVsActualIndividuReportController::class, 'excel'])
+            ->name('schedule-vs-actual-individu.excel');
+
+        // Laporan Mingguan — WeeklyReportController (LPP & Kolek Mingguan Individu/Kelompok)
+        Route::get('/weekly/lpp-individu', [WeeklyReportController::class, 'lppIndividu'])->name('weekly.lpp-individu');
+        Route::get('/weekly/lpp-individu/pdf', [WeeklyReportController::class, 'lppIndividuPdf'])->name('weekly.lpp-individu.pdf');
+        Route::get('/weekly/lpp-kelompok', [WeeklyReportController::class, 'lppKelompok'])->name('weekly.lpp-kelompok');
+        Route::get('/weekly/lpp-kelompok/pdf', [WeeklyReportController::class, 'lppKelompokPdf'])->name('weekly.lpp-kelompok.pdf');
+        Route::get('/weekly/kolek-individu', [WeeklyReportController::class, 'kolekIndividu'])->name('weekly.kolek-individu');
+        Route::get('/weekly/kolek-individu/pdf', [WeeklyReportController::class, 'kolekIndividuPdf'])->name('weekly.kolek-individu.pdf');
+        Route::get('/weekly/kolek-kelompok', [WeeklyReportController::class, 'kolekKelompok'])->name('weekly.kolek-kelompok');
+        Route::get('/weekly/kolek-kelompok/pdf', [WeeklyReportController::class, 'kolekKelompokPdf'])->name('weekly.kolek-kelompok.pdf');
+
+        // Pinjaman Mendekati Jatuh Tempo — NearSettlementReportController
+        Route::get('/near-settlement', [NearSettlementReportController::class, 'index'])->name('near-settlement');
+        Route::get('/near-settlement/pdf', [NearSettlementReportController::class, 'pdf'])->name('near-settlement.pdf');
+
+        // Pinjaman Dihapusbukukan — WriteOffsReportController (Kelompok)
+        Route::get('/write-offs', [WriteOffsReportController::class, 'index'])->name('write-offs');
+        Route::get('/write-offs/pdf', [WriteOffsReportController::class, 'pdf'])->name('write-offs.pdf');
+        Route::get('/write-offs/excel', [WriteOffsReportController::class, 'excel'])->name('write-offs.excel');
+
+        // Pinjaman Dihapusbukukan Individu — WriteOffsIndividuReportController
+        Route::get('/write-offs-individu', [WriteOffsIndividuReportController::class, 'index'])->name('write-offs-individu');
+        Route::get('/write-offs-individu/pdf', [WriteOffsIndividuReportController::class, 'pdf'])->name('write-offs-individu.pdf');
+        Route::get('/write-offs-individu/excel', [WriteOffsIndividuReportController::class, 'excel'])->name('write-offs-individu.excel');
+    });
+
+    // Regulatory — OJK (laporan compliance)
+    Route::prefix('regulatory/ojk')->name('regulatory.ojk.')->group(function (): void {
+        // Simpanan & Piutang (SMPN)
+        Route::get('savings-receivables', [SavingsReceivablesController::class, 'index'])->name('savings-receivables');
+        Route::get('savings-receivables/pdf', [SavingsReceivablesController::class, 'pdf'])->name('savings-receivables.pdf');
+
+        // Daftar Bunga Simpanan
+        Route::get('interest', [SavingsInterestController::class, 'index'])->name('interest');
+        Route::get('interest/pdf', [SavingsInterestController::class, 'pdf'])->name('interest.pdf');
+
+        // Kolektibilitas OJK v1 (KBP)
+        Route::get('collectibility', [CollectibilityController::class, 'index'])->name('collectibility');
+        Route::get('collectibility/pdf', [CollectibilityController::class, 'pdf'])->name('collectibility.pdf');
+
+        // Kolektibilitas OJK v2 (KBP2)
+        Route::get('collectibility-v2', [CollectibilityV2Controller::class, 'index'])->name('collectibility-v2');
+        Route::get('collectibility-v2/pdf', [CollectibilityV2Controller::class, 'pdf'])->name('collectibility-v2.pdf');
+
+        // Penyisihan Cadangan Penghapusan Piutang (PCPP)
+        Route::get('allowance', [AllowanceController::class, 'index'])->name('allowance');
+        Route::get('allowance/pdf', [AllowanceController::class, 'pdf'])->name('allowance.pdf');
     });
 
     // Accounting
@@ -523,6 +645,9 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
     Route::get('/assets/{asset}/edit', fn (string $asset) => redirect("/accounting/assets/{$asset}/edit", 301));
 
     Route::prefix('accounting')->name('accounting.')->group(function (): void {
+        // Invoice Cetak (PDF stream only)
+        Route::get('/invoice/{id}/pdf', [InvoiceController::class, 'pdf'])->whereNumber('id')->name('invoice.pdf');
+
         Route::get('/journals', [JournalBrowseController::class, 'index'])->name('journals.index');
         Route::post('/journals/bulk-reverse', [JournalBrowseController::class, 'bulkReverse'])->name('journals.bulk-reverse');
         Route::get('/journals/{entry}/edit', [JournalBrowseController::class, 'edit'])->name('journals.edit');
@@ -603,6 +728,11 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
             Route::get('/general-ledger', [ReportController::class, 'generalLedger'])->name('general-ledger');
             Route::get('/general-ledger/pdf', [ReportController::class, 'generalLedgerPdf'])->name('general-ledger.pdf');
             Route::get('/general-ledger/excel', [ReportController::class, 'generalLedgerExcel'])->name('general-ledger.excel');
+
+            // Daftar Simpanan
+            Route::get('/simpanan', [SimpananController::class, 'index'])->name('simpanan');
+            Route::get('/simpanan/pdf', [SimpananController::class, 'pdf'])->name('simpanan.pdf');
+            Route::get('/simpanan/excel', [SimpananController::class, 'excel'])->name('simpanan.excel');
             Route::get('/financial-health', [ReportController::class, 'financialHealth'])->name('financial-health');
             Route::get('/financial-health/pdf', [ReportController::class, 'financialHealthPdf'])->name('financial-health.pdf');
             Route::get('/assets/fixed/pdf', [ReportController::class, 'fixedAssetsPdf'])->name('assets.fixed.pdf');
@@ -615,6 +745,31 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
             Route::get('/annual-pack/ba-pergantian/pdf', [ReportController::class, 'annualBaPergantianPdf'])->name('annual-pack.ba-pergantian.pdf');
             Route::get('/annual-pack/mou/pdf', [ReportController::class, 'annualMouPdf'])->name('annual-pack.mou.pdf');
             Route::get('/bundle/pdf', [ReportController::class, 'bundlePdf'])->name('bundle.pdf');
+
+            // E-Budgeting per Triwulan (Rencana vs Realisasi)
+            Route::get('/budgeting', [BudgetingController::class, 'index'])->name('budgeting');
+            Route::get('/budgeting/pdf', [BudgetingController::class, 'pdf'])->name('budgeting.pdf');
+            Route::get('/budgeting/excel', [BudgetingController::class, 'excel'])->name('budgeting.excel');
+        });
+
+        // Year-End Closing Reports (Tutup Buku) — simulasi/preview
+        Route::prefix('year-end')->name('year-end.')->group(function (): void {
+            Route::get('/allocation', [YearEndReportController::class, 'allocation'])->name('allocation');
+            Route::get('/allocation/pdf', [YearEndReportController::class, 'allocationPdf'])->name('allocation.pdf');
+            Route::put('/allocation/notes', [YearEndReportController::class, 'saveAllocationNotes'])->name('allocation.notes');
+
+            Route::get('/journal', [YearEndReportController::class, 'closingJournal'])->name('journal');
+            Route::get('/journal/pdf', [YearEndReportController::class, 'closingJournalPdf'])->name('journal.pdf');
+
+            Route::get('/balance-sheet', [YearEndReportController::class, 'yearEndBalanceSheet'])->name('balance-sheet');
+            Route::get('/balance-sheet/pdf', [YearEndReportController::class, 'yearEndBalanceSheetPdf'])->name('balance-sheet.pdf');
+
+            Route::get('/income-statement', [YearEndReportController::class, 'yearEndIncomeStatement'])->name('income-statement');
+            Route::get('/income-statement/pdf', [YearEndReportController::class, 'yearEndIncomeStatementPdf'])->name('income-statement.pdf');
+
+            Route::get('/calk', [YearEndReportController::class, 'yearEndCalk'])->name('calk');
+            Route::get('/calk/pdf', [YearEndReportController::class, 'yearEndCalkPdf'])->name('calk.pdf');
+            Route::put('/calk/notes', [YearEndReportController::class, 'saveYearEndCalkNotes'])->name('calk.notes');
         });
     });
 
@@ -708,6 +863,58 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::post('/save_device', [WhatsappController::class, 'createInstance'])->name('save_device');
         Route::get('/instance_state', [WhatsappController::class, 'instanceState'])->name('instance_state');
         Route::post('/delete_session', [WhatsappController::class, 'deleteInstance'])->name('delete_session');
+    });
+
+    // Regulatory OJK reports
+    Route::prefix('regulatory/ojk')->name('regulatory.ojk.')->group(function (): void {
+        // 1. Cover OJK (sampul)
+        Route::get('cover', [CoverController::class, 'index'])->name('cover');
+        Route::get('cover/pdf', [CoverController::class, 'pdf'])->name('cover.pdf');
+
+        // 2. Profil Kelembagaan OJK
+        Route::get('profile', [OjkProfileController::class, 'index'])->name('profile');
+        Route::get('profile/pdf', [OjkProfileController::class, 'pdf'])->name('profile.pdf');
+
+        // 3. Neraca OJK
+        Route::get('balance-sheet', [BalanceSheetController::class, 'index'])->name('balance-sheet');
+        Route::get('balance-sheet/pdf', [BalanceSheetController::class, 'pdf'])->name('balance-sheet.pdf');
+
+        // 4. Laba Rugi OJK
+        Route::get('income-statement', [IncomeStatementController::class, 'index'])->name('income-statement');
+        Route::get('income-statement/pdf', [IncomeStatementController::class, 'pdf'])->name('income-statement.pdf');
+
+        // 5. Rincian Pinjaman Diterima (DRPY)
+        Route::get('loans-received', [LoansReceivedController::class, 'index'])->name('loans-received');
+        Route::get('loans-received/pdf', [LoansReceivedController::class, 'pdf'])->name('loans-received.pdf');
+
+        // DRP — Daftar Rincian Pinjaman Aktif
+        Route::get('active-loans', [ActiveLoansController::class, 'index'])->name('active-loans');
+        Route::get('active-loans/pdf', [ActiveLoansController::class, 'pdf'])->name('active-loans.pdf');
+
+        // DRPL — Rincian Pinjaman Lunas Kelompok
+        Route::get('paid-group', [PaidGroupLoansController::class, 'index'])->name('paid-group');
+        Route::get('paid-group/pdf', [PaidGroupLoansController::class, 'pdf'])->name('paid-group.pdf');
+
+        // DRPLi — Rincian Pinjaman Lunas Individu
+        Route::get('paid-individu', [PaidIndividuLoansController::class, 'index'])->name('paid-individu');
+        Route::get('paid-individu/pdf', [PaidIndividuLoansController::class, 'pdf'])->name('paid-individu.pdf');
+
+        // DRT — Daftar Rincian Tabungan
+        Route::get('savings', [SavingsController::class, 'index'])->name('savings');
+        Route::get('savings/pdf', [SavingsController::class, 'pdf'])->name('savings.pdf');
+    });
+
+    // Supervisor Notes
+    Route::prefix('supervisor/notes')->name('supervisor.notes.')->group(function (): void {
+        Route::get('/', [SupervisorNoteController::class, 'index'])->name('index');
+        Route::get('/create', [SupervisorNoteController::class, 'create'])->name('create');
+        Route::post('/', [SupervisorNoteController::class, 'store'])->name('store');
+        Route::get('/{id}', [SupervisorNoteController::class, 'show'])->whereNumber('id')->name('show');
+        Route::get('/{id}/edit', [SupervisorNoteController::class, 'edit'])->whereNumber('id')->name('edit');
+        Route::put('/{id}', [SupervisorNoteController::class, 'update'])->whereNumber('id')->name('update');
+        Route::delete('/{id}', [SupervisorNoteController::class, 'destroy'])->whereNumber('id')->name('destroy');
+        Route::post('/{id}/submit', [SupervisorNoteController::class, 'submit'])->whereNumber('id')->name('submit');
+        Route::post('/{id}/acknowledge', [SupervisorNoteController::class, 'acknowledge'])->whereNumber('id')->name('acknowledge');
     });
 });
 

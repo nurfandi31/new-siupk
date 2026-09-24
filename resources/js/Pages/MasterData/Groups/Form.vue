@@ -8,6 +8,7 @@ import AppInput from '../../../Components/AppInput.vue';
 import AppModal from '../../../Components/AppModal.vue';
 import AppRadioGroup from '../../../Components/AppRadioGroup.vue';
 import AppSwitch from '../../../Components/AppSwitch.vue';
+import AppTextarea from '../../../Components/AppTextarea.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
 import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
 
@@ -170,40 +171,44 @@ searchMembers();
             <AppCard>
                 <form class="space-y-4" @submit.prevent="submit">
                     <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                        <AppInput v-if="editing" :model-value="group.code" label="Kode Kelompok" icon="tag" readonly />
+                        <div v-if="editing" class="sm:col-span-2 xl:col-span-3">
+                            <AppInput :model-value="group.code" label="Kode Kelompok" icon="tag" readonly />
+                        </div>
                         <AppInput v-model="form.name" label="Nama Kelompok" icon="groups" required :error="form.errors.name" />
                         <SmartSelect v-model="form.village_id" label="Desa" :options="villageOptions" searchable required :error="form.errors.village_id" />
                         <AppDatePicker v-model="form.established_at" label="Tanggal Berdiri" :max="today" clearable :error="form.errors.established_at" />
                         <SmartSelect v-model="form.business_type_id" label="Jenis Usaha" :options="businessOptions" required :error="form.errors.business_type_id" />
                         <SmartSelect v-model="form.activity_type_id" label="Jenis Kegiatan" :options="activityOptions" required :error="form.errors.activity_type_id" />
                         <SmartSelect v-model="form.group_level_id" label="Tingkatan" :options="levelOptions" required :error="form.errors.group_level_id" />
-                        <SmartSelect v-model="form.group_function_id" label="Fungsi Kelompok" :options="functionOptions" required :error="form.errors.group_function_id" />
                     </fieldset>
 
-                    <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                        <AppInput v-model="form.address" label="Alamat" icon="home" placeholder="Alamat lengkap kelompok" :error="form.errors.address" />
-                        <AppInput v-model="form.phone" label="No. HP" icon="phone" type="tel" :error="form.errors.phone" />
-                        <AppSwitch v-model="isActive" label="Kelompok Aktif" description="Tersedia untuk proses siupk." icon="toggle_on" field />
-                    </fieldset>
-
-                    <fieldset class="grid gap-4 xl:grid-cols-3">
-                        <div class="xl:col-span-2">
-                            <SmartSelect
-                                v-model="candidateId"
-                                label="Cari Anggota"
-                                :options="memberOptions"
-                                :loading="memberLoading"
-                                :hint="memberHint"
-                                :empty-action-label="memberSearchEmpty && memberSearch ? 'Daftarkan anggota baru' : null"
-                                placeholder="Cari NIK atau nama"
-                                searchable
-                                @search-change="updateMemberSearch"
-                                @search="searchMembers"
-                                @empty-action="openQuickMember"
-                            />
+                    <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <div class="sm:col-span-2 xl:col-span-4">
+                            <AppTextarea v-model="form.address" label="Alamat" icon="home" placeholder="Alamat lengkap kelompok" :rows="3" :error="form.errors.address" />
                         </div>
-                        <div class="flex items-end">
-                            <AppButton variant="secondary" size="large" icon="person_add" :disabled="!candidateId" class="w-full" @click="addMember">Tambahkan</AppButton>
+                        <SmartSelect v-model="form.group_function_id" label="Fungsi Kelompok" :options="functionOptions" required :error="form.errors.group_function_id" />
+                        <AppInput v-model="form.phone" label="No. HP" icon="phone" type="tel" :error="form.errors.phone" />
+                        <div class="sm:col-span-2 xl:col-span-2">
+                            <AppSwitch v-model="isActive" label="Kelompok Aktif" description="Tersedia untuk proses siupk." icon="toggle_on" field />
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="grid items-start gap-4 xl:grid-cols-[1fr_auto]">
+                        <SmartSelect
+                            v-model="candidateId"
+                            label="Cari Anggota"
+                            :options="memberOptions"
+                            :loading="memberLoading"
+                            :hint="memberHint"
+                            :empty-action-label="memberSearchEmpty && memberSearch ? 'Daftarkan anggota baru' : null"
+                            placeholder="Cari NIK atau nama"
+                            searchable
+                            @search-change="updateMemberSearch"
+                            @search="searchMembers"
+                            @empty-action="openQuickMember"
+                        />
+                        <div class="flex items-center xl:mt-7">
+                            <AppButton variant="secondary" icon="person_add" :disabled="!candidateId" @click="addMember">Tambahkan</AppButton>
                         </div>
                     </fieldset>
 

@@ -79,15 +79,14 @@ function statusLabel(status) {
 <template>
     <Head title="Tagihan" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header>
                 <h1 class="text-2xl font-bold text-primary">Tagihan</h1>
                 <p class="mt-1 text-on-surface-variant">Daftar tagihan lembaga: langganan, setup, support, dan lainnya.</p>
             </header>
 
             <AppCard :padded="false">
-                <div class="p-6">
-                    <SmartDataTable
+                <SmartDataTable
                         :rows="invoices.data"
                         :columns="columns"
                         :pagination="invoices"
@@ -126,7 +125,6 @@ function statusLabel(status) {
                             </Link>
                         </template>
                     </SmartDataTable>
-                </div>
             </AppCard>
         </div>
     </AuthenticatedLayout>

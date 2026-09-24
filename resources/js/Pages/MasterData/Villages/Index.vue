@@ -29,14 +29,13 @@ const columns = [
 <template>
     <Head title="Daftar Desa" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header>
                 <h1 class="text-2xl font-bold text-primary">Daftar Desa</h1>
                 <p class="mt-1 text-on-surface-variant">Data desa berasal dari kecamatan tenant.</p>
             </header>
             <AppCard :padded="false">
-                <div class="p-6">
-                    <SmartDataTable
+                <SmartDataTable
                         :rows="villages.data"
                         :columns="columns"
                         :pagination="villages"
@@ -58,7 +57,6 @@ const columns = [
                             </Link>
                         </template>
                     </SmartDataTable>
-                </div>
             </AppCard>
         </div>
     </AuthenticatedLayout>

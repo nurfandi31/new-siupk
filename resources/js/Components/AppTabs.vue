@@ -23,6 +23,11 @@ const props = defineProps({
     },
     vertical: { type: Boolean, default: false },
     ariaLabel: { type: String, default: 'Tab' },
+    align: {
+        type: String,
+        default: 'start',
+        validator: (value) => ['start', 'center', 'end', 'between'].includes(value),
+    },
 });
 
 defineEmits(['update:modelValue']);
@@ -36,13 +41,20 @@ const normalizedVariant = computed(() => {
 const wrapperClass = {
     underline: 'flex flex-wrap gap-x-6 gap-y-1',
     pill: 'flex flex-col gap-1 w-full',
-    'pills-bar': 'flex flex-wrap gap-1 rounded-xl chip-shadow bg-surface-container-lowest p-1 ring-1 ring-outline-variant/40',
+    'pills-bar': 'flex w-full flex-wrap items-center gap-1 rounded-2xl chip-shadow bg-surface-container-lowest p-1 ring-1 ring-outline-variant/40',
+};
+
+const alignClass = {
+    start: 'justify-start',
+    center: 'justify-center',
+    end: 'justify-end',
+    between: 'justify-between',
 };
 
 const tabBase = {
     underline: 'flex items-center gap-2 border-b-2 px-1 pb-3 pt-2 text-sm font-medium transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-lowest',
     pill: 'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-low',
-    'pills-bar': 'inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-150 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-lowest',
+    'pills-bar': 'inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-150 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container-lowest',
 };
 
 const tabActive = {
@@ -67,7 +79,7 @@ function tabClass(item) {
 </script>
 
 <template>
-    <nav :class="wrapperClass[normalizedVariant]" :aria-label="ariaLabel">
+    <nav :class="[wrapperClass[normalizedVariant], alignClass[align] ?? alignClass.start]" :aria-label="ariaLabel">
         <button
             v-for="item in items"
             :key="item.key"
@@ -86,7 +98,7 @@ function tabClass(item) {
             <span class="truncate">{{ item.label }}</span>
             <span
                 v-if="item.badge !== undefined && item.badge !== null"
-                class="ml-auto inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-error/15 px-1.5 text-[10px] font-bold leading-4 text-error"
+                class="ml-1 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-surface-container-high px-1.5 text-[10px] font-bold leading-4 text-on-surface-variant"
             >{{ item.badge }}</span>
         </button>
     </nav>

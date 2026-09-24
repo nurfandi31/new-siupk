@@ -70,7 +70,7 @@ function tone(status) {
 <template>
     <Head title="Invoice" />
     <AdminLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <AdminPageHeader
                 title="Invoice Platform"
                 subtitle="Tagihan tenant: langganan, setup, support, training, custom, dan keperluan lain."
@@ -81,51 +81,49 @@ function tone(status) {
             </AdminPageHeader>
 
             <AppCard :padded="false">
-                <div class="p-6">
-                    <SmartDataTable
-                        :rows="invoices.data"
-                        :columns="columns"
-                        :pagination="invoices"
-                        url="/admin/invoices"
-                        :search="search"
-                        :per-page="perPage"
-                        :sort="sort"
-                        :direction="direction"
-                        search-placeholder="…"
-                        empty-title="Belum ada invoice"
-                        empty-description="Terbitkan invoice untuk tenant."
-                    >
-                        <template #toolbar>
-                            <div class="min-w-0 flex-1 sm:min-w-48 sm:flex-initial">
-                                <SmartSelect :model-value="status" label="Status" hide-label size="compact" :options="statusOptions" @update:model-value="filterStatus" />
-                            </div>
-                        </template>
-                        <template #cell-tenant="{ row }">
-                            <span class="font-semibold text-primary">{{ row.tenant?.name || '—' }}</span>
-                            <span class="block text-xs text-on-surface-variant">{{ row.tenant?.code }}</span>
-                        </template>
-                        <template #cell-purpose="{ row }">
-                            <span class="font-semibold text-primary">{{ purposeLabels[row.purpose] || row.purpose || '—' }}</span>
-                            <span v-if="row.description" class="block truncate text-xs text-on-surface-variant">{{ row.description }}</span>
-                        </template>
-                        <template #cell-amount="{ row }">
-                            <span class="font-bold text-primary tabular-nums">{{ money(row.amount, row.currency) }}</span>
-                        </template>
-                        <template #cell-status="{ row }">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <AppBadge :tone="tone(row.status)">{{ row.status }}</AppBadge>
-                                <span v-if="row.blocks_access" class="rounded bg-error/15 px-1.5 py-0.5 text-[10px] font-bold text-error" title="Tagihan memblokir akses jika belum lunas">
-                                    Blokir
-                                </span>
-                            </div>
-                        </template>
-                        <template #actions="{ row }">
-                            <div class="flex items-center justify-end gap-1.5">
-                                <Link :href="`/admin/invoices/${row.row_id}`"><AppButton variant="ghost" size="compact" icon="visibility">Detail</AppButton></Link>
-                            </div>
-                        </template>
-                    </SmartDataTable>
-                </div>
+                <SmartDataTable
+                    :rows="invoices.data"
+                    :columns="columns"
+                    :pagination="invoices"
+                    url="/admin/invoices"
+                    :search="search"
+                    :per-page="perPage"
+                    :sort="sort"
+                    :direction="direction"
+                    search-placeholder="…"
+                    empty-title="Belum ada invoice"
+                    empty-description="Terbitkan invoice untuk tenant."
+                >
+                    <template #toolbar>
+                        <div class="min-w-0 flex-1 sm:min-w-48 sm:flex-initial">
+                            <SmartSelect :model-value="status" label="Status" hide-label size="compact" :options="statusOptions" @update:model-value="filterStatus" />
+                        </div>
+                    </template>
+                    <template #cell-tenant="{ row }">
+                        <span class="font-semibold text-primary">{{ row.tenant?.name || '—' }}</span>
+                        <span class="block text-xs text-on-surface-variant">{{ row.tenant?.code }}</span>
+                    </template>
+                    <template #cell-purpose="{ row }">
+                        <span class="font-semibold text-primary">{{ purposeLabels[row.purpose] || row.purpose || '—' }}</span>
+                        <span v-if="row.description" class="block truncate text-xs text-on-surface-variant">{{ row.description }}</span>
+                    </template>
+                    <template #cell-amount="{ row }">
+                        <span class="font-bold text-primary tabular-nums">{{ money(row.amount, row.currency) }}</span>
+                    </template>
+                    <template #cell-status="{ row }">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <AppBadge :tone="tone(row.status)">{{ row.status }}</AppBadge>
+                            <span v-if="row.blocks_access" class="rounded bg-error/15 px-1.5 py-0.5 text-[10px] font-bold text-error" title="Tagihan memblokir akses jika belum lunas">
+                                Blokir
+                            </span>
+                        </div>
+                    </template>
+                    <template #actions="{ row }">
+                        <div class="flex items-center justify-end gap-1.5">
+                            <Link :href="`/admin/invoices/${row.row_id}`"><AppButton variant="ghost" size="compact" icon="visibility">Detail</AppButton></Link>
+                        </div>
+                    </template>
+                </SmartDataTable>
             </AppCard>
         </div>
     </AdminLayout>

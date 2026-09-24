@@ -68,7 +68,7 @@ function formatDate(value) {
 <template>
     <Head title="Portal Saya" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header class="flex items-start gap-4">
                 <AppIcon name="account_circle" tone="primary" :container-size="12" container-shape="pill" />
                 <div>

@@ -64,7 +64,7 @@ function markRead(row) {
     <Head title="Pesan Masuk" />
 
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-primary">Pesan Masuk</h1>

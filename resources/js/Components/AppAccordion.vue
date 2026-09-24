@@ -204,8 +204,8 @@ const variantClasses = {
                 <div class="flex min-w-0 flex-1 items-center gap-3">
                     <AppIcon v-if="item.icon" :name="item.icon" class="shrink-0 text-xl text-primary" />
                     <div class="min-w-0 flex-1">
-                        <span class="block text-sm font-bold text-primary sm:text-base">{{ item.title }}</span>
-                        <p v-if="item.subtitle" class="mt-0.5 text-xs font-normal text-on-surface-variant">
+                        <span class="block truncate text-sm font-bold text-primary sm:text-base">{{ item.title }}</span>
+                        <p v-if="item.subtitle" class="mt-0.5 truncate text-xs font-normal text-on-surface-variant">
                             {{ item.subtitle }}
                         </p>
                     </div>
@@ -231,7 +231,7 @@ const variantClasses = {
                 :class="isItemOpen(item.key ?? item.id ?? item.title) ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
             >
                 <div class="overflow-hidden">
-                    <div class="border-t border-outline-variant/60 p-4 pt-3 text-sm text-on-surface-variant leading-relaxed">
+                    <div class="border-t border-outline-variant/60 px-4 py-3 text-sm text-on-surface-variant leading-relaxed">
                         <slot :name="`content-${item.key ?? index}`" :item="item">
                             <div v-if="item.content">{{ item.content }}</div>
                         </slot>

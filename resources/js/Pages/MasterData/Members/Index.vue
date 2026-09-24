@@ -1,6 +1,5 @@
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3';
-import { useConfirm } from '../../../composables/useConfirm';
+import { Head, Link } from '@inertiajs/vue3';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -10,18 +9,6 @@ import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
 import { useCan } from '../../../composables/useCan';
 
 const { can } = useCan();
-const { confirm: confirmAction } = useConfirm();
-
-async function confirmDelete(row) {
-    if (!await confirmAction({
-        title: 'Hapus Anggota',
-        message: `Apakah Anda yakin ingin menghapus anggota "${row.name}"? Penghapusan hanya berhasil jika anggota tidak terdaftar di kelompok dan tidak memiliki riwayat pinjaman.`,
-        confirmText: 'Ya, Hapus',
-        variant: 'danger',
-    })) return;
-
-    router.delete(`/master-data/members/${row.row_id}`, { preserveScroll: true });
-}
 
 defineProps({
     members: { type: Object, required: true },
@@ -47,7 +34,7 @@ const statusLabels = { active: 'Aktif', exited: 'Keluar', deceased: 'Meninggal' 
 <template>
     <Head title="Anggota" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-primary">Anggota</h1>
@@ -64,7 +51,7 @@ const statusLabels = { active: 'Aktif', exited: 'Keluar', deceased: 'Meninggal' 
                     <Link href="/master-data/members/create"><AppButton icon="add">Tambah Anggota</AppButton></Link>
                 </div>
             </header>
-            <AppCard :padded="false"><div class="p-6"><SmartDataTable :rows="members.data" :columns="columns" :pagination="members" url="/master-data/members" :search="search" :per-page="perPage" :sort="sort" :direction="direction" search-label="Cari anggota" search-placeholder="NIK, nama, atau nomor HP" empty-title="Belum ada anggota" empty-description="Tambahkan anggota untuk mulai mengelola data anggota."><template #cell-name="{ row }">
+            <AppCard :padded="false"><SmartDataTable :rows="members.data" :columns="columns" :pagination="members" url="/master-data/members" :search="search" :per-page="perPage" :sort="sort" :direction="direction" search-label="Cari anggota" search-placeholder="Cari NIK / nama / HP" empty-title="Belum ada anggota" empty-description="Tambahkan anggota untuk mulai mengelola data anggota." row-href="/master-data/members/{row_id}"><template #cell-name="{ row }">
                             <Link :href="`/master-data/members/${row.row_id}`" class="font-semibold text-primary hover:underline">
                                 {{ row.name }}
                             </Link>
@@ -76,18 +63,7 @@ const statusLabels = { active: 'Aktif', exited: 'Keluar', deceased: 'Meninggal' 
                                 {{ statusLabels[row.status] || row.status }}
                             </AppBadge>
                         </template>
-                        <template #actions="{ row }">
-                            <div class="flex justify-end gap-1">
-                                <Link :href="`/master-data/members/${row.row_id}`">
-                                    <AppButton variant="ghost" size="compact" icon="visibility" aria-label="Detail anggota">Detail</AppButton>
-                                </Link>
-                                <Link v-if="can('members.manage')" :href="`/master-data/members/${row.row_id}/edit`">
-                                    <AppButton variant="ghost" size="compact" icon="edit" aria-label="Edit anggota">Edit</AppButton>
-                                </Link>
-                            </div>
-                        </template>
                     </SmartDataTable>
-                </div>
             </AppCard>
         </div>
     </AuthenticatedLayout>

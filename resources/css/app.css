@@ -6,9 +6,15 @@
 @source "../views/**/*.blade.php";
 @source "../js/**/*.js";
 @source "../js/**/*.vue";
+@source "../../app/Http/Controllers/**/*.php";
+@source "../../app/Http/Livewire/**/*.php";
+@source "../../app/Domain/**/*.php";
 
 /* Force-include shared form-control classes — Tailwind v4 sometimes misses class strings inside lazy-loaded Vue components (e.g. AppDatePicker chunk), so the form-label styling disappears at runtime. */
 @source inline("uppercase tracking-wider text-sm font-bold text-primary text-outline text-on-surface-variant focus:ring-primary-container/10 focus:border-primary-container rounded-xl border border-outline-variant bg-surface-container-lowest placeholder:text-outline focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 text-base text-lg h-11 px-3.5 min-h-11 gap-2 min-w-0 truncate size-7 size-9 shrink-0 transition transition-all duration-150 active:scale-90 active:scale-95 focus:ring-2 hover:bg-surface-container-low hover:text-primary rounded-full space-y-1.5 space-y-2 ml-1 ml-1.5 flex items-center gap-1.5 block text-base font-semibold leading-tight uppercase tracking-wide");
+
+/* Force-include sidebar background utilities so they survive Tailwind v4 scanner on lazy chunks. */
+@source inline("bg-zinc-900 bg-zinc-950 bg-zinc-800 text-zinc-100 text-zinc-300 text-zinc-400 border-white/5 shadow-black/40 bg-zinc-900!");
 
 /* Semantic tokens — default = classic (navy + green) */
 @theme {

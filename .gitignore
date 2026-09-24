@@ -1,3 +1,9 @@
+# Runtime / debug artifacts (not source)
+c.jar
+cookie.jar
+cookies.txt
+output.txt
+
 *.log
 .DS_Store
 .env

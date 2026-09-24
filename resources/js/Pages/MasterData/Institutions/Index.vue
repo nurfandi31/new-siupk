@@ -32,7 +32,7 @@ const csvColumns = ['nama', 'desa', 'nomor_identitas', 'pimpinan', 'penanggungja
 <template>
     <Head title="Lembaga Lain" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-primary">Lembaga Lain</h1>
@@ -46,12 +46,10 @@ const csvColumns = ['nama', 'desa', 'nomor_identitas', 'pimpinan', 'penanggungja
                         title="Impor Lembaga Lain"
                         hint="nomor_identitas wajib & unik. status: aktif/nonaktif. Duplikat nomor identitas dilewati."
                     />
-                    <Link href="/master-data/institutions/create"><AppButton icon="add">Tambah Lembaga</AppButton></Link>
                 </div>
             </header>
             <AppCard :padded="false">
-                <div class="p-6">
-                    <SmartDataTable
+                <SmartDataTable
                         :rows="institutions.data"
                         :columns="columns"
                         :pagination="institutions"
@@ -88,7 +86,6 @@ const csvColumns = ['nama', 'desa', 'nomor_identitas', 'pimpinan', 'penanggungja
                             </div>
                         </template>
                     </SmartDataTable>
-                </div>
             </AppCard>
         </div>
     </AuthenticatedLayout>

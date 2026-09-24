@@ -51,7 +51,7 @@ async function restore(page) {
 <template>
     <Head title="Halaman Website" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-primary">Halaman Website</h1>
@@ -62,53 +62,51 @@ async function restore(page) {
                 </div>
             </header>
             <AppCard :padded="false">
-                <div class="p-6">
-                    <SmartDataTable
-                        :rows="pages.data"
-                        :columns="columns"
-                        :pagination="pages"
-                        url="/website/pages"
-                        :search="search"
-                        :per-page="perPage"
-                        :sort="sort"
-                        :direction="direction"
-                        search-label="Cari halaman"
-                        search-placeholder="Judul atau slug"
-                        empty-title="Belum ada halaman"
-                        empty-description="Buat halaman statis seperti Tentang Kami atau Program Kerja."
-                    >
-                        <template #cell-title="{ row }">
-                            <Link :href="`/website/pages/${row.row_id}/edit`" class="font-semibold text-primary hover:underline">
-                                {{ row.title }}
-                            </Link>
-                        </template>
-                        <template #cell-slug="{ row }">
-                            <span class="text-xs text-on-surface-variant">/p/{{ row.slug }}</span>
-                        </template>
-                        <template #cell-status="{ row }">
-                            <AppBadge :tone="row.status === 'published' ? 'success' : 'neutral'">
-                                {{ row.status === 'published' ? 'Terbit' : 'Draf' }}
-                            </AppBadge>
-                            <span v-if="row.deleted_at" class="ml-1 inline-flex"><AppBadge tone="error">Terhapus</AppBadge></span>
-                        </template>
-                        <template #cell-published_at="{ row }">
-                            {{ formatDateTime(row.published_at) }}
-                        </template>
-                        <template #actions="{ row }">
-                            <div class="flex justify-end gap-1">
-                                <template v-if="row.deleted_at">
-                                    <AppButton v-if="can('website.manage')" variant="ghost" size="compact" icon="restore" aria-label="Pulihkan halaman" @click="restore(row)">Pulihkan</AppButton>
-                                </template>
-                                <template v-else>
-                                    <Link v-if="can('website.manage')" :href="`/website/pages/${row.row_id}/edit`">
-                                        <AppButton variant="ghost" size="compact" icon="edit" aria-label="Edit halaman">Edit</AppButton>
-                                    </Link>
-                                    <AppButton v-if="can('website.manage')" variant="ghost" size="compact" icon="delete" aria-label="Hapus halaman" @click="destroy(row)">Hapus</AppButton>
-                                </template>
-                            </div>
-                        </template>
-                    </SmartDataTable>
-                </div>
+                <SmartDataTable
+                    :rows="pages.data"
+                    :columns="columns"
+                    :pagination="pages"
+                    url="/website/pages"
+                    :search="search"
+                    :per-page="perPage"
+                    :sort="sort"
+                    :direction="direction"
+                    search-label="Cari halaman"
+                    search-placeholder="Judul atau slug"
+                    empty-title="Belum ada halaman"
+                    empty-description="Buat halaman statis seperti Tentang Kami atau Program Kerja."
+                >
+                    <template #cell-title="{ row }">
+                        <Link :href="`/website/pages/${row.row_id}/edit`" class="font-semibold text-primary hover:underline">
+                            {{ row.title }}
+                        </Link>
+                    </template>
+                    <template #cell-slug="{ row }">
+                        <span class="text-xs text-on-surface-variant">/p/{{ row.slug }}</span>
+                    </template>
+                    <template #cell-status="{ row }">
+                        <AppBadge :tone="row.status === 'published' ? 'success' : 'neutral'">
+                            {{ row.status === 'published' ? 'Terbit' : 'Draf' }}
+                        </AppBadge>
+                        <span v-if="row.deleted_at" class="ml-1 inline-flex"><AppBadge tone="error">Terhapus</AppBadge></span>
+                    </template>
+                    <template #cell-published_at="{ row }">
+                        {{ formatDateTime(row.published_at) }}
+                    </template>
+                    <template #actions="{ row }">
+                        <div class="flex justify-end gap-1">
+                            <template v-if="row.deleted_at">
+                                <AppButton v-if="can('website.manage')" variant="ghost" size="compact" icon="restore" aria-label="Pulihkan halaman" @click="restore(row)">Pulihkan</AppButton>
+                            </template>
+                            <template v-else>
+                                <Link v-if="can('website.manage')" :href="`/website/pages/${row.row_id}/edit`">
+                                    <AppButton variant="ghost" size="compact" icon="edit" aria-label="Edit halaman">Edit</AppButton>
+                                </Link>
+                                <AppButton v-if="can('website.manage')" variant="ghost" size="compact" icon="delete" aria-label="Hapus halaman" @click="destroy(row)">Hapus</AppButton>
+                            </template>
+                        </div>
+                    </template>
+                </SmartDataTable>
             </AppCard>
         </div>
     </AuthenticatedLayout>

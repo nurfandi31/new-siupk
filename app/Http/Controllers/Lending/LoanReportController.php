@@ -9,7 +9,9 @@ use App\Domain\Lending\Services\Reports\CollectibilityReportService;
 use App\Domain\Lending\Services\Reports\LoanPortfolioReportService;
 use App\Domain\Lending\Services\Reports\LoanScheduleVsActualService;
 use App\Domain\Lending\Services\Reports\LppReportService;
+use App\Domain\Lending\Services\Reports\StageListReportService;
 use App\Models\User;
+use App\Support\Excel\ReportExcel;
 use App\Support\ReportPdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -25,7 +27,9 @@ final class LoanReportController
         private readonly LoanScheduleVsActualService $scheduleVsActual,
         private readonly LppReportService $lpp,
         private readonly CollectibilityReportService $collectibility,
+        private readonly StageListReportService $stageList,
         private readonly ReportPdf $pdf,
+        private readonly ReportExcel $excel,
     ) {}
 
     public function portfolio(Request $request): InertiaResponse
@@ -333,5 +337,111 @@ final class LoanReportController
         }
 
         return $scope === 'all' ? null : $scope;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Daftar per-tahapan pipeline: Proposal / Verifikasi / Waiting List */
+    /* ------------------------------------------------------------------ */
+
+    public function proposals(Request $request): InertiaResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+
+        return Inertia::render('Lending/Reports/Proposals', [
+            ...$this->stageList->build('proposal', $year, $month),
+            'filters' => ['year' => $year, 'month' => $month],
+        ]);
+    }
+
+    public function proposalsPdf(Request $request): Response|StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $data = $this->stageList->build('proposal', $year, $month);
+
+        return $this->pdf->stream(
+            'reports.pdf.lending.daftar_proposal',
+            $data,
+            sprintf('daftar-proposal-%04d-%02d.pdf', $year, $month),
+            'landscape',
+        );
+    }
+
+    public function proposalsExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $data = $this->stageList->build('proposal', $year, $month);
+
+        return $this->excel->stageList($data, 'daftar-proposal');
+    }
+
+    public function verifications(Request $request): InertiaResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+
+        return Inertia::render('Lending/Reports/Verifications', [
+            ...$this->stageList->build('verifikasi', $year, $month),
+            'filters' => ['year' => $year, 'month' => $month],
+        ]);
+    }
+
+    public function verificationsPdf(Request $request): Response|StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $data = $this->stageList->build('verifikasi', $year, $month);
+
+        return $this->pdf->stream(
+            'reports.pdf.lending.daftar_verifikasi',
+            $data,
+            sprintf('daftar-verifikasi-%04d-%02d.pdf', $year, $month),
+            'landscape',
+        );
+    }
+
+    public function verificationsExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $data = $this->stageList->build('verifikasi', $year, $month);
+
+        return $this->excel->stageList($data, 'daftar-verifikasi');
+    }
+
+    public function waitingList(Request $request): InertiaResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+
+        return Inertia::render('Lending/Reports/WaitingList', [
+            ...$this->stageList->build('waiting', $year, $month),
+            'filters' => ['year' => $year, 'month' => $month],
+        ]);
+    }
+
+    public function waitingListPdf(Request $request): Response|StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $data = $this->stageList->build('waiting', $year, $month);
+
+        return $this->pdf->stream(
+            'reports.pdf.lending.daftar_waiting_list',
+            $data,
+            sprintf('daftar-waiting-list-%04d-%02d.pdf', $year, $month),
+            'landscape',
+        );
+    }
+
+    public function waitingListExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $data = $this->stageList->build('waiting', $year, $month);
+
+        return $this->excel->stageList($data, 'daftar-waiting-list');
     }
 }

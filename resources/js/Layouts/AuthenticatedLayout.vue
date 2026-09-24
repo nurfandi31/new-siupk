@@ -76,14 +76,17 @@ function permissionForHref(href) {
     if (!href) return null;
     const map = navMap.value || {};
     const keys = Object.keys(map).sort((a, b) => b.length - a.length);
+    // Exact match wins first.
+    if (map[href] !== undefined) return map[href];
+    // Longest prefix that is followed by a path/word boundary (so '/settings'
+    // does not incorrectly match '/settings-archive').
     for (const prefix of keys) {
-        if (href === prefix || href.startsWith(prefix + '/') || href.startsWith(prefix + '?')) {
-            return map[prefix];
+        if (href.length > prefix.length && href.startsWith(prefix)) {
+            const next = href.charAt(prefix.length);
+            if (next === '/' || next === '?' || next === '#') {
+                return map[prefix];
+            }
         }
-        if (href === prefix) return map[prefix];
-    }
-    for (const prefix of keys) {
-        if (href.startsWith(prefix)) return map[prefix];
     }
     return null;
 }
@@ -250,7 +253,7 @@ const sections = [
     {
         label: 'Pengaturan',
         items: [
-            { label: 'Pengaturan', icon: 'settings', href: '/settings' },
+            { label: 'Pengaturan', icon: 'settings', href: '/settings', exact: true },
             { label: 'WhatsApp Gateway', icon: 'chat', href: '/settings/whatsapp' },
         ],
     },
@@ -386,6 +389,57 @@ const sections = [
                     },
                     { label: 'Cadangan Penghapusan (CKPN)', href: '/lending/reports/cadangan-penghapusan' },
                     { label: 'CKPN Pinjaman Individu', href: '/lending/reports/cadangan-penghapusan-individu' },
+                    // === Phase 1: Pipeline Pinjaman (proses awal pengajuan) ===
+                    {
+                        key: 'lending-pipeline',
+                        label: 'Pipeline Pinjaman',
+                        icon: 'inventory',
+                        children: [
+                            { label: 'Daftar Proposal', icon: 'description', href: '/lending/reports/proposals' },
+                            { label: 'Daftar Verifikasi', icon: 'pending_actions', href: '/lending/reports/verifications' },
+                            { label: 'Daftar Waiting List', icon: 'event', href: '/lending/reports/waiting-list' },
+                        ],
+                    },
+                    // === Phase 1: Status Pinjaman (lunas & hapus buku) ===
+                    {
+                        key: 'lending-status',
+                        label: 'Status Pinjaman',
+                        icon: 'checklist',
+                        children: [
+                            { label: 'Daftar Pinjaman Lunas', icon: 'check_circle', href: '/lending/reports/paid' },
+                            { label: 'Pinjaman Dihapusbukukan', icon: 'cancel', href: '/lending/reports/write-offs' },
+                            { label: 'Pinjaman Dihapusbukukan Individu', icon: 'person_off', href: '/lending/reports/write-offs-individu' },
+                        ],
+                    },
+                    // === Phase 1: Tracking & Monitoring (tagihan & tunggakan) ===
+                    {
+                        key: 'lending-tracking',
+                        label: 'Tracking & Monitoring',
+                        icon: 'monitor_heart',
+                        children: [
+                            { label: 'Tagihan Jatuh Tempo Hari Ini', icon: 'today', href: '/lending/reports/due-today' },
+                            { label: 'Daftar Tunggakan', icon: 'warning', href: '/lending/reports/overdue' },
+                        ],
+                    },
+                    // === Phase 1: Laporan Tambahan (rencana & realisasi khusus individu) ===
+                    {
+                        key: 'lending-extra',
+                        label: 'Laporan Tambahan',
+                        icon: 'summarize',
+                        children: [
+                            { label: 'Rencana & Realisasi Individu', icon: 'compare_arrows', href: '/lending/reports/schedule-vs-actual-individu' },
+                        ],
+                    },
+                    // === Phase 1: Monitoring Aktif (kelompok & pemanfaat aktif) ===
+                    {
+                        key: 'lending-active',
+                        label: 'Monitoring Aktif',
+                        icon: 'online_prediction',
+                        children: [
+                            { label: 'Kelompok Aktif', icon: 'group', href: '/lending/reports/groups/active' },
+                            { label: 'Pemanfaat Aktif', icon: 'person', href: '/lending/reports/members/active' },
+                        ],
+                    },
                     { label: 'Jurnal Transaksi', href: '/accounting/reports/journals' },
                     { label: 'Neraca Saldo', href: '/accounting/reports/trial-balance' },
                     { label: 'Neraca', href: '/accounting/reports/balance-sheet' },
@@ -394,6 +448,7 @@ const sections = [
                     { label: 'Perubahan Ekuitas', href: '/accounting/reports/equity-change' },
                     { label: 'CALK', href: '/accounting/reports/calk' },
                     { label: 'Buku Besar', href: '/accounting/reports/general-ledger' },
+                    { label: 'Daftar Simpanan', href: '/accounting/reports/simpan' },
                 ],
             },
         ],
@@ -515,7 +570,7 @@ function onParentItemClick(item, event) {
         </Transition>
 
         <aside
-            class="fixed inset-y-0 left-0 z-50 flex flex-col border-r border-white/5 bg-zinc-950 text-zinc-300 shadow-2xl shadow-black/40 transition-[width,transform] duration-300 ease-in-out lg:translate-x-0"
+            class="fixed inset-y-0 left-0 z-50 flex flex-col border-r border-white/5 bg-zinc-900 text-zinc-100 shadow-2xl shadow-black/40 transition-[width,transform] duration-300 ease-in-out lg:translate-x-0"
             :class="[
                 mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
                 sidebarCollapsed && !mobileMenuOpen ? 'lg:w-16' : 'lg:w-64',
@@ -563,9 +618,11 @@ function onParentItemClick(item, event) {
                             <button
                                 v-if="item.children"
                                 type="button"
-                                class="group flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30"
+                                class="sidebar-item group relative flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30"
                                 :class="[
-                                    isActive(item) ? 'bg-white/5 text-white' : 'text-zinc-400',
+                                    isActive(item)
+                                        ? 'bg-white/[0.06] text-white'
+                                        : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100',
                                     sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '',
                                 ]"
                                 :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined"
@@ -573,23 +630,35 @@ function onParentItemClick(item, event) {
                                 :data-sidebar-active="isActive(item) ? 'true' : null"
                                 @click="onParentItemClick(item, $event)"
                             >
-                                <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none" />
-                                <span class="min-w-0 flex-1 truncate transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span>
+                                <span
+                                    v-if="isActive(item)"
+                                    class="absolute inset-y-0 left-0 w-1 rounded-r-full bg-secondary"
+                                    aria-hidden="true"
+                                />
+                                <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors duration-150" />
+                                <span class="min-w-0 flex-1 truncate text-sm font-medium transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span>
                                 <AppIcon v-show="!(sidebarCollapsed && !mobileMenuOpen)" name="expand_more" class="text-lg transition-transform duration-200" :class="expanded[item.key] && 'rotate-180'" />
                             </button>
                             <Link
                                 v-else-if="item.href"
                                 :href="item.href"
-                                class="group flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors"
+                                class="sidebar-item group relative flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors duration-150"
                                 :class="[
-                                    isActive(item) ? 'bg-white/10 text-white shadow-inner shadow-black/40' : 'text-zinc-400 hover:bg-white/5 hover:text-white',
+                                    isActive(item)
+                                        ? 'bg-primary/25 text-white shadow-[inset_1px_0_0_0_rgb(255_255_255_/_0.1)]'
+                                        : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100',
                                     sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '',
                                 ]"
                                 :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined"
                                 :data-sidebar-active="isActive(item) ? 'true' : null"
                                 @click="closeMobileMenu"
                             >
-                                <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none" /><span class="transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span>
+                                <span
+                                    v-if="isActive(item)"
+                                    class="absolute inset-y-0 left-0 w-1 rounded-r-full bg-secondary"
+                                    aria-hidden="true"
+                                />
+                                <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors duration-150" /><span class="text-sm font-semibold transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span>
                             </Link>
                             <button v-else type="button" disabled class="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left text-zinc-600" :title="`${item.label} belum tersedia`"><AppIcon :name="item.icon" /><span>{{ item.label }}</span></button>
 
@@ -599,25 +668,39 @@ function onParentItemClick(item, event) {
                                         <button
                                             v-if="child.children"
                                             type="button"
-                                            class="group flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30"
-                                            :class="isActive(child) ? 'text-white' : 'text-zinc-400'"
+                                            class="sidebar-item group relative flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30"
+                                            :class="isActive(child)
+                                                ? 'bg-white/[0.06] text-white'
+                                                : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100'"
                                             :aria-expanded="Boolean(expanded[child.key])"
                                             :data-sidebar-active="isActive(child) ? 'true' : null"
                                             @click="toggle(child.key)"
                                         >
-                                            <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl" />
-                                            <span class="min-w-0 flex-1 truncate">{{ child.label }}</span>
+                                            <span
+                                                v-if="isActive(child)"
+                                                class="absolute inset-y-0 left-[-9px] w-1 rounded-full bg-secondary"
+                                                aria-hidden="true"
+                                            />
+                                            <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl transition-colors duration-150" />
+                                            <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ child.label }}</span>
                                             <AppIcon name="expand_more" class="text-lg transition-transform duration-200" :class="expanded[child.key] && 'rotate-180'" />
                                         </button>
                                         <Link
                                             v-else-if="child.href"
                                             :href="child.href"
-                                            class="group flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
-                                            :class="isActive(child) ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white'"
+                                            class="sidebar-item group relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-150"
+                                            :class="isActive(child)
+                                                ? 'bg-primary/25 text-white shadow-[inset_1px_0_0_0_rgb(255_255_255_/_0.1)]'
+                                                : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100'"
                                             :data-sidebar-active="isActive(child) ? 'true' : null"
                                             @click="closeMobileMenu"
                                         >
-                                            <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl" /><span>{{ child.label }}</span>
+                                            <span
+                                                v-if="isActive(child)"
+                                                class="absolute inset-y-0 left-[-9px] w-1 rounded-full bg-secondary"
+                                                aria-hidden="true"
+                                            />
+                                            <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl transition-colors duration-150" /><span class="text-sm font-semibold">{{ child.label }}</span>
                                         </Link>
                                         <button v-else type="button" disabled class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-600" :title="`${child.label} belum tersedia`"><AppIcon :name="child.icon" class="text-xl" /><span>{{ child.label }}</span></button>
 
@@ -627,11 +710,20 @@ function onParentItemClick(item, event) {
                                                     <Link
                                                         v-if="leaf.href"
                                                         :href="leaf.href"
-                                                        class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
-                                                        :class="isActive(leaf) ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white'"
+                                                        class="sidebar-item group relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-150"
+                                                        :class="isActive(leaf)
+                                                            ? 'bg-primary/25 text-white'
+                                                            : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100'"
                                                         :data-sidebar-active="isActive(leaf) ? 'true' : null"
                                                         @click="closeMobileMenu"
-                                                    ><span class="size-1.5 rounded-full bg-current" />{{ leaf.label }}</Link>
+                                                    >
+                                                        <span
+                                                            v-if="isActive(leaf)"
+                                                            class="absolute inset-y-0 left-[-9px] w-1 rounded-full bg-secondary"
+                                                            aria-hidden="true"
+                                                        />
+                                                        <span class="size-1.5 rounded-full bg-current" />{{ leaf.label }}
+                                                    </Link>
                                                     <button v-else type="button" disabled class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-600" :title="`${leaf.label} belum tersedia`"><span class="size-1.5 rounded-full bg-current" />{{ leaf.label }}</button>
                                                 </template>
                                             </div>
@@ -645,7 +737,7 @@ function onParentItemClick(item, event) {
 
                 <section v-if="user?.is_superadmin">
                     <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">Platform</h2>
-                    <Link v-for="item in platformNavigation" :key="item.label" :href="item.href" class="group flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors" :class="[isActive(item) ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white', sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '']" :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined" @click="closeMobileMenu"><AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none" /><span class="transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span></Link>
+                    <Link v-for="item in platformNavigation" :key="item.label" :href="item.href" class="sidebar-item group relative flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors duration-150" :class="[isActive(item) ? 'bg-primary/25 text-white' : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100', sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '']" :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined" @click="closeMobileMenu"><span v-if="isActive(item)" class="absolute inset-y-0 left-0 w-1 rounded-r-full bg-secondary" aria-hidden="true" /><AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors duration-150" /><span class="text-sm font-semibold transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span></Link>
                 </section>
             </nav>
         </aside>

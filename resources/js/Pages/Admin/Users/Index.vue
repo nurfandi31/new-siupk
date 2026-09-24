@@ -83,7 +83,7 @@ async function toggleStatus(user) {
 <template>
     <Head title="Pengguna Platform" />
     <AdminLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <AdminPageHeader
                 title="Pengguna Platform"
                 subtitle="Cari dan kelola semua pengguna lintas tenant. Menonaktifkan akun langsung memblokir login user di seluruh aplikasi — perubahan role/detail tetap lewat halaman user tenant."
@@ -101,75 +101,73 @@ async function toggleStatus(user) {
             </div>
 
             <AppCard :padded="false">
-                <div class="p-6">
-                    <SmartDataTable
-                        :rows="users.data"
-                        :columns="columns"
-                        :pagination="users"
-                        url="/admin/users"
-                        :search="search"
-                        :per-page="perPage"
-                        search-placeholder="…"
-                        empty-title="Tidak ada pengguna ditemukan"
-                        empty-description="Ubah kata kunci pencarian atau filter."
-                    >
-                        <template #toolbar>
-                            <div class="min-w-40">
-                                <SmartSelect
-                                    :model-value="status"
-                                    label="Status"
-                                    hide-label
-                                    clearable
-                                    :options="statusOptions"
-                                    @update:model-value="(v) => filter(v, 'status')"
-                                />
-                            </div>
-                            <div class="min-w-52">
-                                <SmartSelect
-                                    :model-value="tenant_id ? String(tenant_id) : ''"
-                                    label="Tenant"
-                                    hide-label
-                                    clearable
-                                    searchable
-                                    value-key="value"
-                                    :options="[{ value: '', label: 'Semua tenant' }, ...tenants.map((t) => ({ value: String(t.row_id), label: `${t.code} — ${t.name}` }))]"
-                                    @update:model-value="(v) => filter(v, 'tenant')"
-                                />
-                            </div>
-                        </template>
-                        <template #cell-name="{ row }">
-                            <span class="font-semibold text-primary">{{ row.name }}</span>
-                            <AppBadge v-if="row.is_superadmin" tone="primary-soft" class="ml-1.5">Superadmin</AppBadge>
-                        </template>
-                        <template #cell-email="{ row }">
-                            <span class="text-on-surface-variant">{{ row.email || '—' }}</span>
-                        </template>
-                        <template #cell-tenant="{ row }">
-                            <span v-if="row.tenant" class="font-medium text-primary">{{ row.tenant.code }}</span>
-                            <span v-if="row.tenant" class="block text-xs text-on-surface-variant">{{ row.tenant.name }}</span>
-                            <span v-if="!row.tenant" class="text-on-surface-variant">—</span>
-                        </template>
-                        <template #cell-status="{ row }">
-                            <AppBadge :tone="row.status === 'active' ? 'success' : 'error'" class="whitespace-nowrap capitalize">{{ row.status }}</AppBadge>
-                        </template>
-                        <template #cell-last_login_at="{ row }">
-                            <span v-if="row.last_login_at" class="whitespace-nowrap tabular-nums text-on-surface">{{ row.last_login_at }}</span>
-                            <span v-else class="text-outline">belum pernah</span>
-                        </template>
-                        <template #actions="{ row }">
-                            <AppButton
-                                v-if="!row.is_superadmin"
-                                :variant="row.status === 'active' ? 'error' : 'success'"
-                                size="compact"
-                                :icon="row.status === 'active' ? 'block' : 'check_circle'"
-                                :loading="toggleForm.processing"
-                                @click="toggleStatus(row)"
-                            >
-                                {{ row.status === 'active' ? 'Nonaktifkan' : 'Aktifkan' }}
-                            </AppButton>
-                        </template>
-                    </SmartDataTable>
-                </div>
+                <SmartDataTable
+                    :rows="users.data"
+                    :columns="columns"
+                    :pagination="users"
+                    url="/admin/users"
+                    :search="search"
+                    :per-page="perPage"
+                    search-placeholder="…"
+                    empty-title="Tidak ada pengguna ditemukan"
+                    empty-description="Ubah kata kunci pencarian atau filter."
+                >
+                    <template #toolbar>
+                        <div class="min-w-40">
+                            <SmartSelect
+                                :model-value="status"
+                                label="Status"
+                                hide-label
+                                clearable
+                                :options="statusOptions"
+                                @update:model-value="(v) => filter(v, 'status')"
+                            />
+                        </div>
+                        <div class="min-w-52">
+                            <SmartSelect
+                                :model-value="tenant_id ? String(tenant_id) : ''"
+                                label="Tenant"
+                                hide-label
+                                clearable
+                                searchable
+                                value-key="value"
+                                :options="[{ value: '', label: 'Semua tenant' }, ...tenants.map((t) => ({ value: String(t.row_id), label: `${t.code} — ${t.name}` }))]"
+                                @update:model-value="(v) => filter(v, 'tenant')"
+                            />
+                        </div>
+                    </template>
+                    <template #cell-name="{ row }">
+                        <span class="font-semibold text-primary">{{ row.name }}</span>
+                        <AppBadge v-if="row.is_superadmin" tone="primary-soft" class="ml-1.5">Superadmin</AppBadge>
+                    </template>
+                    <template #cell-email="{ row }">
+                        <span class="text-on-surface-variant">{{ row.email || '—' }}</span>
+                    </template>
+                    <template #cell-tenant="{ row }">
+                        <span v-if="row.tenant" class="font-medium text-primary">{{ row.tenant.code }}</span>
+                        <span v-if="row.tenant" class="block text-xs text-on-surface-variant">{{ row.tenant.name }}</span>
+                        <span v-if="!row.tenant" class="text-on-surface-variant">—</span>
+                    </template>
+                    <template #cell-status="{ row }">
+                        <AppBadge :tone="row.status === 'active' ? 'success' : 'error'" class="whitespace-nowrap capitalize">{{ row.status }}</AppBadge>
+                    </template>
+                    <template #cell-last_login_at="{ row }">
+                        <span v-if="row.last_login_at" class="whitespace-nowrap tabular-nums text-on-surface">{{ row.last_login_at }}</span>
+                        <span v-else class="text-outline">belum pernah</span>
+                    </template>
+                    <template #actions="{ row }">
+                        <AppButton
+                            v-if="!row.is_superadmin"
+                            :variant="row.status === 'active' ? 'error' : 'success'"
+                            size="compact"
+                            :icon="row.status === 'active' ? 'block' : 'check_circle'"
+                            :loading="toggleForm.processing"
+                            @click="toggleStatus(row)"
+                        >
+                            {{ row.status === 'active' ? 'Nonaktifkan' : 'Aktifkan' }}
+                        </AppButton>
+                    </template>
+                </SmartDataTable>
             </AppCard>
 
             <AppConfirmDialog />

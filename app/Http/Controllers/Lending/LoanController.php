@@ -10,6 +10,7 @@ use App\Domain\Lending\Models\Loan;
 use App\Domain\Lending\Models\LoanProduct;
 use App\Domain\Lending\Services\LoanService;
 use App\Domain\Lending\Services\Reports\LoanCardService;
+use App\Domain\Lending\Services\Reports\LoanDocumentService;
 use App\Domain\Lending\Services\Reports\MemberLoanCardService;
 use App\Domain\Membership\Models\Group;
 use App\Domain\Membership\Models\Member;
@@ -235,47 +236,42 @@ final class LoanController
 
         return match ($tab) {
             'proposal' => [
-                ['key' => 'group_name', 'label' => 'Kelompok & Desa'],
-                ['key' => 'proposed_at', 'label' => 'Tgl Pengajuan', 'sortable' => true],
-                ['key' => 'proposed_amount', 'label' => 'Nominal Pengajuan', 'sortable' => true, 'class' => 'text-right'],
-                ['key' => 'service_rate', 'label' => 'Jasa'],
-                ['key' => 'term_months', 'label' => 'Jangka', 'sortable' => true, 'class' => 'text-right'],
-                ['key' => 'beneficiaries_count', 'label' => 'Pemanfaat', 'class' => 'text-right'],
+                ['key' => 'group_name', 'label' => 'Kelompok', 'thClass' => 'min-w-48'],
+                ['key' => 'proposed_at', 'label' => 'Tgl Pengajuan', 'sortable' => true, 'thClass' => 'min-w-40'],
+                ['key' => 'proposed_amount', 'label' => 'Nominal', 'sortable' => true, 'class' => 'text-right', 'thClass' => 'min-w-40'],
+                ['key' => 'service_rate', 'label' => 'Jasa', 'thClass' => 'min-w-24'],
+                ['key' => 'term_months', 'label' => 'Jangka', 'sortable' => true, 'class' => 'text-right', 'thClass' => 'min-w-24'],
                 ...$action,
             ],
             'verifikasi' => [
-                ['key' => 'group_name', 'label' => 'Kelompok & Desa'],
-                ['key' => 'proposed_at', 'label' => 'Tgl Pengajuan', 'sortable' => true],
-                ['key' => 'verified_at', 'label' => 'Tgl Verifikasi', 'sortable' => true],
-                ['key' => 'verification_amount', 'label' => 'Nominal Verifikasi', 'sortable' => true, 'class' => 'text-right'],
-                ['key' => 'service_rate', 'label' => 'Jasa'],
-                ['key' => 'term_months', 'label' => 'Jangka', 'class' => 'text-right'],
+                ['key' => 'group_name', 'label' => 'Kelompok', 'thClass' => 'min-w-48'],
+                ['key' => 'verified_at', 'label' => 'Tgl Verifikasi', 'sortable' => true, 'thClass' => 'min-w-40'],
+                ['key' => 'verification_amount', 'label' => 'Nominal', 'sortable' => true, 'class' => 'text-right', 'thClass' => 'min-w-40'],
+                ['key' => 'service_rate', 'label' => 'Jasa', 'thClass' => 'min-w-24'],
+                ['key' => 'term_months', 'label' => 'Jangka', 'class' => 'text-right', 'thClass' => 'min-w-24'],
                 ...$action,
             ],
             'waiting' => [
-                ['key' => 'group_name', 'label' => 'Kelompok & Desa'],
-                ['key' => 'funded_at', 'label' => 'Tgl Pendanaan', 'sortable' => true],
-                ['key' => 'allocated_amount', 'label' => 'Alokasi', 'sortable' => true, 'class' => 'text-right'],
-                ['key' => 'service_rate', 'label' => 'Jasa'],
-                ['key' => 'term_months', 'label' => 'Jangka', 'class' => 'text-right'],
-                ['key' => 'beneficiaries_count', 'label' => 'Pemanfaat', 'class' => 'text-right'],
+                ['key' => 'group_name', 'label' => 'Kelompok', 'thClass' => 'min-w-48'],
+                ['key' => 'funded_at', 'label' => 'Tgl Pendanaan', 'sortable' => true, 'thClass' => 'min-w-40'],
+                ['key' => 'allocated_amount', 'label' => 'Alokasi', 'sortable' => true, 'class' => 'text-right', 'thClass' => 'min-w-40'],
+                ['key' => 'service_rate', 'label' => 'Jasa', 'thClass' => 'min-w-24'],
+                ['key' => 'term_months', 'label' => 'Jangka', 'class' => 'text-right', 'thClass' => 'min-w-24'],
                 ...$action,
             ],
             'aktif' => [
-                ['key' => 'group_name', 'label' => 'Kelompok & Desa'],
-                ['key' => 'disbursed_at', 'label' => 'Tgl Pencairan', 'sortable' => true],
-                ['key' => 'allocated_amount', 'label' => 'Alokasi', 'sortable' => true, 'class' => 'text-right'],
-                ['key' => 'principal_remaining', 'label' => 'Sisa Pokok', 'sortable' => true, 'class' => 'text-right'],
-                ['key' => 'next_due_date', 'label' => 'Angsuran Berikutnya', 'sortable' => true],
-                ['key' => 'beneficiaries_count', 'label' => 'Pemanfaat', 'class' => 'text-right'],
+                ['key' => 'group_name', 'label' => 'Kelompok', 'thClass' => 'min-w-48'],
+                ['key' => 'disbursed_at', 'label' => 'Tgl Cair', 'sortable' => true, 'thClass' => 'min-w-32'],
+                ['key' => 'principal_remaining', 'label' => 'Sisa Pokok', 'sortable' => true, 'class' => 'text-right', 'thClass' => 'min-w-40'],
+                ['key' => 'next_due_date', 'label' => 'Angsuran', 'sortable' => true, 'thClass' => 'min-w-32'],
+                ['key' => 'beneficiaries_count', 'label' => 'Pemanfaat', 'class' => 'text-right', 'thClass' => 'min-w-24'],
                 ...$action,
             ],
             'lunas' => [
-                ['key' => 'group_name', 'label' => 'Kelompok & Desa'],
-                ['key' => 'disbursed_at', 'label' => 'Tgl Cair', 'sortable' => true],
-                ['key' => 'completed_at', 'label' => 'Tgl Lunas', 'sortable' => true],
-                ['key' => 'allocated_amount', 'label' => 'Alokasi', 'sortable' => true, 'class' => 'text-right'],
-                ['key' => 'total_interest_paid', 'label' => 'Total Jasa', 'class' => 'text-right'],
+                ['key' => 'group_name', 'label' => 'Kelompok', 'thClass' => 'min-w-48'],
+                ['key' => 'completed_at', 'label' => 'Tgl Lunas', 'sortable' => true, 'thClass' => 'min-w-32'],
+                ['key' => 'allocated_amount', 'label' => 'Alokasi', 'sortable' => true, 'class' => 'text-right', 'thClass' => 'min-w-40'],
+                ['key' => 'total_interest_paid', 'label' => 'Total Jasa', 'class' => 'text-right', 'thClass' => 'min-w-32'],
                 ...$action,
             ],
             default => [],
@@ -1164,16 +1160,19 @@ final class LoanController
             ->with('success', 'Proposal pinjaman individu berhasil didaftarkan.');
     }
 
-    public function individualShow(Request $request, Loan $loan): Response
+    public function individualShow(Request $request, Loan $loan, LoanDocumentService $documents, PermissionChecker $permissions): Response
     {
         if ($loan->legacy_source !== 'member_loan') {
             abort(404);
         }
 
+        $user = $request->user();
         $loan->load([
             'product:row_id,code,name,default_interest_rate,default_term_months',
             'borrower.member.person',
+            'borrower.member.address',
             'borrower.member.village:row_id,name',
+            'borrower.member.guarantor.person',
             'installments',
             'payments.allocations',
             'statusHistories' => fn ($q) => $q->orderBy('changed_at'),
@@ -1192,6 +1191,7 @@ final class LoanController
             'settlement_letter_url' => in_array($loan->status, ['completed', 'written_off'], true)
                 ? route('lending.member-loans.settlement-letter', ['loan' => $loan->row_id])
                 : null,
+            'documents' => $documents->availableDocuments($loan),
             'disbursement_account' => $disbursementAccount?->only(['row_id', 'id', 'code', 'name', 'account_type']),
             'disbursementAccounts' => Account::query()
                 ->where('is_active', true)
@@ -1206,14 +1206,97 @@ final class LoanController
                 ])->all(),
             'today' => now()->toDateString(),
             'can' => [
-                'loans.verify' => $request->user()?->can('loans.verify') ?? false,
-                'loans.approve' => $request->user()?->can('loans.approve') ?? false,
-                'loans.disburse' => $request->user()?->can('loans.disburse') ?? false,
-                'loans.manage' => $request->user()?->can('loans.manage') ?? false,
-                'loans.write_off' => $request->user()?->can('loans.write_off') ?? false,
-                'loans.reschedule' => $request->user()?->can('loans.reschedule') ?? false,
+                'loans.verify' => $permissions->allows($user, 'loans.verify'),
+                'loans.approve' => $permissions->allows($user, 'loans.approve'),
+                'loans.disburse' => $permissions->allows($user, 'loans.disburse'),
+                'loans.manage' => $permissions->allows($user, 'loans.manage'),
+                'loans.write_off' => $permissions->allows($user, 'loans.write_off'),
+                'loans.reschedule' => $permissions->allows($user, 'loans.reschedule'),
+                'loans.reschedule_director' => $permissions->allows($user, 'loans.reschedule_director'),
+                'loans.complete_director' => $permissions->allows($user, 'loans.complete_director'),
+                'loans.view' => $permissions->allows($user, 'loans.view'),
+                'loans.propose' => $permissions->allows($user, 'loans.propose'),
             ],
         ]);
+    }
+
+    public function individualEdit(Request $request, Loan $loan, TenantLoanProductProvisioner $provisioner, PermissionChecker $permissions): Response
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        $permissions->denyUnless($request->user(), 'loans.manage');
+
+        if (! in_array($loan->status, ['draft', 'verified'], true)) {
+            abort(403, 'Proposal tidak dapat diedit setelah masuk tahap alokasi.');
+        }
+
+        if (LoanProduct::query()->active()->doesntExist()) {
+            $provisioner->ensureDefaults();
+        }
+
+        $loan->load(['product', 'borrower.member.person']);
+
+        return Inertia::render('Lending/MemberLoans/Form', [
+            ...$this->individualFormOptions(),
+            'loan' => [
+                'row_id' => $loan->row_id,
+                'loan_number' => $loan->loan_number,
+                'loan_product_id' => $loan->loan_product_row_id,
+                'member_id' => $loan->borrower?->member_row_id,
+                'proposed_at' => $loan->proposed_at?->format('Y-m-d'),
+                'principal_amount' => (float) $loan->principal_amount,
+                'service_rate_total' => (float) $loan->service_rate_total,
+                'term_months' => (int) $loan->term_months,
+                'installment_method' => $loan->installment_method,
+                'principal_frequency' => $loan->principal_frequency,
+                'interest_frequency' => $loan->interest_frequency,
+                'principal_grace_months' => (int) ($loan->principal_grace_months ?? 0),
+                'interest_grace_months' => (int) ($loan->interest_grace_months ?? 0),
+                'rounding_step' => $loan->rounding_step !== null ? (int) $loan->rounding_step : null,
+                'collateral' => $loan->collateral,
+                'verification_remarks' => $loan->verification_remarks,
+            ],
+            'mode' => 'edit',
+        ]);
+    }
+
+    public function individualUpdate(MemberLoanUpdateRequest $request, Loan $loan, LoanService $loans): RedirectResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        if (! in_array($loan->status, ['draft', 'verified'], true)) {
+            return back()->with('error', 'Proposal tidak dapat diedit setelah masuk tahap alokasi.');
+        }
+
+        try {
+            $loans->updateIndividualProposal($loan, $request->normalized(), (int) $request->user()->row_id);
+        } catch (DomainException $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        }
+
+        return to_route('lending.member-loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Proposal pinjaman individu berhasil diperbarui.');
+    }
+
+    public function individualDestroy(Request $request, Loan $loan, LoanService $loans, PermissionChecker $permissions): RedirectResponse
+    {
+        if ($loan->legacy_source !== 'member_loan') {
+            abort(404);
+        }
+
+        $permissions->denyUnless($request->user(), 'loans.manage');
+
+        try {
+            $loans->deleteProposal($loan);
+        } catch (\Throwable $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return to_route('lending.member-loans.index')->with('success', 'Proposal pinjaman individu berhasil dihapus.');
     }
 
     public function individualCard(Loan $loan, MemberLoanCardService $cards, ReportPdf $pdf): HttpResponse|StreamedResponse
@@ -1291,9 +1374,15 @@ final class LoanController
             'service_rate_total' => ['nullable', 'numeric', 'min:0', 'max:5000'],
             'principal_frequency' => ['nullable', 'string', 'in:monthly,weekly,biweekly,at_maturity'],
             'interest_frequency' => ['nullable', 'string', 'in:monthly,weekly,biweekly,at_maturity'],
+            'spk_no' => ['nullable', 'string', 'max:80'],
         ]);
 
         $loans->approve($loan, $validated, (int) $request->user()->row_id);
+
+        // Simpan nomor SPK ke loan record (digunakan dokumen PDF).
+        if (! empty($validated['spk_no']) && (string) ($loan->spk_no ?? '') !== (string) $validated['spk_no']) {
+            $loan->forceFill(['spk_no' => (string) $validated['spk_no']])->save();
+        }
 
         return to_route('lending.member-loans.show', ['loan' => $loan->row_id])
             ->with('success', 'Alokasi pinjaman individu berhasil ditetapkan.');

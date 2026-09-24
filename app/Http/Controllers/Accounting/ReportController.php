@@ -75,6 +75,8 @@ final class ReportController
                 ['key' => 'equity-change', 'title' => 'Perubahan Ekuitas', 'href' => '/accounting/reports/equity-change', 'icon' => 'account_balance_wallet'],
                 ['key' => 'calk', 'title' => 'CALK', 'href' => '/accounting/reports/calk', 'icon' => 'description'],
                 ['key' => 'general-ledger', 'title' => 'Buku Besar', 'href' => '/accounting/reports/general-ledger', 'icon' => 'menu_book'],
+                ['key' => 'simpanan', 'title' => 'Daftar Simpanan', 'href' => '/accounting/reports/simpanan', 'icon' => 'savings'],
+                ['key' => 'budgeting', 'title' => 'E-Budgeting per Triwulan', 'href' => '/accounting/reports/budgeting', 'icon' => 'calculate'],
                 ['key' => 'fixed-assets-pdf', 'title' => 'Rekapitulasi Aset Tetap (PDF)', 'href' => '/accounting/reports/assets/fixed/pdf', 'icon' => 'domain', 'external' => true],
                 ['key' => 'annual-pack', 'title' => 'Dokumen LPJ & Cover Tahunan', 'href' => '/accounting/reports/annual-pack', 'icon' => 'auto_stories'],
             ],

@@ -350,6 +350,83 @@ final class LoanService
         });
     }
 
+    public function updateIndividualProposal(Loan $loan, array $data, int $userId): Loan
+    {
+        if ((string) $loan->legacy_source !== 'member_loan') {
+            throw new DomainException('Update proposal individu hanya untuk pinjaman individu.');
+        }
+
+        if (! in_array($loan->status, ['draft', 'verified'], true)) {
+            throw new DomainException('Proposal tidak dapat diedit setelah masuk tahap alokasi.');
+        }
+
+        return DB::connection('tenant')->transaction(function () use ($loan, $data, $userId): Loan {
+            $principal = (float) $data['principal_amount'];
+            $serviceRateTotal = (float) $data['service_rate_total'];
+            $term = (int) $data['term_months'];
+            $principalFreq = $data['principal_frequency'];
+            $interestFreq = $data['interest_frequency'];
+            $principalGraceMonths = (int) ($data['principal_grace_months'] ?? 0);
+            $interestGraceMonths = (int) ($data['interest_grace_months'] ?? 0);
+
+            $principalPeriods = $this->periods($principalFreq, $term, $principalGraceMonths);
+            $interestPeriods = $this->periods($interestFreq, $term, $interestGraceMonths);
+            $principalRatePerPeriod = $principalPeriods > 0 ? round($serviceRateTotal / $principalPeriods, 4) : 0.0;
+            $interestRatePerPeriod = $interestPeriods > 0 ? round($serviceRateTotal / $interestPeriods, 4) : 0.0;
+
+            $collateral = $this->normalizeCollateral($data['collateral'] ?? null);
+
+            $loan->update([
+                'proposed_at' => $data['proposed_at'],
+                'principal_amount' => $principal,
+                'interest_rate' => $principalRatePerPeriod,
+                'service_rate_total' => $serviceRateTotal,
+                'term_months' => $term,
+                'installment_method' => $data['installment_method'],
+                'principal_frequency' => $principalFreq,
+                'interest_frequency' => $interestFreq,
+                'principal_grace_months' => $principalGraceMonths,
+                'interest_grace_months' => $interestGraceMonths,
+                'rounding_step' => isset($data['rounding_step']) && $data['rounding_step'] !== '' ? (int) $data['rounding_step'] : $loan->rounding_step,
+                'collateral' => $collateral,
+                'verification_remarks' => $data['verification_remarks'] ?? null,
+            ]);
+
+            // Hapus jadwal angsuran lama (yang masih rancangan, status draft/verified tidak punya pembayaran).
+            $loan->installments()->delete();
+
+            $this->regenerateIndividualSchedule(
+                loan: $loan,
+                principal: $principal,
+                termMonths: $term,
+                serviceRateTotal: $serviceRateTotal,
+                principalFrequency: $this->mapFrequencyToSystemId($principalFreq),
+                interestFrequency: $this->mapFrequencyToSystemId($interestFreq),
+                principalGraceMonths: $principalGraceMonths,
+                interestGraceMonths: $interestGraceMonths,
+                disbursementDate: CarbonImmutable::parse((string) $data['proposed_at']),
+            );
+
+            $loan->statusHistories()->create([
+                'from_status' => $loan->status,
+                'to_status' => $loan->status,
+                'principal_amount' => $principal,
+                'product_row_id' => $loan->loan_product_row_id,
+                'term_months' => $term,
+                'service_rate_total' => $serviceRateTotal,
+                'principal_frequency' => $principalFreq,
+                'interest_frequency' => $interestFreq,
+                'principal_grace_months' => $principalGraceMonths,
+                'interest_grace_months' => $interestGraceMonths,
+                'notes' => 'Proposal pinjaman individu diperbarui.',
+                'changed_by_user_id' => $userId,
+                'changed_at' => now(),
+            ]);
+
+            return $loan->fresh(['product', 'borrower.member.person', 'installments']);
+        });
+    }
+
     public function deleteProposal(Loan $loan): void
     {
         if ($loan->status !== 'draft') {

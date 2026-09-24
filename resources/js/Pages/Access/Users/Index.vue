@@ -64,7 +64,7 @@ function confirmDelete(user) {
 <template>
     <Head title="Manajemen Pengguna" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-primary sm:text-3xl">Manajemen Pengguna</h1>
@@ -81,8 +81,7 @@ function confirmDelete(user) {
             </header>
 
             <AppCard :padded="false">
-                <div class="p-6">
-                    <SmartDataTable
+                <SmartDataTable
                         :rows="users.data"
                         :columns="columns"
                         :pagination="users"
@@ -147,7 +146,6 @@ function confirmDelete(user) {
                             </div>
                         </template>
                     </SmartDataTable>
-                </div>
             </AppCard>
 
             <!-- Reset Password Modal -->

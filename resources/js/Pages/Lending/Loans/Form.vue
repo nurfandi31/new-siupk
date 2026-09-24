@@ -281,36 +281,36 @@ function addBeneficiary() {
 <template>
     <Head title="Register Proposal Pinjaman" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl">
-            <header class="mb-6">
-                <h1 class="text-2xl font-bold text-primary">Register Proposal Pinjaman</h1>
-                <p class="mt-1 text-on-surface-variant">Daftarkan proposal pinjaman baru untuk kelompok. Pemanfaat adalah anggota terdaftar pada kelompok tersebut.</p>
+        <div class="mx-auto max-w-6xl">
+            <header class="mb-4">
+                <h1 class="text-xl font-bold text-primary">Register Proposal Pinjaman</h1>
+                <p class="mt-0.5 text-sm text-on-surface-variant">Daftarkan proposal pinjaman untuk kelompok. Pemanfaat adalah anggota kelompok.</p>
             </header>
 
             <AppCard>
-                <form class="space-y-5" @submit.prevent="submit">
+                <form class="space-y-4" @submit.prevent="submit">
+                    <!-- Produk & Kelompok -->
                     <section>
-                        <h2 class="font-semibold text-primary">Produk & Kelompok</h2>
-                        <div class="mt-3 grid gap-4 sm:grid-cols-2">
+                        <div class="grid gap-3 sm:grid-cols-2">
                             <SmartSelect v-model="selectedProductId" label="Produk Pinjaman" :options="productOptions" placeholder="Pilih produk (SPP/UEP/PL)" required searchable :error="form.errors.loan_product_id" />
                             <SmartSelect v-model="selectedGroupId" label="Kelompok" :options="groups.map((g) => ({ value: g.value, label: g.label }))" placeholder="Pilih kelompok" required searchable :error="form.errors.group_id" />
                         </div>
+                        <div v-if="selectedProduct" class="mt-2 rounded-lg border border-secondary/30 bg-secondary/10 px-3 py-2 text-xs text-primary">
+                            <span class="font-semibold">{{ selectedProduct.name }} ({{ selectedProduct.code }})</span> · Jasa {{ formatRate(selectedProduct.default_interest_rate) }}%/periode · Tenor {{ selectedProduct.default_term_months }} bln.
+                        </div>
                     </section>
 
-                    <section v-if="selectedProduct" class="rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-sm text-primary">
-                        <p class="font-semibold">{{ selectedProduct.name }} ({{ selectedProduct.code }})</p>
-                        <p class="mt-1 text-on-surface-variant">Default: suku jasa {{ formatRate(selectedProduct.default_interest_rate) }}% per periode · Tenor {{ selectedProduct.default_term_months }} bulan.</p>
-                    </section>
+                    <hr class="border-outline-variant">
 
-                    <section class="border-t border-outline-variant pt-4">
-                        <h2 class="font-semibold text-primary">Detail Pengajuan</h2>
-                        <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            <AppDatePicker v-model="form.proposed_at" label="Tanggal Pengajuan" icon="event" placeholder="Pilih tanggal" :max="today" required :error="form.errors.proposed_at" />
-                            <AppCurrencyInput v-model="form.principal_amount" label="Plafon Pinjaman" icon="payments" :min="0" required :error="form.errors.principal_amount" />
-                            <AppInput v-model="form.term_months" label="Jangka Waktu (bulan)" icon="schedule" type="number" inputmode="numeric" min="1" max="120" required :error="form.errors.term_months" />
+                    <!-- Detail Pengajuan -->
+                    <section>
+                        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <AppDatePicker v-model="form.proposed_at" label="Tgl Pengajuan" icon="event" placeholder="Pilih tanggal" :max="today" required :error="form.errors.proposed_at" />
+                            <AppCurrencyInput v-model="form.principal_amount" label="Plafon" icon="payments" :min="0" required :error="form.errors.principal_amount" />
+                            <AppInput v-model="form.term_months" label="Tenor (bln)" icon="schedule" type="number" inputmode="numeric" min="1" max="120" required :error="form.errors.term_months" />
                             <AppInput
                                 v-model="form.service_rate_total"
-                                label="Prosentase Jasa Total"
+                                label="Jasa Total (%)"
                                 icon="percent"
                                 type="number"
                                 inputmode="decimal"
@@ -321,86 +321,87 @@ function addBeneficiary() {
                                 tooltip="Total jasa sepanjang pinjaman. Contoh: 1,5%/bulan × 12 bulan = 18"
                             />
                         </div>
-                        <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            <SmartSelect v-model="form.installment_method" label="Metode Hitung Jasa" :options="installmentMethodOptions" required :error="form.errors.installment_method" />
-                            <SmartSelect v-model="form.principal_frequency" label="Angsuran Pokok" :options="principalFrequencyOptions" required :error="form.errors.principal_frequency" />
-                            <SmartSelect v-model="form.interest_frequency" label="Angsuran Jasa" :options="interestFrequencyOptions" required :error="form.errors.interest_frequency" />
+                        <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                            <SmartSelect v-model="form.installment_method" label="Metode" :options="installmentMethodOptions" required :error="form.errors.installment_method" />
+                            <SmartSelect v-model="form.principal_frequency" label="Frek. Pokok" :options="principalFrequencyOptions" required :error="form.errors.principal_frequency" />
+                            <SmartSelect v-model="form.interest_frequency" label="Frek. Jasa" :options="interestFrequencyOptions" required :error="form.errors.interest_frequency" />
                         </div>
-                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                            <SmartSelect v-model="form.principal_grace_months" label="Grace Period Pokok" :options="graceOptions" required :error="form.errors.principal_grace_months" />
-                            <SmartSelect v-model="form.interest_grace_months" label="Grace Period Jasa" :options="graceOptions" required :error="form.errors.interest_grace_months" />
-                        </div>
-                    </section>
-
-                    <section class="border-t border-outline-variant pt-4">
-                        <h2 class="font-semibold text-primary">Struktur Kelompok (Snapshot)</h2>
-                        <p class="mt-1 text-sm text-on-surface-variant">Pengurus saat proposal didaftarkan. Disimpan sebagai snapshot.</p>
-                        <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            <div>
-                                <SmartSelect v-model="form.chair_id" label="Ketua" :options="committeeOption" placeholder="Cari anggota aktif" searchable required :error="form.errors.chair_id" />
-                                <p v-if="selectedGroup?.chair?.name" class="mt-1 text-xs text-on-surface-variant">Pengurus saat ini: {{ selectedGroup.chair.name }}</p>
-                            </div>
-                            <div>
-                                <SmartSelect v-model="form.secretary_id" label="Sekretaris" :options="committeeOption" placeholder="Cari anggota aktif" searchable required :error="form.errors.secretary_id" />
-                                <p v-if="selectedGroup?.secretary?.name" class="mt-1 text-xs text-on-surface-variant">Pengurus saat ini: {{ selectedGroup.secretary.name }}</p>
-                            </div>
-                            <div>
-                                <SmartSelect v-model="form.treasurer_id" label="Bendahara" :options="committeeOption" placeholder="Cari anggota aktif" searchable required :error="form.errors.treasurer_id" />
-                                <p v-if="selectedGroup?.treasurer?.name" class="mt-1 text-xs text-on-surface-variant">Pengurus saat ini: {{ selectedGroup.treasurer.name }}</p>
-                            </div>
+                        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                            <SmartSelect v-model="form.principal_grace_months" label="Grace Pokok" :options="graceOptions" required :error="form.errors.principal_grace_months" />
+                            <SmartSelect v-model="form.interest_grace_months" label="Grace Jasa" :options="graceOptions" required :error="form.errors.interest_grace_months" />
                         </div>
                     </section>
 
-                    <section class="border-t border-outline-variant pt-4">
-                        <h2 class="font-semibold text-primary">Pemanfaat</h2>
-                        <p class="mt-1 text-sm text-on-surface-variant">Pilih anggota yang menerima bagian plafon. Plafon dibagi rata ke seluruh pemanfaat aktif.</p>
-                        <div class="mt-3">
-                            <div v-if="!selectedGroup" class="rounded-xl border border-outline-variant bg-surface-container-low p-4 text-sm text-on-surface-variant">Pilih kelompok terlebih dahulu.</div>
-                            <template v-else>
-                                <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
-                                    <div class="flex-1"><SmartSelect v-model="beneficiaryCandidateId" label="Cari anggota di luar kelompok" :options="beneficiaryCandidateOptions" searchable :loading="beneficiaryLoading" placeholder="Cari NIK atau nama" @search-change="updateBeneficiarySearch" @search="searchBeneficiaries" /></div>
-                                    <AppButton type="button" variant="secondary" icon="person_add" class="min-h-11 w-full sm:w-auto" :disabled="!beneficiaryCandidateId" @click="addBeneficiary">Tambahkan</AppButton>
-                                </div>
-                                <div v-if="memberOptions.length === 0" class="mt-3 rounded-xl border border-outline-variant bg-surface-container-low p-4 text-sm text-on-surface-variant">Belum ada pemanfaat.</div>
-                                <div v-else class="mt-3 overflow-x-auto rounded-xl border border-outline-variant">
-                                    <table class="w-full text-left text-sm">
-                                        <thead class="bg-surface-container-low text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-                                            <tr>
-                                                <th class="py-3 px-4">Nama</th>
-                                                <th class="py-3 px-4 text-right">Pengajuan (Rp)</th>
-                                                <th class="py-3 px-4 text-center">Aktif</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-outline-variant">
-                                            <tr v-for="member in memberOptions" :key="member.value">
-                                                <td class="py-2 px-4"><span class="font-semibold text-primary">{{ member.label }}</span></td>
-                                                <td class="py-2 px-4">
-                                                    <AppCurrencyInput v-model="form.beneficiary_amounts[member.value]" label="" hide-label :min="0" :error="form.errors[`beneficiary_amounts.${member.value}`]" placeholder="0" />
-                                                </td>
-                                                <td class="py-2 px-4 text-center">
-                                                    <AppCheckbox :value="member.value" v-model="form.beneficiary_ids" />
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                        <tfoot>
-                                            <tr class="bg-surface-container-low">
-                                                <td class="py-3 px-4 text-right text-xs font-bold uppercase tracking-widest text-on-surface-variant">Total Pengajuan</td>
-                                                <td class="py-3 px-4 text-right text-base font-bold text-primary">{{ currency(beneficiaryTotal) }}</td>
-                                                <td class="py-3 px-4"></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                                <p v-if="beneficiaryTotal > 0 && Number(form.principal_amount) > 0 && beneficiaryTotal > Number(form.principal_amount)" class="mt-2 text-sm text-error">Total pengajuan melebihi plafon pinjaman ({{ currency(Number(form.principal_amount)) }}).</p>
-                                <p v-if="form.errors.beneficiary_ids" class="mt-2 text-sm text-error">{{ form.errors.beneficiary_ids }}</p>
-                                <p v-if="form.errors.beneficiary_amounts" class="mt-2 text-sm text-error">{{ form.errors.beneficiary_amounts }}</p>
-                            </template>
+                    <hr class="border-outline-variant">
+
+                    <!-- Pengurus -->
+                    <section>
+                        <div class="grid gap-3 sm:grid-cols-3">
+                            <div>
+                                <SmartSelect v-model="form.chair_id" label="Ketua" :options="committeeOption" placeholder="Cari anggota" searchable required :error="form.errors.chair_id" />
+                                <p v-if="selectedGroup?.chair?.name" class="ml-1 mt-0.5 text-xs text-on-surface-variant">Saat ini: {{ selectedGroup.chair.name }}</p>
+                            </div>
+                            <div>
+                                <SmartSelect v-model="form.secretary_id" label="Sekretaris" :options="committeeOption" placeholder="Cari anggota" searchable required :error="form.errors.secretary_id" />
+                                <p v-if="selectedGroup?.secretary?.name" class="ml-1 mt-0.5 text-xs text-on-surface-variant">Saat ini: {{ selectedGroup.secretary.name }}</p>
+                            </div>
+                            <div>
+                                <SmartSelect v-model="form.treasurer_id" label="Bendahara" :options="committeeOption" placeholder="Cari anggota" searchable required :error="form.errors.treasurer_id" />
+                                <p v-if="selectedGroup?.treasurer?.name" class="ml-1 mt-0.5 text-xs text-on-surface-variant">Saat ini: {{ selectedGroup.treasurer.name }}</p>
+                            </div>
                         </div>
                     </section>
 
-                    <div class="flex justify-end gap-3 border-t border-outline-variant pt-4">
+                    <hr class="border-outline-variant">
+
+                    <!-- Pemanfaat -->
+                    <section>
+                        <div v-if="!selectedGroup" class="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface-variant">Pilih kelompok terlebih dahulu.</div>
+                        <template v-else>
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
+                                <div class="flex-1"><SmartSelect v-model="beneficiaryCandidateId" label="Tambah Pemanfaat" :options="beneficiaryCandidateOptions" searchable :loading="beneficiaryLoading" placeholder="Cari NIK atau nama" @search-change="updateBeneficiarySearch" @search="searchBeneficiaries" /></div>
+                                <AppButton type="button" variant="secondary" icon="person_add" class="min-h-11 w-full sm:w-auto" :disabled="!beneficiaryCandidateId" @click="addBeneficiary">Tambah</AppButton>
+                            </div>
+                            <div v-if="memberOptions.length === 0" class="mt-2 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface-variant">Belum ada pemanfaat.</div>
+                            <div v-else class="mt-2 overflow-x-auto rounded-lg border border-outline-variant">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-surface-container-low text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                                        <tr>
+                                            <th class="px-3 py-2">Nama</th>
+                                            <th class="px-3 py-2 text-right">Pengajuan (Rp)</th>
+                                            <th class="px-3 py-2 text-center w-16">Aktif</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-outline-variant">
+                                        <tr v-for="member in memberOptions" :key="member.value">
+                                            <td class="px-3 py-1.5"><span class="font-semibold text-primary">{{ member.label }}</span></td>
+                                            <td class="px-3 py-1.5">
+                                                <AppCurrencyInput v-model="form.beneficiary_amounts[member.value]" label="" hide-label :min="0" :error="form.errors[`beneficiary_amounts.${member.value}`]" placeholder="0" />
+                                            </td>
+                                            <td class="px-3 py-1.5 text-center">
+                                                <AppCheckbox :value="member.value" v-model="form.beneficiary_ids" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="bg-surface-container-low">
+                                            <td class="px-3 py-2 text-right text-xs font-bold uppercase tracking-widest text-on-surface-variant">Total</td>
+                                            <td class="px-3 py-2 text-right text-sm font-bold text-primary">{{ currency(beneficiaryTotal) }}</td>
+                                            <td class="px-3 py-2"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <p v-if="beneficiaryTotal > 0 && Number(form.principal_amount) > 0 && beneficiaryTotal > Number(form.principal_amount)" class="mt-1.5 text-xs text-error">Total melebihi plafon ({{ currency(Number(form.principal_amount)) }}).</p>
+                            <p v-if="form.errors.beneficiary_ids" class="mt-1.5 text-xs text-error">{{ form.errors.beneficiary_ids }}</p>
+                            <p v-if="form.errors.beneficiary_amounts" class="mt-1.5 text-xs text-error">{{ form.errors.beneficiary_amounts }}</p>
+                        </template>
+                    </section>
+
+                    <!-- Actions -->
+                    <div class="flex justify-end gap-2 border-t border-outline-variant pt-3">
                         <Link :href="path"><AppButton variant="secondary">Batal</AppButton></Link>
-                        <AppButton type="submit" :loading="form.processing" :disabled="form.processing" icon="save">Simpan Proposal</AppButton>
+                        <AppButton type="submit" :loading="form.processing" :disabled="form.processing" icon="save">Simpan</AppButton>
                     </div>
                 </form>
             </AppCard>

@@ -1,6 +1,5 @@
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3';
-import { useConfirm } from '../../../composables/useConfirm';
+import { Head, Link } from '@inertiajs/vue3';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -10,18 +9,6 @@ import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
 import { useCan } from '../../../composables/useCan';
 
 const { can } = useCan();
-const { confirm: confirmAction } = useConfirm();
-
-async function confirmDelete(row) {
-    if (!await confirmAction({
-        title: 'Hapus Kelompok',
-        message: `Apakah Anda yakin ingin menghapus kelompok "${row.name}"? Penghapusan hanya berhasil jika kelompok belum pernah mengajukan pinjaman dan tidak memiliki anggota aktif.`,
-        confirmText: 'Ya, Hapus',
-        variant: 'danger',
-    })) return;
-
-    router.delete(`/master-data/groups/${row.row_id}`, { preserveScroll: true });
-}
 
 defineProps({
     groups: { type: Object, required: true },
@@ -42,15 +29,19 @@ const columns = [
 ];
 
 const csvColumns = ['nama', 'desa', 'alamat', 'no_hp', 'tanggal_berdiri', 'status'];
+const statusLabels = { active: 'Aktif', inactive: 'Tidak aktif' };
 </script>
 
 <template>
     <Head title="Kelompok" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
-            <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div><h1 class="text-2xl font-bold text-primary">Kelompok</h1><p class="mt-1 text-on-surface-variant">Kelola data, anggota, dan pengurus kelompok.</p></div>
-                <div v-if="can('groups.manage')" class="flex flex-wrap items-center gap-2">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
+            <header class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <div class="min-w-0">
+                    <h1 class="text-2xl font-bold leading-tight text-primary sm:text-3xl">Kelompok</h1>
+                    <p class="mt-1 text-sm text-on-surface-variant">Kelola data, anggota, dan pengurus kelompok.</p>
+                </div>
+                <div v-if="can('groups.manage')" class="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                     <CsvImportExport
                         export-url="/master-data/groups/export"
                         import-url="/master-data/groups/import"
@@ -58,36 +49,46 @@ const csvColumns = ['nama', 'desa', 'alamat', 'no_hp', 'tanggal_berdiri', 'statu
                         title="Impor Kelompok"
                         hint="Import minimal: hanya shell kelompok. Anggota & pengurus dilengkapi lewat form edit. Duplikat nama+desa dilewati."
                     />
-                    <Link href="/master-data/groups/create"><AppButton icon="add">Tambah Kelompok</AppButton></Link>
+                    <Link href="/master-data/groups/create" class="contents">
+                        <AppButton icon="add" class="w-full justify-center sm:w-auto">
+                            Tambah Kelompok
+                        </AppButton>
+                    </Link>
                 </div>
             </header>
             <AppCard :padded="false">
-                <div class="p-6">
-                    <SmartDataTable :rows="groups.data" :columns="columns" :pagination="groups" url="/master-data/groups" :search="search" :per-page="perPage" :sort="sort" :direction="direction" search-label="Cari kelompok" search-placeholder="Kode, nama, atau desa" empty-title="Belum ada kelompok" empty-description="Tambahkan kelompok untuk mulai mengelola anggota dan pengurus.">
-                        <template #cell-name="{ row }">
-                            <Link :href="`/master-data/groups/${row.row_id}`" class="font-semibold text-primary hover:underline">
-                                {{ row.name }}
-                            </Link>
-                        </template>
-                        <template #cell-village="{ row }">{{ row.village?.name || '—' }}</template>
-                        <template #cell-members_count="{ row }">{{ row.members_count }} orang</template>
-                        <template #cell-status="{ row }">
-                            <AppBadge :tone="row.status === 'active' ? 'success' : 'neutral'">
-                                {{ row.status === 'active' ? 'Aktif' : 'Tidak aktif' }}
-                            </AppBadge>
-                        </template>
-                        <template #actions="{ row }">
-                            <div class="flex justify-end gap-1">
-                                <Link :href="`/master-data/groups/${row.row_id}`">
-                                    <AppButton variant="ghost" size="compact" icon="visibility">Detail</AppButton>
-                                </Link>
-                                <Link v-if="can('groups.manage')" :href="`/master-data/groups/${row.row_id}/edit`">
-                                    <AppButton variant="ghost" size="compact" icon="edit">Edit</AppButton>
-                                </Link>
-                            </div>
-                        </template>
-                    </SmartDataTable>
-                </div>
+                <SmartDataTable
+                    :rows="groups.data"
+                    :columns="columns"
+                    :pagination="groups"
+                    url="/master-data/groups"
+                    :search="search"
+                    :per-page="perPage"
+                    :sort="sort"
+                    :direction="direction"
+                    :row-href="(row) => `/master-data/groups/${row.row_id}`"
+                    search-label="Cari kelompok"
+                    search-placeholder="Cari kode / nama / desa"
+                    empty-title="Belum ada kelompok"
+                    empty-description="Tambahkan kelompok untuk mulai mengelola anggota dan pengurus."
+                >
+                    <template #cell-name="{ row }">
+                        <Link :href="`/master-data/groups/${row.row_id}`" class="font-semibold text-primary hover:underline">
+                            {{ row.name }}
+                        </Link>
+                        <span class="block font-mono text-xs text-on-surface-variant">{{ row.code }}</span>
+                    </template>
+                    <template #cell-village="{ row }">{{ row.village?.name || '—' }}</template>
+                    <template #cell-members_count="{ row }">
+                        <span class="font-semibold tabular-nums">{{ row.members_count }}</span>
+                        <span class="ml-1 text-xs text-on-surface-variant">orang</span>
+                    </template>
+                    <template #cell-status="{ row }">
+                        <AppBadge :tone="row.status === 'active' ? 'success-soft' : 'neutral'">
+                            {{ statusLabels[row.status] || row.status }}
+                        </AppBadge>
+                    </template>
+                </SmartDataTable>
             </AppCard>
         </div>
     </AuthenticatedLayout>

@@ -1,17 +1,11 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
 import AppDatePicker from '../../../Components/AppDatePicker.vue';
-import AppEmptyState from '../../../Components/AppEmptyState.vue';
-import AppIcon from '../../../Components/AppIcon.vue';
-import AppInput from '../../../Components/AppInput.vue';
 import AppModal from '../../../Components/AppModal.vue';
 import AppTabs from '../../../Components/AppTabs.vue';
-import AppStatGrid from '../../../Components/Lending/AppStatGrid.vue';
-import AppPageHeader from '../../../Components/Lending/AppPageHeader.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
 import SmartDataTable from '../../../Components/SmartDataTable.vue';
 import LoanKanbanBoard from '../../../Components/LoanKanbanBoard.vue';
@@ -24,9 +18,9 @@ const { confirm: confirmAction } = useConfirm();
 
 async function confirmDelete(row) {
     if (!await confirmAction({
-        title: 'Hapus Proposal Pinjaman',
-        message: `Apakah Anda yakin ingin menghapus proposal pinjaman ${row.loan_number || '#' + row.row_id}? Data akan dihapus permanen.`,
-        confirmText: 'Ya, Hapus',
+        title: 'Hapus Proposal',
+        message: `Hapus proposal ${row.loan_number || '#' + row.row_id}? Data akan dihapus permanen.`,
+        confirmText: 'Hapus',
         variant: 'danger',
     })) return;
     router.delete(`/lending/loans/${row.row_id}`, { preserveScroll: true });
@@ -62,13 +56,13 @@ const pdfForm = ref({
 });
 
 const pdfTabOptions = [
-    { value: 'all_active', label: 'Pinjaman Terkini (Proposal, Verifikasi, Waiting & Aktif)' },
-    { value: 'proposal', label: 'Proposal (Pengajuan Baru)' },
-    { value: 'verifikasi', label: 'Terverifikasi (Pemeriksaan)' },
-    { value: 'waiting', label: 'Waiting (Menunggu Pencairan)' },
-    { value: 'aktif', label: 'Aktif (Sedang Berjalan)' },
-    { value: 'lunas', label: 'Lunas / Selesai' },
-    { value: 'all', label: 'Semua Status Pinjaman' },
+    { value: 'all_active', label: 'Pinjaman Terkini' },
+    { value: 'proposal', label: 'Proposal' },
+    { value: 'verifikasi', label: 'Verifikasi' },
+    { value: 'waiting', label: 'Waiting' },
+    { value: 'aktif', label: 'Aktif' },
+    { value: 'lunas', label: 'Lunas' },
+    { value: 'all', label: 'Semua' },
 ];
 
 function openPdfModal() {
@@ -82,8 +76,7 @@ function submitPdfPrint() {
     if (pdfForm.value.start_date) params.append('start_date', pdfForm.value.start_date);
     if (pdfForm.value.end_date) params.append('end_date', pdfForm.value.end_date);
     if (props.search) params.append('search', props.search);
-    const url = `/lending/loans/pdf?${params.toString()}`;
-    window.open(url, '_blank');
+    window.open(`/lending/loans/pdf?${params.toString()}`, '_blank');
     pdfModalOpen.value = false;
 }
 
@@ -103,54 +96,46 @@ function formatServiceRate(value) { return `${Number(value ?? 0).toFixed(2)}%`; 
 function formatDate(value) { if (!value) return '—'; const d = new Date(value); return Number.isNaN(d.getTime()) ? '—' : new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(d); }
 
 const emptyMessages = {
-    proposal: { title: 'Belum ada proposal', description: 'Belum ada pengajuan pinjaman kelompok yang baru didaftarkan.' },
-    verifikasi: { title: 'Belum ada verifikasi', description: 'Tidak ada pinjaman yang sedang menunggu verifikasi.' },
-    waiting: { title: 'Belum ada waiting', description: 'Tidak ada pinjaman yang menunggu keputusan pendanaan.' },
-    aktif: { title: 'Belum ada pinjaman aktif', description: 'Tidak ada pinjaman yang sedang aktif berjalan.' },
-    lunas: { title: 'Belum ada pinjaman lunas', description: 'Tidak ada pinjaman yang telah dilunasi.' },
+    proposal: { title: 'Belum ada proposal', description: '' },
+    verifikasi: { title: 'Belum ada verifikasi', description: '' },
+    waiting: { title: 'Belum ada waiting', description: '' },
+    aktif: { title: 'Belum ada pinjaman aktif', description: '' },
+    lunas: { title: 'Belum ada pinjaman lunas', description: '' },
 };
-
-// ===== KPI strip untuk tab aktif =====
-const currentTabStats = ref([
-    { key: 'total', label: 'Total Pinjaman', icon: 'list_alt', iconBg: 'bg-primary-container/20 text-primary', value: '—' },
-    { key: 'principal', label: 'Total Pokok', icon: 'payments', iconBg: 'bg-surface-container-high text-on-surface-variant', value: '—' },
-    { key: 'remaining', label: 'Sisa Pokok', icon: 'account_balance_wallet', iconBg: 'bg-surface-container-high text-on-surface-variant', value: '—' },
-    { key: 'paid', label: 'Pokok Terbayar', icon: 'task_alt', iconBg: 'bg-secondary-container/30 text-secondary', value: '—' },
-]);
 </script>
 
 <template>
-    <Head title="Tahapan Perguliran" />
+    <Head title="Pinjaman" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6 pb-12">
-            <AppPageHeader
-                title="Tahapan Perguliran"
-                subtitle="Pantau pergerakan pinjaman kelompok dari pengajuan hingga pelunasan."
-                :breadcrumbs="[{ label: 'Pinjaman', href: '/lending/loans' }, { label: tab.charAt(0).toUpperCase() + tab.slice(1) }]"
-                tone="primary"
-            >
-                <template #actions>
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6 pb-12">
+            <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div class="min-w-0 flex-1">
+                    <nav class="flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant" aria-label="Breadcrumb">
+                        <span class="font-semibold text-on-surface">Pinjaman</span>
+                    </nav>
+                    <h1 class="mt-1.5 text-xl font-extrabold tracking-tight text-on-surface sm:text-2xl lg:text-[26px]">
+                        Pinjaman
+                    </h1>
+                    <p class="mt-1 max-w-3xl text-sm text-on-surface-variant">
+                        Kelola proposal, verifikasi, dan pencairan pinjaman kelompok.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
                     <AppButton variant="secondary" :icon="view === 'kanban' ? 'table_chart' : 'view_kanban'" @click="switchView(view === 'kanban' ? 'table' : 'kanban')">
-                        {{ view === 'kanban' ? 'Tampilan Tabel' : 'Tampilan Kanban' }}
+                        {{ view === 'kanban' ? 'Tabel' : 'Kanban' }}
                     </AppButton>
                     <AppButton variant="secondary" icon="print" @click="openPdfModal">Cetak PDF</AppButton>
-                    <Link v-if="can('loans.propose')" href="/lending/loans/create"><AppButton icon="add">Register Proposal</AppButton></Link>
-                </template>
-
-                <template #footer>
-                    <div class="flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant">
-                        <AppIcon name="info" class="text-base" />
-                        <span>Total {{ loans?.total ?? 0 }} pinjaman pada tahap <strong class="text-on-surface">{{ emptyMessages[tab] ? tab.charAt(0).toUpperCase() + tab.slice(1) : tab }}</strong>.</span>
-                    </div>
-                </template>
-            </AppPageHeader>
+                    <Link v-if="can('loans.propose')" href="/lending/loans/create"><AppButton icon="add">Ajukan</AppButton></Link>
+                </div>
+            </header>
 
             <div v-if="view === 'table'" class="border-b border-outline-variant">
                 <AppTabs
                     :model-value="tab"
                     :items="tabs"
                     variant="underline"
-                    aria-label="Tabs Status Pinjaman"
+                    align="end"
+                    aria-label="Status Pinjaman"
                     @update:model-value="switchTab($event)"
                 />
             </div>
@@ -166,130 +151,113 @@ const currentTabStats = ref([
             </template>
 
             <AppCard v-else :padded="false">
-                <div class="p-6">
-                    <SmartDataTable
-                        :rows="loans.data"
-                        :columns="columns"
-                        :pagination="loans"
-                        :url="`/lending/loans?tab=${tab}`"
-                        :search="search"
-                        :per-page="perPage"
-                        :sort="sort"
-                        :direction="direction"
-                        search-label="Cari pinjaman"
-                        search-placeholder="Cari nama kelompok atau desa"
-                        :empty-title="emptyMessages[tab]?.title || 'Belum ada data pinjaman'"
-                        :empty-description="emptyMessages[tab]?.description || 'Tidak ditemukan data pinjaman untuk status ini.'"
-                    >
-                        <template #cell-loan_number="{ row }">
+                <SmartDataTable
+                    :rows="loans.data"
+                    :columns="columns"
+                    :pagination="loans"
+                    :url="`/lending/loans?tab=${tab}`"
+                    :search="search"
+                    :per-page="perPage"
+                    :sort="sort"
+                    :direction="direction"
+                    :row-href="`/lending/loans/{row_id}`"
+                    search-label="Cari"
+                    search-placeholder="Cari kelompok atau nomor pinjaman"
+                    :empty-title="emptyMessages[tab]?.title || 'Belum ada data'"
+                    :empty-description="emptyMessages[tab]?.description || ''"
+                >
+                    <template #cell-loan_number="{ row }">
+                        <div class="flex items-center gap-2">
                             <span class="font-bold text-on-surface">{{ row.loan_number || `#${row.row_id}` }}</span>
-                        </template>
+                            <AppButton
+                                v-if="row.status === 'draft' && (can('loans.manage') || can('loans.propose'))"
+                                variant="ghost"
+                                size="compact"
+                                icon="delete_outline"
+                                aria-label="Hapus proposal"
+                                title="Hapus"
+                                @click="confirmDelete(row)"
+                            />
+                        </div>
+                    </template>
 
-                        <template #cell-group_name="{ row }">
-                            <div>
-                                <p class="font-bold text-on-surface">{{ row.group_name }}</p>
-                                <p v-if="row.leader_name" class="text-xs text-on-surface-variant">Ketua: {{ row.leader_name }}</p>
-                            </div>
-                        </template>
+                    <template #cell-group_name="{ row }">
+                        <div class="min-w-[180px]">
+                            <p class="font-bold text-on-surface">{{ row.group_name }}</p>
+                            <p v-if="row.leader_name" class="text-xs text-on-surface-variant">Ketua: {{ row.leader_name }}</p>
+                            <p v-if="row.loan_number" class="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary/80">
+                                ID {{ row.loan_number }}
+                            </p>
+                        </div>
+                    </template>
 
-                        <template #cell-principal_amount="{ row }">
-                            <span class="tabular-nums font-bold text-on-surface">{{ formatNumber(row.principal_amount) }}</span>
-                        </template>
+                    <template #cell-proposed_amount="{ row }">
+                        <span class="tabular-nums font-bold text-on-surface">{{ formatNumber(row.proposed_amount) }}</span>
+                    </template>
 
-                        <template #cell-proposed_amount="{ row }">
-                            <span class="tabular-nums font-bold text-on-surface">{{ formatNumber(row.proposed_amount) }}</span>
-                        </template>
+                    <template #cell-verification_amount="{ row }">
+                        <span class="tabular-nums font-bold text-on-surface">{{ formatNumber(row.verification_amount) }}</span>
+                    </template>
 
-                        <template #cell-verification_amount="{ row }">
-                            <span class="tabular-nums font-bold text-on-surface">{{ formatNumber(row.verification_amount) }}</span>
-                        </template>
+                    <template #cell-allocated_amount="{ row }">
+                        <span class="tabular-nums font-bold text-on-surface">{{ formatNumber(row.allocated_amount) }}</span>
+                    </template>
 
-                        <template #cell-allocated_amount="{ row }">
-                            <span class="tabular-nums font-bold text-on-surface">{{ formatNumber(row.allocated_amount) }}</span>
-                        </template>
+                    <template #cell-principal_remaining="{ row }">
+                        <span class="tabular-nums font-bold text-on-surface">{{ formatNumber(row.principal_remaining) }}</span>
+                    </template>
 
-                        <template #cell-principal_remaining="{ row }">
-                            <span class="tabular-nums font-bold text-on-surface">{{ formatNumber(row.principal_remaining) }}</span>
-                        </template>
+                    <template #cell-total_interest_paid="{ row }">
+                        <span class="tabular-nums font-bold text-on-surface">{{ formatNumber(row.total_interest_paid) }}</span>
+                    </template>
 
-                        <template #cell-total_interest_paid="{ row }">
-                            <span class="tabular-nums font-bold text-on-surface">{{ formatNumber(row.total_interest_paid) }}</span>
-                        </template>
+                    <template #cell-service_rate="{ row }">
+                        <span>{{ formatServiceRate(row.service_rate) }}</span>
+                    </template>
 
-                        <template #cell-service_rate="{ row }">
-                            <span>{{ formatServiceRate(row.service_rate) }}</span>
-                        </template>
+                    <template #cell-proposed_at="{ row }">
+                        <span>{{ formatDate(row.proposed_at) }}</span>
+                    </template>
 
-                        <template #cell-interest_rate="{ row }">
-                            <span>{{ formatServiceRate(row.interest_rate) }} ({{ row.installment_method || 'flat' }})</span>
-                        </template>
+                    <template #cell-verified_at="{ row }">
+                        <span>{{ formatDate(row.verified_at) }}</span>
+                    </template>
 
-                        <template #cell-proposed_at="{ row }">
-                            <span>{{ formatDate(row.proposed_at) }}</span>
-                        </template>
+                    <template #cell-funded_at="{ row }">
+                        <span>{{ formatDate(row.funded_at) }}</span>
+                    </template>
 
-                        <template #cell-verified_at="{ row }">
-                            <span>{{ formatDate(row.verified_at) }}</span>
-                        </template>
+                    <template #cell-disbursed_at="{ row }">
+                        <span>{{ formatDate(row.disbursed_at) }}</span>
+                    </template>
 
-                        <template #cell-funded_at="{ row }">
-                            <span>{{ formatDate(row.funded_at) }}</span>
-                        </template>
+                    <template #cell-completed_at="{ row }">
+                        <span>{{ formatDate(row.completed_at) }}</span>
+                    </template>
 
-                        <template #cell-disbursed_at="{ row }">
-                            <span>{{ formatDate(row.disbursed_at) }}</span>
-                        </template>
-
-                        <template #cell-completed_at="{ row }">
-                            <span>{{ formatDate(row.completed_at) }}</span>
-                        </template>
-
-                        <template #cell-next_due_date="{ row }">
-                            <span>{{ formatDate(row.next_due_date) }}</span>
-                        </template>
-
-                        <template #cell-status="{ row }">
-                            <AppBadge :variant="row.status_badge_variant">{{ row.status_label }}</AppBadge>
-                        </template>
-
-                        <template #actions="{ row }">
-                            <div class="flex items-center justify-end gap-1">
-                                <Link :href="`/lending/loans/${row.row_id}`">
-                                    <AppButton variant="ghost" size="compact" icon="visibility">Detail</AppButton>
-                                </Link>
-                                <AppButton
-                                    v-if="row.status === 'draft' && (can('loans.manage') || can('loans.propose'))"
-                                    variant="danger"
-                                    size="compact"
-                                    icon="delete_outline"
-                                    @click="confirmDelete(row)"
-                                >
-                                    Hapus
-                                </AppButton>
-                            </div>
-                        </template>
-                    </SmartDataTable>
-                </div>
+                    <template #cell-next_due_date="{ row }">
+                        <span>{{ formatDate(row.next_due_date) }}</span>
+                    </template>
+                </SmartDataTable>
             </AppCard>
         </div>
 
-        <AppModal v-model="pdfModalOpen" title="Cetak Laporan Daftar Pinjaman (PDF)" size="md">
+        <AppModal v-model="pdfModalOpen" title="Cetak PDF" size="md">
             <div class="space-y-4">
                 <SmartSelect
                     v-model="pdfForm.tab"
-                    label="Status Pinjaman"
+                    label="Status"
                     :options="pdfTabOptions"
                     required
-                    hint="Pilih status pinjaman terkini atau seluruh status."
                 />
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <AppDatePicker v-model="pdfForm.start_date" label="Dari Tanggal Pengajuan" hint="Kosongkan untuk dari awal." clearable />
-                    <AppDatePicker v-model="pdfForm.end_date" label="Sampai Tanggal" hint="Kosongkan untuk sampai sekarang." clearable />
+                    <AppDatePicker v-model="pdfForm.start_date" label="Dari" clearable />
+                    <AppDatePicker v-model="pdfForm.end_date" label="Sampai" clearable />
                 </div>
             </div>
             <template #footer>
                 <AppButton variant="secondary" @click="pdfModalOpen = false">Batal</AppButton>
-                <AppButton variant="primary" icon="picture_as_pdf" @click="submitPdfPrint">Cetak / Buka PDF</AppButton>
+                <AppButton variant="primary" icon="picture_as_pdf" @click="submitPdfPrint">Cetak</AppButton>
             </template>
         </AppModal>
     </AuthenticatedLayout>

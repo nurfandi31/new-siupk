@@ -13,9 +13,12 @@ import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
 const props = defineProps({
     products: { type: Array, required: true },
     members: { type: Array, required: true },
+    loan: { type: Object, default: null },
+    mode: { type: String, default: 'create' },
 });
 
-const path = '/lending/member-loans';
+const isEdit = computed(() => props.mode === 'edit' && props.loan);
+const path = computed(() => (isEdit.value ? `/lending/member-loans/${props.loan.row_id}` : '/lending/member-loans'));
 const today = (() => {
     const date = new Date();
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -39,38 +42,38 @@ const installmentMethodOptions = [
 ];
 
 const frequencyOptions = [
-    { value: 'weekly', label: 'Frekuensi — Mingguan' },
-    { value: 'biweekly', label: 'Frekuensi — Dua Mingguan' },
-    { value: 'monthly', label: 'Frekuensi — Bulanan' },
-    { value: 'bimonthly', label: 'Frekuensi — Tiap 2 Bulan' },
-    { value: 'quarterly', label: 'Frekuensi — Tiap 3 Bulan' },
-    { value: 'every_4_months', label: 'Frekuensi — Tiap 4 Bulan' },
-    { value: 'every_5_months', label: 'Frekuensi — Tiap 5 Bulan' },
-    { value: 'every_6_months', label: 'Frekuensi — Tiap 6 Bulan' },
-    { value: 'every_7_months', label: 'Frekuensi — Tiap 7 Bulan' },
-    { value: 'every_8_months', label: 'Frekuensi — Tiap 8 Bulan' },
-    { value: 'every_9_months', label: 'Frekuensi — Tiap 9 Bulan' },
-    { value: 'every_10_months', label: 'Frekuensi — Tiap 10 Bulan' },
-    { value: 'every_11_months', label: 'Frekuensi — Tiap 11 Bulan' },
-    { value: 'every_12_months', label: 'Frekuensi — Tiap 12 Bulan' },
-    { value: 'every_24_months', label: 'Frekuensi — Tiap 24 Bulan' },
-    { value: 'every_36_months', label: 'Frekuensi — Tiap 36 Bulan' },
-    { value: 'at_maturity', label: 'Lainnya — Sekaligus di Akhir' },
+    { value: 'weekly', label: 'Mingguan' },
+    { value: 'biweekly', label: '2 Mingguan' },
+    { value: 'monthly', label: 'Bulanan' },
+    { value: 'bimonthly', label: 'Tiap 2 Bulan' },
+    { value: 'quarterly', label: 'Tiap 3 Bulan' },
+    { value: 'every_4_months', label: 'Tiap 4 Bulan' },
+    { value: 'every_5_months', label: 'Tiap 5 Bulan' },
+    { value: 'every_6_months', label: 'Tiap 6 Bulan' },
+    { value: 'every_7_months', label: 'Tiap 7 Bulan' },
+    { value: 'every_8_months', label: 'Tiap 8 Bulan' },
+    { value: 'every_9_months', label: 'Tiap 9 Bulan' },
+    { value: 'every_10_months', label: 'Tiap 10 Bulan' },
+    { value: 'every_11_months', label: 'Tiap 11 Bulan' },
+    { value: 'every_12_months', label: 'Tiap 12 Bulan' },
+    { value: 'every_24_months', label: 'Tiap 24 Bulan' },
+    { value: 'every_36_months', label: 'Tiap 36 Bulan' },
+    { value: 'at_maturity', label: 'Sekaligus di Akhir' },
 ];
 
 const graceOptions = [
-    { value: 0, label: 'Tanpa Penundaan' },
-    { value: 1, label: 'M1 — Angsuran ditunda 1 bulan' },
-    { value: 2, label: 'M2 — Pokok ditunda 2 bulan' },
-    { value: 3, label: 'M3 — Pokok ditunda 3 bulan' },
-    { value: 6, label: 'M6 — Pokok ditunda 6 bulan' },
-    { value: 12, label: 'M12 — Pokok ditunda 12 bulan' },
-    { value: 24, label: 'M24 — Pokok ditunda 24 bulan' },
+    { value: 0, label: 'Tanpa Grace' },
+    { value: 1, label: 'M1' },
+    { value: 2, label: 'M2' },
+    { value: 3, label: 'M3' },
+    { value: 6, label: 'M6' },
+    { value: 12, label: 'M12' },
+    { value: 24, label: 'M24' },
 ];
 
 const roundingOptions = [
-    { value: '', label: 'Default Produk' },
-    { value: '0', label: 'Tanpa Pembulatan (2 Desimal)' },
+    { value: '', label: 'Default' },
+    { value: '0', label: '2 Desimal' },
     { value: '100', label: 'Rp 100' },
     { value: '500', label: 'Rp 500' },
     { value: '1000', label: 'Rp 1.000' },
@@ -98,43 +101,37 @@ const frequencyMultiplier = {
     every_36_months: 1 / 36,
 };
 
-const selectedProductId = ref('');
-const selectedMemberId = ref('');
+const selectedProductId = ref(isEdit.value ? String(props.loan.loan_product_id ?? '') : '');
+const selectedMemberId = ref(isEdit.value ? String(props.loan.member_id ?? '') : '');
 
 const form = useForm({
-    loan_product_id: '',
-    member_id: '',
-    proposed_at: today,
-    principal_amount: '',
-    service_rate_total: '',
-    term_months: '',
-    installment_method: 'flat',
-    principal_frequency: 'monthly',
-    interest_frequency: 'monthly',
-    principal_grace_months: 0,
-    interest_grace_months: 0,
-    rounding_step: '',
+    loan_product_id: isEdit.value ? (props.loan.loan_product_id ?? '') : '',
+    member_id: isEdit.value ? (props.loan.member_id ?? '') : '',
+    proposed_at: isEdit.value && props.loan.proposed_at ? props.loan.proposed_at : today,
+    principal_amount: isEdit.value ? props.loan.principal_amount : '',
+    service_rate_total: isEdit.value ? props.loan.service_rate_total : '',
+    term_months: isEdit.value ? props.loan.term_months : '',
+    installment_method: isEdit.value ? (props.loan.installment_method || 'flat') : 'flat',
+    principal_frequency: isEdit.value ? (props.loan.principal_frequency || 'monthly') : 'monthly',
+    interest_frequency: isEdit.value ? (props.loan.interest_frequency || 'monthly') : 'monthly',
+    principal_grace_months: isEdit.value ? (props.loan.principal_grace_months ?? 0) : 0,
+    interest_grace_months: isEdit.value ? (props.loan.interest_grace_months ?? 0) : 0,
+    rounding_step: isEdit.value ? (props.loan.rounding_step ?? '') : '',
     collateral: {
-        type: 'kendaraan',
-        description: '',
-        value: '',
-        reference: '',
+        type: isEdit.value && props.loan.collateral?.type ? props.loan.collateral.type : 'kendaraan',
+        description: isEdit.value ? (props.loan.collateral?.description ?? '') : '',
+        value: isEdit.value ? (props.loan.collateral?.value ?? '') : '',
+        reference: isEdit.value ? (props.loan.collateral?.reference ?? '') : '',
     },
-    verification_remarks: '',
+    verification_remarks: isEdit.value ? (props.loan.verification_remarks ?? '') : '',
 });
 
 const collateralTypeOptions = [
-    { value: 'kendaraan', label: 'Kendaraan (BPKB)' },
+    { value: 'kendaraan', label: 'BPKB Kendaraan' },
     { value: 'sertifikat_tanah', label: 'Sertifikat Tanah' },
-    { value: 'bpkb', label: 'BPKB (tanpa kendaraan)' },
+    { value: 'bpkb', label: 'BPKB saja' },
     { value: 'lainnya', label: 'Lainnya' },
 ];
-
-const hasCollateral = computed(() =>
-    String(form.collateral.description ?? '').trim() !== ''
-    || (form.collateral.value !== '' && form.collateral.value !== null)
-    || String(form.collateral.reference ?? '').trim() !== ''
-);
 
 const selectedProduct = computed(() => props.products.find((p) => String(p.row_id) === String(selectedProductId.value)) || null);
 const selectedMember = computed(() => props.members.find((m) => String(m.value) === String(selectedMemberId.value)) || null);
@@ -184,51 +181,92 @@ watch(selectedMemberId, (value) => {
 watch([() => form.term_months, () => form.principal_frequency], () => fillDefaults());
 
 function submit() {
-    form.post(path);
+    if (isEdit.value) {
+        form.put(path.value);
+    } else {
+        form.post(path.value);
+    }
 }
 </script>
 
 <template>
-    <Head title="Register Proposal Pinjaman Individu" />
+    <Head :title="isEdit ? 'Edit Proposal Pinjaman Individu' : 'Register Proposal Pinjaman Individu'" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-5xl">
-            <header class="mb-6">
-                <h1 class="text-2xl font-bold text-primary">Register Proposal Pinjaman Individu</h1>
-                <p class="mt-1 text-on-surface-variant">Daftarkan proposal pinjaman perorangan. Peminjam adalah satu anggota aktif.</p>
+        <div class="mx-auto max-w-7xl space-y-6 pb-12">
+            <header class="mb-2 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <h1 class="text-xl font-bold text-primary">
+                        {{ isEdit ? 'Edit Proposal Pinjaman Individu' : 'Register Proposal Pinjaman Individu' }}
+                    </h1>
+                    <p v-if="isEdit" class="mt-1 text-sm text-on-surface-variant">
+                        Ubah parameter pinjaman untuk proposal
+                        <strong class="text-on-surface">{{ loan?.loan_number || `#${loan?.row_id}` }}</strong>.
+                        Produk &amp; anggota tidak dapat diubah pada tahap ini.
+                    </p>
+                </div>
+                <Link v-if="isEdit" :href="`/lending/member-loans/${loan.row_id}`" class="text-sm font-semibold text-primary hover:underline">
+                    ← Kembali ke detail
+                </Link>
             </header>
 
             <AppCard>
-                <form class="space-y-5" @submit.prevent="submit">
-                    <section>
-                        <h2 class="font-semibold text-primary">Produk & Peminjam</h2>
-                        <div class="mt-3 grid gap-4 sm:grid-cols-2">
-                            <SmartSelect v-model="selectedProductId" label="Produk Pinjaman (Individu)" :options="productOptions" placeholder="Pilih produk untuk individu" required searchable :error="form.errors.loan_product_id" />
-                            <SmartSelect v-model="selectedMemberId" label="Anggota Peminjam" :options="memberOptions" placeholder="Pilih anggota aktif" required searchable :error="form.errors.member_id" />
+                <form class="grid gap-x-5 gap-y-4" @submit.prevent="submit">
+                    <div class="col-span-12 grid gap-x-5 gap-y-4 sm:grid-cols-12">
+                        <div class="sm:col-span-6">
+                            <SmartSelect
+                                v-model="selectedProductId"
+                                label="Produk"
+                                :options="productOptions"
+                                placeholder="Pilih produk"
+                                :required="!isEdit"
+                                :disabled="isEdit"
+                                :searchable="!isEdit"
+                                :error="form.errors.loan_product_id"
+                            />
                         </div>
-                    </section>
+                        <div class="sm:col-span-6">
+                            <SmartSelect
+                                v-model="selectedMemberId"
+                                label="Anggota"
+                                :options="memberOptions"
+                                placeholder="Pilih anggota"
+                                :required="!isEdit"
+                                :disabled="isEdit"
+                                :searchable="!isEdit"
+                                :error="form.errors.member_id"
+                            />
+                        </div>
+                    </div>
 
-                    <section v-if="selectedProduct" class="rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-sm text-primary">
-                        <p class="font-semibold">{{ selectedProduct.name }} ({{ selectedProduct.code }})</p>
-                        <p class="mt-1 text-on-surface-variant">Default: suku jasa {{ formatRate(selectedProduct.default_interest_rate) }}% per periode · Tenor {{ selectedProduct.default_term_months }} bulan.</p>
-                    </section>
+                    <div v-if="selectedProduct" class="col-span-12 -mt-1 rounded-lg border border-secondary/30 bg-secondary/10 px-3 py-2 text-xs text-primary">
+                        <span class="font-semibold">{{ selectedProduct.name }} ({{ selectedProduct.code }})</span>
+                        <span class="text-on-surface-variant"> · Jasa default {{ formatRate(selectedProduct.default_interest_rate) }}% / Tenor {{ selectedProduct.default_term_months }} bln</span>
+                    </div>
 
-                    <section v-if="selectedMember" class="rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-primary">
-                        <p class="font-semibold">{{ selectedMember.label }}</p>
-                        <p class="mt-1 text-on-surface-variant">
-                            <span v-if="selectedMember.nik">NIK {{ selectedMember.nik }}</span>
+                    <div v-if="selectedMember" class="col-span-12 -mt-1 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-xs text-primary">
+                        <span class="font-semibold">{{ selectedMember.label }}</span>
+                        <span class="text-on-surface-variant">
+                            <span v-if="selectedMember.nik"> · NIK {{ selectedMember.nik }}</span>
                             <span v-if="selectedMember.village"> · {{ selectedMember.village }}</span>
-                        </p>
-                    </section>
+                        </span>
+                    </div>
 
-                    <section class="border-t border-outline-variant pt-4">
-                        <h2 class="font-semibold text-primary">Detail Pengajuan</h2>
-                        <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            <AppDatePicker v-model="form.proposed_at" label="Tanggal Pengajuan" icon="event" placeholder="Pilih tanggal" :max="today" required :error="form.errors.proposed_at" />
-                            <AppCurrencyInput v-model="form.principal_amount" label="Plafon Pinjaman" icon="payments" :min="0" required :error="form.errors.principal_amount" />
-                            <AppInput v-model="form.term_months" label="Jangka Waktu (bulan)" icon="schedule" type="number" inputmode="numeric" min="1" max="120" required :error="form.errors.term_months" />
+                    <div class="col-span-12 my-1 border-t border-outline-variant"></div>
+
+                    <div class="col-span-12 grid gap-x-5 gap-y-4 sm:grid-cols-12">
+                        <div class="sm:col-span-3">
+                            <AppDatePicker v-model="form.proposed_at" label="Tgl Pengajuan" icon="event" :max="today" required :error="form.errors.proposed_at" />
+                        </div>
+                        <div class="sm:col-span-4">
+                            <AppCurrencyInput v-model="form.principal_amount" label="Plafon" icon="payments" :min="0" required :error="form.errors.principal_amount" />
+                        </div>
+                        <div class="sm:col-span-2">
+                            <AppInput v-model="form.term_months" label="Tenor (bln)" icon="schedule" type="number" inputmode="numeric" min="1" max="120" required :error="form.errors.term_months" />
+                        </div>
+                        <div class="sm:col-span-3">
                             <AppInput
                                 v-model="form.service_rate_total"
-                                label="Prosentase Jasa Total"
+                                label="Total Jasa (%)"
                                 icon="percent"
                                 type="number"
                                 inputmode="decimal"
@@ -236,53 +274,72 @@ function submit() {
                                 step="0.01"
                                 required
                                 :error="form.errors.service_rate_total"
-                                tooltip="Total jasa sepanjang pinjaman. Contoh: 1,5%/bulan × 12 bulan = 18"
+                                tooltip="Total jasa sepanjang pinjaman. Contoh: 1,5%/bln × 12 bln = 18"
                             />
                         </div>
-                        <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            <SmartSelect v-model="form.installment_method" label="Metode Hitung Jasa" :options="installmentMethodOptions" required :error="form.errors.installment_method" />
-                            <SmartSelect v-model="form.principal_frequency" label="Angsuran Pokok" :options="frequencyOptions" required :error="form.errors.principal_frequency" />
-                            <SmartSelect v-model="form.interest_frequency" label="Angsuran Jasa" :options="frequencyOptions" required :error="form.errors.interest_frequency" />
-                        </div>
-                        <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            <SmartSelect v-model="form.principal_grace_months" label="Grace Period Pokok" :options="graceOptions" required :error="form.errors.principal_grace_months" />
-                            <SmartSelect v-model="form.interest_grace_months" label="Grace Period Jasa" :options="graceOptions" required :error="form.errors.interest_grace_months" />
-                            <SmartSelect v-model="form.rounding_step" label="Pembulatan Angsuran" :options="roundingOptions" :error="form.errors.rounding_step" />
-                        </div>
-                    </section>
 
-                    <section class="border-t border-outline-variant pt-4">
-                        <h2 class="font-semibold text-primary">Jaminan (Collateral)</h2>
-                        <p class="mt-1 text-sm text-on-surface-variant">
-                            Opsional. Catat agunan pokok yang dijaminkan anggota untuk pinjaman individu ini. Data akan tersimpan sebagai JSON dan dicetak pada dokumen SPK &amp; Kartu Angsuran.
-                        </p>
-                        <div class="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            <SmartSelect v-model="form.collateral.type" label="Jenis Jaminan" :options="collateralTypeOptions" :error="form.errors['collateral.type']" />
-                            <AppInput v-model="form.collateral.reference" label="Nomor Dokumen (BPKB / SHM)" icon="tag" maxlength="120" :error="form.errors['collateral.reference']" placeholder="Contoh: BP-1234-XX" />
+                        <div class="sm:col-span-3">
+                            <SmartSelect v-model="form.installment_method" label="Metode" :options="installmentMethodOptions" required :error="form.errors.installment_method" />
+                        </div>
+                        <div class="sm:col-span-3">
+                            <SmartSelect v-model="form.principal_frequency" label="Freq. Pokok" :options="frequencyOptions" required :error="form.errors.principal_frequency" />
+                        </div>
+                        <div class="sm:col-span-3">
+                            <SmartSelect v-model="form.interest_frequency" label="Freq. Jasa" :options="frequencyOptions" required :error="form.errors.interest_frequency" />
+                        </div>
+                        <div class="sm:col-span-3">
+                            <SmartSelect v-model="form.rounding_step" label="Pembulatan" :options="roundingOptions" :error="form.errors.rounding_step" />
+                        </div>
+
+                        <div class="sm:col-span-6">
+                            <SmartSelect v-model="form.principal_grace_months" label="Grace Pokok" :options="graceOptions" required :error="form.errors.principal_grace_months" />
+                        </div>
+                        <div class="sm:col-span-6">
+                            <SmartSelect v-model="form.interest_grace_months" label="Grace Jasa" :options="graceOptions" required :error="form.errors.interest_grace_months" />
+                        </div>
+                    </div>
+
+                    <div v-if="periodPreview" class="col-span-12 -mt-1 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-xs text-on-surface-variant">
+                        Pokok: {{ periodPreview.principal.periods }}× angsuran ≈ {{ periodPreview.principal.perPeriod }} ·
+                        Jasa: {{ periodPreview.interest.periods }}× angsuran ≈ {{ periodPreview.interest.perPeriod }}
+                    </div>
+
+                    <div class="col-span-12 my-1 border-t border-outline-variant"></div>
+
+                    <div class="col-span-12 grid gap-x-5 gap-y-4 sm:grid-cols-12">
+                        <div class="sm:col-span-3">
+                            <SmartSelect v-model="form.collateral.type" label="Jaminan" :options="collateralTypeOptions" :error="form.errors['collateral.type']" />
+                        </div>
+                        <div class="sm:col-span-3">
+                            <AppInput v-model="form.collateral.reference" label="No. Dokumen" icon="tag" maxlength="120" :error="form.errors['collateral.reference']" placeholder="BP-1234-XX" />
+                        </div>
+                        <div class="sm:col-span-3">
                             <AppCurrencyInput v-model="form.collateral.value" label="Estimasi Nilai" icon="payments" :min="0" :error="form.errors['collateral.value']" />
-                            <AppInput v-model="form.collateral.description" label="Keterangan" icon="description" maxlength="500" :error="form.errors['collateral.description']" placeholder="Mis. Sepeda motor Honda Beat 2022" />
                         </div>
-                        <p v-if="!hasCollateral" class="mt-2 text-xs text-on-surface-variant">Belum ada jaminan dicatat — dapat ditambahkan saat verifikasi.</p>
-                    </section>
+                        <div class="sm:col-span-3">
+                            <AppInput v-model="form.collateral.description" label="Keterangan" icon="description" maxlength="120" :error="form.errors['collateral.description']" placeholder="Honda Beat 2022" />
+                        </div>
+                    </div>
 
-                    <section class="border-t border-outline-variant pt-4">
-                        <h2 class="font-semibold text-primary">Catatan Verifikasi (Opsional)</h2>
-                        <p class="mt-1 text-sm text-on-surface-variant">Catatan awal untuk verifikator (mis. sumber dana, riwayat tunggakan, dll).</p>
+                    <div class="col-span-12 my-1 border-t border-outline-variant"></div>
+
+                    <div class="col-span-12">
                         <AppTextarea
                             v-model="form.verification_remarks"
                             label=""
                             hide-label
-                            placeholder="Catatan tambahan untuk verifikator lapangan..."
+                            placeholder="Catatan verifikasi (opsional) — sumber dana, tunggakan, dll."
                             :rows="2"
                             :maxlength="2000"
                             :error="form.errors.verification_remarks"
-                            class="mt-3"
                         />
-                    </section>
+                    </div>
 
-                    <div class="flex justify-end gap-3 border-t border-outline-variant pt-4">
+                    <div class="col-span-12 flex justify-end gap-3 border-t border-outline-variant pt-4">
                         <Link :href="path"><AppButton variant="secondary">Batal</AppButton></Link>
-                        <AppButton type="submit" :loading="form.processing" :disabled="form.processing" icon="save">Simpan Proposal</AppButton>
+                        <AppButton type="submit" :loading="form.processing" :disabled="form.processing" icon="save">
+                            {{ isEdit ? 'Simpan Perubahan' : 'Simpan Proposal' }}
+                        </AppButton>
                     </div>
                 </form>
             </AppCard>

@@ -9,7 +9,7 @@ const props = defineProps({
     size: {
         type: String,
         default: 'md',
-        validator: (value) => ['sm', 'md', 'lg', 'full'].includes(value),
+        validator: (value) => ['sm', 'md', 'lg', 'full', 'fullscreen'].includes(value),
     },
 });
 
@@ -18,6 +18,21 @@ const sizeClass = {
     md: 'max-w-2xl',
     lg: 'max-w-4xl',
     full: 'max-w-[min(96rem,calc(100vw-2rem))]',
+    fullscreen: 'max-w-none',
+};
+const containerClass = {
+    sm: 'p-4',
+    md: 'p-4',
+    lg: 'p-4',
+    full: 'p-4',
+    fullscreen: 'p-0',
+};
+const panelSizeClass = {
+    sm: 'max-h-[calc(100vh-2rem)] rounded-2xl',
+    md: 'max-h-[calc(100vh-2rem)] rounded-2xl',
+    lg: 'max-h-[calc(100vh-2rem)] rounded-2xl',
+    full: 'max-h-[calc(100vh-2rem)] rounded-2xl',
+    fullscreen: 'h-screen max-h-screen rounded-none',
 };
 
 const titleId = useId();
@@ -72,8 +87,8 @@ onBeforeUnmount(() => {
 <template>
     <Teleport to="body">
         <Transition name="modal">
-            <div v-if="model" class="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-primary/45 p-4 backdrop-blur-xs" @click.self="close">
-                <section ref="panel" role="dialog" aria-modal="true" :aria-labelledby="titleId" tabindex="-1" :class="['flex max-h-[calc(100vh-2rem)] w-full flex-col rounded-2xl bg-surface-container-lowest shadow-2xl focus:outline-none', sizeClass[size] ?? sizeClass.md]" @keydown="onKeydown">
+            <div v-if="model" :class="['fixed inset-0 z-50 flex flex-col items-stretch justify-stretch overflow-hidden bg-primary/45 backdrop-blur-xs', containerClass[size] ?? containerClass.md]" @click.self="close">
+                <section ref="panel" role="dialog" aria-modal="true" :aria-labelledby="titleId" tabindex="-1" :class="['flex w-full flex-col bg-surface-container-lowest shadow-2xl focus:outline-none', sizeClass[size] ?? sizeClass.md, panelSizeClass[size] ?? panelSizeClass.md]" @keydown="onKeydown">
                     <header class="flex shrink-0 items-center justify-between gap-4 inset-divider px-5 py-4 sm:px-6">
                         <h2 :id="titleId" class="text-lg font-bold text-primary">{{ title }}</h2>
                         <button v-if="closeable" type="button" class="grid size-10 shrink-0 place-items-center rounded-full text-on-surface-variant transition-all duration-150 hover:bg-surface-container-low hover:text-primary active:scale-90 focus:outline-none focus:ring-2 focus:ring-primary-container/30" aria-label="Tutup modal" @click="close"><AppIcon name="close" /></button>

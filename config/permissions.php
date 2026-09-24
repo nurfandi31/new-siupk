@@ -89,6 +89,8 @@ return [
         'budgeting.view',
         'budgeting.manage',
         'messages.send',
+        // Regulatory (OJK compliance reports)
+        'regulatory.view',
         // Tenant SaaS billing (pay platform invoices)
         'billing.view',
         'billing.pay',
@@ -96,6 +98,9 @@ return [
         'regency.view_reports',
         // Province supervisory permissions
         'province.view_reports',
+        // Internal supervisor / pengawas notes
+        'supervisor.notes',
+        'supervisor.manage',
         // Village operator permissions
         'village_user.access',
         // Settings / assistant
@@ -135,6 +140,7 @@ return [
                 'billing.view',
                 'billing.pay',
                 'assistant.use',
+                'settings.manage',
             ],
         ],
         'verifikator' => [
@@ -151,6 +157,7 @@ return [
                 'assets.view',
                 'reports.view',
                 'assistant.use',
+                'settings.manage',
             ],
         ],
         'viewer' => [
@@ -170,6 +177,7 @@ return [
                 'budgeting.view',
                 'billing.view',
                 'assistant.use',
+                'settings.manage',
             ],
         ],
         'regency_supervisor' => [
@@ -186,6 +194,18 @@ return [
                 'province.view_reports',
             ],
         ],
+        'pengawas' => [
+            'name' => 'Pengawas / Pengawas Internal',
+            'is_system' => true,
+            'permissions' => [
+                'reports.view',
+                'reports.manage',
+                'supervisor.notes',
+                'supervisor.manage',
+                'journals.view',
+                'budgeting.view',
+            ],
+        ],
         'village_operator' => [
             'name' => 'Operator Desa',
             'is_system' => true,
@@ -198,6 +218,7 @@ return [
                 'loans.propose',
                 'reports.view',
                 'village_user.access',
+                'settings.manage',
             ],
         ],
         'direktur_lembaga' => [
@@ -224,6 +245,7 @@ return [
                 'messages.send',
                 'assistant.use',
                 'settings.manage',
+                'supervisor.notes',
             ],
         ],
         'anggota' => [
@@ -263,6 +285,7 @@ return [
         '/accounting/period-close' => 'period_close.view',
         '/accounting/tax-estimate' => 'tax.view',
         '/accounting/reports' => 'reports.view',
+        '/supervisor/notes' => 'supervisor.notes',
         '/budgeting' => 'budgeting.view',
         '/notifications/billing' => 'messages.send',
         '/billing/invoices' => 'billing.view',
@@ -270,8 +293,10 @@ return [
         '/access/roles' => 'roles.view',
         '/website' => 'website.view',
         '/settings' => 'settings.manage',
+        '/settings/whatsapp' => 'settings.manage',
         '/regency' => 'regency.view_reports',
         '/province' => 'province.view_reports',
+        '/regulatory/ojk' => 'regulatory.view',
     ],
 
     /**
@@ -289,6 +314,7 @@ return [
         LoanApproveRequest::class => 'loans.approve',
         LoanDisburseRequest::class => 'loans.disburse',
         LoanUpdateRequest::class => 'loans.manage',
+        MemberLoanUpdateRequest::class => 'loans.manage',
         LoanWriteOffRequest::class => 'loans.manage',
         LoanBeneficiaryWriteOffRequest::class => 'loans.manage',
         LoanRescheduleRequest::class => 'loans.manage',

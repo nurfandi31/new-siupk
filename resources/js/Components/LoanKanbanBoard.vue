@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { Link, useForm, router } from '@inertiajs/vue3';
-import AppBadge from './AppBadge.vue';
 import AppButton from './AppButton.vue';
 import AppDatePicker from './AppDatePicker.vue';
 import AppIcon from './AppIcon.vue';
@@ -36,11 +35,11 @@ const activeAction = ref(null);
 const activeLoan = ref(null);
 
 const kanbanTabs = [
-    { key: 'proposal', label: 'Proposal', statuses: ['draft'] },
-    { key: 'verifikasi', label: 'Verifikasi', statuses: ['verified'] },
-    { key: 'waiting', label: 'Waiting', statuses: ['waiting', 'approved'] },
-    { key: 'aktif', label: 'Aktif', statuses: ['active', 'disbursed'] },
-    { key: 'lunas', label: 'Lunas', statuses: ['completed', 'written_off', 'rescheduled'] },
+    { key: 'proposal', label: 'Proposal', icon: 'inventory_2', accent: 'neutral' },
+    { key: 'verifikasi', label: 'Verifikasi', icon: 'task_alt', accent: 'primary' },
+    { key: 'waiting', label: 'Waiting', icon: 'hourglass_top', accent: 'warning' },
+    { key: 'aktif', label: 'Aktif', icon: 'payments', accent: 'success' },
+    { key: 'lunas', label: 'Lunas', icon: 'verified', accent: 'neutral' },
 ];
 
 const ACTION_TRANSITIONS = {
@@ -82,7 +81,22 @@ const disburseForm = useForm({
 });
 
 const totalCards = computed(() => Object.values(props.columns).flat().length);
-const totalNominal = computed(() => Object.values(props.columns).flat().reduce((sum, loan) => sum + Number(loan.principal_amount || 0), 0));
+const totalNominal = computed(() => Object.values(props.columns).flat().reduce((sum, loan) => {
+    const amount = Number(loan.principal_amount
+        ?? loan.proposed_amount
+        ?? loan.verification_amount
+        ?? loan.allocated_amount
+        ?? 0);
+    return sum + amount;
+}, 0));
+
+const principalRemainingTotal = computed(() => Object.values(props.columns).flat().reduce((sum, loan) => {
+    return sum + Number(loan.principal_remaining ?? 0);
+}, 0));
+
+const activeLoanCount = computed(() => (props.columns.aktif ?? []).length);
+const verificationCount = computed(() => (props.columns.verifikasi ?? []).length);
+
 const verifyBeneficiaryTotal = computed(() => Object.values(verifyForm.verified_amounts).reduce((sum, value) => sum + Number(value || 0), 0));
 const approveBeneficiaryTotal = computed(() => approveForm.beneficiaries.reduce((sum, row) => sum + Number(row.allocated_amount || 0), 0));
 const verifyBeneficiaries = computed(() => (activeLoan.value?.beneficiaries ?? []).map((b) => ({
@@ -246,17 +260,51 @@ function allocatedAmountError(beneficiary) {
 
 <template>
     <div class="space-y-4">
-        <div class="flex items-center gap-4">
-            <p class="text-sm text-on-surface-variant">
-                Total {{ totalCards }} pinjaman · Nilai portofolio {{ money(totalNominal) }}
-            </p>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-3.5">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">Total Pinjaman</p>
+                <p class="mt-1 text-xl font-extrabold tabular-nums leading-tight text-on-surface">{{ totalCards }}</p>
+                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">Semua tahap</p>
+            </div>
+            <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-3.5">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">Nilai Portofolio</p>
+                <p class="mt-1 truncate text-xl font-extrabold tabular-nums leading-tight text-on-surface" :title="money(totalNominal)">
+                    {{ money(totalNominal) }}
+                </p>
+                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">Akumulasi plafon</p>
+            </div>
+            <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-3.5">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">Pinjaman Aktif</p>
+                <p class="mt-1 text-xl font-extrabold tabular-nums leading-tight text-secondary">{{ activeLoanCount }}</p>
+                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">Berjalan saat ini</p>
+            </div>
+            <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-3.5">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">Sisa Pokok</p>
+                <p class="mt-1 truncate text-xl font-extrabold tabular-nums leading-tight text-on-surface" :title="money(principalRemainingTotal)">
+                    {{ money(principalRemainingTotal) }}
+                </p>
+                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">Belum tertagih</p>
+            </div>
         </div>
 
-        <div class="grid grid-cols-5 gap-4">
+        <div v-if="totalCards === 0" class="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-outline-variant bg-surface-container-lowest/60 px-6 py-12 text-center">
+            <AppIcon name="view_kanban" class="text-4xl text-outline" />
+            <p class="text-sm font-bold text-on-surface">Belum ada pinjaman untuk ditampilkan</p>
+            <p class="max-w-md text-xs text-on-surface-variant">
+                Papan kanban akan otomatis terisi ketika ada proposal, verifikasi, atau pencairan yang masuk pada tahap manapun.
+            </p>
+            <Link v-if="can('loans.propose')" href="/lending/loans/create" class="mt-2">
+                <AppButton icon="add">Ajukan Pinjaman</AppButton>
+            </Link>
+        </div>
+
+        <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <LoanKanbanColumn
                 v-for="column in kanbanTabs"
                 :key="column.key"
                 :label="column.label"
+                :icon="column.icon"
+                :accent="column.accent"
                 :count="(columns[column.key] ?? []).length"
                 :drop-active="dropTarget === column.key"
                 @drag-over="dropTarget = column.key"
@@ -268,6 +316,7 @@ function allocatedAmountError(beneficiary) {
                     :key="loan.row_id"
                     :loan="loan"
                     :stage-label="column.label"
+                    :stage="column.key"
                     :actions="availableActions(loan)"
                     @dragstart="draggedCard = loan"
                     @dragend="draggedCard = null; dropTarget = null"

@@ -31,7 +31,7 @@ function money(value, currency = 'IDR') {
 <template>
     <Head title="Plan" />
     <AdminLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <AdminPageHeader
                 title="Paket Langganan"
                 subtitle="Definisikan plan SaaS, harga, dan periode penagihan untuk tenant."
@@ -42,45 +42,43 @@ function money(value, currency = 'IDR') {
             </AdminPageHeader>
 
             <AppCard :padded="false">
-                <div class="p-6">
-                    <SmartDataTable
-                        :rows="plans.data"
-                        :columns="columns"
-                        :pagination="plans"
-                        url="/admin/plans"
-                        :search="search"
-                        :per-page="perPage"
-                        :sort="sort"
-                        :direction="direction"
-                        empty-title="Belum ada plan"
-                        empty-description="Buat plan sebelum menetapkan langganan."
-                    >
-                        <template #cell-name="{ row }">
-                            <div class="flex items-center gap-3">
-                                <div class="grid size-9 shrink-0 place-items-center rounded-lg bg-tertiary-container text-xs font-bold text-on-tertiary-container">
-                                    <AppIcon name="workspace_premium" />
-                                </div>
-                                <div class="min-w-0">
-                                    <p class="font-semibold text-primary">{{ row.name }}</p>
-                                    <p class="font-mono text-xs text-on-surface-variant">{{ row.code }}</p>
-                                </div>
+                <SmartDataTable
+                    :rows="plans.data"
+                    :columns="columns"
+                    :pagination="plans"
+                    url="/admin/plans"
+                    :search="search"
+                    :per-page="perPage"
+                    :sort="sort"
+                    :direction="direction"
+                    empty-title="Belum ada plan"
+                    empty-description="Buat plan sebelum menetapkan langganan."
+                >
+                    <template #cell-name="{ row }">
+                        <div class="flex items-center gap-3">
+                            <div class="grid size-9 shrink-0 place-items-center rounded-lg bg-tertiary-container text-xs font-bold text-on-tertiary-container">
+                                <AppIcon name="workspace_premium" />
                             </div>
-                        </template>
-                        <template #cell-price_amount="{ row }">
-                            <span class="font-bold text-primary tabular-nums">{{ money(row.price_amount, row.currency) }}</span>
-                        </template>
-                        <template #cell-is_active="{ row }">
-                            <AppBadge :tone="row.is_active ? 'success' : 'neutral'">
-                                {{ row.is_active ? 'Aktif' : 'Nonaktif' }}
-                            </AppBadge>
-                        </template>
-                        <template #actions="{ row }">
-                            <div class="flex items-center justify-end gap-1.5">
-                                <Link :href="`/admin/plans/${row.row_id}/edit`"><AppButton variant="ghost" size="compact" icon="edit">Edit</AppButton></Link>
+                            <div class="min-w-0">
+                                <p class="font-semibold text-primary">{{ row.name }}</p>
+                                <p class="font-mono text-xs text-on-surface-variant">{{ row.code }}</p>
                             </div>
-                        </template>
-                    </SmartDataTable>
-                </div>
+                        </div>
+                    </template>
+                    <template #cell-price_amount="{ row }">
+                        <span class="font-bold text-primary tabular-nums">{{ money(row.price_amount, row.currency) }}</span>
+                    </template>
+                    <template #cell-is_active="{ row }">
+                        <AppBadge :tone="row.is_active ? 'success' : 'neutral'">
+                            {{ row.is_active ? 'Aktif' : 'Nonaktif' }}
+                        </AppBadge>
+                    </template>
+                    <template #actions="{ row }">
+                        <div class="flex items-center justify-end gap-1.5">
+                            <Link :href="`/admin/plans/${row.row_id}/edit`"><AppButton variant="ghost" size="compact" icon="edit">Edit</AppButton></Link>
+                        </div>
+                    </template>
+                </SmartDataTable>
             </AppCard>
         </div>
     </AdminLayout>

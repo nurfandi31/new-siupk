@@ -34,7 +34,7 @@ function fields(member = null) {
     return {
         nik: member?.nik || '',
         name: member?.name || '',
-        gender: member?.gender || '',
+        gender: member?.gender || 'L',
         birth_place: member?.birth_place || '',
         birth_date: member?.birth_date || defaultBirthDate,
         phone: member?.phone || '',
@@ -121,7 +121,7 @@ function submit() {
             </header>
 
             <AppCard>
-                <form class="space-y-4" @submit.prevent="submit">
+                <form class="space-y-6" @submit.prevent="submit">
                     <div v-if="memberFound" role="status" class="flex items-center gap-3 rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-sm font-semibold text-primary">
                         <span class="material-symbols-outlined text-secondary" aria-hidden="true">person_check</span>
                         NIK sudah terdaftar. Data anggota telah dimuat dan akan diperbarui saat disimpan.
@@ -151,13 +151,10 @@ function submit() {
                         <AppInput v-model="form.guarantor_relationship" label="Hubungan" icon="family_restroom" required placeholder="Contoh: Saudara, Tetangga" :error="form.errors.guarantor_relationship" />
                     </fieldset>
 
-                    <fieldset v-if="form.has_guarantor" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         <AppSwitch v-model="form.has_business" label="Tambah Usaha" description="Aktifkan untuk menambahkan usaha utama." icon="storefront" field />
-                    </fieldset>
-
-                    <fieldset v-if="form.has_business" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                        <AppInput v-model="form.business_name" label="Nama Usaha" icon="storefront" required :error="form.errors.business_name" />
-                        <AppInput v-model="form.business_description" label="Deskripsi Usaha" icon="description" placeholder="Contoh: Warung sembako, Pertanian padi" :error="form.errors.business_description" />
+                        <AppInput v-model="form.business_name" label="Nama Usaha" icon="storefront" :required="form.has_business" :disabled="!form.has_business" :error="form.errors.business_name" />
+                        <AppInput v-model="form.business_description" label="Deskripsi Usaha" icon="description" placeholder="Contoh: Warung sembako, Pertanian padi" :required="form.has_business" :disabled="!form.has_business" :error="form.errors.business_description" />
                     </fieldset>
 
                     <div class="flex justify-end gap-3 border-t border-outline-variant pt-4">

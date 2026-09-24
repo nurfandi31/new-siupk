@@ -15,6 +15,7 @@ const props = defineProps({
     hint: { type: String, default: null },
     placeholder: { type: String, default: null },
     readonly: { type: Boolean, default: false },
+    disabled: { type: Boolean, default: false },
     hideLabel: { type: Boolean, default: false },
     tooltip: { type: String, default: null },
     size: { type: String, default: 'default', validator: (v) => ['default', 'compact'].includes(v) },
@@ -27,7 +28,7 @@ const inputId = props.id || generatedId;
 <template>
     <div class="space-y-1.5">
         <div v-if="!hideLabel" class="flex items-center gap-1.5 ml-1">
-            <label :for="inputId" class="block text-sm font-bold uppercase tracking-wider text-primary">{{ label }}</label>
+            <label :for="inputId" :class="['block text-sm font-bold uppercase tracking-wider', disabled ? 'text-on-surface-variant' : 'text-primary']">{{ label }}</label>
             <AppTooltip v-if="tooltip" :id="`${inputId}-tooltip`" :text="tooltip" />
         </div>
         <label v-else :for="inputId" class="sr-only">{{ label }}</label>
@@ -44,12 +45,13 @@ const inputId = props.id || generatedId;
                     tooltip && `${inputId}-tooltip`
                 ].filter(Boolean).join(' ') || undefined"
                 :readonly="readonly"
-                :placeholder="readonly ? undefined : (placeholder ?? `Masukkan ${label.toLowerCase()}`)"
+                :disabled="disabled"
+                :placeholder="(readonly || disabled) ? undefined : (placeholder ?? `Masukkan ${label.toLowerCase()}`)"
                 :class="[
                     size === 'compact'
                         ? 'h-9 rounded-lg px-3 text-sm'
                         : 'h-11 rounded-xl px-3.5 text-sm',
-                    'w-full border bg-surface-container-lowest text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant',
+                    'w-full border bg-surface-container-lowest text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant disabled:cursor-not-allowed disabled:bg-surface-container-low disabled:text-on-surface-variant disabled:opacity-70',
                     size === 'compact' ? (icon ? 'pl-9' : '') : (icon ? 'pl-11' : ''),
                     $slots.trailing ? (size === 'compact' ? 'pr-10' : 'pr-12') : '',
                     error ? 'border-error' : 'border-outline-variant',

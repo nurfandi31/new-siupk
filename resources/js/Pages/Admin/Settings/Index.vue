@@ -90,7 +90,7 @@ async function removeSetting(key) {
 <template>
     <Head title="Pengaturan Platform" />
     <AdminLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <AdminPageHeader
                 title="Pengaturan Platform"
                 subtitle="Key-value store tingkat instalasi yang berlaku untuk semua tenant — kredensial payment gateway, template WhatsApp, dan konfigurasi integrasi lainnya."
@@ -143,69 +143,67 @@ async function removeSetting(key) {
             </AppCard>
 
             <AppCard :padded="false">
-                <div class="p-6">
-                    <SmartDataTable
-                        :rows="settings.data"
-                        :columns="columns"
-                        :pagination="settings"
-                        url="/admin/settings"
-                        :search="search"
-                        :per-page="perPage"
-                        search-label="Cari key"
-                        search-placeholder="…"
-                        empty-title="Belum ada setting"
-                        empty-description="Setting akan muncul otomatis saat fitur pertama kali menyimpan konfigurasi."
-                    >
-                        <template #cell-key="{ row }">
-                            <span class="font-mono text-sm font-semibold text-primary">{{ row.key }}</span>
-                            <AppBadge v-if="row.is_sensitive" tone="warning-soft" class="ml-1.5">terenkripsi</AppBadge>
-                        </template>
-                        <template #cell-value_type="{ row }">
-                            <AppBadge tone="info-soft" class="whitespace-nowrap">{{ row.value_type }}</AppBadge>
-                        </template>
-                        <template #cell-value="{ row }">
-                            <span v-if="editingKey !== row.key" class="break-all font-mono text-xs text-on-surface">{{ row.has_value ? row.value || '(kosong)' : '(kosong)' }}</span>
-                            <form v-else class="flex flex-wrap items-end gap-2" @submit.prevent="saveEdit">
-                                <AppInput
-                                    v-model="editForm.value"
-                                    :label="`Nilai baru (${editForm.value_type})`"
-                                    hide-label
-                                    class="min-w-64 flex-1"
-                                    :type="row.is_sensitive ? 'password' : 'text'"
-                                    :placeholder="row.is_sensitive ? 'Isi untuk mengganti nilai tersimpan' : 'Nilai baru'"
-                                />
-                                <AppButton type="submit" variant="success" size="compact" icon="check" :loading="editForm.processing">Simpan</AppButton>
-                                <AppButton variant="ghost" size="compact" @click="cancelEdit">Batal</AppButton>
-                            </form>
-                        </template>
-                        <template #cell-updated_at="{ row }">
-                            <span v-if="row.updated_at" class="whitespace-nowrap tabular-nums text-on-surface">{{ row.updated_at }}</span>
-                            <span v-else class="text-outline">—</span>
-                        </template>
-                        <template #actions="{ row }">
-                            <div class="flex items-center justify-end gap-1.5">
-                                <AppButton
-                                    v-if="editingKey !== row.key"
-                                    variant="secondary"
-                                    size="compact"
-                                    icon="edit"
-                                    @click="startEdit(row)"
-                                >
-                                    Ubah
-                                </AppButton>
-                                <AppButton
-                                    variant="ghost"
-                                    size="compact"
-                                    icon="delete"
-                                    class="text-error"
-                                    @click="removeSetting(row.key)"
-                                >
-                                    Hapus
-                                </AppButton>
-                            </div>
-                        </template>
-                    </SmartDataTable>
-                </div>
+                <SmartDataTable
+                    :rows="settings.data"
+                    :columns="columns"
+                    :pagination="settings"
+                    url="/admin/settings"
+                    :search="search"
+                    :per-page="perPage"
+                    search-label="Cari key"
+                    search-placeholder="…"
+                    empty-title="Belum ada setting"
+                    empty-description="Setting akan muncul otomatis saat fitur pertama kali menyimpan konfigurasi."
+                >
+                    <template #cell-key="{ row }">
+                        <span class="font-mono text-sm font-semibold text-primary">{{ row.key }}</span>
+                        <AppBadge v-if="row.is_sensitive" tone="warning-soft" class="ml-1.5">terenkripsi</AppBadge>
+                    </template>
+                    <template #cell-value_type="{ row }">
+                        <AppBadge tone="info-soft" class="whitespace-nowrap">{{ row.value_type }}</AppBadge>
+                    </template>
+                    <template #cell-value="{ row }">
+                        <span v-if="editingKey !== row.key" class="break-all font-mono text-xs text-on-surface">{{ row.has_value ? row.value || '(kosong)' : '(kosong)' }}</span>
+                        <form v-else class="flex flex-wrap items-end gap-2" @submit.prevent="saveEdit">
+                            <AppInput
+                                v-model="editForm.value"
+                                :label="`Nilai baru (${editForm.value_type})`"
+                                hide-label
+                                class="min-w-64 flex-1"
+                                :type="row.is_sensitive ? 'password' : 'text'"
+                                :placeholder="row.is_sensitive ? 'Isi untuk mengganti nilai tersimpan' : 'Nilai baru'"
+                            />
+                            <AppButton type="submit" variant="success" size="compact" icon="check" :loading="editForm.processing">Simpan</AppButton>
+                            <AppButton variant="ghost" size="compact" @click="cancelEdit">Batal</AppButton>
+                        </form>
+                    </template>
+                    <template #cell-updated_at="{ row }">
+                        <span v-if="row.updated_at" class="whitespace-nowrap tabular-nums text-on-surface">{{ row.updated_at }}</span>
+                        <span v-else class="text-outline">—</span>
+                    </template>
+                    <template #actions="{ row }">
+                        <div class="flex items-center justify-end gap-1.5">
+                            <AppButton
+                                v-if="editingKey !== row.key"
+                                variant="secondary"
+                                size="compact"
+                                icon="edit"
+                                @click="startEdit(row)"
+                            >
+                                Ubah
+                            </AppButton>
+                            <AppButton
+                                variant="ghost"
+                                size="compact"
+                                icon="delete"
+                                class="text-error"
+                                @click="removeSetting(row.key)"
+                            >
+                                Hapus
+                            </AppButton>
+                        </div>
+                    </template>
+                </SmartDataTable>
             </AppCard>
         </div>
     </AdminLayout>

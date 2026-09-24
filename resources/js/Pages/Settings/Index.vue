@@ -2,10 +2,9 @@
 import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import AppBadge from '../../Components/AppBadge.vue';
 import AppButton from '../../Components/AppButton.vue';
-import AppCard from '../../Components/AppCard.vue';
 import AppDatePicker from '../../Components/AppDatePicker.vue';
 import AppIcon from '../../Components/AppIcon.vue';
 import AppInput from '../../Components/AppInput.vue';
@@ -33,12 +32,20 @@ const route = computed(() => page.url);
 const flash = computed(() => page.props.flash?.success);
 
 const tabs = [
-    { key: 'identity', label: 'Identitas Lembaga', icon: 'badge' },
-    { key: 'lending-system', label: 'Sistem Pinjaman', icon: 'tune' },
-    { key: 'logo', label: 'Logo Lembaga', icon: 'image' },
-    { key: 'offline', label: 'Akses Offline', icon: 'cloud_off' },
-    { key: 'signatures', label: 'Tanda Tangan', icon: 'draw' },
+    { key: 'identity', label: 'Identitas Lembaga', icon: 'badge', description: 'Profil & kontak' },
+    { key: 'lending-system', label: 'Sistem Pinjaman', icon: 'tune', description: 'Default produk' },
+    { key: 'logo', label: 'Logo Lembaga', icon: 'image', description: 'Branding' },
+    { key: 'offline', label: 'Akses Offline', icon: 'cloud_off', description: 'Sinkronisasi' },
+    { key: 'signatures', label: 'Tanda Tangan', icon: 'draw', description: 'Template laporan' },
 ];
+
+const tabMeta = {
+    identity: { icon: 'badge', tone: 'primary', title: 'Identitas Lembaga', subtitle: 'Profil hukum dan kontak lembaga. Data ini muncul pada laporan dan dokumen resmi.', gradient: 'from-primary/10 to-primary/0' },
+    'lending-system': { icon: 'tune', tone: 'secondary', title: 'Sistem Pinjaman', subtitle: 'Default jasa, jangka, dan metode pembulatan angsuran per produk pinjaman.', gradient: 'from-secondary/10 to-secondary/0' },
+    logo: { icon: 'image', tone: 'tertiary', title: 'Logo Lembaga', subtitle: 'Logo akan tampil di sidebar aplikasi. Format: PNG, JPG, atau WebP. Maks 2 MB.', gradient: 'from-tertiary/10 to-tertiary/0' },
+    offline: { icon: 'cloud_off', tone: 'info', title: 'Akses Offline', subtitle: 'Aktifkan agar satu pengguna terpilih tetap dapat menginput, mengedit, dan menghapus data saat offline.', gradient: 'from-info/10 to-info/0' },
+    signatures: { icon: 'draw', tone: 'primary', title: 'Tanda Tangan', subtitle: 'Blok penandatangan per jenis laporan. Disimpan per lembaga.', gradient: 'from-primary/10 to-primary/0' },
+};
 
 const activeTab = ref(getInitialTab());
 
@@ -111,9 +118,18 @@ function onLogoDrop(event) {
 }
 function setLogoFile(file) {
     if (!file || !file.type.startsWith('image/')) return;
+    if (logoPreview.value && logoPreview.value.startsWith('blob:')) {
+        URL.revokeObjectURL(logoPreview.value);
+    }
     logoForm.logo = file;
     logoPreview.value = URL.createObjectURL(file);
 }
+
+onBeforeUnmount(() => {
+    if (logoPreview.value && logoPreview.value.startsWith('blob:')) {
+        URL.revokeObjectURL(logoPreview.value);
+    }
+});
 function submitLogo() {
     logoForm.post('/settings/logo', {
         forceFormData: true,
@@ -189,7 +205,7 @@ onMounted(loadOutbox);
 
 function submitOffline() {
     if (offlineForm.is_enabled && !offlineForm.user_id) {
-        alert('Pilih satu pengguna offline terlebih dahulu.');
+        toast.error('Pilih satu pengguna offline terlebih dahulu.');
         return;
     }
     offlineForm.put('/settings/offline-access', { preserveScroll: true });
@@ -287,15 +303,18 @@ function applySignatureStarter() {
 <template>
     <Head title="Pengaturan" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
-            <header>
-                <h1 class="text-2xl font-bold text-primary sm:text-3xl">Pengaturan</h1>
-                <p class="mt-1 text-on-surface-variant">Konfigurasi lembaga, pinjaman, logo, WhatsApp, dan tanda tangan.</p>
-            </header>
+        <div class="mx-auto max-w-6xl space-y-6 pb-12">
+            <!-- Header -->
+            <div class="flex flex-col gap-1">
+                <h1 class="text-2xl font-bold tracking-tight text-primary sm:text-3xl">Pengaturan</h1>
+                <p class="text-sm text-on-surface-variant sm:text-base">
+                    Kelola identitas lembaga, sistem pinjaman, logo, dan preferensi aplikasi Anda di satu tempat.
+                </p>
+            </div>
 
-
-            <div class="grid gap-6 lg:grid-cols-[14rem_1fr]">
-                <div class="rounded-xl bg-surface-container-low p-2 lg:sticky lg:top-20 lg:self-start">
+            <div class="grid gap-0 overflow-hidden rounded-2xl bg-surface-container-lowest shadow-sm ring-1 ring-outline-variant/40 lg:grid-cols-[15rem_1fr]">
+                <!-- Sidebar Tabs (nempel dengan konten di kanan) -->
+                <aside class="bg-outline-variant/40 p-3 lg:min-h-full">
                     <AppTabs
                         v-model="activeTab"
                         :items="tabs"
@@ -303,12 +322,21 @@ function applySignatureStarter() {
                         aria-label="Tab pengaturan"
                         @update:model-value="go($event)"
                     />
-                </div>
+                </aside>
 
-                <div class="space-y-6">
-                    <AppCard v-show="activeTab === 'identity'" bordered>
-                        <h2 class="mb-1 text-lg font-bold text-primary">Identitas Lembaga</h2>
-                        <p class="mb-5 text-sm text-on-surface-variant">Profil hukum dan kontak lembaga. Data ini muncul pada laporan dan dokumen resmi.</p>
+                <!-- Tab Content -->
+                <Transition name="tab-fade" mode="out-in">
+                    <div :key="activeTab" class="space-y-6 p-5 sm:p-7">
+                    <!-- Identity -->
+                    <div v-if="activeTab === 'identity'" class="space-y-6">
+                        <div class="flex items-center gap-3">
+                            <AppIcon :name="tabMeta.identity.icon" :tone="tabMeta.identity.tone" :container-size="11" />
+                            <div>
+                                <h2 class="text-xl font-bold text-primary">{{ tabMeta.identity.title }}</h2>
+                                <p class="text-sm text-on-surface-variant">{{ tabMeta.identity.subtitle }}</p>
+                            </div>
+                        </div>
+
                         <form class="space-y-5" @submit.prevent="submitIdentity">
                             <div class="grid gap-4 sm:grid-cols-2">
                                 <AppInput v-model="identityForm.legal_name" label="Nama Legal" required :error="identityForm.errors.legal_name" />
@@ -317,57 +345,110 @@ function applySignatureStarter() {
                                 <AppInput v-model="identityForm.tax_number" label="NPWP" :error="identityForm.errors.tax_number" />
                                 <AppInput v-model="identityForm.phone" label="Telepon" :error="identityForm.errors.phone" />
                                 <AppInput v-model="identityForm.email" label="Email" type="email" :error="identityForm.errors.email" />
-                                <AppInput v-model="identityForm.website" label="Website" type="url" :error="identityForm.errors.website" class="sm:col-span-2" />
-                                <AppTextarea v-model="identityForm.address" label="Alamat" :rows="3" :error="identityForm.errors.address" class="sm:col-span-2" />
+                                <AppInput v-model="identityForm.website" label="Website" type="url" :error="identityForm.errors.website" />
                                 <AppInput v-model="identityForm.timezone" label="Zona Waktu" required :error="identityForm.errors.timezone" />
-                                <AppDatePicker v-model="identityForm.operational_start_date" label="Tanggal Operasional Mulai" :error="identityForm.errors.operational_start_date" />
+                                <AppDatePicker v-model="identityForm.operational_start_date" label="Tanggal Operasional Mulai" :error="identityForm.errors.operational_start_date" class="sm:col-span-2" />
                             </div>
-                            <div class="flex justify-end gap-2 border-t border-outline-variant pt-4">
+                            <AppTextarea v-model="identityForm.address" label="Alamat" :rows="3" :error="identityForm.errors.address" />
+                            <div class="flex flex-wrap items-center justify-end gap-2 border-t border-outline-variant pt-4">
                                 <AppButton type="submit" :loading="identityForm.processing" :disabled="identityForm.processing" icon="save">Simpan Identitas</AppButton>
                             </div>
                         </form>
-                    </AppCard>
+                    </div>
 
-                    <AppCard v-show="activeTab === 'lending-system'" bordered>
-                        <h2 class="mb-1 text-lg font-bold text-primary">Sistem Pinjaman</h2>
-                        <p class="mb-5 text-sm text-on-surface-variant">Default jasa, jangka, dan metode pembulatan angsuran per produk pinjaman.</p>
-                        <div v-if="!lendingForm.products.length" class="rounded-lg border border-outline-variant bg-surface-container-low p-4 text-sm text-on-surface-variant">Belum ada produk pinjaman.</div>
-                        <div v-else class="space-y-4">
-                            <div v-for="(product, idx) in lendingForm.products" :key="product.row_id" class="grid gap-4 rounded-lg border border-outline-variant p-4 sm:grid-cols-2 lg:grid-cols-4">
-                                <div class="sm:col-span-2 lg:col-span-1">
-                                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Produk</p>
-                                    <p class="mt-1 font-bold text-primary">{{ product.code }}</p>
-                                    <p class="text-sm text-on-surface-variant">{{ product.name }}</p>
-                                </div>
-                                <AppInput v-model.number="lendingForm.products[idx].default_interest_rate" label="Default Jasa (%)" type="number" step="0.01" :min="0" :max="100" :error="lendingForm.errors[`products.${idx}.default_interest_rate`]" />
-                                <AppInput v-model.number="lendingForm.products[idx].default_term_months" label="Jangka (bulan)" type="number" :min="1" :max="240" :error="lendingForm.errors[`products.${idx}.default_term_months`]" />
-                                <SmartSelect v-model="lendingForm.products[idx].rounding_method" :options="roundingOptions" label="Pembulatan" />
+                    <!-- Lending System -->
+                    <div v-else-if="activeTab === 'lending-system'" class="space-y-6">
+                        <div class="flex items-center gap-3">
+                            <AppIcon :name="tabMeta['lending-system'].icon" :tone="tabMeta['lending-system'].tone" :container-size="11" />
+                            <div>
+                                <h2 class="text-xl font-bold text-primary">{{ tabMeta['lending-system'].title }}</h2>
+                                <p class="text-sm text-on-surface-variant">{{ tabMeta['lending-system'].subtitle }}</p>
                             </div>
                         </div>
-                        <div class="mt-5 flex justify-end gap-2 border-t border-outline-variant pt-4">
-                            <AppButton type="button" variant="outline" :loading="syncLoading" :disabled="syncLoading || !lendingForm.products.length" icon="sync" @click="syncRounding">Sinkronkan ke Pinjaman</AppButton>
-                            <AppButton type="button" :loading="lendingForm.processing" :disabled="lendingForm.processing || !lendingForm.products.length" icon="save" @click="submitLending">Simpan Sistem Pinjaman</AppButton>
-                        </div>
-                    </AppCard>
 
-                    <AppCard v-show="activeTab === 'offline'" bordered>
-                        <h2 class="mb-1 text-lg font-bold text-primary">Akses Offline</h2>
-                        <p class="mb-5 text-sm text-on-surface-variant">
-                            Aktifkan agar satu pengguna terpilih tetap dapat menginput, mengedit, dan menghapus data saat offline di desktop dan Android.
-                        </p>
-                        <div class="mb-5 flex flex-wrap items-center gap-3 rounded-lg bg-surface-container-low p-4">
-                            <AppBadge tone="primary-soft">Mutasi menunggu sinkron</AppBadge>
-                            <span class="text-lg font-bold text-primary">{{ outbox.pending }}</span>
-                            <AppBadge tone="error-soft">Gagal</AppBadge>
-                            <span class="text-lg font-bold text-error">{{ outbox.failed }}</span>
-                            <AppBadge tone="success-soft">Tersinkron</AppBadge>
-                            <span class="text-lg font-bold text-success">{{ outbox.synced }}</span>
+                        <div v-if="!lendingForm.products.length" class="rounded-2xl border border-dashed border-outline-variant bg-surface-container-low p-12 text-center">
+                            <AppIcon name="inventory_2" class="text-5xl text-on-surface-variant" />
+                            <p class="mt-3 text-sm font-bold text-primary">Belum ada produk pinjaman</p>
+                            <p class="mt-1 text-xs text-on-surface-variant">Tambahkan produk pinjaman terlebih dahulu untuk mengatur default parameter.</p>
                         </div>
+
+                        <div v-else class="grid gap-4 md:grid-cols-2">
+                            <div v-for="(product, idx) in lendingForm.products" :key="product.row_id" class="group relative overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm transition-all hover:border-primary-container hover:shadow-md">
+                                <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary to-secondary opacity-0 transition-opacity group-hover:opacity-100" />
+                                <div class="mb-4 flex items-start gap-3">
+                                    <div class="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary shadow-md shadow-primary/20">
+                                        <AppIcon name="savings" class="text-xl" />
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="font-bold text-primary">{{ product.name }}</p>
+                                        <code class="mt-0.5 inline-block rounded bg-surface-container px-1.5 py-0.5 font-mono text-xs text-on-surface-variant">{{ product.code }}</code>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <AppInput v-model.number="lendingForm.products[idx].default_interest_rate" label="Default Jasa (%)" type="number" step="0.01" :min="0" :max="100" :error="lendingForm.errors[`products.${idx}.default_interest_rate`]" />
+                                    <AppInput v-model.number="lendingForm.products[idx].default_term_months" label="Jangka (bulan)" type="number" :min="1" :max="240" :error="lendingForm.errors[`products.${idx}.default_term_months`]" />
+                                    <SmartSelect v-model="lendingForm.products[idx].rounding_method" :options="roundingOptions" label="Pembulatan" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="lendingForm.products.length" class="flex flex-col gap-3 border-t border-outline-variant pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                            <div class="flex min-w-0 items-start gap-2 text-xs text-on-surface-variant sm:items-center">
+                                <AppIcon name="sync" tone="info" :container-size="8" class="shrink-0" />
+                                <span>Terapkan pembulatan ke pinjaman draft/verified dan generate ulang jadwal.</span>
+                            </div>
+                            <div class="flex shrink-0 flex-wrap gap-2">
+                                <AppButton type="button" size="compact" variant="outline" :loading="syncLoading" :disabled="syncLoading" icon="sync" @click="syncRounding">Sinkronkan</AppButton>
+                                <AppButton type="button" size="compact" :loading="lendingForm.processing" :disabled="lendingForm.processing" icon="save" @click="submitLending">Simpan</AppButton>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Offline -->
+                    <div v-else-if="activeTab === 'offline'" class="space-y-6">
+                        <div class="flex items-center gap-3">
+                            <AppIcon :name="tabMeta.offline.icon" :tone="tabMeta.offline.tone" :container-size="11" />
+                            <div>
+                                <h2 class="text-xl font-bold text-primary">{{ tabMeta.offline.title }}</h2>
+                                <p class="text-sm text-on-surface-variant">{{ tabMeta.offline.subtitle }}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-3 sm:grid-cols-3">
+                            <div class="rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
+                                <div class="flex items-center justify-between">
+                                    <AppBadge tone="primary-soft">Menunggu</AppBadge>
+                                    <AppIcon name="schedule" tone="primary" :container-size="8" />
+                                </div>
+                                <p class="mt-3 text-3xl font-bold tabular-nums text-primary">{{ outbox.pending }}</p>
+                                <p class="mt-1 text-xs text-on-surface-variant">Mutasi belum sinkron</p>
+                            </div>
+                            <div class="rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
+                                <div class="flex items-center justify-between">
+                                    <AppBadge tone="error-soft">Gagal</AppBadge>
+                                    <AppIcon name="error" tone="danger" :container-size="8" />
+                                </div>
+                                <p class="mt-3 text-3xl font-bold tabular-nums text-error">{{ outbox.failed }}</p>
+                                <p class="mt-1 text-xs text-on-surface-variant">Perlu ditangani</p>
+                            </div>
+                            <div class="rounded-2xl border border-outline-variant bg-surface-container-lowest p-4">
+                                <div class="flex items-center justify-between">
+                                    <AppBadge tone="success-soft">Tersinkron</AppBadge>
+                                    <AppIcon name="check_circle" tone="success" :container-size="8" />
+                                </div>
+                                <p class="mt-3 text-3xl font-bold tabular-nums text-success">{{ outbox.synced }}</p>
+                                <p class="mt-1 text-xs text-on-surface-variant">Berhasil terkirim</p>
+                            </div>
+                        </div>
+
                         <form class="space-y-5" @submit.prevent="submitOffline">
-                            <div class="flex items-center justify-between rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3">
-                                <div>
-                                    <p class="text-sm font-bold text-primary">Aktifkan Akses Offline</p>
-                                    <p class="text-xs text-on-surface-variant">Jika nonaktif, mode offline akan kembali hanya-baca.</p>
+                            <div class="flex items-center justify-between rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
+                                <div class="flex items-center gap-3">
+                                    <AppIcon name="power_settings_new" tone="primary" :container-size="9" />
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-bold text-primary">Aktifkan Akses Offline</p>
+                                        <p class="mt-0.5 text-xs text-on-surface-variant">Jika nonaktif, mode offline akan kembali hanya-baca.</p>
+                                    </div>
                                 </div>
                                 <AppSwitch v-model="offlineForm.is_enabled" />
                             </div>
@@ -377,117 +458,114 @@ function applySignatureStarter() {
                                 placeholder="Pilih satu pengguna"
                                 :options="offlineUserOptions"
                                 :required="offlineForm.is_enabled"
+                                :disabled="!offlineForm.is_enabled"
                                 hint="Hanya satu pengguna per tenant yang dapat diizinkan."
                             />
                             <p v-if="offlineForm.errors.user_id" class="text-sm text-error">{{ offlineForm.errors.user_id }}</p>
                             <p v-if="offlineForm.errors.is_enabled" class="text-sm text-error">{{ offlineForm.errors.is_enabled }}</p>
-                            <div class="flex justify-end border-t border-outline-variant pt-4">
+                            <div class="flex flex-wrap justify-end gap-2 border-t border-outline-variant pt-4">
                                 <AppButton type="submit" icon="save" :loading="offlineForm.processing" :disabled="offlineForm.processing">
                                     Simpan Pengaturan Offline
                                 </AppButton>
                             </div>
                         </form>
-                    </AppCard>
-                    <AppCard v-show="activeTab === 'logo'" bordered>
-                        <h2 class="mb-1 text-lg font-bold text-primary">Logo Lembaga</h2>
-                        <p class="mb-5 text-sm text-on-surface-variant">Logo akan tampil di sidebar aplikasi. Format: PNG, JPG, atau WebP. Maks 2 MB.</p>
-                        <div class="flex flex-col items-center gap-5">
-                            <div class="grid size-40 place-items-center overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest">
-                                <img v-if="logoPreview" :src="logoPreview" alt="Logo" class="size-full object-contain" />
-                                <AppIcon v-else name="image" class="text-5xl text-on-surface-variant" />
+                    </div>
+
+                    <!-- Logo -->
+                    <div v-else-if="activeTab === 'logo'" class="space-y-6">
+                        <div class="flex items-center gap-3">
+                            <AppIcon :name="tabMeta.logo.icon" :tone="tabMeta.logo.tone" :container-size="11" />
+                            <div>
+                                <h2 class="text-xl font-bold text-primary">{{ tabMeta.logo.title }}</h2>
+                                <p class="text-sm text-on-surface-variant">{{ tabMeta.logo.subtitle }}</p>
                             </div>
-                            <form class="w-full space-y-3" @submit.prevent="submitLogo">
+                        </div>
+
+                        <div class="grid gap-6 md:grid-cols-[14rem_1fr] md:items-center">
+                            <div class="flex justify-center">
+                                <div class="relative grid size-56 place-items-center overflow-hidden rounded-3xl border-2 border-dashed border-outline-variant bg-surface-container-lowest shadow-inner">
+                                    <img v-if="logoPreview" :src="logoPreview" alt="Logo" class="size-full object-contain" />
+                                    <div v-else class="text-center">
+                                        <AppIcon name="image" class="text-5xl text-on-surface-variant" />
+                                        <p class="mt-2 text-xs text-on-surface-variant">Belum ada logo</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <form class="space-y-4" @submit.prevent="submitLogo">
                                 <label
-                                    class="block cursor-pointer rounded-lg border-2 border-dashed border-outline-variant bg-surface-container-lowest p-6 text-center transition-colors hover:border-primary hover:bg-surface-container-low"
-                                    :class="logoDragOver ? 'border-primary bg-primary-container/20' : ''"
+                                    class="block cursor-pointer rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container-lowest p-8 text-center transition-all hover:border-primary hover:bg-primary-container/10"
+                                    :class="logoDragOver ? 'border-primary bg-primary-container/20 scale-[1.01]' : ''"
                                     @dragover.prevent="logoDragOver = true"
                                     @dragleave="logoDragOver = false"
                                     @drop="onLogoDrop"
                                 >
                                     <input type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" @change="onLogoChange" />
-                                    <AppIcon name="upload" class="text-2xl text-on-surface-variant" />
-                                    <p class="mt-2 text-sm font-bold text-primary">Tarik gambar ke sini atau klik untuk pilih</p>
+                                    <div class="mx-auto grid size-12 place-items-center rounded-xl bg-primary-container/30 text-primary">
+                                        <AppIcon name="cloud_upload" class="text-2xl" />
+                                    </div>
+                                    <p class="mt-3 text-sm font-bold text-primary">Tarik gambar ke sini atau klik untuk pilih</p>
                                     <p class="mt-1 text-xs text-on-surface-variant">PNG / JPG / WebP · Maks 2 MB</p>
                                 </label>
                                 <p v-if="logoForm.errors.logo" class="text-sm text-error">{{ logoForm.errors.logo }}</p>
-                                <div class="flex justify-end gap-2 border-t border-outline-variant pt-4">
+                                <div class="flex flex-wrap justify-end gap-2 border-t border-outline-variant pt-4">
                                     <AppButton v-if="props.logoUrl" type="button" variant="danger" icon="delete" :loading="logoForm.processing" @click="destroyLogo">Hapus Logo</AppButton>
                                     <AppButton type="submit" :loading="logoForm.processing" :disabled="!logoForm.logo || logoForm.processing" icon="upload">Unggah Logo</AppButton>
                                 </div>
                             </form>
                         </div>
-                    </AppCard>
+                    </div>
 
-                    <AppCard v-show="activeTab === 'signatures'" bordered>
-                        <h2 class="mb-1 text-lg font-bold text-primary">Tanda Tangan</h2>
-                        <p class="mb-4 text-sm text-on-surface-variant">
-                            Blok penandatangan per jenis laporan. Disimpan per lembaga.
-                        </p>
-                        <div class="mb-5 flex items-start gap-3 rounded-xl border border-outline-variant bg-surface-container-low p-4">
-                            <AppIcon name="info" class="mt-0.5 text-primary" />
-                            <p class="text-sm text-on-surface-variant">
+                    <!-- Signatures -->
+                    <div v-else-if="activeTab === 'signatures'" class="space-y-6">
+                        <div class="flex items-center gap-3">
+                            <AppIcon :name="tabMeta.signatures.icon" :tone="tabMeta.signatures.tone" :container-size="11" />
+                            <div>
+                                <h2 class="text-xl font-bold text-primary">{{ tabMeta.signatures.title }}</h2>
+                                <p class="text-sm text-on-surface-variant">{{ tabMeta.signatures.subtitle }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3 rounded-2xl border border-info/30 bg-info-container/30 p-4">
+                            <AppIcon name="tips_and_updates" tone="info" :container-size="9" />
+                            <p class="text-sm text-on-surface">
                                 Tanda tangan gambar akan otomatis disisipkan ke PDF melalui placeholder
-                                <code class="rounded bg-surface-container px-1.5 py-0.5 font-mono text-xs">{ttd_image}</code>
+                                <code class="rounded bg-surface-container px-1.5 py-0.5 font-mono text-xs font-bold">{ttd_image}</code>
                                 atau langsung ke baris kosong pertama pada template.
                             </p>
                         </div>
 
-                        <div class="mb-6 rounded-xl border border-outline-variant bg-surface-container-low p-4">
-                            <div class="mb-3 flex items-center justify-between gap-4">
-                                <h3 class="text-base font-bold text-primary">Tanda Tangan Digital</h3>
+                        <div class="rounded-2xl border border-outline-variant bg-surface-container-low p-4">
+                            <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="flex items-center gap-3">
+                                    <AppIcon name="gesture" tone="primary" :container-size="9" />
+                                    <div>
+                                        <p class="text-base font-bold text-primary">Tanda Tangan Digital</p>
+                                        <p class="text-xs text-on-surface-variant">Gambar atau unggah gambar tanda tangan</p>
+                                    </div>
+                                </div>
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <AppButton
-                                        type="button"
-                                        variant="secondary"
-                                        size="compact"
-                                        icon="draw"
-                                        @click="openSignaturePad"
-                                    >
-                                        Gambar Tanda Tangan
-                                    </AppButton>
-                                    <label>
-                                        <input
-                                            type="file"
-                                            accept="image/png,image/jpeg,image/webp"
-                                            class="sr-only"
-                                            @change="handleUploadSignatureImage"
-                                        />
-                                        <AppButton
-                                            variant="secondary"
-                                            size="compact"
-                                            icon="upload"
-                                            @click="event => event.currentTarget.closest('label')?.querySelector('input')?.click()"
-                                        >
-                                            Unggah Gambar
-                                        </AppButton>
+                                    <AppButton type="button" variant="secondary" size="compact" icon="draw" @click="openSignaturePad">Gambar</AppButton>
+                                    <label class="cursor-pointer">
+                                        <input type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" @change="handleUploadSignatureImage" />
+                                        <span class="inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-outline-variant bg-surface-container-lowest px-3 text-sm font-bold text-primary shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-container-low hover:shadow-lg active:scale-[0.97] active:shadow-sm">
+                                            <AppIcon name="upload" class="text-base leading-none" />
+                                            Unggah
+                                        </span>
                                     </label>
-                                    <AppButton
-                                        v-if="currentSignatureImageUrl"
-                                        type="button"
-                                        variant="danger"
-                                        size="compact"
-                                        icon="delete"
-                                        :loading="signatureDeleteForm.processing"
-                                        @click="removeSignatureImage"
-                                    >
-                                        Hapus
-                                    </AppButton>
+                                    <AppButton v-if="currentSignatureImageUrl" type="button" variant="danger" size="compact" icon="delete" :loading="signatureDeleteForm.processing" @click="removeSignatureImage">Hapus</AppButton>
                                 </div>
                             </div>
-
-                            <div v-if="currentSignatureImageUrl" class="flex justify-center rounded-lg bg-white p-4">
+                            <div v-if="currentSignatureImageUrl" class="flex justify-center rounded-xl border border-outline-variant bg-white p-6">
                                 <img :src="currentSignatureImageUrl" alt="Tanda Tangan Digital" class="max-h-32 object-contain" />
                             </div>
-                            <p v-else class="py-6 text-center text-sm text-on-surface-variant">
-                                Belum ada tanda tangan digital untuk jenis dokumen ini.
-                            </p>
-                            <p v-if="signatureImageForm.errors.image" class="mt-2 text-sm text-error">
-                                {{ signatureImageForm.errors.image }}
-                            </p>
-                            <p v-if="signatureDeleteForm.errors.report_key" class="mt-2 text-sm text-error">
-                                {{ signatureDeleteForm.errors.report_key }}
-                            </p>
+                            <div v-else class="rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest py-10 text-center">
+                                <AppIcon name="draw" class="text-4xl text-on-surface-variant" />
+                                <p class="mt-2 text-sm text-on-surface-variant">Belum ada tanda tangan digital untuk jenis dokumen ini.</p>
+                            </div>
+                            <p v-if="signatureImageForm.errors.image" class="mt-2 text-sm text-error">{{ signatureImageForm.errors.image }}</p>
+                            <p v-if="signatureDeleteForm.errors.report_key" class="mt-2 text-sm text-error">{{ signatureDeleteForm.errors.report_key }}</p>
                         </div>
+
                         <form class="space-y-5" @submit.prevent="submitSignatures">
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
                                 <div class="min-w-0 flex-1">
@@ -498,43 +576,45 @@ function applySignatureStarter() {
                                         required
                                     />
                                 </div>
-                                <AppButton
-                                    type="button"
-                                    variant="secondary"
-                                    size="default"
-                                    class="shrink-0"
-                                    icon="table"
-                                    @click="applySignatureStarter"
-                                >
+                                <AppButton type="button" variant="secondary" size="default" class="shrink-0" icon="auto_awesome" @click="applySignatureStarter">
                                     Isi Template 1×3
                                 </AppButton>
                             </div>
-                            <AppRichEditor
-                                :key="signatureReportKey"
-                                v-model="currentSignatureHtml"
-                                placeholder="Sisipkan tabel penandatangan (ikon tabel di toolbar)…"
-                            />
-                            <p v-if="signatureForm.errors.templates" class="text-sm text-error">
-                                {{ signatureForm.errors.templates }}
-                            </p>
-                            <div class="flex justify-end border-t border-outline-variant pt-4">
-                                <AppButton
-                                    type="submit"
-                                    icon="save"
-                                    :loading="signatureForm.processing"
-                                    :disabled="signatureForm.processing"
-                                >
-                                    Simpan Tanda Tangan
-                                </AppButton>
+                            <AppRichEditor :key="signatureReportKey" v-model="currentSignatureHtml" placeholder="Sisipkan tabel penandatangan (ikon tabel di toolbar)…" />
+                            <p v-if="signatureForm.errors.templates" class="text-sm text-error">{{ signatureForm.errors.templates }}</p>
+                            <div class="flex flex-wrap justify-end gap-2 border-t border-outline-variant pt-4">
+                                <AppButton type="submit" icon="save" :loading="signatureForm.processing" :disabled="signatureForm.processing">Simpan Tanda Tangan</AppButton>
                             </div>
                         </form>
-                    </AppCard>
-
-                    <AppModal v-model="showSignaturePad" title="Gambar Tanda Tangan" size="md">
-                        <SignaturePad ref="signatureImagePad" @save="saveSignatureImage" @cancel="showSignaturePad = false" />
-                    </AppModal>
-                </div>
+                    </div>
+                    </div>
+                </Transition>
             </div>
+
+            <AppModal v-model="showSignaturePad" title="Gambar Tanda Tangan" size="md">
+                <SignaturePad ref="signatureImagePad" @save="saveSignatureImage" @cancel="showSignaturePad = false" />
+            </AppModal>
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.tab-fade-enter-active,
+.tab-fade-leave-active {
+    transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tab-fade-enter-from {
+    opacity: 0;
+    transform: translateY(4px);
+}
+.tab-fade-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+}
+@media (prefers-reduced-motion: reduce) {
+    .tab-fade-enter-active,
+    .tab-fade-leave-active {
+        transition: none;
+    }
+}
+</style>

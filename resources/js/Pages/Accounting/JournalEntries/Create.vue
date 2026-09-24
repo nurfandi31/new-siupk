@@ -142,6 +142,7 @@ function submit() {
 }
 
 function fetchHistory() {
+    if (!historyForm.value.account_row_id) return;
     const params = {
         account_row_id: historyForm.value.account_row_id,
         period: historyForm.value.period,
@@ -149,7 +150,11 @@ function fetchHistory() {
     if (historyForm.value.period === 'daily') params.date = historyForm.value.date;
     else if (historyForm.value.period === 'monthly') params.month = historyForm.value.month;
     else if (historyForm.value.period === 'yearly') params.year = historyForm.value.year;
-    router.get(pagePath, params, { preserveState: true, preserveScroll: true });
+    router.get(pagePath, params, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['history'],
+    });
 }
 
 function resetHistory() {
@@ -160,7 +165,12 @@ function resetHistory() {
         month: props.today.slice(0, 7),
         year: props.today.slice(0, 4),
     };
-    router.get(pagePath, {}, { preserveState: true, preserveScroll: true });
+    historyModalOpen.value = false;
+    router.get(pagePath, {}, {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['history'],
+    });
 }
 
 const flash = computed(() => page.props.flash?.success);
@@ -225,12 +235,6 @@ const periodValue = computed({
     },
 });
 
-const historyModalOpen = ref(false);
-
-watch(() => props.history?.account, (account) => {
-    if (account) historyModalOpen.value = true;
-});
-
 const historySummary = computed(() => {
     if (!historyRows.value.length) return null;
     const totalDebit = historyRows.value.reduce((sum, row) => sum + (row.debit || 0), 0);
@@ -244,12 +248,18 @@ const historySummary = computed(() => {
     };
 });
 
-function closeHistoryModal() {
-    historyModalOpen.value = false;
-}
+const historyModalOpen = ref(false);
+
+watch(() => props.history?.account, (account) => {
+    if (account) historyModalOpen.value = true;
+});
 
 function openHistoryModal() {
     if (props.history?.account) historyModalOpen.value = true;
+}
+
+function closeHistoryModal() {
+    historyModalOpen.value = false;
 }
 </script>
 
@@ -257,11 +267,16 @@ function openHistoryModal() {
     <Head title="Jurnal Umum" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header>
-                <h1 class="text-2xl font-bold text-primary sm:text-3xl">Input Jurnal Umum</h1>
-                <p class="mt-1 text-on-surface-variant">Catat transaksi jurnal manual dengan satu akun debit dan satu akun kredit.</p>
-            </header>
+            <!-- Compact header bar (plain flex, tidak dibungkus card) -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">Input Jurnal Umum</h1>
+                    <p class="mt-1 text-on-surface-variant">Catat transaksi jurnal manual dengan satu akun debit dan satu akun kredit.</p>
+                </div>
+                <AppButton v-if="props.history?.account" type="button" variant="secondary" icon="history" size="compact" @click="openHistoryModal">Buka Riwayat</AppButton>
+            </div>
 
+            <!-- Flash entry (success, full-width) -->
             <AppCard v-if="flashEntry">
                 <div class="mb-5 flex items-start gap-3">
                     <div class="grid size-12 shrink-0 place-items-center rounded-full bg-secondary-container text-secondary">
@@ -312,73 +327,96 @@ function openHistoryModal() {
                 <p class="text-sm text-primary">{{ page.props.flash.success }}</p>
             </AppCard>
 
-            <AppCard>
-                <form class="space-y-5" @submit.prevent="submit">
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <AppDatePicker v-model="form.transaction_date" label="Tanggal Transaksi" required :error="form.errors.transaction_date" />
-                        <SmartSelect v-model="form.transaction_type" :options="props.transactionTypes" label="Jenis Transaksi" placeholder="Pilih jenis transaksi" required :error="form.errors.transaction_type" />
-                    </div>
-
-                    <AppTextarea
-                        v-if="!isInventory"
-                        v-model="form.description"
-                        label="Keterangan / Deskripsi"
-                        required
-                        :error="form.errors.description"
-                        placeholder="Contoh: Pencatatan biaya operasional bulanan"
-                    />
-
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <SmartSelect v-model="form.sumber_dana_row_id" :options="sumberDanaOptions" :label="sumberDanaLabel + ' (Kredit)'" placeholder="Pilih akun" :disabled="!currentType" required :error="form.errors.sumber_dana_row_id" />
-                        <SmartSelect v-model="form.disimpan_ke_row_id" :options="disimpanKeOptions" :label="disimpanKeLabel + ' (Debit)'" placeholder="Pilih akun" :disabled="!currentType" required :error="form.errors.disimpan_ke_row_id" />
-                    </div>
-
-                    <p v-if="form.errors.sumber_dana_row_id || form.errors.disimpan_ke_row_id" class="text-sm text-error">{{ form.errors.sumber_dana_row_id || form.errors.disimpan_ke_row_id }}</p>
-
-                    <template v-if="isInventory">
-                        <div class="grid gap-4 sm:grid-cols-3">
-                            <AppInput v-model="form.reference" label="Relasi" :error="form.errors.reference" placeholder="No referensi / vendor" />
-                            <AppInput v-model="form.asset_name" label="Nama Barang" required :error="form.errors.asset_name" placeholder="Contoh: Laptop" />
-                            <AppInput v-model="form.asset_quantity" label="Jml. Unit" type="number" min="1" required :error="form.errors.asset_quantity" placeholder="1" />
-                        </div>
-                        <div class="grid gap-4 sm:grid-cols-3">
-                            <AppCurrencyInput v-model="form.asset_unit_cost" label="Harga Satuan" icon="payments" :min="1" required :error="form.errors.asset_unit_cost" placeholder="0" />
-                            <AppInput
-                                v-model="form.asset_useful_life_months"
-                                label="Umur Eko. (bulan)"
-                                type="number"
-                                :min="currentType === 'pembelian_aset_tanah' ? 0 : 1"
-                                required
-                                :error="form.errors.asset_useful_life_months"
-                                :placeholder="currentType === 'pembelian_aset_tanah' ? '0' : '48'"
-                                :hint="currentType === 'pembelian_aset_tanah' ? 'Tanah: 0 = tidak disusutkan' : null"
-                            />
-                            <AppCurrencyInput v-model="form.amount" label="Harga Perolehan" icon="payments" :min="1" required readonly :error="form.errors.amount" placeholder="0" hint="Otomatis: unit × harga satuan" />
+            <!-- 2-KOLOM: Form Jurnal (kiri 8/12) + Riwayat Transaksi Akun (kanan 4/12) -->
+            <div class="grid gap-6 lg:grid-cols-12">
+                <!-- KIRI: Form Input Jurnal (8/12) -->
+                <div class="lg:col-span-8">
+                    <AppCard>
+                    <template #header>
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-9 items-center justify-center rounded-xl bg-primary-container text-primary">
+                                <AppIcon name="edit_note" class="text-lg" />
+                            </span>
+                            <div>
+                                <h2 class="text-base font-bold text-on-surface">Form Input Jurnal</h2>
+                                <p class="mt-0.5 text-xs text-on-surface-variant">Catat transaksi jurnal manual (1 debit + 1 kredit).</p>
+                            </div>
                         </div>
                     </template>
 
-                    <template v-else>
-                        <AppInput v-model="form.reference" label="Relasi (opsional)" :error="form.errors.reference" placeholder="No referensi / catatan tambahan" />
-                        <AppCurrencyInput v-model="form.amount" label="Nominal" icon="payments" :min="1" required :error="form.errors.amount" placeholder="0" />
+                    <form class="space-y-4" @submit.prevent="submit">
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <AppDatePicker v-model="form.transaction_date" label="Tanggal Transaksi" required :error="form.errors.transaction_date" />
+                            <SmartSelect v-model="form.transaction_type" :options="props.transactionTypes" label="Jenis Transaksi" placeholder="Pilih jenis transaksi" required :error="form.errors.transaction_type" />
+                        </div>
+
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <SmartSelect v-model="form.sumber_dana_row_id" :options="sumberDanaOptions" :label="sumberDanaLabel + ' (Kredit)'" placeholder="Pilih akun" :disabled="!currentType" required :error="form.errors.sumber_dana_row_id" />
+                            <SmartSelect v-model="form.disimpan_ke_row_id" :options="disimpanKeOptions" :label="disimpanKeLabel + ' (Debit)'" placeholder="Pilih akun" :disabled="!currentType" required :error="form.errors.disimpan_ke_row_id" />
+                        </div>
+
+                        <p v-if="form.errors.sumber_dana_row_id || form.errors.disimpan_ke_row_id" class="text-sm text-error">{{ form.errors.sumber_dana_row_id || form.errors.disimpan_ke_row_id }}</p>
+
+                        <template v-if="isInventory">
+                            <div class="grid gap-4 sm:grid-cols-3">
+                                <AppInput v-model="form.reference" label="Relasi" :error="form.errors.reference" placeholder="No referensi / vendor" />
+                                <AppInput v-model="form.asset_name" label="Nama Barang" required :error="form.errors.asset_name" placeholder="Contoh: Laptop" />
+                                <AppInput v-model="form.asset_quantity" label="Jml. Unit" type="number" min="1" required :error="form.errors.asset_quantity" placeholder="1" />
+                            </div>
+                            <div class="grid gap-4 sm:grid-cols-3">
+                                <AppCurrencyInput v-model="form.asset_unit_cost" label="Harga Satuan" icon="payments" :min="1" required :error="form.errors.asset_unit_cost" placeholder="0" />
+                                <AppInput
+                                    v-model="form.asset_useful_life_months"
+                                    label="Umur Eko. (bulan)"
+                                    type="number"
+                                    :min="currentType === 'pembelian_aset_tanah' ? 0 : 1"
+                                    required
+                                    :error="form.errors.asset_useful_life_months"
+                                    :placeholder="currentType === 'pembelian_aset_tanah' ? '0' : '48'"
+                                    :hint="currentType === 'pembelian_aset_tanah' ? 'Tanah: 0 = tidak disusutkan' : null"
+                                />
+                                <AppCurrencyInput v-model="form.amount" label="Harga Perolehan" icon="payments" :min="1" required readonly :error="form.errors.amount" placeholder="0" hint="Otomatis: unit × harga satuan" />
+                            </div>
+                        </template>
+
+                        <template v-else>
+                            <AppInput v-model="form.reference" label="Relasi (opsional)" :error="form.errors.reference" placeholder="No referensi / catatan tambahan" />
+                            <AppCurrencyInput v-model="form.amount" label="Nominal" icon="payments" :min="1" required :error="form.errors.amount" placeholder="0" />
+                        </template>
+
+                        <AppTextarea
+                            v-if="!isInventory"
+                            v-model="form.description"
+                            label="Keterangan / Deskripsi"
+                            required
+                            :error="form.errors.description"
+                            placeholder="Contoh: Pencatatan biaya operasional bulanan"
+                        />
+
+                        <div class="flex gap-3 border-t border-outline-variant pt-4">
+                            <a :href="pagePath" class="flex-1"><AppButton class="w-full" variant="secondary" type="button">Reset</AppButton></a>
+                            <AppButton class="flex-1" type="submit" :loading="form.processing" :disabled="form.processing" icon="save">Catat Jurnal</AppButton>
+                        </div>
+                    </form>
+                    </AppCard>
+                </div>
+
+                <!-- KANAN: Riwayat Transaksi Akun (4/12) -->
+                <div class="lg:col-span-4">
+                    <AppCard>
+                    <template #header>
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-9 items-center justify-center rounded-xl bg-secondary-container text-secondary">
+                                <AppIcon name="history" class="text-lg" />
+                            </span>
+                            <div>
+                                <h2 class="text-base font-bold text-on-surface">Riwayat Transaksi Akun</h2>
+                                <p class="mt-0.5 text-xs text-on-surface-variant">Pergerakan debit/kredit akun pada periode tertentu.</p>
+                            </div>
+                        </div>
                     </template>
 
-                    <div class="flex justify-end gap-3 border-t border-outline-variant pt-4">
-                        <a :href="pagePath"><AppButton variant="secondary" type="button">Reset</AppButton></a>
-                        <AppButton type="submit" :loading="form.processing" :disabled="form.processing" icon="save">Catat Jurnal</AppButton>
-                    </div>
-                </form>
-            </AppCard>
-
-            <AppCard>
-                <template #header>
-                    <div>
-                        <h2 class="text-xl font-bold text-primary">Riwayat Transaksi Akun</h2>
-                        <p class="mt-1 text-sm text-on-surface-variant">Lihat pergerakan debit/kredit suatu akun pada periode tertentu.</p>
-                    </div>
-                </template>
-
-                <form class="space-y-5" @submit.prevent="fetchHistory">
-                    <div class="grid gap-4 lg:grid-cols-3">
+                    <form class="space-y-4" @submit.prevent="fetchHistory">
                         <SmartSelect v-model="historyForm.account_row_id" :options="props.accountOptions" label="Akun" placeholder="Pilih akun" required searchable search-placeholder="Cari akun..." />
                         <AppRadioGroup v-model="historyForm.period" :options="periodOptions" label="Periode" required />
                         <AppDatePicker
@@ -387,16 +425,15 @@ function openHistoryModal() {
                             :mode="historyForm.period === 'daily' ? 'date' : historyForm.period === 'monthly' ? 'month' : 'year'"
                             :label="periodFieldLabel"
                         />
-                    </div>
 
-                    <div class="flex justify-end gap-3 border-t border-outline-variant pt-4">
-                        <AppButton variant="secondary" type="button" icon="restart_alt" @click="resetHistory">Reset</AppButton>
-                        <AppButton type="submit" :loading="historyLoading" icon="search">Tampilkan</AppButton>
-                    </div>
-                </form>
-
-                <AppEmptyState v-if="!props.history?.account" class="mt-6" icon="database" title="Pilih akun & periode" description="Pilih akun dan rentang waktu untuk melihat pergerakan debit/kredit." />
-            </AppCard>
+                        <div class="flex gap-3 border-t border-outline-variant pt-4">
+                            <AppButton class="flex-1" variant="secondary" type="button" icon="restart_alt" @click="resetHistory">Reset</AppButton>
+                            <AppButton class="flex-1" type="submit" :loading="historyLoading" icon="search">Tampilkan</AppButton>
+                        </div>
+                    </form>
+                    </AppCard>
+                </div>
+            </div>
         </div>
 
         <AppModal v-model="historyModalOpen" :title="`Riwayat · ${props.history?.account?.code ?? ''}`" size="full" @update:model-value="closeHistoryModal">
