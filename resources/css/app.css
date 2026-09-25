@@ -643,6 +643,62 @@
     transform: rotate(3deg) translate(0px, -4px);
 }
 
+/* ============================================== */
+/* SIDEBAR — Active menu highlight (plain button)  */
+/* ============================================== */
+
+/* Default sidebar item: transisi halus */
+.sidebar-item {
+    position: relative;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* ===== Item aktif — plain solid button, no accent, no ring ===== */
+.sidebar-item[data-sidebar-active='true'] {
+    background-color: var(--color-primary, #035c3f) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    border-radius: 0.5rem;
+}
+
+.sidebar-item[data-sidebar-active='true']:hover {
+    background-color: var(--color-primary-container, #0a7d57) !important;
+}
+
+/* Icon di item aktif: PUTIH + filled */
+.sidebar-item[data-sidebar-active='true'] > .material-symbols-outlined,
+.sidebar-item[data-sidebar-active='true'] .sidebar-icon-wrap {
+    color: #ffffff !important;
+    font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24 !important;
+}
+
+/* ===== Parent expanded (yang punya child aktif) — soft tint ===== */
+.sidebar-item.is-parent-active {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border-radius: 0.5rem;
+}
+
+.sidebar-item.is-parent-active > .material-symbols-outlined {
+    color: var(--color-primary-fixed, #c8efdc) !important;
+}
+
+/* Sembunyikan accent bar (tidak dipakai lagi) */
+.sidebar-active-bar {
+    display: none !important;
+}
+
+/* Collapsed mode: tetap solid color, tanpa ring */
+@media (min-width: 1024px) {
+    aside.sidebar-collapsed .sidebar-item[data-sidebar-active='true'] {
+        background-color: var(--color-primary, #035c3f) !important;
+    }
+}
+
+
+
+
+
 @media (prefers-reduced-motion: reduce) {
     .page-enter-active,
     .page-leave-active {

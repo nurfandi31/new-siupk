@@ -384,6 +384,7 @@ const sections = [
                         icon: 'fact_check',
                         children: [
                             { label: 'Rekap Desa', href: '/lending/reports/kolek-desa' },
+                            { label: 'Rekap Desa Individu', href: '/lending/reports/kolek-desa-individu' },
                             { label: 'Rincian Individu', href: '/lending/reports/kolek-individu' },
                         ],
                     },
@@ -409,6 +410,7 @@ const sections = [
                             { label: 'Daftar Pinjaman Lunas', icon: 'check_circle', href: '/lending/reports/paid' },
                             { label: 'Pinjaman Dihapusbukukan', icon: 'cancel', href: '/lending/reports/write-offs' },
                             { label: 'Pinjaman Dihapusbukukan Individu', icon: 'person_off', href: '/lending/reports/write-offs-individu' },
+                            { label: 'Anggota Hapus Buku Kelompok', icon: 'group_remove', href: '/lending/reports/write-offs/beneficiaries' },
                         ],
                     },
                     // === Phase 1: Tracking & Monitoring (tagihan & tunggakan) ===
@@ -438,6 +440,7 @@ const sections = [
                         children: [
                             { label: 'Kelompok Aktif', icon: 'group', href: '/lending/reports/groups/active' },
                             { label: 'Pemanfaat Aktif', icon: 'person', href: '/lending/reports/members/active' },
+                            { label: 'Pemanfaat Aktif Kelompok', icon: 'groups_2', href: '/lending/reports/beneficiaries/active' },
                         ],
                     },
                     { label: 'Jurnal Transaksi', href: '/accounting/reports/journals' },
@@ -621,7 +624,7 @@ function onParentItemClick(item, event) {
                                 class="sidebar-item group relative flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30"
                                 :class="[
                                     isActive(item)
-                                        ? 'bg-white/[0.06] text-white'
+                                        ? 'is-parent-active'
                                         : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100',
                                     sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '',
                                 ]"
@@ -632,7 +635,7 @@ function onParentItemClick(item, event) {
                             >
                                 <span
                                     v-if="isActive(item)"
-                                    class="absolute inset-y-0 left-0 w-1 rounded-r-full bg-secondary"
+                                    class="sidebar-active-bar absolute inset-y-0 left-0 w-1 rounded-r-full"
                                     aria-hidden="true"
                                 />
                                 <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors duration-150" />
@@ -645,7 +648,7 @@ function onParentItemClick(item, event) {
                                 class="sidebar-item group relative flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors duration-150"
                                 :class="[
                                     isActive(item)
-                                        ? 'bg-primary/25 text-white shadow-[inset_1px_0_0_0_rgb(255_255_255_/_0.1)]'
+                                        ? ''
                                         : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100',
                                     sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '',
                                 ]"
@@ -655,7 +658,7 @@ function onParentItemClick(item, event) {
                             >
                                 <span
                                     v-if="isActive(item)"
-                                    class="absolute inset-y-0 left-0 w-1 rounded-r-full bg-secondary"
+                                    class="sidebar-active-bar absolute inset-y-0 left-0 w-1 rounded-r-full"
                                     aria-hidden="true"
                                 />
                                 <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors duration-150" /><span class="text-sm font-semibold transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span>
@@ -668,9 +671,9 @@ function onParentItemClick(item, event) {
                                         <button
                                             v-if="child.children"
                                             type="button"
-                                            class="sidebar-item group relative flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30"
+                                            class="sidebar-item is-child group relative flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary/30"
                                             :class="isActive(child)
-                                                ? 'bg-white/[0.06] text-white'
+                                                ? ''
                                                 : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100'"
                                             :aria-expanded="Boolean(expanded[child.key])"
                                             :data-sidebar-active="isActive(child) ? 'true' : null"
@@ -678,7 +681,7 @@ function onParentItemClick(item, event) {
                                         >
                                             <span
                                                 v-if="isActive(child)"
-                                                class="absolute inset-y-0 left-[-9px] w-1 rounded-full bg-secondary"
+                                                class="sidebar-active-bar absolute inset-y-0 left-[-9px] w-1 rounded-full"
                                                 aria-hidden="true"
                                             />
                                             <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl transition-colors duration-150" />
@@ -688,16 +691,16 @@ function onParentItemClick(item, event) {
                                         <Link
                                             v-else-if="child.href"
                                             :href="child.href"
-                                            class="sidebar-item group relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-150"
+                                            class="sidebar-item is-child group relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-150"
                                             :class="isActive(child)
-                                                ? 'bg-primary/25 text-white shadow-[inset_1px_0_0_0_rgb(255_255_255_/_0.1)]'
+                                                ? ''
                                                 : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100'"
                                             :data-sidebar-active="isActive(child) ? 'true' : null"
                                             @click="closeMobileMenu"
                                         >
                                             <span
                                                 v-if="isActive(child)"
-                                                class="absolute inset-y-0 left-[-9px] w-1 rounded-full bg-secondary"
+                                                class="sidebar-active-bar absolute inset-y-0 left-[-9px] w-1 rounded-full"
                                                 aria-hidden="true"
                                             />
                                             <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl transition-colors duration-150" /><span class="text-sm font-semibold">{{ child.label }}</span>
@@ -710,19 +713,20 @@ function onParentItemClick(item, event) {
                                                     <Link
                                                         v-if="leaf.href"
                                                         :href="leaf.href"
-                                                        class="sidebar-item group relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-150"
+                                                        class="sidebar-item is-child group relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-150"
                                                         :class="isActive(leaf)
-                                                            ? 'bg-primary/25 text-white'
+                                                            ? ''
                                                             : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100'"
                                                         :data-sidebar-active="isActive(leaf) ? 'true' : null"
                                                         @click="closeMobileMenu"
                                                     >
                                                         <span
                                                             v-if="isActive(leaf)"
-                                                            class="absolute inset-y-0 left-[-9px] w-1 rounded-full bg-secondary"
+                                                            class="sidebar-active-bar absolute inset-y-0 left-[-9px] w-1 rounded-full"
                                                             aria-hidden="true"
                                                         />
-                                                        <span class="size-1.5 rounded-full bg-current" />{{ leaf.label }}
+                                                        <AppIcon v-if="leaf.icon" :name="leaf.icon" :filled="isActive(leaf)" class="text-base transition-colors duration-150" />
+                                                        <span v-else class="size-1.5 rounded-full bg-current" />{{ leaf.label }}
                                                     </Link>
                                                     <button v-else type="button" disabled class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-600" :title="`${leaf.label} belum tersedia`"><span class="size-1.5 rounded-full bg-current" />{{ leaf.label }}</button>
                                                 </template>
@@ -737,7 +741,20 @@ function onParentItemClick(item, event) {
 
                 <section v-if="user?.is_superadmin">
                     <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">Platform</h2>
-                    <Link v-for="item in platformNavigation" :key="item.label" :href="item.href" class="sidebar-item group relative flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors duration-150" :class="[isActive(item) ? 'bg-primary/25 text-white' : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100', sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '']" :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined" @click="closeMobileMenu"><span v-if="isActive(item)" class="absolute inset-y-0 left-0 w-1 rounded-r-full bg-secondary" aria-hidden="true" /><AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors duration-150" /><span class="text-sm font-semibold transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span></Link>
+                    <Link
+                        v-for="item in platformNavigation"
+                        :key="item.label"
+                        :href="item.href"
+                        class="sidebar-item group relative flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors duration-150"
+                        :class="[isActive(item) ? '' : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100', sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '']"
+                        :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined"
+                        :data-sidebar-active="isActive(item) ? 'true' : null"
+                        @click="closeMobileMenu"
+                    >
+                        <span v-if="isActive(item)" class="sidebar-active-bar absolute inset-y-0 left-0 w-1 rounded-r-full" aria-hidden="true" />
+                        <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors duration-150" />
+                        <span class="text-sm font-semibold transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span>
+                    </Link>
                 </section>
             </nav>
         </aside>
