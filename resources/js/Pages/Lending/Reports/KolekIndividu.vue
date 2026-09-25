@@ -11,6 +11,7 @@ const props = defineProps({
     month: { type: Number, required: true },
     period_label: { type: String, required: true },
     identity: { type: Object, required: true },
+    levels: { type: Array, default: () => [] },
     products: { type: Array, required: true },
     totals: { type: Object, required: true },
     filters: { type: Object, required: true },
@@ -71,9 +72,43 @@ const pdfUrl = computed(() => {
 });
 
 function kolekLabel(k) {
+    // Fallback untuk data yang tidak ikut config (legacy / 3 tingkat default)
     if (k === 1) return 'Lancar';
     if (k === 2) return 'Diragukan';
     return 'Macet';
+}
+
+// Levels list yang dipakai untuk badge warna kolek.
+const levelColumns = computed(() => {
+    if (props.levels && props.levels.length > 0) {
+        return props.levels;
+    }
+    return [
+        { level: 1, nama: 'Lancar', prosentase: 0.5, bucket_key: 'kolek1_lancar' },
+        { level: 2, nama: 'Diragukan', prosentase: 50, bucket_key: 'kolek2_diragukan' },
+        { level: 3, nama: 'Macet', prosentase: 100, bucket_key: 'kolek3_macet' },
+    ];
+});
+
+function kolekBadgeClass(level) {
+    if (!level) return 'text-on-surface-variant';
+    if (level <= 1) return 'text-secondary';
+    if (level === 2) return 'text-tertiary';
+    if (level === 3) return 'text-error';
+    return 'text-error font-bold'; // kolek 4 & 5 (lebih dari macet)
+}
+
+function kolekBadgeBgClass(level) {
+    if (!level) return 'bg-surface-variant/40 text-on-surface-variant';
+    if (level <= 1) return 'bg-secondary/15 text-secondary';
+    if (level === 2) return 'bg-tertiary/15 text-tertiary';
+    return 'bg-error/15 text-error font-bold';
+}
+
+function kolekLabelDynamic(level) {
+    if (!level) return '-';
+    const lvl = levelColumns.value.find((l) => l.level === level);
+    return lvl ? lvl.nama : `Tingkat ${level}`;
 }
 </script>
 
@@ -98,6 +133,17 @@ function kolekLabel(k) {
                     </a>
                 </div>
             </div>
+
+            <AppCard class="p-4">
+                <div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant">
+                    <span class="material-symbols-outlined text-base">rule</span>
+                    <span>Aturan kolek aktif:</span>
+                    <span v-for="lvl in levelColumns" :key="lvl.bucket_key" class="rounded-full bg-surface-variant/50 px-2 py-0.5">
+                        Tingkat {{ lvl.level }} — <strong>{{ lvl.nama }}</strong> (CKPN {{ lvl.prosentase }}%)
+                    </span>
+                    <a href="/settings/sop?tab=kolek" class="ml-auto text-xs font-bold text-primary hover:underline">Ubah aturan →</a>
+                </div>
+            </AppCard>
 
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -158,8 +204,10 @@ function kolekLabel(k) {
                                     <td class="p-2.5 text-right" :class="loan.tunggakan_jasa > 0 ? 'text-error font-medium' : ''">
                                         {{ formatMoney(loan.tunggakan_jasa) }}
                                     </td>
-                                    <td class="p-2.5 text-center border-l border-outline-variant/20 font-medium" :class="loan.kolek === 1 ? 'text-secondary' : (loan.kolek === 2 ? 'text-tertiary' : 'text-error')">
-                                        {{ kolekLabel(loan.kolek) }}
+                                    <td class="p-2.5 text-center border-l border-outline-variant/20">
+                                        <span class="inline-block rounded-full px-2 py-0.5 text-[11px] font-bold" :class="kolekBadgeBgClass(loan.kolek)">
+                                            {{ kolekLabelDynamic(loan.kolek) }}
+                                        </span>
                                     </td>
                                 </tr>
                                 <tr class="bg-surface-variant/20 font-semibold">

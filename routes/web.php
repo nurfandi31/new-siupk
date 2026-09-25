@@ -60,6 +60,7 @@ use App\Http\Controllers\Lending\LoanController;
 use App\Http\Controllers\Lending\LoanDocumentController;
 use App\Http\Controllers\Lending\LoanReportController;
 use App\Http\Controllers\Lending\LoanSimulationController;
+use App\Http\Controllers\Lending\Reports\ActiveBeneficiariesReportController;
 use App\Http\Controllers\Lending\Reports\ActiveGroupsReportController;
 use App\Http\Controllers\Lending\Reports\ActiveMembersReportController;
 use App\Http\Controllers\Lending\Reports\DueTodayReportController;
@@ -68,6 +69,7 @@ use App\Http\Controllers\Lending\Reports\OverdueReportController;
 use App\Http\Controllers\Lending\Reports\PaidLoansReportController;
 use App\Http\Controllers\Lending\Reports\ScheduleVsActualIndividuReportController;
 use App\Http\Controllers\Lending\Reports\WeeklyReportController;
+use App\Http\Controllers\Lending\Reports\WriteOffBeneficiariesReportController;
 use App\Http\Controllers\Lending\Reports\WriteOffsIndividuReportController;
 use App\Http\Controllers\Lending\Reports\WriteOffsReportController;
 use App\Http\Controllers\MasterData\GroupController;
@@ -86,6 +88,7 @@ use App\Http\Controllers\Regency\RegencyReportController;
 use App\Http\Controllers\RegionalCodeController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Settings\SettingsController;
+use App\Http\Controllers\Settings\SopController as SettingsSopController;
 use App\Http\Controllers\Settings\WhatsappSettingController;
 use App\Http\Controllers\StorageServeController;
 use App\Http\Controllers\Tenant\TenantOnboardingImportController;
@@ -490,6 +493,9 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
     Route::patch('/lending/loans/{loan}/approve', [LoanController::class, 'approve'])->name('lending.loans.approve');
     Route::patch('/lending/loans/{loan}/disburse', [LoanController::class, 'disburse'])->name('lending.loans.disburse');
     Route::patch('/lending/loans/{loan}/revert', [LoanController::class, 'revert'])->name('lending.loans.revert');
+    Route::patch('/lending/loans/{loan}/reject', [LoanController::class, 'reject'])->name('lending.loans.reject');
+    Route::patch('/lending/loans/{loan}/simpan-data', [LoanController::class, 'simpanData'])->name('lending.loans.simpan-data');
+    Route::patch('/lending/loans/{loan}/sync-schedule', [LoanController::class, 'syncSchedule'])->name('lending.loans.sync-schedule');
     Route::patch('/lending/loans/{loan}/committee', [LoanController::class, 'setCommittee'])->name('lending.loans.committee');
     Route::post('/lending/loans/{loan}/reschedule', [LoanController::class, 'reschedule'])->name('lending.loans.reschedule');
     Route::post('/lending/loans/{loan}/cancel-reschedule', [LoanController::class, 'cancelReschedule'])->name('lending.loans.cancel-reschedule');
@@ -541,6 +547,8 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::get('/lpp-individu/pdf', [LoanReportController::class, 'lppIndividuPdf'])->name('lpp-individu.pdf');
         Route::get('/kolek-desa', [LoanReportController::class, 'kolekDesa'])->name('kolek-desa');
         Route::get('/kolek-desa/pdf', [LoanReportController::class, 'kolekDesaPdf'])->name('kolek-desa.pdf');
+        Route::get('/kolek-desa-individu', [LoanReportController::class, 'kolekDesaIndividu'])->name('kolek-desa-individu');
+        Route::get('/kolek-desa-individu/pdf', [LoanReportController::class, 'kolekDesaIndividuPdf'])->name('kolek-desa-individu.pdf');
         Route::get('/kolek-individu', [LoanReportController::class, 'kolekIndividu'])->name('kolek-individu');
         Route::get('/kolek-individu/pdf', [LoanReportController::class, 'kolekIndividuPdf'])->name('kolek-individu.pdf');
         Route::get('/cadangan-penghapusan', [LoanReportController::class, 'cadanganPenghapusan'])->name('cadangan-penghapusan');
@@ -559,6 +567,10 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         // Pemanfaat Aktif — ActiveMembersReportController
         Route::get('/members/active', [ActiveMembersReportController::class, 'index'])->name('members.active');
         Route::get('/members/active/pdf', [ActiveMembersReportController::class, 'pdf'])->name('members.active.pdf');
+
+        // Pemanfaat Aktif KELOMPOK — ActiveBeneficiariesReportController
+        Route::get('/beneficiaries/active', [ActiveBeneficiariesReportController::class, 'index'])->name('beneficiaries.active');
+        Route::get('/beneficiaries/active/pdf', [ActiveBeneficiariesReportController::class, 'pdf'])->name('beneficiaries.active.pdf');
 
         // Daftar per-tahapan pipeline: Proposal / Verifikasi / Waiting List
         Route::get('/proposals', [LoanReportController::class, 'proposals'])->name('proposals');
@@ -614,6 +626,10 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::get('/write-offs-individu', [WriteOffsIndividuReportController::class, 'index'])->name('write-offs-individu');
         Route::get('/write-offs-individu/pdf', [WriteOffsIndividuReportController::class, 'pdf'])->name('write-offs-individu.pdf');
         Route::get('/write-offs-individu/excel', [WriteOffsIndividuReportController::class, 'excel'])->name('write-offs-individu.excel');
+
+        // Pinjaman Hapus — Anggota Kelompok (subset dari WriteOffs)
+        Route::get('/write-offs/beneficiaries', [WriteOffBeneficiariesReportController::class, 'index'])->name('write-offs.beneficiaries');
+        Route::get('/write-offs/beneficiaries/pdf', [WriteOffBeneficiariesReportController::class, 'pdf'])->name('write-offs.beneficiaries.pdf');
     });
 
     // Regulatory — OJK (laporan compliance)
@@ -829,6 +845,13 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::put('/signatures', [SettingsController::class, 'updateSignatures'])->name('signatures.update');
         Route::post('/signatures/image', [SettingsController::class, 'storeSignatureImage'])->name('signatures.image.store');
         Route::delete('/signatures/image', [SettingsController::class, 'destroySignatureImage'])->name('signatures.image.destroy');
+
+        // Halaman khusus SOP Lembaga (`/settings/sop` seperti SIUPK original)
+        // Konsentrasi awal: kolektabilitas 5 tingkat.
+        // Modul SOP lain (simpanan, asuransi) menyusul.
+        Route::get('/sop', [SettingsSopController::class, 'index'])->name('sop.index');
+        Route::put('/sop/kolek', [SettingsSopController::class, 'updateKolek'])->name('sop.kolek.update');
+        Route::get('/sop/kolek/levels.json', [SettingsSopController::class, 'kolekLevels'])->name('sop.kolek.levels');
 
         // Multi-Instance WhatsApp Gateway
         Route::get('/whatsapp', [WhatsappSettingController::class, 'index'])->name('whatsapp.hub');

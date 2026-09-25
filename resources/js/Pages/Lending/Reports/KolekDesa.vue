@@ -11,6 +11,7 @@ const props = defineProps({
     month: { type: Number, required: true },
     period_label: { type: String, required: true },
     identity: { type: Object, required: true },
+    levels: { type: Array, default: () => [] },
     products: { type: Array, required: true },
     totals: { type: Object, required: true },
     filters: { type: Object, required: true },
@@ -49,6 +50,19 @@ function formatMoney(v) {
     return money.format(Number(v || 0));
 }
 
+// Levels list yang dipakai untuk render header kolom.
+// Default fallback: 3 tingkat standar.
+const levelColumns = computed(() => {
+    if (props.levels && props.levels.length > 0) {
+        return props.levels;
+    }
+    return [
+        { level: 1, nama: 'Lancar', prosentase: 0.5, bucket_key: 'kolek1_lancar' },
+        { level: 2, nama: 'Diragukan', prosentase: 50, bucket_key: 'kolek2_diragukan' },
+        { level: 3, nama: 'Macet', prosentase: 100, bucket_key: 'kolek3_macet' },
+    ];
+});
+
 function apply() {
     router.get(
         '/lending/reports/kolek-desa',
@@ -69,6 +83,11 @@ const pdfUrl = computed(() => {
     });
     return `/lending/reports/kolek-desa/pdf?${q.toString()}`;
 });
+
+// Format short number untuk header kolek (mis. "Kolek 1 (< 3 bln)")
+function formatLevelHeader(lvl) {
+    return `${lvl.nama}`;
+}
 </script>
 
 <template>
@@ -80,7 +99,7 @@ const pdfUrl = computed(() => {
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Laporan Piutang</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">Kolektibilitas Pinjaman Rekap Desa</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Klasifikasi kualitas portofolio piutang: Lancar (1-3 bln), Diragukan (4-5 bln), dan Macet (6+ bln)
+                        Klasifikasi kualitas portofolio piutang per desa berdasarkan aturan kolektabilitas aktif di SOP Lembaga.
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -92,6 +111,18 @@ const pdfUrl = computed(() => {
                     </a>
                 </div>
             </div>
+
+            <!-- Active kolek config summary -->
+            <AppCard class="p-4">
+                <div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant">
+                    <span class="material-symbols-outlined text-base">rule</span>
+                    <span>Aturan kolek aktif:</span>
+                    <span v-for="lvl in levelColumns" :key="lvl.bucket_key" class="rounded-full bg-surface-variant/50 px-2 py-0.5">
+                        Tingkat {{ lvl.level }} — <strong>{{ lvl.nama }}</strong> (CKPN {{ lvl.prosentase }}%)
+                    </span>
+                    <a href="/settings/sop?tab=kolek" class="ml-auto text-xs font-bold text-primary hover:underline">Ubah aturan →</a>
+                </div>
+            </AppCard>
 
             <!-- Filters -->
             <AppCard class="p-4">
@@ -124,16 +155,21 @@ const pdfUrl = computed(() => {
                                 <th rowspan="2" class="p-3 text-right">Saldo Pokok</th>
                                 <th rowspan="2" class="p-3">Ratio %</th>
                                 <th colspan="2" class="p-3 border-l border-outline-variant/20">Tunggakan</th>
-                                <th class="p-3 border-l border-outline-variant/20">Lancar</th>
-                                <th class="p-3">Diragukan</th>
-                                <th class="p-3">Macet</th>
+                                <th
+                                    v-for="lvl in levelColumns"
+                                    :key="lvl.bucket_key"
+                                    class="p-3 border-l border-outline-variant/20"
+                                    :class="{ 'border-l-0': $index === 0 }"
+                                >
+                                    {{ formatLevelHeader(lvl) }}
+                                </th>
                             </tr>
                             <tr class="border-b border-outline-variant/30 text-center text-[11px] text-on-surface-variant">
                                 <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
                                 <th class="p-2 text-right">Jasa</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">1-3 Bln</th>
-                                <th class="p-2 text-right">4-5 Bln</th>
-                                <th class="p-2 text-right">6+ Bln</th>
+                                <th v-for="lvl in levelColumns" :key="`sub-${lvl.bucket_key}`" class="p-2 text-right" :class="{ 'border-l border-outline-variant/20': $index === 0 }">
+                                    <span class="text-on-surface-variant">Tingkat {{ lvl.level }}</span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/20">
@@ -144,9 +180,14 @@ const pdfUrl = computed(() => {
                                 <td class="p-3 text-center font-medium">{{ v.alokasi > 0 ? Math.round((v.saldo / v.alokasi) * 100) : 0 }}%</td>
                                 <td class="p-3 text-right border-l border-outline-variant/20" :class="v.tunggakan_pokok > 0 ? 'text-error font-medium' : ''">{{ formatMoney(v.tunggakan_pokok) }}</td>
                                 <td class="p-3 text-right" :class="v.tunggakan_jasa > 0 ? 'text-error font-medium' : ''">{{ formatMoney(v.tunggakan_jasa) }}</td>
-                                <td class="p-3 text-right border-l border-outline-variant/20 font-medium text-secondary">{{ formatMoney(v.kolek1_lancar) }}</td>
-                                <td class="p-3 text-right font-medium" :class="v.kolek2_diragukan > 0 ? 'text-tertiary' : ''">{{ formatMoney(v.kolek2_diragukan) }}</td>
-                                <td class="p-3 text-right font-medium" :class="v.kolek3_macet > 0 ? 'text-error' : ''">{{ formatMoney(v.kolek3_macet) }}</td>
+                                <td
+                                    v-for="lvl in levelColumns"
+                                    :key="`v-${lvl.bucket_key}-${v.village_name}`"
+                                    class="p-3 text-right"
+                                    :class="{ 'border-l border-outline-variant/20': $index === 0, 'text-error': lvl.level >= 4 && (v[lvl.bucket_key] || 0) > 0, 'text-tertiary': lvl.level === 3 && (v[lvl.bucket_key] || 0) > 0, 'text-secondary': lvl.level <= 2 && (v[lvl.bucket_key] || 0) > 0 }"
+                                >
+                                    {{ formatMoney(v[lvl.bucket_key]) }}
+                                </td>
                             </tr>
                         </tbody>
                         <tfoot class="bg-surface-variant/40 font-bold text-on-surface">
@@ -157,9 +198,14 @@ const pdfUrl = computed(() => {
                                 <td class="p-3 text-center">{{ prod.totals.alokasi > 0 ? Math.round((prod.totals.saldo / prod.totals.alokasi) * 100) : 0 }}%</td>
                                 <td class="p-3 text-right border-l border-outline-variant/20" :class="prod.totals.tunggakan_pokok > 0 ? 'text-error' : ''">{{ formatMoney(prod.totals.tunggakan_pokok) }}</td>
                                 <td class="p-3 text-right" :class="prod.totals.tunggakan_jasa > 0 ? 'text-error' : ''">{{ formatMoney(prod.totals.tunggakan_jasa) }}</td>
-                                <td class="p-3 text-right border-l border-outline-variant/20 text-secondary">{{ formatMoney(prod.totals.kolek1_lancar) }}</td>
-                                <td class="p-3 text-right" :class="prod.totals.kolek2_diragukan > 0 ? 'text-tertiary' : ''">{{ formatMoney(prod.totals.kolek2_diragukan) }}</td>
-                                <td class="p-3 text-right" :class="prod.totals.kolek3_macet > 0 ? 'text-error' : ''">{{ formatMoney(prod.totals.kolek3_macet) }}</td>
+                                <td
+                                    v-for="lvl in levelColumns"
+                                    :key="`f-${lvl.bucket_key}`"
+                                    class="p-3 text-right"
+                                    :class="{ 'border-l border-outline-variant/20': $index === 0 }"
+                                >
+                                    {{ formatMoney(prod.totals[lvl.bucket_key]) }}
+                                </td>
                             </tr>
                         </tfoot>
                     </table>

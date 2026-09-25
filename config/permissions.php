@@ -12,20 +12,28 @@ use App\Http\Requests\Assets\AssetRequest;
 use App\Http\Requests\Budgeting\SaveBudgetMonthRequest;
 use App\Http\Requests\Lending\LoanApproveRequest;
 use App\Http\Requests\Lending\LoanBeneficiaryWriteOffRequest;
+use App\Http\Requests\Lending\LoanCompleteRequest;
 use App\Http\Requests\Lending\LoanDisburseRequest;
+use App\Http\Requests\Lending\LoanPostDisburseUpdateRequest;
+use App\Http\Requests\Lending\LoanRejectRequest;
 use App\Http\Requests\Lending\LoanRequest;
 use App\Http\Requests\Lending\LoanRescheduleCancelRequest;
 use App\Http\Requests\Lending\LoanRescheduleRequest;
+use App\Http\Requests\Lending\LoanSyncScheduleRequest;
 use App\Http\Requests\Lending\LoanUpdateRequest;
 use App\Http\Requests\Lending\LoanVerifyRequest;
 use App\Http\Requests\Lending\LoanWriteOffRequest;
+use App\Http\Requests\Lending\MemberLoanApproveRequest;
+use App\Http\Requests\Lending\MemberLoanCompleteRequest;
 use App\Http\Requests\Lending\MemberLoanRequest;
+use App\Http\Requests\Lending\MemberLoanUpdateRequest;
 use App\Http\Requests\MasterData\GroupRequest;
 use App\Http\Requests\MasterData\MemberRequest;
 use App\Http\Requests\MasterData\OtherInstitutionRequest;
 use App\Http\Requests\MasterData\QuickMemberRequest;
 use App\Http\Requests\MasterData\VillageRequest;
 use App\Http\Requests\Settings\IdentityRequest;
+use App\Http\Requests\Settings\KolekRequest;
 use App\Http\Requests\Settings\LendingSystemRequest;
 use App\Http\Requests\Settings\LogoUploadRequest;
 use App\Http\Requests\Settings\OfflineAccessRequest;
@@ -74,6 +82,9 @@ return [
         'loans.reschedule',
         'loans.reschedule_director',
         'loans.complete_director',
+        // SOP Lembaga (kolektabilitas, dll)
+        'sop.view',
+        'sop.manage',
         // Accounting
         'journals.view',
         'journals.create',
@@ -141,6 +152,8 @@ return [
                 'billing.pay',
                 'assistant.use',
                 'settings.manage',
+                'sop.view',
+                'sop.manage',
             ],
         ],
         'verifikator' => [
@@ -245,6 +258,8 @@ return [
                 'messages.send',
                 'assistant.use',
                 'settings.manage',
+                'sop.view',
+                'sop.manage',
                 'supervisor.notes',
             ],
         ],
@@ -294,6 +309,7 @@ return [
         '/website' => 'website.view',
         '/settings' => 'settings.manage',
         '/settings/whatsapp' => 'settings.manage',
+        '/settings/sop' => 'sop.manage',
         '/regency' => 'regency.view_reports',
         '/province' => 'province.view_reports',
         '/regulatory/ojk' => 'regulatory.view',
@@ -319,6 +335,12 @@ return [
         LoanBeneficiaryWriteOffRequest::class => 'loans.manage',
         LoanRescheduleRequest::class => 'loans.manage',
         LoanRescheduleCancelRequest::class => 'loans.manage',
+        LoanPostDisburseUpdateRequest::class => 'loans.manage',
+        LoanSyncScheduleRequest::class => 'loans.manage',
+        LoanRejectRequest::class => 'loans.manage',
+        LoanCompleteRequest::class => 'loans.manage',
+        MemberLoanApproveRequest::class => 'loans.approve',
+        MemberLoanCompleteRequest::class => 'loans.manage',
         MemberRequest::class => 'members.manage',
         QuickMemberRequest::class => 'members.manage',
         GroupRequest::class => 'groups.manage',
@@ -332,6 +354,7 @@ return [
         OrchestratorRequest::class => 'settings.manage',
         SignaturesRequest::class => 'settings.manage',
         SignatureImageUploadRequest::class => 'settings.manage',
+        KolekRequest::class => 'sop.manage',
         AssetRequest::class => 'assets.manage',
         VillageRequest::class => 'villages.manage',
         OtherInstitutionRequest::class => 'institutions.manage',
