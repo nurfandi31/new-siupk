@@ -17,13 +17,19 @@ use App\Domain\Membership\Models\Member;
 use App\Domain\Membership\Models\OrganizationProfile;
 use App\Http\Requests\Lending\LoanApproveRequest;
 use App\Http\Requests\Lending\LoanBeneficiaryWriteOffRequest;
+use App\Http\Requests\Lending\LoanCompleteRequest;
 use App\Http\Requests\Lending\LoanDisburseRequest;
+use App\Http\Requests\Lending\LoanPostDisburseUpdateRequest;
+use App\Http\Requests\Lending\LoanRejectRequest;
 use App\Http\Requests\Lending\LoanRequest;
 use App\Http\Requests\Lending\LoanRescheduleCancelRequest;
 use App\Http\Requests\Lending\LoanRescheduleRequest;
+use App\Http\Requests\Lending\LoanSyncScheduleRequest;
 use App\Http\Requests\Lending\LoanUpdateRequest;
 use App\Http\Requests\Lending\LoanVerifyRequest;
 use App\Http\Requests\Lending\LoanWriteOffRequest;
+use App\Http\Requests\Lending\MemberLoanApproveRequest;
+use App\Http\Requests\Lending\MemberLoanCompleteRequest;
 use App\Http\Requests\Lending\MemberLoanRequest;
 use App\Support\ReportPdf;
 use App\Tenancy\Services\TenantLoanProductProvisioner;
@@ -629,21 +635,62 @@ final class LoanController
             ->with('success', 'Penghapusan piutang pemanfaat berhasil dicatat.');
     }
 
-    public function complete(Request $request, Loan $loan, LoanService $loans): RedirectResponse
+    public function complete(LoanCompleteRequest $request, Loan $loan, LoanService $loans): RedirectResponse
     {
-        $validated = $request->validate([
-            'completed_at' => ['required', 'date'],
-            'notes' => ['nullable', 'string', 'max:500'],
-        ]);
-
         try {
-            $loans->complete($loan, $validated, (int) $request->user()->row_id);
+            $loans->complete($loan, $request->validated(), (int) $request->user()->row_id);
         } catch (DomainException $exception) {
             return back()->with('error', $exception->getMessage());
         }
 
         return to_route('lending.loans.show', ['loan' => $loan->row_id])
             ->with('success', 'Validasi pelunasan pinjaman berhasil disimpan.');
+    }
+
+    public function reject(LoanRejectRequest $request, Loan $loan, LoanService $loans): RedirectResponse
+    {
+        if ((string) $loan->legacy_source === 'member_loan') {
+            abort(404);
+        }
+
+        try {
+            $loans->rejectGroupLoan($loan, (int) $request->user()->row_id, $request->validated()['notes']);
+        } catch (DomainException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return to_route('lending.loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Pinjaman kelompok ditandai Tidak Layak.');
+    }
+
+    public function simpanData(LoanPostDisburseUpdateRequest $request, Loan $loan): RedirectResponse
+    {
+        if (! in_array($loan->status, ['active', 'disbursed'], true)) {
+            return back()->with('error', 'Koreksi data post-cair hanya untuk pinjaman aktif/cair.');
+        }
+
+        $data = $request->validated();
+        $loan->forceFill([
+            'disbursed_at' => $data['disbursed_at'],
+            'spk_no' => $data['spk_no'] ?? $loan->spk_no,
+            'disbursement_slot' => $data['disbursement_slot'] ?? $loan->disbursement_slot,
+            'disbursement_notes' => $data['disbursement_notes'] ?? $loan->disbursement_notes,
+        ])->save();
+
+        return to_route('lending.loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Data post-cair berhasil dikoreksi.');
+    }
+
+    public function syncSchedule(LoanSyncScheduleRequest $request, Loan $loan, LoanService $loans): RedirectResponse
+    {
+        try {
+            $loans->syncSchedule($loan, (int) $request->user()->row_id);
+        } catch (DomainException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return to_route('lending.loans.show', ['loan' => $loan->row_id])
+            ->with('success', 'Jadwal angsuran berhasil disinkronkan ulang.');
     }
 
     public function setCommittee(Request $request, Loan $loan, LoanService $loans): RedirectResponse
@@ -1360,23 +1407,13 @@ final class LoanController
             ->with('success', 'Pinjaman individu berhasil diverifikasi.');
     }
 
-    public function individualApprove(Request $request, Loan $loan, LoanService $loans): RedirectResponse
+    public function individualApprove(MemberLoanApproveRequest $request, Loan $loan, LoanService $loans): RedirectResponse
     {
         if ($loan->legacy_source !== 'member_loan') {
             abort(404);
         }
 
-        $validated = $request->validate([
-            'approved_at' => ['required', 'date', 'before_or_equal:today'],
-            'planned_disbursed_at' => ['required', 'date', 'after_or_equal:approved_at'],
-            'allocation_notes' => ['nullable', 'string', 'max:500'],
-            'term_months' => ['nullable', 'integer', 'min:1', 'max:120'],
-            'service_rate_total' => ['nullable', 'numeric', 'min:0', 'max:5000'],
-            'principal_frequency' => ['nullable', 'string', 'in:monthly,weekly,biweekly,at_maturity'],
-            'interest_frequency' => ['nullable', 'string', 'in:monthly,weekly,biweekly,at_maturity'],
-            'spk_no' => ['nullable', 'string', 'max:80'],
-        ]);
-
+        $validated = $request->validated();
         $loans->approve($loan, $validated, (int) $request->user()->row_id);
 
         // Simpan nomor SPK ke loan record (digunakan dokumen PDF).
@@ -1418,29 +1455,24 @@ final class LoanController
             abort(404);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);
 
-        $loans->rejectMemberLoan($loan, (int) $request->user()->row_id, $request->input('notes'));
+        $loans->rejectMemberLoan($loan, (int) $request->user()->row_id, $validated['notes'] ?? null);
 
         return to_route('lending.member-loans.show', ['loan' => $loan->row_id])
             ->with('success', 'Pinjaman individu ditandai Tidak Layak.');
     }
 
-    public function individualComplete(Request $request, Loan $loan, LoanService $loans): RedirectResponse
+    public function individualComplete(MemberLoanCompleteRequest $request, Loan $loan, LoanService $loans): RedirectResponse
     {
         if ($loan->legacy_source !== 'member_loan') {
             abort(404);
         }
 
-        $validated = $request->validate([
-            'completed_at' => ['required', 'date'],
-            'notes' => ['nullable', 'string', 'max:500'],
-        ]);
-
         try {
-            $loans->complete($loan, $validated, (int) $request->user()->row_id);
+            $loans->complete($loan, $request->validated(), (int) $request->user()->row_id);
         } catch (DomainException $exception) {
             return back()->with('error', $exception->getMessage());
         }

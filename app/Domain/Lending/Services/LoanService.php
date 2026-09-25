@@ -17,6 +17,7 @@ use App\Domain\Lending\Models\LoanProduct;
 use App\Domain\Lending\Models\LoanWriteOff;
 use App\Domain\Membership\Models\Group;
 use App\Domain\Membership\Models\Member;
+use App\Domain\Membership\Models\OrganizationProfile;
 use App\Services\TenantSettingService;
 use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
@@ -696,6 +697,26 @@ final class LoanService
     public function disburse(Loan $loan, array $data, int $userId): Loan
     {
         return DB::connection('tenant')->transaction(function () use ($loan, $data, $userId): Loan {
+            // Mirror SIUPK original (PelaporanController::pinjamanCair):
+            // - tgl_cair TIDAK boleh sebelum tgl_setujui.
+            // - tgl_cair TIDAK boleh sebelum tgl_pakai_aplikasi.
+            $disbursedAt = (string) $data['disbursed_at'];
+            if ($loan->approved_at && $disbursedAt < $loan->approved_at->toDateString()) {
+                throw new DomainException(sprintf(
+                    'Tanggal cair (%s) tidak boleh sebelum Tanggal Setujui (%s).',
+                    $disbursedAt,
+                    $loan->approved_at->toDateString(),
+                ));
+            }
+            $appStartDate = $this->resolveApplicationStartDate();
+            if ($appStartDate !== null && $disbursedAt < $appStartDate) {
+                throw new DomainException(sprintf(
+                    'Tanggal cair (%s) tidak boleh sebelum Tanggal Pakai Aplikasi (%s).',
+                    $disbursedAt,
+                    $appStartDate,
+                ));
+            }
+
             $fromStatus = $loan->status;
             $isMemberLoan = (string) $loan->legacy_source === 'member_loan';
             $totalAllocated = $isMemberLoan
@@ -994,18 +1015,6 @@ final class LoanService
 
     public function recordInstallmentPayment(array $data, int $userId): JournalEntry
     {
-        $loan = Loan::query()->with('product')->where('row_id', $data['loan_id'])->firstOrFail();
-
-        $cashAccount = Account::on('tenant')
-            ->where('row_id', $data['cash_account_row_id'])
-            ->where('is_active', true)
-            ->where('is_postable', true)
-            ->firstOrFail();
-
-        $productCode = (string) ($loan->product?->code ?? '');
-        $receivableAccount = $this->resolveReceivableAccount($productCode);
-        $revenueAccount = $this->resolveRevenueAccount($productCode);
-
         $principalAmount = (float) $data['principal_amount'];
         $interestAmount = (float) $data['interest_amount'];
         $penaltyAmount = (float) ($data['penalty_amount'] ?? 0);
@@ -1018,7 +1027,52 @@ final class LoanService
         $transactionDate = CarbonImmutable::parse($data['transaction_date'])->toDateString();
         $this->ensureFiscalPeriod($transactionDate);
 
-        return DB::connection('tenant')->transaction(function () use ($loan, $cashAccount, $receivableAccount, $revenueAccount, $principalAmount, $interestAmount, $penaltyAmount, $totalAmount, $transactionDate, $data, $userId): JournalEntry {
+        return DB::connection('tenant')->transaction(function () use ($principalAmount, $interestAmount, $penaltyAmount, $totalAmount, $transactionDate, $data, $userId): JournalEntry {
+            // 1) Lock loan row untuk mencegah double-payment dari request bersamaan.
+            $loan = Loan::query()
+                ->with('product')
+                ->where('row_id', $data['loan_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // 2) Validasi status & tanggal seperti SIUPK original.
+            //    - loan harus aktif/cair/active.
+            //    - tgl_transaksi TIDAK boleh sebelum tgl_cair (mirror siupk line 857).
+            //    - tgl_transaksi TIDAK boleh sebelum tgl_pakai_aplikasi (mirror siupk line 873).
+            if (! in_array($loan->status, ['active', 'disbursed'], true)) {
+                throw new RuntimeException(
+                    'Pinjaman #'.$loan->id.' berstatus "'.$loan->status.'" tidak dapat menerima angsuran. Hanya pinjaman aktif yang menerima angsuran.',
+                );
+            }
+            if ($loan->disbursed_at && $transactionDate < $loan->disbursed_at->toDateString()) {
+                throw new RuntimeException(
+                    'Tanggal transaksi tidak boleh sebelum Tanggal Cair ('.$loan->disbursed_at->toDateString().').',
+                );
+            }
+            $appStartDate = $this->resolveApplicationStartDate();
+            if ($appStartDate !== null && $transactionDate < $appStartDate) {
+                throw new RuntimeException(
+                    'Tanggal transaksi tidak boleh sebelum Tanggal Pakai Aplikasi ('.$appStartDate.').',
+                );
+            }
+
+            // 3) Validasi installment row/number konsistensi.
+            $installmentRowId = isset($data['installment_row_id']) ? (int) $data['installment_row_id'] : 0;
+            $installmentNumber = (int) ($data['installment_number'] ?? 0);
+
+            // 4) Resolve akun COA (mirror siupk: '1.1.01.xx' kas umum + 1.1.03.xx piutang + 4.1.01.xx jasa + 4.1.02.xx denda).
+            $cashAccount = Account::on('tenant')
+                ->where('row_id', $data['cash_account_row_id'])
+                ->where('is_active', true)
+                ->where('is_postable', true)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $productCode = (string) ($loan->product?->code ?? '');
+            $receivableAccount = $this->resolveReceivableAccount($productCode);
+            $revenueAccount = $this->resolveRevenueAccount($productCode);
+
+            // 5) Buat jurnal entry (mirror siupk: 1 baris per komponen yang > 0).
             $entry = JournalEntry::query()->create([
                 'journal_number' => null,
                 'transaction_date' => $transactionDate,
@@ -1031,37 +1085,40 @@ final class LoanService
                 'created_by_user_id' => $userId,
             ]);
 
+            $lineNumber = 1;
             $entry->lines()->create([
-                'line_number' => 1,
+                'line_number' => $lineNumber++,
                 'account_row_id' => (int) $cashAccount->row_id,
                 'organization_unit_row_id' => null,
-                'description' => 'Kas/Bank sumber dana',
+                'description' => 'Penerimaan kas angsuran',
                 'debit' => $totalAmount,
                 'credit' => 0,
             ]);
 
-            $entry->lines()->create([
-                'line_number' => 2,
-                'account_row_id' => (int) $receivableAccount->row_id,
-                'organization_unit_row_id' => null,
-                'description' => 'Piutang pinjaman',
-                'debit' => 0,
-                'credit' => $principalAmount,
-            ]);
-
-            $entry->lines()->create([
-                'line_number' => 3,
-                'account_row_id' => (int) $revenueAccount->row_id,
-                'organization_unit_row_id' => null,
-                'description' => 'Pendapatan jasa',
-                'debit' => 0,
-                'credit' => $interestAmount,
-            ]);
-
-            if ($penaltyAmount > 0) {
-                $penaltyAccount = $this->resolvePenaltyAccount((string) $loan->product?->code);
+            if ($principalAmount > 0) {
                 $entry->lines()->create([
-                    'line_number' => 4,
+                    'line_number' => $lineNumber++,
+                    'account_row_id' => (int) $receivableAccount->row_id,
+                    'organization_unit_row_id' => null,
+                    'description' => 'Angsuran pokok pinjaman',
+                    'debit' => 0,
+                    'credit' => $principalAmount,
+                ]);
+            }
+            if ($interestAmount > 0) {
+                $entry->lines()->create([
+                    'line_number' => $lineNumber++,
+                    'account_row_id' => (int) $revenueAccount->row_id,
+                    'organization_unit_row_id' => null,
+                    'description' => 'Pendapatan jasa pinjaman',
+                    'debit' => 0,
+                    'credit' => $interestAmount,
+                ]);
+            }
+            if ($penaltyAmount > 0) {
+                $penaltyAccount = $this->resolvePenaltyAccount($productCode);
+                $entry->lines()->create([
+                    'line_number' => $lineNumber++,
                     'account_row_id' => (int) $penaltyAccount->row_id,
                     'organization_unit_row_id' => null,
                     'description' => 'Pendapatan denda',
@@ -1072,7 +1129,20 @@ final class LoanService
 
             $posted = $this->journalPosting->post($entry, $userId);
 
-            $installmentNumber = (int) ($data['installment_number'] ?? 0);
+            // 6) Update loan_installments: principal_paid, interest_paid, penalty_paid, paid_at, running_*.
+            //    KUNCI PARITAS DENGAN SIUPK: baris yang SUDAH ADA installments wajib di-update
+            //    agar laporan saldo & kolek tidak selalu 0.
+            $this->applyInstallmentAllocations(
+                loan: $loan,
+                principalPaid: $principalAmount,
+                interestPaid: $interestAmount,
+                penaltyPaid: $penaltyAmount,
+                installmentRowId: $installmentRowId,
+                installmentNumber: $installmentNumber,
+                paidAt: $transactionDate,
+            );
+
+            // 7) Catatan alokasi per-anggota (untuk pinjaman kelompok).
             $allocations = $data['member_allocations'] ?? [];
             if ($installmentNumber > 0 && is_array($allocations) && $allocations !== []) {
                 $this->tracking->recordMemberAllocations(
@@ -1084,8 +1154,178 @@ final class LoanService
                 );
             }
 
+            // 8) Auto-complete: jika saldo pokok sudah 0, set status completed (mirror siupk auto-L pada pelunasan).
+            $this->maybeAutoComplete($loan, $userId);
+
             return $posted;
         });
+    }
+
+    /**
+     * Update baris `loan_installments` untuk pembayaran angsuran.
+     *
+     * Algoritma paritas dengan SIUPK original (TransaksiController::angsuran):
+     *   - Ambil angsuran yang due_date <= tgl_transaksi, sorted ascending by due_date.
+     *   - Untuk angsuran #1, #2, dst: kurangi sisa_pokok_atau_jasa dengan pembayaran.
+     *   - Set `paid_at` jika pembayaran >= jatuh tempo angsuran tsb.
+     *   - Recompute `running_principal` & `running_interest` (alokasi - paid).
+     */
+    private function applyInstallmentAllocations(
+        Loan $loan,
+        float $principalPaid,
+        float $interestPaid,
+        float $penaltyPaid,
+        int $installmentRowId,
+        int $installmentNumber,
+        string $paidAt,
+    ): void {
+        // Tentukan angsuran target: jika installment_number dikirim, pilih baris dengan nomor tsb.
+        // Else: pilih baris dengan due_date <= paidAt dan belum lunas (proses payment walk).
+        $query = $loan->installments()->orderBy('installment_number');
+        if ($installmentRowId > 0) {
+            $target = $query->clone()->where('row_id', $installmentRowId)->lockForUpdate()->first();
+            if (! $target) {
+                return;
+            }
+            $this->incrementInstallment($target, $principalPaid, $interestPaid, $penaltyPaid, $paidAt);
+        } elseif ($installmentNumber > 0) {
+            $target = $query->clone()->where('installment_number', $installmentNumber)->lockForUpdate()->first();
+            if (! $target) {
+                return;
+            }
+            $this->incrementInstallment($target, $principalPaid, $interestPaid, $penaltyPaid, $paidAt);
+        } else {
+            // Walk: bayar angsuran tertua dulu (mirror siupk).
+            $remainingP = $principalPaid;
+            $remainingI = $interestPaid;
+            $remainingD = $penaltyPaid;
+            $rows = $loan->installments()
+                ->whereNotNull('due_date')
+                ->orderBy('due_date')
+                ->orderBy('installment_number')
+                ->lockForUpdate()
+                ->get();
+            foreach ($rows as $row) {
+                if ($remainingP <= 0 && $remainingI <= 0 && $remainingD <= 0) {
+                    break;
+                }
+                $owedP = max(0.0, (float) $row->principal_due - (float) $row->principal_paid);
+                $owedI = max(0.0, (float) $row->interest_due - (float) $row->interest_paid);
+                $owedD = max(0.0, (float) $row->penalty_due - (float) $row->penalty_paid);
+
+                $applyP = min($remainingP, $owedP);
+                $applyI = min($remainingI, $owedI);
+                $applyD = min($remainingD, $owedD);
+
+                if ($applyP + $applyI + $applyD <= 0) {
+                    continue;
+                }
+
+                $this->incrementInstallment($row, $applyP, $applyI, $applyD, $paidAt);
+                $remainingP -= $applyP;
+                $remainingI -= $applyI;
+                $remainingD -= $applyD;
+            }
+        }
+
+        // Refresh running totals di seluruh installments (computed property).
+        $this->recomputeRunningTotals($loan);
+    }
+
+    private function incrementInstallment(
+        LoanInstallment $installment,
+        float $principalPaid,
+        float $interestPaid,
+        float $penaltyPaid,
+        string $paidAt,
+    ): void {
+        $newPrincipal = round((float) $installment->principal_paid + $principalPaid, 2);
+        $newInterest = round((float) $installment->interest_paid + $interestPaid, 2);
+        $newPenalty = round((float) $installment->penalty_paid + $penaltyPaid, 2);
+
+        $owedPrincipal = round((float) $installment->principal_due, 2);
+        $owedInterest = round((float) $installment->interest_due, 2);
+
+        // Cap ke nilai due supaya tidak overpay (mirror siupk max sum = alokasi).
+        if ($newPrincipal > $owedPrincipal) {
+            $newPrincipal = $owedPrincipal;
+        }
+        if ($newInterest > $owedInterest) {
+            $newInterest = $owedInterest;
+        }
+
+        $nowFullyPaid = $newPrincipal >= $owedPrincipal && $newInterest >= $owedInterest;
+
+        $installment->update([
+            'principal_paid' => $newPrincipal,
+            'interest_paid' => $newInterest,
+            'penalty_paid' => $newPenalty,
+            'paid_at' => $nowFullyPaid ? $paidAt : $installment->paid_at,
+        ]);
+    }
+
+    /**
+     * Recompute running_principal & running_interest untuk seluruh angsuran
+     * pinjaman setelah pembayaran. `running_*` = sisa tagihan kumulatif
+     * (alokasi - paid) sesuai field di LoanInstallment::$casts.
+     */
+    private function recomputeRunningTotals(Loan $loan): void
+    {
+        $totalPrincipal = (float) $loan->principal_amount;
+        $installments = $loan->installments()
+            ->orderBy('installment_number')
+            ->get();
+
+        $cumPaidPrincipal = 0.0;
+        foreach ($installments as $row) {
+            $cumPaidPrincipal += (float) $row->principal_paid;
+            $runningPrincipal = round($totalPrincipal - $cumPaidPrincipal, 2);
+            $runningInterest = round(
+                max(0.0, (float) $row->interest_due - (float) $row->interest_paid),
+                2,
+            );
+            $row->update([
+                'running_principal' => max(0, $runningPrincipal),
+                'running_interest' => max(0, $runningInterest),
+            ]);
+        }
+    }
+
+    /**
+     * Jika seluruh angsuran pokok sudah lunas → auto-`completed` (mirror siupk auto-L).
+     */
+    private function maybeAutoComplete(Loan $loan, int $userId): void
+    {
+        if (! in_array($loan->status, ['active', 'disbursed'], true)) {
+            return;
+        }
+        $loan->loadMissing('installments');
+        $principalRemaining = $this->principalRemaining($loan);
+        if ($principalRemaining <= 0.005) {
+            $this->complete($loan, [
+                'completed_at' => now()->toDateString(),
+                'notes' => 'Auto-lunas: saldo pokok telah mencapai 0 setelah angsuran terakhir.',
+            ], $userId);
+        }
+    }
+
+    /**
+     * Tentukan tanggal pakai aplikasi untuk validasi `transaction_date >= app_start_date`.
+     * Sumber: setting `application_start_date` (tenant) atau fallback ke `OrganizationProfile.operational_start_date`.
+     */
+    private function resolveApplicationStartDate(): ?string
+    {
+        $fromSetting = setting('application_start_date');
+        if (is_string($fromSetting) && $fromSetting !== '') {
+            return $fromSetting;
+        }
+        $profile = OrganizationProfile::query()->first();
+        $start = $profile?->operational_start_date ?? $profile?->operational_start_date_v2;
+        if ($start instanceof \DateTimeInterface) {
+            return $start->format('Y-m-d');
+        }
+
+        return null;
     }
 
     public function revertToDraft(Loan $loan, int $userId): Loan
@@ -1923,6 +2163,18 @@ final class LoanService
                 throw new DomainException('Hanya pinjaman aktif/cair yang dapat divalidasi lunas.');
             }
 
+            // Mirror SIUPK original: hanya boleh lunas bila pokok sudah 0 (kecuali
+            // flag `force` di-request untuk pelunasan administratif).
+            $force = (bool) ($data['force'] ?? false);
+            $loan->loadMissing('installments');
+            $principalRemaining = $this->principalRemaining($loan);
+            if (! $force && $principalRemaining > 0.005) {
+                throw new DomainException(sprintf(
+                    'Tidak dapat melunasi: sisa pokok masih %s. Lakukan angsuran pelunasan terlebih dahulu atau gunakan flag force=true untuk pelunasan administratif.',
+                    number_format($principalRemaining, 0, ',', '.'),
+                ));
+            }
+
             $fromStatus = $loan->status;
             $completedAt = $data['completed_at'] ?? now()->toDateString();
             $notes = ! empty($data['notes']) ? $data['notes'] : 'Validasi pelunasan pinjaman.';
@@ -2012,6 +2264,29 @@ final class LoanService
         if ((string) $loan->legacy_source !== 'member_loan') {
             throw new DomainException('Reject hanya untuk pinjaman individu.');
         }
+
+        return $this->rejectLoan($loan, $userId, $notes ?? 'Pinjaman individu ditolak (Tidak Layak).');
+    }
+
+    /**
+     * Tolak pinjaman KELOMPOK (Tidak Layak) — pacuan: status='T' / 'rejected'.
+     * Hanya untuk legacy_source != 'member_loan'.
+     */
+    public function rejectGroupLoan(Loan $loan, int $userId, string $notes): Loan
+    {
+        if ((string) $loan->legacy_source === 'member_loan') {
+            throw new DomainException('Reject kelompok tidak untuk pinjaman individu.');
+        }
+
+        return $this->rejectLoan($loan, $userId, $notes);
+    }
+
+    /**
+     * Tolak pinjaman (Tidak Layak) — generic implementation.
+     * Hanya untuk status draft/verified.
+     */
+    private function rejectLoan(Loan $loan, int $userId, string $notes): Loan
+    {
         if (! in_array($loan->status, ['draft', 'verified'], true)) {
             throw new DomainException('Hanya pinjaman dengan status draft atau verified yang dapat ditolak.');
         }
@@ -2034,7 +2309,7 @@ final class LoanService
                 'interest_frequency' => $loan->interest_frequency,
                 'principal_grace_months' => (int) $loan->principal_grace_months,
                 'interest_grace_months' => (int) $loan->interest_grace_months,
-                'notes' => $notes ?? 'Pinjaman individu ditolak (Tidak Layak).',
+                'notes' => $notes,
                 'changed_by_user_id' => $userId,
                 'changed_at' => now(),
             ]);
@@ -2072,6 +2347,60 @@ final class LoanService
             }
 
             return $count;
+        });
+    }
+
+    /**
+     * Sinkronisasi ulang jadwal angsuran (installments) dari parameter loan
+     * terkini. Hanya untuk status draft/verified (sebelum pencairan).
+     *
+     * Mirror SIUPK original `sinkronisasiKelompok`/`sinkronisasiIndividu`.
+     *
+     * @return int Jumlah angsuran yang dihasilkan
+     */
+    public function syncSchedule(Loan $loan, int $userId): Loan
+    {
+        if (! in_array($loan->status, ['draft', 'verified'], true)) {
+            throw new DomainException(
+                'Sinkronisasi jadwal hanya untuk pinjaman dengan status draft atau verified.'
+            );
+        }
+
+        return DB::connection('tenant')->transaction(function () use ($loan, $userId): Loan {
+            $isMemberLoan = (string) $loan->legacy_source === 'member_loan';
+
+            if ($isMemberLoan) {
+                $this->regenerateIndividualSchedule(
+                    loan: $loan,
+                    principal: (float) $loan->principal_amount,
+                    termMonths: (int) $loan->term_months,
+                    serviceRateTotal: (float) ($loan->service_rate_total ?? 0),
+                    principalFrequency: (string) ($loan->principal_frequency ?: 'monthly'),
+                    interestFrequency: (string) ($loan->interest_frequency ?: $loan->principal_frequency ?: 'monthly'),
+                    principalGraceMonths: (int) ($loan->principal_grace_months ?? 0),
+                    interestGraceMonths: (int) ($loan->interest_grace_months ?? 0),
+                    disbursementDate: CarbonImmutable::parse(
+                        (string) ($loan->funded_at ?? $loan->approved_at ?? now()->toDateString())
+                    ),
+                );
+            } else {
+                $totalAllocated = (float) $loan->beneficiaries()->sum('allocated_amount');
+                $principal = $totalAllocated > 0 ? $totalAllocated : (float) $loan->principal_amount;
+                $this->regenerateInstallmentSchedule($loan, $principal);
+            }
+
+            $loan->statusHistories()->create([
+                'from_status' => $loan->status,
+                'to_status' => $loan->status,
+                'principal_amount' => (float) $loan->principal_amount,
+                'product_row_id' => $loan->loan_product_row_id,
+                'term_months' => (int) $loan->term_months,
+                'notes' => 'Sinkronisasi ulang jadwal angsuran.',
+                'changed_by_user_id' => $userId,
+                'changed_at' => now(),
+            ]);
+
+            return $loan->fresh();
         });
     }
 }

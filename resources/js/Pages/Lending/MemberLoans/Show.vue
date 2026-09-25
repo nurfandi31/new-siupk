@@ -302,6 +302,8 @@ const verifyForm = ref({
     service_rate_total: Number(props.loan.service_rate_total ?? 0),
     principal_frequency: props.loan.principal_frequency ?? 'monthly',
     interest_frequency: props.loan.interest_frequency ?? 'monthly',
+    principal_grace_months: Number(props.loan.principal_grace_months ?? 0),
+    interest_grace_months: Number(props.loan.interest_grace_months ?? 0),
     verification_notes: 'Verifikasi pinjaman individu.',
 });
 const verifyProcessing = ref(false);
@@ -321,6 +323,8 @@ const approveForm = ref({
     service_rate_total: Number(props.loan.service_rate_total ?? 0),
     principal_frequency: props.loan.principal_frequency ?? 'monthly',
     interest_frequency: props.loan.interest_frequency ?? 'monthly',
+    principal_grace_months: Number(props.loan.principal_grace_months ?? 0),
+    interest_grace_months: Number(props.loan.interest_grace_months ?? 0),
     spk_no: props.loan.spk_no ?? '',
     allocation_notes: '',
 });
@@ -1022,7 +1026,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         <div class="grid gap-4 sm:grid-cols-2">
                             <label class="block">
                                 <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Tanggal Verifikasi</span>
-                                <input v-model="verifyForm.verified_at" type="date" required class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
+                                <input v-model="verifyForm.verified_at" type="date" required :max="today" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
                                 <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Nominal Verifikasi (Rp)</span>
@@ -1048,10 +1052,20 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                                     <option v-for="opt in FREQUENCY_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                                 </select>
                             </label>
+                            <label class="block">
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Grace Pokok (bulan)</span>
+                                <input v-model.number="verifyForm.principal_grace_months" type="number" min="0" max="120" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
+                            </label>
+                            <label class="block">
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Grace Jasa (bulan)</span>
+                                <input v-model.number="verifyForm.interest_grace_months" type="number" min="0" max="120" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
+                            </label>
                         </div>
                         <label class="block">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Catatan Verifikasi</span>
-                            <textarea v-model="verifyForm.verification_notes" rows="3" class="mt-1 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none"></textarea>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Catatan Verifikasi <span class="text-error">*</span></span>
+                            <textarea v-model="verifyForm.verification_notes" rows="3" required minlength="3" maxlength="5000" class="mt-1 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none"></textarea>
+                            <p v-if="verifyForm.errors.verification_notes" class="mt-1 text-xs text-error">{{ verifyForm.errors.verification_notes }}</p>
+                            <p class="mt-1 text-[10px] text-on-surface-variant">Wajib diisi untuk audit trail.</p>
                         </label>
                         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                             <Link :href="backUrl"><AppButton type="button" variant="secondary">Kembali</AppButton></Link>
@@ -1111,6 +1125,14 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                                 <select v-model="approveForm.interest_frequency" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                                     <option v-for="opt in FREQUENCY_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                                 </select>
+                            </label>
+                            <label class="block">
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Grace Pokok (bulan)</span>
+                                <input v-model.number="approveForm.principal_grace_months" type="number" min="0" max="120" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
+                            </label>
+                            <label class="block">
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Grace Jasa (bulan)</span>
+                                <input v-model.number="approveForm.interest_grace_months" type="number" min="0" max="120" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                         </div>
                         <label class="block">

@@ -140,6 +140,7 @@ const canAllocatePerBeneficiary = computed(() => can('loans.approve') && props.l
 const canShowAllocatedAmount = computed(() => ['verified', 'waiting', 'approved', 'active', 'disbursed', 'completed', 'written_off', 'rescheduled'].includes(props.loan.status));
 const canShowVerifiedAmount = computed(() => ['draft', 'verified', 'waiting', 'approved', 'active', 'disbursed', 'completed', 'written_off', 'rescheduled'].includes(props.loan.status));
 const canRevert = computed(() => can('loans.manage') && ['verified', 'waiting', 'approved'].includes(props.loan.status));
+const canReject = computed(() => can('loans.manage') && ['draft', 'verified'].includes(props.loan.status));
 const isActiveLoan = computed(() => ['active', 'disbursed'].includes(props.loan.status));
 const canReschedule = computed(() => (can('loans.reschedule_director') || can('loans.manage')) && isActiveLoan.value && Number(props.loan.principal_remaining) > 0);
 const canWriteOff = computed(() => can('loans.write_off') && isActiveLoan.value && Number(props.loan.principal_remaining) > 0);
@@ -317,6 +318,71 @@ function confirmRevert() {
         preserveScroll: true,
         onFinish: () => { revertProcessing.value = false; },
         onError: (errors) => { revertError.value = errors?.error || 'Gagal mengembalikan pinjaman.'; },
+    });
+}
+
+// ===== Reject (Tidak Layak) modal =====
+const rejectModalOpen = ref(false);
+const rejectForm = useForm({ notes: '' });
+const rejectProcessing = ref(false);
+const rejectError = ref('');
+function openRejectModal() {
+    rejectError.value = '';
+    rejectForm.notes = '';
+    rejectForm.clearErrors();
+    rejectModalOpen.value = true;
+}
+function submitReject() {
+    rejectProcessing.value = true;
+    rejectError.value = '';
+    router.patch(`/lending/loans/${props.loan.row_id}/reject`, rejectForm, {
+        preserveScroll: true,
+        onFinish: () => { rejectProcessing.value = false; },
+        onSuccess: () => { rejectModalOpen.value = false; },
+        onError: (errors) => {
+            rejectError.value = errors?.error || errors?.notes || 'Gagal menolak pinjaman.';
+            rejectProcessing.value = false;
+        },
+    });
+}
+
+// ===== Simpan Data (koreksi post-cair) =====
+const canSimpanData = computed(() =>
+    can('loans.manage') && props.loan.status === 'disbursed'
+);
+const simpanProcessing = ref(false);
+const simpanError = ref('');
+function submitSimpanData() {
+    if (!confirm('Simpan ulang data pinjaman? Jadwal angsuran akan disinkronkan ulang.')) return;
+    simpanProcessing.value = true;
+    simpanError.value = '';
+    router.patch(`/lending/loans/${props.loan.row_id}/simpan-data`, {}, {
+        preserveScroll: true,
+        onFinish: () => { simpanProcessing.value = false; },
+        onError: (errors) => {
+            simpanError.value = errors?.error || 'Gagal menyimpan ulang data pinjaman.';
+            simpanProcessing.value = false;
+        },
+    });
+}
+
+// ===== Sinkronkan Jadwal (manual) =====
+const canSyncSchedule = computed(() =>
+    can('loans.manage') && ['disbursed', 'active'].includes(props.loan.status)
+);
+const syncProcessing = ref(false);
+const syncError = ref('');
+function submitSyncSchedule() {
+    if (!confirm('Sinkronkan ulang jadwal angsuran dari parameter terkini?')) return;
+    syncProcessing.value = true;
+    syncError.value = '';
+    router.patch(`/lending/loans/${props.loan.row_id}/sync-schedule`, {}, {
+        preserveScroll: true,
+        onFinish: () => { syncProcessing.value = false; },
+        onError: (errors) => {
+            syncError.value = errors?.error || 'Gagal menyinkronkan jadwal.';
+            syncProcessing.value = false;
+        },
     });
 }
 
@@ -716,6 +782,21 @@ const beneficiaryStats = computed(() => ({
             </section>
 
             <!-- ============================================== -->
+            <!-- POST-CAIR ACTION BAR (koreksi & sinkronisasi)     -->
+            <!-- ============================================== -->
+            <section v-if="canSimpanData || canSyncSchedule" class="flex flex-wrap items-center justify-end gap-2 rounded-2xl bg-surface-container-lowest px-4 py-3 shadow-sm">
+                <p v-if="simpanError" class="mr-auto text-xs text-error">{{ simpanError }}</p>
+                <p v-else-if="syncError" class="mr-auto text-xs text-error">{{ syncError }}</p>
+                <p v-else class="mr-auto text-xs text-on-surface-variant">Aksi post-cair (tidak mengubah status pinjaman).</p>
+                <AppButton v-if="canSyncSchedule" type="button" variant="secondary" :loading="syncProcessing" @click="submitSyncSchedule">
+                    <AppIcon name="sync" class="text-base" />Sinkronkan Jadwal
+                </AppButton>
+                <AppButton v-if="canSimpanData" type="button" variant="secondary" :loading="simpanProcessing" @click="submitSimpanData">
+                    <AppIcon name="save" class="text-base" />Simpan Ulang Data
+                </AppButton>
+            </section>
+
+            <!-- ============================================== -->
             <!-- TAB BAR (segmented control)                       -->
             <!-- ============================================== -->
             <div class="-mx-1 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-1.5 py-1.5 shadow-sm">
@@ -907,7 +988,7 @@ const beneficiaryStats = computed(() => ({
                             <SmartSelect v-model="verifyForm.interest_frequency" label="Sistem Jasa" :options="frequencyOptions" :error="verifyForm.errors.interest_frequency" />
                             <SmartSelect v-model="verifyForm.interest_grace_months" label="Grace Jasa" :options="graceOptions" :error="verifyForm.errors.interest_grace_months" />
                         </div>
-                        <AppTextarea v-model="verifyForm.verification_notes" label="Catatan Verifikasi (opsional)" :error="verifyForm.errors.verification_notes" placeholder="Hasil pemeriksaan lapangan, kelengkapan dokumen, dll." />
+                        <AppTextarea v-model="verifyForm.verification_notes" label="Catatan Verifikasi" :error="verifyForm.errors.verification_notes" placeholder="Hasil pemeriksaan lapangan, kelengkapan dokumen, dll." required hint="Wajib diisi untuk audit trail." />
                         <div class="flex justify-end pt-1">
                             <AppButton type="submit" :loading="verifyForm.processing">Simpan &amp; Verifikasi</AppButton>
                         </div>
@@ -944,6 +1025,7 @@ const beneficiaryStats = computed(() => ({
                             <Link :href="backUrl"><AppButton type="button" variant="secondary">Kembali</AppButton></Link>
                             <div class="flex flex-wrap items-center gap-2">
                                 <AppButton v-if="canRevert" type="button" variant="secondary" @click="openRevertModal">Kembalikan ke Draft</AppButton>
+                                <AppButton v-if="canReject" type="button" variant="danger" @click="openRejectModal">Tidak Layak</AppButton>
                                 <AppButton type="submit" :loading="approveForm.processing">Simpan &amp; Alokasikan</AppButton>
                             </div>
                         </div>
@@ -970,6 +1052,7 @@ const beneficiaryStats = computed(() => ({
                             <Link :href="backUrl"><AppButton type="button" variant="secondary">Kembali</AppButton></Link>
                             <div class="flex flex-wrap items-center gap-2">
                                 <AppButton v-if="canRevert" type="button" variant="secondary" @click="openRevertModal">Kembalikan ke Draft</AppButton>
+                                <AppButton v-if="canReject" type="button" variant="danger" @click="openRejectModal">Tidak Layak</AppButton>
                                 <AppButton v-if="canDisburseAction" type="submit" :loading="disburseForm.processing">Catat Pencairan</AppButton>
                             </div>
                         </div>
@@ -1247,6 +1330,27 @@ const beneficiaryStats = computed(() => ({
             <template #footer>
                 <AppButton type="button" variant="secondary" @click="revertModalOpen = false" :disabled="revertProcessing">Batal</AppButton>
                 <AppButton type="button" variant="danger" @click="confirmRevert" :loading="revertProcessing">Kembalikan</AppButton>
+            </template>
+        </AppModal>
+
+        <AppModal v-model="rejectModalOpen" title="Tandai Pinjaman Tidak Layak?" size="md">
+            <div class="space-y-3">
+                <p class="text-sm text-on-surface-variant">Pinjaman akan ditandai sebagai <strong>Tidak Layak</strong> dan tidak dapat dicairkan. Tindakan ini akan dicatat di status history untuk audit.</p>
+                <form class="space-y-3" @submit.prevent="submitReject">
+                    <AppTextarea
+                        v-model="rejectForm.notes"
+                        label="Alasan penolakan"
+                        :error="rejectForm.errors.notes"
+                        placeholder="Jelaskan alasan pinjaman tidak layak (wajib, min. 3 karakter)."
+                        rows="3"
+                        required
+                    />
+                    <p v-if="rejectError" class="text-sm text-error">{{ rejectError }}</p>
+                </form>
+            </div>
+            <template #footer>
+                <AppButton type="button" variant="secondary" @click="rejectModalOpen = false" :disabled="rejectProcessing">Batal</AppButton>
+                <AppButton type="button" variant="danger" :loading="rejectProcessing" @click="submitReject">Tolak Pinjaman</AppButton>
             </template>
         </AppModal>
 

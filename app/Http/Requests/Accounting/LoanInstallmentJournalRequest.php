@@ -6,6 +6,7 @@ namespace App\Http\Requests\Accounting;
 
 use App\Domain\Accounting\Models\Account;
 use App\Domain\Lending\Models\Loan;
+use App\Domain\Lending\Models\LoanInstallment;
 use App\Domain\Membership\Models\Member;
 use App\Http\Requests\Concerns\AuthorizesPermission;
 use App\Tenancy\TenantContext;
@@ -65,7 +66,7 @@ final class LoanInstallmentJournalRequest extends FormRequest
             'loan_id' => ['required', 'integer', $loanExists],
             'installment_row_id' => ['nullable', 'integer'],
             'installment_number' => ['nullable', 'integer', 'min:1'],
-            'principal_amount' => ['required', 'numeric', 'min:1'],
+            'principal_amount' => ['required', 'numeric', 'min:0'],
             'interest_amount' => ['required', 'numeric', 'min:0'],
             'penalty_amount' => ['nullable', 'numeric', 'min:0'],
             'cash_account_row_id' => ['required', 'integer', $cashAccountExists],
@@ -82,6 +83,46 @@ final class LoanInstallmentJournalRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator): void {
+            $principalAmount = (float) $this->input('principal_amount', 0);
+            $interestAmount = (float) $this->input('interest_amount', 0);
+            $penaltyAmount = (float) ($this->input('penalty_amount') ?? 0);
+
+            // Mirror SIUPK: total bayar (pokok + jasa + denda) tidak boleh 0.
+            if (round($principalAmount + $interestAmount + $penaltyAmount, 2) <= 0) {
+                $validator->errors()->add(
+                    'principal_amount',
+                    'Total bayar (pokok + jasa + denda) tidak boleh nol.'
+                );
+            }
+
+            // Mirror SIUPK: jika installment_row_id ditentukan, validasi
+            // bahwa nominal tidak melebihi sisa tagihan angsuran tsb.
+            $installmentRowId = (int) $this->input('installment_row_id', 0);
+            if ($installmentRowId > 0) {
+                $tenantId = app(TenantContext::class)->id();
+                $inst = LoanInstallment::query()
+                    ->where('tenant_id', $tenantId)
+                    ->where('row_id', $installmentRowId)
+                    ->first(['row_id', 'principal_due', 'principal_paid', 'interest_due', 'interest_paid']);
+                if ($inst) {
+                    $remainingP = round((float) $inst->principal_due - (float) $inst->principal_paid, 2);
+                    $remainingI = round((float) $inst->interest_due - (float) $inst->interest_paid, 2);
+                    if ($principalAmount > $remainingP + 0.005) {
+                        $validator->errors()->add(
+                            'principal_amount',
+                            'Nominal pokok ('.number_format($principalAmount, 0, ',', '.').') melebihi sisa tagihan angsuran ini ('.number_format($remainingP, 0, ',', '.').').'
+                        );
+                    }
+                    if ($interestAmount > $remainingI + 0.005) {
+                        $validator->errors()->add(
+                            'interest_amount',
+                            'Nominal jasa ('.number_format($interestAmount, 0, ',', '.').') melebihi sisa tagihan angsuran ini ('.number_format($remainingI, 0, ',', '.').').'
+                        );
+                    }
+                }
+            }
+
+            // Validasi konsistensi member_allocations (sudah ada) + cek per-anggota negatif.
             $allocations = $this->input('member_allocations');
             if (! is_array($allocations) || $allocations === []) {
                 return;
@@ -90,18 +131,27 @@ final class LoanInstallmentJournalRequest extends FormRequest
             $principalTotal = 0.0;
             $interestTotal = 0.0;
             $penaltyTotal = 0.0;
-            foreach ($allocations as $row) {
+            foreach ($allocations as $idx => $row) {
                 if (! is_array($row)) {
                     continue;
                 }
-                $principalTotal += (float) ($row['principal_paid'] ?? 0);
-                $interestTotal += (float) ($row['interest_paid'] ?? 0);
-                $penaltyTotal += (float) ($row['penalty_paid'] ?? 0);
+                $p = (float) ($row['principal_paid'] ?? 0);
+                $i = (float) ($row['interest_paid'] ?? 0);
+                $d = (float) ($row['penalty_paid'] ?? 0);
+                if ($p < 0 || $i < 0 || $d < 0) {
+                    $validator->errors()->add(
+                        'member_allocations.'.$idx,
+                        'Nilai catatan per-anggota tidak boleh negatif.'
+                    );
+                }
+                $principalTotal += $p;
+                $interestTotal += $i;
+                $penaltyTotal += $d;
             }
 
-            $expectedPrincipal = round((float) $this->input('principal_amount', 0), 2);
-            $expectedInterest = round((float) $this->input('interest_amount', 0), 2);
-            $expectedPenalty = round((float) ($this->input('penalty_amount') ?? 0), 2);
+            $expectedPrincipal = round($principalAmount, 2);
+            $expectedInterest = round($interestAmount, 2);
+            $expectedPenalty = round($penaltyAmount, 2);
 
             if (round($principalTotal, 2) !== $expectedPrincipal) {
                 $validator->errors()->add(

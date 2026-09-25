@@ -34,6 +34,18 @@ final class LoanApproveRequest extends FormRequest
             'interest_frequency' => ['nullable', 'string', Rule::enum(Frequency::class)],
             'principal_grace_months' => ['nullable', 'integer', 'min:0', 'max:120', new ValidLoanSchedule],
             'interest_grace_months' => ['nullable', 'integer', 'min:0', 'max:120', new ValidLoanSchedule],
+
+            // SPK number — REQUIRED + UNIQUE di tenant (mirror siupk yang
+            // meng-UNIQUE-kan spk_no per kecamatan saat V -> W). Snapshot dari
+            // verifikasi jika tidak dikirim form.
+            'spk_no' => [
+                'nullable',
+                'string',
+                'max:80',
+                Rule::unique('loans', 'spk_no')
+                    ->ignore($this->route('loan')?->row_id, 'row_id')
+                    ->where(fn ($query) => $query->where('tenant_id', $tenantId)),
+            ],
         ];
     }
 
@@ -52,6 +64,14 @@ final class LoanApproveRequest extends FormRequest
             'interest_frequency' => 'sistem angsuran jasa',
             'principal_grace_months' => 'grace period pokok',
             'interest_grace_months' => 'grace period jasa',
+            'spk_no' => 'nomor SPK',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'spk_no.unique' => 'Nomor SPK sudah dipakai oleh pinjaman lain di tenant ini.',
         ];
     }
 

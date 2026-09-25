@@ -19,7 +19,9 @@ final class LoanVerifyRequest extends FormRequest
         return [
             'verified_at' => ['required', 'date', 'before_or_equal:today'],
             'verification_amount' => ['nullable', 'numeric', 'min:0'],
-            'verification_notes' => ['nullable', 'string', 'min:3', 'max:5000'],
+            // Mirror SIUPK original: catatan_verifikasi WAJIB di status V
+            // (audit trail — alasan verifikator memutuskan plafon/jangka).
+            'verification_notes' => ['required', 'string', 'min:3', 'max:5000'],
             'verified_amounts' => ['nullable', 'array'],
             'verified_amounts.*' => ['numeric', 'min:0'],
             'term_months' => ['nullable', 'integer', 'min:1', 'max:120'],
