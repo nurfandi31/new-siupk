@@ -132,6 +132,7 @@ function formatMoney(value) {
                                 <th rowspan="2" class="p-3 text-left">Peminjam / Loan ID</th>
                                 <th rowspan="2" class="p-3">NIK</th>
                                 <th rowspan="2" class="p-3">Pencairan</th>
+                                <th rowspan="2" class="p-3 text-center">Tempo (bln)</th>
                                 <th rowspan="2" class="p-3 text-right">Alokasi</th>
                                 <th colspan="2" class="p-3 border-l border-outline-variant/20">Target</th>
                                 <th colspan="2" class="p-3 border-l border-outline-variant/20">Real s.d. Lalu</th>
@@ -139,6 +140,7 @@ function formatMoney(value) {
                                 <th colspan="2" class="p-3 border-l border-outline-variant/20">Real Kumulatif</th>
                                 <th colspan="2" class="p-3 border-l border-outline-variant/20">Saldo</th>
                                 <th colspan="2" class="p-3 border-l border-outline-variant/20">Tunggakan</th>
+                                <th rowspan="2" class="p-3 text-center">% Ratio</th>
                             </tr>
                             <tr class="border-b border-outline-variant/30 text-center text-[11px] text-on-surface-variant">
                                 <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
@@ -158,7 +160,7 @@ function formatMoney(value) {
                         <tbody class="divide-y divide-outline-variant/20">
                             <template v-for="v in prod.villages" :key="v.village_name">
                                 <tr class="bg-surface-variant/30 font-bold text-on-surface">
-                                    <td colspan="15" class="p-2.5 px-3">DESA: {{ v.village_name.toUpperCase() }}</td>
+                                    <td colspan="17" class="p-2.5 px-3">DESA: {{ v.village_name.toUpperCase() }}</td>
                                 </tr>
                                 <tr v-for="loan in v.loans" :key="loan.loan_id" class="hover:bg-surface-variant/10">
                                     <td class="p-2.5 px-3 font-medium text-on-surface">
@@ -166,6 +168,7 @@ function formatMoney(value) {
                                     </td>
                                     <td class="p-2.5 text-center text-on-surface-variant">{{ loan.nik || '-' }}</td>
                                     <td class="p-2.5 text-center text-on-surface-variant">{{ loan.disbursed_at || '-' }}</td>
+                                    <td class="p-2.5 text-center">{{ loan.term_months || 0 }}</td>
                                     <td class="p-2.5 text-right">{{ formatMoney(loan.alokasi) }}</td>
                                     <td class="p-2.5 text-right border-l border-outline-variant/20">{{ formatMoney(loan.target_pokok) }}</td>
                                     <td class="p-2.5 text-right">{{ formatMoney(loan.target_jasa) }}</td>
@@ -183,12 +186,15 @@ function formatMoney(value) {
                                     <td class="p-2.5 text-right font-semibold" :class="loan.tunggakan_jasa > 0 ? 'text-error' : ''">
                                         {{ formatMoney(loan.tunggakan_jasa) }}
                                     </td>
+                                    <td class="p-2.5 text-center font-semibold" :class="loan.ratio_pelunasan >= 100 ? 'text-success' : ''">
+                                        {{ loan.ratio_pelunasan ?? 0 }}%
+                                    </td>
                                 </tr>
                             </template>
                         </tbody>
                         <tfoot class="bg-surface-variant/40 font-bold text-on-surface">
                             <tr class="border-t border-outline-variant/40">
-                                <td colspan="3" class="p-3">TOTAL {{ prod.product_code }}</td>
+                                <td colspan="4" class="p-3">TOTAL {{ prod.product_code }}</td>
                                 <td class="p-3 text-right">{{ formatMoney(prod.totals.alokasi) }}</td>
                                 <td class="p-3 text-right border-l border-outline-variant/20">{{ formatMoney(prod.totals.target_pokok) }}</td>
                                 <td class="p-3 text-right">{{ formatMoney(prod.totals.target_jasa) }}</td>
@@ -205,6 +211,10 @@ function formatMoney(value) {
                                 </td>
                                 <td class="p-3 text-right" :class="prod.totals.tunggakan_jasa > 0 ? 'text-error' : ''">
                                     {{ formatMoney(prod.totals.tunggakan_jasa) }}
+                                </td>
+                                <td class="p-3 text-center">
+                                    <span v-if="prod.totals.alokasi > 0">{{ ((prod.totals.real_kumulatif_pokok / prod.totals.alokasi) * 100).toFixed(1) }}%</span>
+                                    <span v-else>0%</span>
                                 </td>
                             </tr>
                         </tfoot>

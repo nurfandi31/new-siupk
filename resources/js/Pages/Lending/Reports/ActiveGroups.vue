@@ -177,7 +177,7 @@ const pdfUrl = computed(() => {
                             </td>
                             <td class="p-2.5 text-center">{{ row.member_count }}</td>
                             <td class="p-2.5 text-center">{{ row.active_loan_count }}</td>
-                            <td class="p-2.5 text-right text-on-surface-variant">—</td>
+                            <td class="p-2.5 text-right text-on-surface-variant" :title="row.savings_total_note">{{ formatMoney(row.savings_total) }}</td>
                             <td class="p-2.5 text-right font-semibold text-primary">
                                 {{ formatMoney(row.outstanding_total) }}
                             </td>
@@ -188,7 +188,7 @@ const pdfUrl = computed(() => {
                             <td colspan="6" class="p-3">TOTAL</td>
                             <td class="p-3 text-center">{{ totals.member_total }}</td>
                             <td class="p-3 text-center">{{ totals.active_loan_total }}</td>
-                            <td class="p-3 text-right">—</td>
+                            <td class="p-3 text-right text-on-surface-variant">0</td>
                             <td class="p-3 text-right text-primary">{{ formatMoney(totals.outstanding_total) }}</td>
                         </tr>
                     </tfoot>

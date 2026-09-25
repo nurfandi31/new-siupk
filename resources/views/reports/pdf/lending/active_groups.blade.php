@@ -43,7 +43,7 @@
                     <td class="l b">{{ $row['ketua_name'] ?? '—' }}</td>
                     <td class="l b" align="center">{{ $row['member_count'] }}</td>
                     <td class="l b" align="center">{{ $row['active_loan_count'] }}</td>
-                    <td class="l b num">—</td>
+                    <td class="l b num">{{ number_format($row['savings_total'] ?? 0, 0, ',', '.') }}</td>
                     <td class="l b r num">{{ number_format($row['outstanding_total'], 0, ',', '.') }}</td>
                 </tr>
             @empty
@@ -59,7 +59,7 @@
                 <th class="t l b" colspan="5" align="left">TOTAL</th>
                 <th class="t l b" align="center">{{ $totals['member_total'] }}</th>
                 <th class="t l b" align="center">{{ $totals['active_loan_total'] }}</th>
-                <th class="t l b">—</th>
+                <th class="t l b num">0</th>
                 <th class="t l b r num">{{ number_format($totals['outstanding_total'], 0, ',', '.') }}</th>
             </tr>
             <tr style="font-weight: normal;">

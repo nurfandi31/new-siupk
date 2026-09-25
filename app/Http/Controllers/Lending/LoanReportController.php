@@ -200,6 +200,33 @@ final class LoanReportController
         );
     }
 
+    public function kolekDesaIndividu(Request $request): InertiaResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+
+        return Inertia::render('Lending/Reports/KolekDesaIndividu', [
+            ...$this->collectibility->buildDesaIndividu($year, $month, is_string($product) ? $product : null),
+            'filters' => ['year' => $year, 'month' => $month, 'product' => $product],
+        ]);
+    }
+
+    public function kolekDesaIndividuPdf(Request $request): Response|StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+        $data = $this->collectibility->buildDesaIndividu($year, $month, is_string($product) ? $product : null);
+
+        return $this->pdf->stream(
+            'reports.pdf.lending.kolek_desa_individu',
+            $data,
+            sprintf('kolektibilitas-desa-individu-%04d-%02d.pdf', $year, $month),
+            'landscape',
+        );
+    }
+
     public function kolekIndividu(Request $request): InertiaResponse
     {
         $this->authorize($request);

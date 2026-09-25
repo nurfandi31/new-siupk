@@ -107,8 +107,8 @@ final class NearSettlementReportService
 
         $loans = $loansQuery
             ->selectRaw('l.row_id, l.id, l.loan_number, l.principal_amount, l.disbursed_at, l.term_months, l.legacy_source, lp.code as product_code, lp.name as product_name')
-            ->selectRaw('g.row_id as group_row_id, g.code as group_code, g.name as group_name, gv.name as group_village_name')
-            ->selectRaw('m.row_id as member_row_id, m.member_number, p.full_name as member_name, p.national_identity_number as nik, mv.name as member_village_name')
+            ->selectRaw('g.row_id as group_row_id, g.code as group_code, g.name as group_name, g.address as group_address, g.phone as group_phone, gv.name as group_village_name')
+            ->selectRaw('m.row_id as member_row_id, m.member_number, p.full_name as member_name, p.address as member_address, p.phone as member_phone, p.national_identity_number as nik, mv.name as member_village_name')
             ->orderBy('l.id')
             ->get();
 
@@ -237,6 +237,13 @@ final class NearSettlementReportService
                 'borrower_name' => (string) $borrowerName,
                 'borrower_identifier' => $borrowerIdentifier,
                 'village_name' => $villageName,
+                'address' => $loan->legacy_source === 'member_loan'
+                    ? ($loan->member_address ?? null)
+                    : ($loan->group_address ?? null),
+                'phone' => $loan->legacy_source === 'member_loan'
+                    ? ($loan->member_phone ?? null)
+                    : ($loan->group_phone ?? null),
+                'term_months' => (int) ($loan->term_months ?? 0),
                 'principal' => $principal,
                 'remaining_principal' => $remainingPrincipal,
                 'installment_number' => $installmentKe,

@@ -705,7 +705,7 @@ final class LppReportService
             ->orderBy('l.id');
 
         $loans = $loansQuery
-            ->selectRaw('l.row_id, l.id, l.loan_number, l.loan_product_row_id, l.disbursed_at, l.principal_amount, m.row_id as member_row_id, m.member_number, p.full_name as member_name, p.national_identity_number as nik, mv.row_id as village_row_id, mv.name as village_name')
+            ->selectRaw('l.row_id, l.id, l.loan_number, l.loan_product_row_id, l.disbursed_at, l.principal_amount, l.term_months, l.service_rate_total, m.row_id as member_row_id, m.member_number, p.full_name as member_name, p.national_identity_number as nik, mv.row_id as village_row_id, mv.name as village_name')
             ->get();
 
         $loanRowIds = $loans->pluck('row_id')->map(fn ($id) => (int) $id)->all();
@@ -854,6 +854,9 @@ final class LppReportService
                 $tunggakanPokok = max(0.0, round($targetPokok - $realKumulatifPokok, 2));
                 $tunggakanJasa = max(0.0, round($targetJasa - $realKumulatifJasa, 2));
 
+                // Ratio pelunasan: real_kumulatif_pokok / alokasi (0-100%)
+                $ratioPelunasan = $alokasi > 0 ? round(($realKumulatifPokok / $alokasi) * 100, 1) : 0.0;
+
                 $loanData = [
                     'loan_id' => (int) $loan->id,
                     'loan_number' => (string) $loan->loan_number,
@@ -861,6 +864,8 @@ final class LppReportService
                     'member_number' => $loan->member_number,
                     'nik' => $loan->nik,
                     'disbursed_at' => (string) $loan->disbursed_at,
+                    'term_months' => (int) ($loan->term_months ?? 0),
+                    'service_rate_total' => (float) ($loan->service_rate_total ?? 0),
                     'alokasi' => $alokasi,
                     'target_pokok' => $targetPokok,
                     'target_jasa' => $targetJasa,
@@ -874,6 +879,7 @@ final class LppReportService
                     'saldo_jasa' => $saldoJasa,
                     'tunggakan_pokok' => $tunggakanPokok,
                     'tunggakan_jasa' => $tunggakanJasa,
+                    'ratio_pelunasan' => $ratioPelunasan,
                 ];
 
                 $villagesMap[$vKey]['loans'][] = $loanData;

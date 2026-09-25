@@ -18,6 +18,9 @@ interface NearSettlementRow {
     borrower_name: string;
     borrower_identifier: string | null;
     village_name: string | null;
+    address: string | null;
+    phone: string | null;
+    term_months: number;
     principal: number;
     remaining_principal: number;
     installment_number: number;
@@ -199,11 +202,14 @@ function formatDate(s: string | null | undefined): string {
                             <th class="p-3 text-left">No. Kontrak</th>
                             <th class="p-3 text-left">Subjek</th>
                             <th class="p-3 text-left">Peminjam / Kelompok</th>
+                            <th class="p-3 text-left">Alamat</th>
+                            <th class="p-3 text-left">Telpon</th>
                             <th class="p-3 text-right">Pokok</th>
                             <th class="p-3 text-right">Sisa Pokok</th>
-                            <th class="p-3 text-center">Angsuran ke-</th>
+                            <th class="p-3 text-center">Jangka (bln)</th>
                             <th class="p-3 text-center">Sisa Tenor</th>
                             <th class="p-3 text-center">Tgl Jatuh Tempo Berikutnya</th>
+                            <th class="p-3 text-center">Sisa Waktu (hari)</th>
                             <th class="p-3 text-center">Tgl Estimasi Lunas</th>
                             <th class="p-3 text-center">Status</th>
                         </tr>
@@ -223,15 +229,18 @@ function formatDate(s: string | null | undefined): string {
                                     {{ row.borrower_identifier || '—' }}<span v-if="row.village_name"> • {{ row.village_name }}</span>
                                 </div>
                             </td>
+                            <td class="p-2.5 text-[11px] text-on-surface-variant">{{ row.address || '—' }}</td>
+                            <td class="p-2.5 text-[11px] text-on-surface-variant">{{ row.phone || '—' }}</td>
                             <td class="p-2.5 text-right">{{ formatMoney(row.principal) }}</td>
                             <td class="p-2.5 text-right font-semibold text-primary">{{ formatMoney(row.remaining_principal) }}</td>
+                            <td class="p-2.5 text-center">{{ row.term_months || 0 }}</td>
                             <td class="p-2.5 text-center">{{ row.installment_number }}</td>
                             <td class="p-2.5 text-center font-semibold">{{ row.remaining_tenor }}</td>
                             <td class="p-2.5 text-center" :class="row.is_overdue ? 'text-error font-semibold' : 'text-on-surface'">
                                 {{ formatDate(row.next_due_date) }}
-                                <div class="text-[10px] text-on-surface-variant">
-                                    {{ row.is_overdue ? `Overdue ${row.days_to_next_due} hari` : `${row.days_to_next_due} hari lagi` }}
-                                </div>
+                            </td>
+                            <td class="p-2.5 text-center" :class="row.is_overdue ? 'text-error font-semibold' : 'text-on-surface-variant'">
+                                {{ row.is_overdue ? `Overdue ${row.days_to_next_due}` : row.days_to_next_due }}
                             </td>
                             <td class="p-2.5 text-center">{{ formatDate(row.estimated_settlement_date) }}</td>
                             <td class="p-2.5 text-center">
@@ -243,7 +252,7 @@ function formatDate(s: string | null | undefined): string {
                     </tbody>
                     <tfoot v-if="rows.length > 0" class="bg-surface-variant/40 font-bold text-on-surface">
                         <tr class="border-t border-outline-variant/40">
-                            <td colspan="4" class="p-3">TOTAL</td>
+                            <td colspan="6" class="p-3">TOTAL</td>
                             <td class="p-3 text-right">{{ formatMoney(totals.principal_total) }}</td>
                             <td class="p-3 text-right text-primary">{{ formatMoney(totals.remaining_principal_total) }}</td>
                             <td colspan="5" class="p-3 text-center text-on-surface-variant">
