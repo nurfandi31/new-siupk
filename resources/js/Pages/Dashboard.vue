@@ -479,7 +479,7 @@ function cardKpiTextClass(card) {
         <AppModal
             :model-value="open"
             :title="`Pinjaman · ${pipeline_modal?.label ?? ''}`"
-            size="lg"
+            size="full"
             @update:model-value="(value) => { if (!value) closePipeline(); }"
         >
             <div v-if="pipeline_modal" class="space-y-3">

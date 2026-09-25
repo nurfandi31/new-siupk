@@ -24,7 +24,7 @@ const containerClass = {
     sm: 'p-4',
     md: 'p-4',
     lg: 'p-4',
-    full: 'p-4',
+    full: 'p-4 sm:p-6',
     fullscreen: 'p-0',
 };
 const panelSizeClass = {
@@ -33,6 +33,15 @@ const panelSizeClass = {
     lg: 'max-h-[calc(100vh-2rem)] rounded-2xl',
     full: 'max-h-[calc(100vh-2rem)] rounded-2xl',
     fullscreen: 'h-screen max-h-screen rounded-none',
+};
+// Wrapper alignment — full & lg center (true centered modal),
+// sm/md/fullscreen stretch (top-aligned sheets / fullscreen take-over).
+const wrapperAlignClass = {
+    sm: 'items-stretch justify-stretch',
+    md: 'items-stretch justify-stretch',
+    lg: 'items-center justify-center',
+    full: 'items-center justify-center',
+    fullscreen: 'items-stretch justify-stretch',
 };
 
 const titleId = useId();
@@ -87,7 +96,7 @@ onBeforeUnmount(() => {
 <template>
     <Teleport to="body">
         <Transition name="modal">
-            <div v-if="model" :class="['fixed inset-0 z-50 flex flex-col items-stretch justify-stretch overflow-hidden bg-primary/45 backdrop-blur-xs', containerClass[size] ?? containerClass.md]" @click.self="close">
+            <div v-if="model" :class="['fixed inset-0 z-50 flex flex-col overflow-hidden bg-primary/45 backdrop-blur-xs', wrapperAlignClass[size] ?? wrapperAlignClass.md, containerClass[size] ?? containerClass.md]" @click.self="close">
                 <section ref="panel" role="dialog" aria-modal="true" :aria-labelledby="titleId" tabindex="-1" :class="['flex w-full flex-col bg-surface-container-lowest shadow-2xl focus:outline-none', sizeClass[size] ?? sizeClass.md, panelSizeClass[size] ?? panelSizeClass.md]" @keydown="onKeydown">
                     <header class="flex shrink-0 items-center justify-between gap-4 inset-divider px-5 py-4 sm:px-6">
                         <h2 :id="titleId" class="text-lg font-bold text-primary">{{ title }}</h2>
