@@ -37,7 +37,14 @@ final readonly class ResolveTenant
             }
         }
 
-        if (is_string($code) && trim($code) !== '') {
+        // Some routes (e.g. the /login/user quick-login switcher) must always
+        // scope to the tenant that owns the current host, even when a user from
+        // another tenant happens to be signed in. Those routes set this default.
+        $forceHost = (bool) $request->route('tenant_from_host', false);
+
+        if ($forceHost) {
+            $tenant = $this->resolver->resolveByHost($request->getHost(), $request->user());
+        } elseif (is_string($code) && trim($code) !== '') {
             $trimmed = trim($code);
             // Numeric route param = row_id (e.g. /admin/tenants/{tenant}/onboarding).
             // String route param = tenant code (e.g. /admin/tenants/local/onboarding).

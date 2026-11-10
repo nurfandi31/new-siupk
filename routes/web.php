@@ -49,6 +49,7 @@ use App\Http\Controllers\Admin\TenantUserController as AdminTenantUserController
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Assets\AssetController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\UserLoginController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Billing\InvoiceController as TenantInvoiceController;
 use App\Http\Controllers\Budgeting\BudgetController;
@@ -160,6 +161,18 @@ Route::middleware('guest')->group(function (): void {
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
+
+// Passwordless quick-login switcher. Always scoped to the tenant that owns the
+// current host (never the central/platform users) — see UserLoginController.
+Route::middleware('tenant')->group(function (): void {
+    Route::get('/login/user', [UserLoginController::class, 'index'])
+        ->defaults('tenant_from_host', true)
+        ->name('login.users');
+    Route::post('/login/user/{user}', [UserLoginController::class, 'login'])
+        ->defaults('tenant_from_host', true)
+        ->middleware('throttle:30,1')
+        ->name('login.users.login');
+});
 
 Route::get('/auth/impersonate/{token}', [ImpersonationController::class, 'consume'])->name('auth.impersonate');
 Route::post('/auth/impersonate/leave', [ImpersonationController::class, 'leave'])->name('auth.impersonate.leave');
