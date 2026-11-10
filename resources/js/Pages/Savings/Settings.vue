@@ -7,6 +7,7 @@ import AppCard from '../../Components/AppCard.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
 import AppCurrencyInput from '../../Components/AppCurrencyInput.vue';
 import AppIcon from '../../Components/AppIcon.vue';
+import AppIconButton from '../../Components/AppIconButton.vue';
 import AppInput from '../../Components/AppInput.vue';
 import AppModal from '../../Components/AppModal.vue';
 import AppSwitch from '../../Components/AppSwitch.vue';
@@ -177,8 +178,8 @@ async function deleteProduct(product) {
                 </AppButton>
             </header>
 
-            <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-                <div class="space-y-6">
+            <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div class="min-w-0 space-y-6">
                     <AppCard>
                         <template #header>
                             <div class="flex items-center gap-2">
@@ -278,7 +279,7 @@ async function deleteProduct(product) {
                         </div>
                     </AppCard>
 
-                    <AppCard :padded="false">
+                    <AppCard :padded="false" class="min-w-0">
                         <template #header>
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <div class="flex items-center gap-2">
@@ -309,7 +310,7 @@ async function deleteProduct(product) {
                                     <tr v-for="product in products" :key="product.row_id" class="transition hover:bg-surface-container-low/60">
                                         <td class="px-4 py-3 font-mono text-xs font-bold text-primary">{{ product.code }}</td>
                                         <td class="px-4 py-3">
-                                            <p class="font-semibold text-on-surface">{{ product.name }}</p>
+                                            <p class="whitespace-nowrap font-semibold text-on-surface">{{ product.name }}</p>
                                             <div class="mt-1 flex flex-wrap items-center gap-1">
                                                 <AppBadge tone="primary-soft">{{ product.category_label }}</AppBadge>
                                                 <AppBadge tone="neutral">{{ product.form_type_label }}</AppBadge>
@@ -323,21 +324,23 @@ async function deleteProduct(product) {
                                         <td class="px-4 py-3 text-right">
                                             <AppBadge tone="neutral">{{ product.accounts_count }}</AppBadge>
                                         </td>
-                                        <td class="px-4 py-3">
+                                        <td class="whitespace-nowrap px-4 py-3">
                                             <div class="flex justify-end gap-1">
-                                                <AppButton variant="ghost" size="compact" icon="edit" @click="openEditProduct(product)">
-                                                    {{ t('Edit') }}
-                                                </AppButton>
-                                                <AppButton
-                                                    variant="danger"
-                                                    size="compact"
-                                                    icon="delete"
+                                                <AppIconButton
+                                                    name="edit"
+                                                    tone="primary"
+                                                    size="md"
+                                                    :tooltip="t('Edit jenis simpanan')"
+                                                    @click="openEditProduct(product)"
+                                                />
+                                                <AppIconButton
+                                                    name="delete"
+                                                    tone="danger"
+                                                    size="md"
                                                     :disabled="product.accounts_count > 0"
-                                                    :title="product.accounts_count > 0 ? t('Tidak dapat dihapus karena sudah dipakai rekening') : t('Hapus jenis simpanan')"
+                                                    :tooltip="product.accounts_count > 0 ? t('Tidak dapat dihapus karena sudah dipakai rekening') : t('Hapus jenis simpanan')"
                                                     @click="deleteProduct(product)"
-                                                >
-                                                    {{ t('Hapus') }}
-                                                </AppButton>
+                                                />
                                             </div>
                                         </td>
                                     </tr>
@@ -352,7 +355,7 @@ async function deleteProduct(product) {
                     </AppCard>
                 </div>
 
-                <aside class="space-y-4">
+                <aside class="min-w-0 space-y-4">
                     <AppCard class="border border-outline-variant bg-gradient-to-br from-secondary-container/50 to-surface-container-low">
                         <div class="flex items-center gap-3">
                             <span class="grid size-10 place-items-center rounded-2xl bg-surface/80 text-secondary">

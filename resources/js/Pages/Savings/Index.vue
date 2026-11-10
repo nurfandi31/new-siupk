@@ -92,12 +92,12 @@ function statusLabel(value) {
                         {{ t('Rekening simpanan anggota, mutasi setoran/penarikan, serta bunga dan pajak per periode.') }}
                     </p>
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <Link v-if="can('simpanan.manage')" href="/simpanan/bunga">
-                        <AppButton variant="secondary" icon="percent">{{ t('Bunga & Pajak') }}</AppButton>
+                <div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+                    <Link v-if="can('simpanan.manage')" href="/simpanan/bunga" class="block">
+                        <AppButton variant="secondary" icon="percent" class="w-full justify-center sm:w-auto">{{ t('Bunga & Pajak') }}</AppButton>
                     </Link>
-                    <Link v-if="can('simpanan.manage')" href="/simpanan/create">
-                        <AppButton variant="primary" icon="add_card">{{ t('Buka Rekening') }}</AppButton>
+                    <Link v-if="can('simpanan.manage')" href="/simpanan/create" class="block">
+                        <AppButton variant="primary" icon="add_card" class="w-full justify-center sm:w-auto">{{ t('Buka Rekening') }}</AppButton>
                     </Link>
                 </div>
             </header>
@@ -191,13 +191,13 @@ function statusLabel(value) {
                 </AppCard>
             </div>
 
-            <AppCard :padded="false" class="border border-outline-variant">
+            <AppCard :padded="false" class="min-w-0 border border-outline-variant">
                 <div class="flex flex-col gap-3 border-b border-outline-variant p-4 sm:flex-row sm:items-end">
-                    <div class="grid flex-1 gap-3 sm:grid-cols-2">
+                    <div class="grid min-w-0 flex-1 gap-3 sm:grid-cols-2">
                         <SmartSelect v-model="product" :label="t('Jenis Simpanan')" :options="productOptions" searchable @update:model-value="applyFilters" />
                         <SmartSelect v-model="status" :label="t('Status Rekening')" :options="statusOptions" @update:model-value="applyFilters" />
                     </div>
-                    <AppButton variant="ghost" icon="restart_alt" @click="resetFilters">{{ t('Reset') }}</AppButton>
+                    <AppButton variant="ghost" icon="restart_alt" class="w-full justify-center sm:w-auto" @click="resetFilters">{{ t('Reset') }}</AppButton>
                 </div>
 
                 <SmartDataTable

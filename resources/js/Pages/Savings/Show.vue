@@ -8,9 +8,11 @@ import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
 import AppCurrencyInput from '../../Components/AppCurrencyInput.vue';
 import AppDatePicker from '../../Components/AppDatePicker.vue';
 import AppIcon from '../../Components/AppIcon.vue';
+import AppIconButton from '../../Components/AppIconButton.vue';
 import AppInput from '../../Components/AppInput.vue';
 import AppModal from '../../Components/AppModal.vue';
 import AppTextarea from '../../Components/AppTextarea.vue';
+import SmartSelect from '../../Components/SmartSelect.vue';
 import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout.vue';
 import { useCan } from '../../composables/useCan';
 import { useConfirm } from '../../composables/useConfirm';
@@ -221,7 +223,7 @@ function typeTone(type) {
     <Head :title="`Rekening ${account.account_number}`" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header class="flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
+            <header class="flex flex-col justify-between gap-4 xl:flex-row xl:items-start">
                 <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
                         <Link href="/simpanan" class="text-on-surface-variant transition hover:text-primary">
@@ -241,27 +243,71 @@ function typeTone(type) {
                         {{ account.product.name }}
                     </p>
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <AppButton variant="ghost" icon="id_card" @click="printDoc(`/simpanan/${account.row_id}/cetak/kop`)">
-                        {{ t('KOP') }}
-                    </AppButton>
-                    <AppButton variant="ghost" icon="description" @click="printDoc(`/simpanan/${account.row_id}/cetak/formulir`)">
-                        {{ t('Formulir') }}
-                    </AppButton>
-                    <AppButton variant="ghost" icon="receipt_long" @click="printKoran">
-                        {{ t('Rekening Koran') }}
-                    </AppButton>
-                    <Link v-if="canManage" :href="`/simpanan/create?member=${account.member.row_id}`" class="contents">
-                        <AppButton variant="ghost" icon="add_card">{{ t('Rekening Baru') }}</AppButton>
-                    </Link>
-                    <AppButton v-if="canManage" variant="secondary" icon="edit" @click="openEdit">{{ t('Edit') }}</AppButton>
-                    <AppButton v-if="canManage" variant="ghost" icon="refresh" @click="recalculate">{{ t('Hitung Ulang') }}</AppButton>
-                    <AppButton v-if="canManage && isActive" variant="primary" icon="add" @click="openTransaction('setoran')">
-                        {{ t('Setoran') }}
-                    </AppButton>
-                    <AppButton v-if="canManage && isActive" variant="secondary" icon="remove" @click="openTransaction('penarikan')">
-                        {{ t('Penarikan') }}
-                    </AppButton>
+                <div class="flex w-full flex-col gap-3 xl:w-auto xl:items-end">
+                    <div v-if="canManage" class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+                        <AppButton
+                            v-if="isActive"
+                            variant="primary"
+                            icon="add"
+                            class="w-full justify-center sm:w-auto"
+                            @click="openTransaction('setoran')"
+                        >
+                            {{ t('Setoran') }}
+                        </AppButton>
+                        <AppButton
+                            v-if="isActive"
+                            variant="secondary"
+                            icon="remove"
+                            class="w-full justify-center sm:w-auto"
+                            @click="openTransaction('penarikan')"
+                        >
+                            {{ t('Penarikan') }}
+                        </AppButton>
+                        <AppButton variant="secondary" icon="edit" class="w-full justify-center sm:w-auto" @click="openEdit">
+                            {{ t('Edit') }}
+                        </AppButton>
+                        <AppButton variant="ghost" icon="refresh" class="w-full justify-center sm:w-auto" @click="recalculate">
+                            {{ t('Hitung Ulang') }}
+                        </AppButton>
+                        <Link :href="`/simpanan/create?member=${account.member.row_id}`" class="col-span-2 block sm:col-span-1">
+                            <AppButton variant="ghost" icon="add_card" class="w-full justify-center sm:w-auto">
+                                {{ t('Rekening Baru') }}
+                            </AppButton>
+                        </Link>
+                    </div>
+
+                    <div class="w-full rounded-2xl border border-outline-variant bg-surface-container-low p-2.5 xl:w-auto">
+                        <p class="flex items-center gap-1.5 px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-on-surface-variant">
+                            <AppIcon name="print" class="text-sm" />
+                            {{ t('Dokumen') }}
+                        </p>
+                        <div class="mt-2 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                            <AppButton
+                                variant="secondary"
+                                icon="id_card"
+                                class="w-full justify-center sm:w-auto"
+                                @click="printDoc(`/simpanan/${account.row_id}/cetak/kop`)"
+                            >
+                                {{ t('KOP') }}
+                            </AppButton>
+                            <AppButton
+                                variant="secondary"
+                                icon="description"
+                                class="w-full justify-center sm:w-auto"
+                                @click="printDoc(`/simpanan/${account.row_id}/cetak/formulir`)"
+                            >
+                                {{ t('Formulir') }}
+                            </AppButton>
+                            <AppButton
+                                variant="secondary"
+                                icon="receipt_long"
+                                class="col-span-2 w-full justify-center sm:col-span-1 sm:w-auto"
+                                @click="printKoran"
+                            >
+                                {{ t('Rekening Koran') }}
+                            </AppButton>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -299,8 +345,8 @@ function typeTone(type) {
                 </div>
             </section>
 
-            <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-                <AppCard :padded="false">
+            <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+                <AppCard :padded="false" class="min-w-0">
                     <template #header>
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <div class="flex items-center gap-2">
@@ -311,24 +357,24 @@ function typeTone(type) {
                         </div>
                     </template>
 
-                    <div class="flex flex-col gap-3 border-b border-outline-variant p-4 lg:flex-row lg:items-end lg:justify-between">
-                        <div class="flex flex-wrap items-end gap-2">
-                            <label class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-                                {{ t('Periode') }}
-                                <select v-model="year" class="mt-1 block rounded-xl border border-outline-variant bg-surface px-3 py-2 text-sm font-medium text-on-surface">
-                                    <option v-for="option in yearOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                                </select>
-                            </label>
-                            <label class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-                                {{ t('Bulan') }}
-                                <select v-model="month" class="mt-1 block rounded-xl border border-outline-variant bg-surface px-3 py-2 text-sm font-medium text-on-surface">
-                                    <option v-for="option in monthOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                                </select>
-                            </label>
-                            <AppButton variant="secondary" icon="filter_alt" @click="applyFilter">{{ t('Tampilkan') }}</AppButton>
-                            <AppButton variant="ghost" icon="restart_alt" @click="resetFilter">{{ t('Reset') }}</AppButton>
+                    <div class="space-y-3 border-b border-outline-variant p-4">
+                        <div class="grid gap-3 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-end">
+                            <div class="w-full sm:w-32">
+                                <SmartSelect v-model="year" :label="t('Periode')" :options="yearOptions" />
+                            </div>
+                            <div class="w-full sm:w-40">
+                                <SmartSelect v-model="month" :label="t('Bulan')" :options="monthOptions" />
+                            </div>
+                            <div class="col-span-2 flex gap-2 lg:col-span-1">
+                                <AppButton variant="secondary" icon="filter_alt" class="flex-1 justify-center sm:flex-none" @click="applyFilter">
+                                    {{ t('Tampilkan') }}
+                                </AppButton>
+                                <AppButton variant="ghost" icon="restart_alt" class="flex-1 justify-center sm:flex-none" @click="resetFilter">
+                                    {{ t('Reset') }}
+                                </AppButton>
+                            </div>
                         </div>
-                        <div v-if="statement" class="flex flex-wrap items-center gap-2 text-sm">
+                        <div v-if="statement" class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-surface-container-low px-3 py-2 text-sm">
                             <span class="text-on-surface-variant">{{ t('Saldo awal') }}</span>
                             <span class="font-semibold text-on-surface">{{ money(statement.opening_balance) }}</span>
                             <AppIcon name="arrow_forward" class="text-outline" />
@@ -338,7 +384,7 @@ function typeTone(type) {
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-outline-variant text-sm">
+                        <table class="min-w-[760px] divide-y divide-outline-variant text-sm lg:min-w-full">
                             <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                                 <tr>
                                     <th class="px-3 py-3 text-left font-semibold">No</th>
@@ -383,8 +429,20 @@ function typeTone(type) {
                                     <td class="px-3 py-3 text-center text-xs font-semibold text-on-surface-variant">{{ row.created_by || '—' }}</td>
                                     <td class="px-3 py-3">
                                         <div class="flex justify-end gap-1">
-                                            <AppButton variant="ghost" size="compact" icon="menu_book" :title="t('Cetak pada buku')" @click="printDoc(`/simpanan/${account.row_id}/cetak/buku/${row.row_id}`)" />
-                                            <AppButton variant="ghost" size="compact" icon="receipt" :title="t('Cetak kwitansi')" @click="printDoc(`/simpanan/${account.row_id}/cetak/kwitansi/${row.row_id}`)" />
+                                            <AppIconButton
+                                                name="menu_book"
+                                                tone="primary"
+                                                size="md"
+                                                :tooltip="t('Cetak pada buku')"
+                                                @click="printDoc(`/simpanan/${account.row_id}/cetak/buku/${row.row_id}`)"
+                                            />
+                                            <AppIconButton
+                                                name="receipt"
+                                                tone="secondary"
+                                                size="md"
+                                                :tooltip="t('Cetak kwitansi')"
+                                                @click="printDoc(`/simpanan/${account.row_id}/cetak/kwitansi/${row.row_id}`)"
+                                            />
                                         </div>
                                     </td>
                                 </tr>
@@ -422,7 +480,7 @@ function typeTone(type) {
                     </div>
                 </AppCard>
 
-                <aside class="space-y-4">
+                <aside class="min-w-0 space-y-4">
                     <AppCard>
                         <template #header>
                             <div class="flex items-center gap-2">

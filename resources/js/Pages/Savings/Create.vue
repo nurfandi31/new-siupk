@@ -166,18 +166,18 @@ onMounted(() => {
                         {{ t('Pilih anggota dan jenis simpanan. Nomor rekening dibuat otomatis dengan format SIUPK.') }}
                     </p>
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <AppButton variant="secondary" icon="print" @click="printBlankForm">
+                <div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+                    <AppButton variant="secondary" icon="print" class="w-full justify-center sm:w-auto" @click="printBlankForm">
                         {{ t('Formulir Kosong') }}
                     </AppButton>
-                    <Link href="/simpanan">
-                        <AppButton variant="ghost" icon="arrow_back">{{ t('Kembali') }}</AppButton>
+                    <Link href="/simpanan" class="block">
+                        <AppButton variant="ghost" icon="arrow_back" class="w-full justify-center sm:w-auto">{{ t('Kembali') }}</AppButton>
                     </Link>
                 </div>
             </header>
 
-            <form class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]" @submit.prevent="submit">
-                <div class="space-y-6">
+            <form class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]" @submit.prevent="submit">
+                <div class="min-w-0 space-y-6">
                     <AppCard>
                         <template #header>
                             <div class="flex items-center gap-3">
@@ -331,7 +331,7 @@ onMounted(() => {
                     </AppCard>
                 </div>
 
-                <aside class="space-y-4">
+                <aside class="min-w-0 space-y-4">
                     <AppCard class="border border-outline-variant bg-gradient-to-br from-secondary-container/50 to-surface-container-low">
                         <div class="flex items-center gap-3">
                             <span class="grid size-10 place-items-center rounded-2xl bg-surface/80 text-secondary">

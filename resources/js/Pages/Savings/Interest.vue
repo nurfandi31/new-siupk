@@ -111,11 +111,19 @@ async function voidRun(run) {
                         {{ t('Periode') }} {{ preview.period.range_label }} · {{ t('posting') }} {{ preview.period.posting_date }}
                     </p>
                 </div>
-                <div class="flex flex-wrap items-end gap-2">
-                    <SmartSelect v-model="year" :label="t('Tahun')" :options="yearOptions" size="compact" class="w-24" />
-                    <SmartSelect v-model="month" :label="t('Bulan')" :options="monthOptions" size="compact" class="w-36" />
-                    <AppInput v-model="cif" :label="t('CIF / Rekening')" icon="filter_alt" class="w-44" :placeholder="t('Semua rekening')" />
-                    <AppButton variant="secondary" icon="search" @click="loadPeriod">{{ t('Tampilkan') }}</AppButton>
+                <div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-end">
+                    <div class="w-full sm:w-28">
+                        <SmartSelect v-model="year" :label="t('Tahun')" :options="yearOptions" />
+                    </div>
+                    <div class="w-full sm:w-36">
+                        <SmartSelect v-model="month" :label="t('Bulan')" :options="monthOptions" />
+                    </div>
+                    <div class="col-span-2 w-full sm:w-44">
+                        <AppInput v-model="cif" :label="t('CIF / Rekening')" icon="filter_alt" :placeholder="t('Semua rekening')" />
+                    </div>
+                    <AppButton variant="secondary" icon="search" class="col-span-2 w-full justify-center sm:w-auto" @click="loadPeriod">
+                        {{ t('Tampilkan') }}
+                    </AppButton>
                 </div>
             </header>
 
@@ -180,6 +188,7 @@ async function voidRun(run) {
                                 v-if="canPost"
                                 variant="primary"
                                 icon="percent"
+                                class="w-full justify-center sm:w-auto"
                                 :loading="postForm.processing"
                                 @click="postInterest"
                             >
@@ -195,7 +204,7 @@ async function voidRun(run) {
                 </div>
 
                 <div class="max-h-[560px] overflow-auto">
-                    <table class="min-w-full divide-y divide-outline-variant text-sm">
+                    <table class="w-full min-w-[920px] divide-y divide-outline-variant text-sm">
                         <thead class="sticky top-0 z-10 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
                                 <th class="px-4 py-3 text-left font-semibold">{{ t('Rekening') }}</th>
@@ -288,7 +297,7 @@ async function voidRun(run) {
                 </template>
 
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-outline-variant text-sm">
+                    <table class="w-full min-w-[920px] divide-y divide-outline-variant text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
                                 <th class="px-4 py-3 text-left font-semibold">{{ t('Periode') }}</th>
