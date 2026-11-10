@@ -344,7 +344,7 @@ onBeforeUnmount(stopPolling);
 
             <AppModal v-model="showFormModal" :title="editingInstance ? 'Edit Instance Platform' : 'Tambah Instance Platform'" size="md">
                 <form class="space-y-4" @submit.prevent="submitInstance">
-                    <AppInput v-model="form.name" label="Nama Instance" required placeholder="Contoh: OTP Platform 1" :error="form.errors.name" />
+                    <AppInput v-model="form.name" label="Nama Instance" required placeholder="Masukkan nama" :error="form.errors.name" />
                     <AppInput v-model="form.phone" label="Nomor WhatsApp (opsional)" placeholder="08xxxxxxxxxx" :error="form.errors.phone" hint="Boleh diisi setelah nomor tersambung." />
                 </form>
                 <template #footer>
@@ -371,7 +371,7 @@ onBeforeUnmount(stopPolling);
             <AppModal v-model="showTestModal" title="Uji Kirim WhatsApp Platform" size="sm">
                 <form class="space-y-4" @submit.prevent="sendTest">
                     <AppInput v-model="testForm.phone" label="Nomor Tujuan" required placeholder="08xxxxxxxxxx" />
-                    <AppTextarea v-model="testForm.message" label="Pesan (opsional)" :rows="4" placeholder="Tes koneksi WhatsApp platform siupk." />
+                    <AppTextarea v-model="testForm.message" label="Pesan (opsional)" :rows="4" placeholder="Tes koneksi" />
                 </form>
                 <template #footer>
                     <AppButton variant="ghost" @click="showTestModal = false">Batal</AppButton>

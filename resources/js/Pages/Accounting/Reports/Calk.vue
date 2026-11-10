@@ -114,7 +114,7 @@ function save() {
                         v-model="form.notes"
                         label="Catatan manajemen / peristiwa penting"
                         :error="form.errors.notes"
-                        placeholder="Contoh: penyesuaian piutang, pergantian pengurus, penjaminan, kontinjensi…"
+                        placeholder="Masukkan catatan"
                     />
                     <div class="flex justify-end">
                         <AppButton type="submit" icon="save" :loading="form.processing">Simpan catatan</AppButton>

@@ -7,21 +7,19 @@ namespace App\Services;
 use App\Domain\Access\Services\PermissionChecker;
 use App\Models\Platform\DatabaseShard;
 use App\Models\Platform\Tenant;
-use App\Models\Platform\TenantMembership;
 use App\Models\Platform\TenantPlacement;
-use App\Models\User;
 use App\Tenancy\Services\DefaultChartOfAccountsProvisioner;
 use App\Tenancy\Services\FiscalPeriodProvisioner;
 use App\Tenancy\Services\ShardConnectionManager;
 use App\Tenancy\Services\TenantGroupMasterDataProvisioner;
 use App\Tenancy\Services\TenantLoanProductProvisioner;
+use App\Tenancy\Services\TenantLoginAccountProvisioner;
 use App\Tenancy\Services\TenantRegistrySynchronizer;
 use App\Tenancy\Services\TenantVillageProvisioner;
 use App\Tenancy\Services\TenantWorkbench;
 use App\Tenancy\TenantContext;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -36,13 +34,14 @@ final readonly class TenantRegistrationService
         private DefaultChartOfAccountsProvisioner $coa,
         private FiscalPeriodProvisioner $fiscalPeriods,
         private PermissionChecker $permissions,
+        private TenantLoginAccountProvisioner $loginAccounts,
         private TenantContext $context,
         private TenantWorkbench $workbench,
     ) {}
 
     public function register(array $data): Tenant
     {
-        [$tenant, $placement, $shard, $user] = DB::connection('platform')->transaction(function () use ($data): array {
+        [$tenant, $placement, $shard] = DB::connection('platform')->transaction(function () use ($data): array {
             $shard = DatabaseShard::query()->where('status', 'active')->orderBy('row_id')->firstOrFail();
             $tenant = Tenant::query()->create([
                 'public_id' => (string) Str::ulid(),
@@ -61,24 +60,8 @@ final readonly class TenantRegistrationService
                 'status' => 'active',
                 'placed_at' => now(),
             ]);
-            $user = User::query()->create([
-                'public_id' => (string) Str::ulid(),
-                'tenant_id' => $tenant->row_id,
-                'name' => $data['user_name'],
-                'email' => $data['email'],
-                'username' => $data['username'],
-                'password' => Hash::make($data['password']),
-                'phone' => $data['phone'] ?? ('pending-wa-'.substr(md5((string) Str::ulid()), 0, 8)),
-                'status' => 'active',
-            ]);
-            TenantMembership::query()->create([
-                'tenant_id' => $tenant->row_id,
-                'user_id' => $user->row_id,
-                'status' => 'active',
-                'joined_at' => now(),
-            ]);
 
-            return [$tenant, $placement, $shard, $user];
+            return [$tenant, $placement, $shard];
         });
 
         try {
@@ -92,7 +75,10 @@ final readonly class TenantRegistrationService
             $this->coa->ensureDefaults();
             $this->fiscalPeriods->ensureDefaults(1);
             $this->permissions->ensureSystemRoles();
-            $this->permissions->assignRole($user, 'admin');
+
+            // One login account per role: the tenant is ready to use without
+            // manually entering a first user when it is registered.
+            $this->loginAccounts->ensureDefaults($tenant);
 
             $tenant->forceFill(['status' => 'active', 'provisioned_at' => now()])->save();
             $this->registry->sync($tenant);
@@ -110,7 +96,7 @@ final readonly class TenantRegistrationService
     /**
      * Re-run idempotent provision steps for an existing tenant (repair).
      *
-     * @return array{coa: array, fiscal_created: int, roles: bool}
+     * @return array{coa: array, fiscal_created: int, roles: bool, login_accounts: int}
      */
     public function repair(Tenant $tenant): array
     {
@@ -131,6 +117,7 @@ final readonly class TenantRegistrationService
             $coa = $this->coa->ensureDefaults();
             $fiscal = $this->fiscalPeriods->ensureDefaults(1);
             $this->permissions->ensureSystemRoles();
+            $loginAccounts = $this->loginAccounts->ensureDefaults($tenant);
 
             try {
                 if (file_exists(base_path('vendor/enpii/assistant/database/migrations'))) {
@@ -148,6 +135,7 @@ final readonly class TenantRegistrationService
                 'coa' => $coa,
                 'fiscal_created' => $fiscal,
                 'roles' => true,
+                'login_accounts' => count($loginAccounts),
             ];
         });
     }

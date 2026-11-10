@@ -11,8 +11,11 @@ import AssistantWidget from '../Components/AssistantWidget.vue';
 import ThemeMenu from '../Components/ThemeMenu.vue';
 import NotificationDropdown from '../Components/NotificationDropdown.vue';
 import KeyboardShortcutsModal from '../Components/KeyboardShortcutsModal.vue';
+import AppLanguageSwitcher from '../Components/AppLanguageSwitcher.vue';
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts';
+import { useI18n } from '../i18n';
 
+const { t, locale } = useI18n();
 const props = defineProps({ unitName: { type: String, default: null } });
 
 const page = usePage();
@@ -245,16 +248,21 @@ onBeforeUnmount(() => {
     if (searchOpen.value) document.body.style.overflow = previousOverflow;
 });
 
+function navLabel(label) {
+    if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : 'Beranda';
+    return t(label);
+}
+
 const sections = [
     {
-        label: 'Dashboard',
-        items: [{ label: 'Dashboard', icon: 'dashboard', href: '/dashboard', exact: true }],
+        label: 'Beranda',
+        items: [{ label: 'Beranda', icon: 'dashboard', href: '/dashboard', exact: true }],
     },
     {
         label: 'Pengaturan',
         items: [
             { label: 'Pengaturan', icon: 'settings', href: '/settings', exact: true },
-            { label: 'WhatsApp Gateway', icon: 'chat', href: '/settings/whatsapp' },
+            { label: 'Gerbang WhatsApp', icon: 'chat', href: '/settings/whatsapp' },
         ],
     },
     {
@@ -374,6 +382,7 @@ const sections = [
                         icon: 'trending_up',
                         children: [
                             { label: 'Rekap Desa', href: '/lending/reports/lpp-desa' },
+                            { label: 'Rekap Desa Individu', href: '/lending/reports/lpp-desa-individu' },
                             { label: 'Rincian Kelompok', href: '/lending/reports/lpp-kelompok' },
                             { label: 'Rincian Individu', href: '/lending/reports/lpp-individu' },
                         ],
@@ -384,8 +393,32 @@ const sections = [
                         icon: 'fact_check',
                         children: [
                             { label: 'Rekap Desa', href: '/lending/reports/kolek-desa' },
+                            { label: 'Rincian Kelompok', href: '/lending/reports/kolek-kelompok' },
                             { label: 'Rekap Desa Individu', href: '/lending/reports/kolek-desa-individu' },
                             { label: 'Rincian Individu', href: '/lending/reports/kolek-individu' },
+                        ],
+                    },
+                    {
+                        key: 'lending-weekly',
+                        label: 'Laporan Mingguan',
+                        icon: 'calendar_view_week',
+                        children: [
+                            {
+                                label: 'LPP Individu Mingguan',
+                                href: '/lending/reports/weekly/lpp-individu',
+                            },
+                            {
+                                label: 'LPP Kelompok Mingguan',
+                                href: '/lending/reports/weekly/lpp-kelompok',
+                            },
+                            {
+                                label: 'Kolektibilitas Individu Mingguan',
+                                href: '/lending/reports/weekly/kolek-individu',
+                            },
+                            {
+                                label: 'Kolektibilitas Kelompok Mingguan',
+                                href: '/lending/reports/weekly/kolek-kelompok',
+                            },
                         ],
                     },
                     { label: 'Cadangan Penghapusan (CKPN)', href: '/lending/reports/cadangan-penghapusan' },
@@ -421,6 +454,11 @@ const sections = [
                         children: [
                             { label: 'Tagihan Jatuh Tempo Hari Ini', icon: 'today', href: '/lending/reports/due-today' },
                             { label: 'Daftar Tunggakan', icon: 'warning', href: '/lending/reports/overdue' },
+                            {
+                                label: 'Pelunasan 3 Bulan ke Depan',
+                                icon: 'event_available',
+                                href: '/lending/reports/near-settlement',
+                            },
                         ],
                     },
                     // === Phase 1: Laporan Tambahan (rencana & realisasi khusus individu) ===
@@ -439,8 +477,31 @@ const sections = [
                         icon: 'online_prediction',
                         children: [
                             { label: 'Kelompok Aktif', icon: 'group', href: '/lending/reports/groups/active' },
-                            { label: 'Pemanfaat Aktif', icon: 'person', href: '/lending/reports/members/active' },
-                            { label: 'Pemanfaat Aktif Kelompok', icon: 'groups_2', href: '/lending/reports/beneficiaries/active' },
+                            { label: 'Individu Aktif', icon: 'person', href: '/lending/reports/members/active' },
+                            { label: 'Pemanfaat Aktif', icon: 'groups_2', href: '/lending/reports/beneficiaries/active' },
+                        ],
+                    },
+                    {
+                        key: 'ojk',
+                        label: 'Laporan OJK',
+                        icon: 'account_balance',
+                        children: [
+                            { label: 'Cover OJK', href: '/regulatory/ojk/cover' },
+                            { label: 'Profil OJK', href: '/regulatory/ojk/profile' },
+                            { label: 'Neraca OJK', href: '/regulatory/ojk/balance-sheet' },
+                            { label: 'Laba Rugi OJK', href: '/regulatory/ojk/income-statement' },
+                            { label: 'Rincian Pinjaman Aktif', href: '/regulatory/ojk/active-loans' },
+                            { label: 'Rincian Pinjaman Lunas Kelompok', href: '/regulatory/ojk/paid-group' },
+                            { label: 'Rincian Pinjaman Lunas Individu', href: '/regulatory/ojk/paid-individu' },
+                            { label: 'Rincian Tabungan', href: '/regulatory/ojk/savings' },
+                            { label: 'Rincian Pinjaman Diterima', href: '/regulatory/ojk/loans-received' },
+                            { label: 'Kolektibilitas OJK', href: '/regulatory/ojk/collectibility' },
+                            { label: 'Kolektibilitas OJK v2', href: '/regulatory/ojk/collectibility-v2' },
+                            { label: 'Penyisihan Cadangan', href: '/regulatory/ojk/allowance' },
+                            { label: 'Tingkat Kesehatan (POJK 41)', href: '/regulatory/ojk/health?framework=41' },
+                            { label: 'Tingkat Kesehatan (POJK 19)', href: '/regulatory/ojk/health?framework=19' },
+                            { label: 'Rincian Bunga', href: '/regulatory/ojk/interest' },
+                            { label: 'Simpanan Piutang', href: '/regulatory/ojk/savings-receivables' },
                         ],
                     },
                     { label: 'Jurnal Transaksi', href: '/accounting/reports/journals' },
@@ -451,7 +512,7 @@ const sections = [
                     { label: 'Perubahan Ekuitas', href: '/accounting/reports/equity-change' },
                     { label: 'CALK', href: '/accounting/reports/calk' },
                     { label: 'Buku Besar', href: '/accounting/reports/general-ledger' },
-                    { label: 'Daftar Simpanan', href: '/accounting/reports/simpan' },
+                    { label: 'Daftar Simpanan', href: '/accounting/reports/simpanan' },
                 ],
             },
         ],
@@ -569,7 +630,7 @@ function onParentItemClick(item, event) {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <button v-if="mobileMenuOpen" type="button" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden" aria-label="Tutup navigasi" @click="closeMobileMenu" />
+            <button v-if="mobileMenuOpen" type="button" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden" :aria-label="t('Tutup navigasi')" @click="closeMobileMenu" />
         </Transition>
 
         <aside
@@ -583,8 +644,8 @@ function onParentItemClick(item, event) {
             <button
                 type="button"
                 class="absolute -right-3 top-5 z-10 hidden size-8 place-items-center rounded-full chip-shadow bg-surface text-on-surface ring-1 ring-outline-variant transition hover:scale-110 hover:bg-surface-container focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container lg:grid lg:top-7"
-                :aria-label="sidebarCollapsed ? 'Buka sidebar' : 'Tutup sidebar'"
-                :title="sidebarCollapsed ? 'Buka sidebar' : 'Tutup sidebar'"
+                :aria-label="sidebarCollapsed ? t('Buka sidebar') : t('Tutup sidebar')"
+                :title="sidebarCollapsed ? t('Buka sidebar') : t('Tutup sidebar')"
                 @click="sidebarCollapsed = !sidebarCollapsed"
             >
                 <AppIcon :name="sidebarCollapsed ? 'chevron_right' : 'chevron_left'" class="text-xl leading-none" />
@@ -592,17 +653,17 @@ function onParentItemClick(item, event) {
 
             <div class="flex items-center gap-3 px-4 py-6 transition-[padding] duration-300 lg:px-6" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-2' : ''">
                 <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-zinc-800 text-zinc-100 ring-1 ring-white/10">
-                    <img v-if="logoPath" :src="logoPath" alt="Logo lembaga" class="size-full object-contain" />
+                    <img v-if="logoPath" :src="logoPath" :alt="t('Logo lembaga')" class="size-full object-contain" />
                     <AppIcon v-else name="account_balance" class="text-zinc-100" />
                 </div>
                 <div v-show="!(sidebarCollapsed && !mobileMenuOpen)" class="min-w-0 flex-1 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">
                     <p class="truncate font-bold leading-none text-white">{{ page.props.auth?.tenant?.name || 'BUMDesma/LKD' }}</p>
-                    <p class="mt-1 truncate text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Financial Management</p>
+                    <p class="mt-1 truncate text-[10px] font-semibold uppercase tracking-widest text-zinc-400">{{ t('Financial Management') }}</p>
                 </div>
                 <button
                     type="button"
                     class="grid size-9 shrink-0 place-items-center rounded-lg text-zinc-400 transition-colors hover:bg-white/5 hover:text-white lg:hidden"
-                    aria-label="Tutup navigasi"
+                    :aria-label="t('Tutup navigasi')"
                     @click="closeMobileMenu"
                 >
                     <AppIcon name="close" class="text-xl" />
@@ -612,10 +673,10 @@ function onParentItemClick(item, event) {
             <nav
                 ref="sidebarNav"
                 class="scrollbar-hidden flex-1 space-y-5 overflow-y-auto px-2 py-2"
-                aria-label="Navigasi utama"
+                :aria-label="t('Navigasi utama')"
             >
                 <section v-for="(section, sIdx) in visibleSections" :key="section.label">
-                    <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ section.label }}</h2>
+                    <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ navLabel(section.label) }}</h2>
                     <div class="space-y-1">
                         <template v-for="item in section.items" :key="item.key || item.label">
                             <button
@@ -628,7 +689,7 @@ function onParentItemClick(item, event) {
                                         : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100',
                                     sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '',
                                 ]"
-                                :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined"
+                                :title="sidebarCollapsed && !mobileMenuOpen ? navLabel(item.label) : undefined"
                                 :aria-expanded="Boolean(expanded[item.key])"
                                 :data-sidebar-active="isActive(item) ? 'true' : null"
                                 @click="onParentItemClick(item, $event)"
@@ -639,7 +700,7 @@ function onParentItemClick(item, event) {
                                     aria-hidden="true"
                                 />
                                 <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors duration-150" />
-                                <span class="min-w-0 flex-1 truncate text-sm font-medium transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span>
+                                <span class="min-w-0 flex-1 truncate text-sm font-medium transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ navLabel(item.label) }}</span>
                                 <AppIcon v-show="!(sidebarCollapsed && !mobileMenuOpen)" name="expand_more" class="text-lg transition-transform duration-200" :class="expanded[item.key] && 'rotate-180'" />
                             </button>
                             <Link
@@ -652,7 +713,7 @@ function onParentItemClick(item, event) {
                                         : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100',
                                     sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '',
                                 ]"
-                                :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined"
+                                :title="sidebarCollapsed && !mobileMenuOpen ? navLabel(item.label) : undefined"
                                 :data-sidebar-active="isActive(item) ? 'true' : null"
                                 @click="closeMobileMenu"
                             >
@@ -661,9 +722,9 @@ function onParentItemClick(item, event) {
                                     class="sidebar-active-bar absolute inset-y-0 left-0 w-1 rounded-r-full"
                                     aria-hidden="true"
                                 />
-                                <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors duration-150" /><span class="text-sm font-semibold transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span>
+                                <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors duration-150" /><span class="text-sm font-semibold transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ navLabel(item.label) }}</span>
                             </Link>
-                            <button v-else type="button" disabled class="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left text-zinc-600" :title="`${item.label} belum tersedia`"><AppIcon :name="item.icon" /><span>{{ item.label }}</span></button>
+                            <button v-else type="button" disabled class="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left text-zinc-600" :title="`${navLabel(item.label)} — ${t('Belum tersedia')}`"><AppIcon :name="item.icon" /><span>{{ navLabel(item.label) }}</span></button>
 
                             <Transition name="sidebar-menu">
                                 <div v-if="item.children && expanded[item.key] && !(sidebarCollapsed && !mobileMenuOpen)" class="ml-5 space-y-1 overflow-hidden border-l border-white/5 pl-2">
@@ -685,7 +746,7 @@ function onParentItemClick(item, event) {
                                                 aria-hidden="true"
                                             />
                                             <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl transition-colors duration-150" />
-                                            <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ child.label }}</span>
+                                            <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ t(child.label) }}</span>
                                             <AppIcon name="expand_more" class="text-lg transition-transform duration-200" :class="expanded[child.key] && 'rotate-180'" />
                                         </button>
                                         <Link
@@ -703,9 +764,9 @@ function onParentItemClick(item, event) {
                                                 class="sidebar-active-bar absolute inset-y-0 left-[-9px] w-1 rounded-full"
                                                 aria-hidden="true"
                                             />
-                                            <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl transition-colors duration-150" /><span class="text-sm font-semibold">{{ child.label }}</span>
+                                            <AppIcon :name="child.icon" :filled="isActive(child)" class="text-xl transition-colors duration-150" /><span class="text-sm font-semibold">{{ t(child.label) }}</span>
                                         </Link>
-                                        <button v-else type="button" disabled class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-600" :title="`${child.label} belum tersedia`"><AppIcon :name="child.icon" class="text-xl" /><span>{{ child.label }}</span></button>
+                                        <button v-else type="button" disabled class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-600" :title="`${t(child.label)} — ${t('Belum tersedia')}`"><AppIcon :name="child.icon" class="text-xl" /><span>{{ t(child.label) }}</span></button>
 
                                         <Transition name="sidebar-menu">
                                             <div v-if="child.children && expanded[child.key]" class="ml-5 space-y-1 overflow-hidden border-l border-white/10 pl-2">
@@ -726,9 +787,9 @@ function onParentItemClick(item, event) {
                                                             aria-hidden="true"
                                                         />
                                                         <AppIcon v-if="leaf.icon" :name="leaf.icon" :filled="isActive(leaf)" class="text-base transition-colors duration-150" />
-                                                        <span v-else class="size-1.5 rounded-full bg-current" />{{ leaf.label }}
+                                                        <span v-else class="size-1.5 rounded-full bg-current" />{{ t(leaf.label) }}
                                                     </Link>
-                                                    <button v-else type="button" disabled class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-600" :title="`${leaf.label} belum tersedia`"><span class="size-1.5 rounded-full bg-current" />{{ leaf.label }}</button>
+                                                    <button v-else type="button" disabled class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-zinc-600" :title="`${t(leaf.label)} — ${t('Belum tersedia')}`"><span class="size-1.5 rounded-full bg-current" />{{ t(leaf.label) }}</button>
                                                 </template>
                                             </div>
                                         </Transition>
@@ -740,20 +801,20 @@ function onParentItemClick(item, event) {
                 </section>
 
                 <section v-if="user?.is_superadmin">
-                    <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">Platform</h2>
+                    <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ t('Platform') }}</h2>
                     <Link
                         v-for="item in platformNavigation"
                         :key="item.label"
                         :href="item.href"
                         class="sidebar-item group relative flex items-center gap-3 rounded-lg px-4 py-2.5 transition-colors duration-150"
                         :class="[isActive(item) ? '' : 'text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100', sidebarCollapsed && !mobileMenuOpen ? 'lg:justify-center lg:px-0' : '']"
-                        :title="sidebarCollapsed && !mobileMenuOpen ? item.label : undefined"
+                        :title="sidebarCollapsed && !mobileMenuOpen ? navLabel(item.label) : undefined"
                         :data-sidebar-active="isActive(item) ? 'true' : null"
                         @click="closeMobileMenu"
                     >
                         <span v-if="isActive(item)" class="sidebar-active-bar absolute inset-y-0 left-0 w-1 rounded-r-full" aria-hidden="true" />
                         <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors duration-150" />
-                        <span class="text-sm font-semibold transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ item.label }}</span>
+                        <span class="text-sm font-semibold transition-opacity duration-200" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ navLabel(item.label) }}</span>
                     </Link>
                 </section>
             </nav>
@@ -766,7 +827,7 @@ function onParentItemClick(item, event) {
             <button
                 type="button"
                 class="grid size-10 shrink-0 place-items-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary lg:hidden"
-                aria-label="Buka navigasi"
+                :aria-label="t('Buka navigasi')"
                 @click="mobileMenuOpen = true"
             >
                 <AppIcon name="menu" class="text-2xl leading-none" />
@@ -774,12 +835,12 @@ function onParentItemClick(item, event) {
             <button
                 type="button"
                 class="flex min-w-0 flex-1 items-center gap-2.5 rounded-full bg-surface-container-low py-2 px-3 text-left text-sm text-on-surface-variant transition hover:bg-surface-container focus:outline-none focus:ring-2 focus:ring-primary-container/30 sm:max-w-md sm:gap-3"
-                aria-label="Buka pencarian"
+                :aria-label="t('Buka pencarian')"
                 @click="openSearch"
             >
 
                 <AppIcon name="search" class="shrink-0 text-on-surface-variant" />
-                <span class="min-w-0 flex-1 truncate">Cari anggota, kelompok, pinjaman...</span>
+                <span class="min-w-0 flex-1 truncate">{{ t('Cari cepat...') }}</span>
                 <kbd class="hidden rounded-md chip-shadow bg-surface px-1.5 py-0.5 text-[10px] font-semibold text-on-surface-variant ring-1 ring-outline-variant sm:inline">Ctrl K</kbd>
             </button>
             <p v-if="false" class="ml-2 hidden items-center gap-1.5 text-sm font-bold text-primary xl:flex"><AppIcon name="location_on" class="text-secondary" />{{ props.unitName }}</p>
@@ -791,7 +852,7 @@ function onParentItemClick(item, event) {
                     data-theme-trigger
                     class="shrink-0 text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary"
                     :class="themeOpen && 'bg-surface-container text-primary'"
-                    aria-label="Pilih tema tampilan"
+                    :aria-label="t('Pilih tema tampilan')"
                     aria-haspopup="menu"
                     :aria-expanded="themeOpen"
                     @click="themeOpen = !themeOpen"
@@ -800,8 +861,8 @@ function onParentItemClick(item, event) {
                     href="/changelog"
                     class="grid size-10 shrink-0 place-items-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary"
                     :class="currentPath === '/changelog' && 'bg-surface-container text-primary'"
-                    title="Catatan Rilis & Changelog"
-                    aria-label="Catatan Rilis & Changelog"
+                    :title="t('Catatan Rilis & Changelog')"
+                    :aria-label="t('Catatan Rilis & Changelog')"
                 >
                     <AppIcon name="history_edu" class="text-xl leading-none" />
                 </Link>
@@ -811,16 +872,17 @@ function onParentItemClick(item, event) {
                 <Link
                     href="/profile"
                     class="ml-1 flex shrink-0 items-center gap-2 rounded-full chip-shadow bg-surface-container-lowest py-1 pl-1 pr-3 ring-1 ring-outline-variant transition hover:bg-surface-container-low hover:ring-primary/40"
-                    aria-label="Buka Profil"
+                    :aria-label="t('Buka Profil')"
                 >
                     <span class="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'User'" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'U' }}</span></span>
                     <span class="hidden min-w-0 flex-col leading-tight sm:flex">
-                        <span class="truncate text-xs font-bold text-primary">{{ user?.name || 'Pengguna' }}</span>
-                        <span class="truncate text-[10px] font-medium text-on-surface-variant">{{ props.unitName || 'Unit belum dipilih' }}</span>
+                        <span class="truncate text-xs font-bold text-primary">{{ user?.name || t('Pengguna') }}</span>
+                        <span class="truncate text-[10px] font-medium text-on-surface-variant">{{ props.unitName || t('Unit belum dipilih') }}</span>
                     </span>
                 </Link>
 
-                <AppIconButton name="logout" tone="danger" size="md" rounded="full" aria-label="Keluar" class="shrink-0" @click="askLogout" />
+                <AppLanguageSwitcher />
+                <AppIconButton name="logout" tone="danger" size="md" rounded="full" :aria-label="t('Keluar')" class="shrink-0" @click="askLogout" />
             </div>
         </header>
         <main
@@ -835,13 +897,13 @@ function onParentItemClick(item, event) {
                     <div class="flex min-w-0 flex-1 items-center gap-2.5">
                         <AppIcon name="admin_panel_settings" tone="primary" />
                         <p class="min-w-0 flex-1 break-words font-medium">
-                            <span class="font-bold">Mode Impersonasi Superadmin:</span>
-                            Anda sedang mengakses tenant sebagai <span class="font-bold">{{ user?.name }}</span> (diinisiasi oleh Superadmin <span class="font-bold">{{ impersonatorName || 'Superadmin' }}</span>).
+                            <span class="font-bold">{{ t('Mode Impersonasi Superadmin:') }}</span>
+                            {{ t('Anda sedang mengakses tenant sebagai') }} <span class="font-bold">{{ user?.name }}</span> ({{ t('diinisiasi oleh Superadmin') }} <span class="font-bold">{{ impersonatorName || 'Superadmin' }}</span>).
                         </p>
                     </div>
                     <form class="shrink-0" @submit.prevent="leaveImpersonation">
                         <AppButton size="compact" variant="secondary" icon="logout" :loading="leaveForm.processing">
-                            Kembali ke Superadmin
+                            {{ t('Kembali ke Superadmin') }}
                         </AppButton>
                     </form>
                 </div>
@@ -852,8 +914,8 @@ function onParentItemClick(item, event) {
                     <div class="flex min-w-0 flex-1 items-center gap-2.5">
                         <span class="inline-block size-2.5 shrink-0 rounded-full bg-warning animate-pulse" />
                         <p class="min-w-0 flex-1 break-words font-medium">
-                            <span class="font-bold">Mode Pelatihan Aktif:</span>
-                            Transaksi yang di-input pada periode ini adalah data simulasi latihan dan dapat dibersihkan oleh Superadmin.
+                            <span class="font-bold">{{ t('Mode Pelatihan Aktif:') }}</span>
+                            {{ t('Transaksi yang di-input pada periode ini adalah data simulasi latihan dan dapat dibersihkan oleh Superadmin.') }}
                         </p>
                     </div>
                 </div>
@@ -868,14 +930,14 @@ function onParentItemClick(item, event) {
         <AppConfirmDialog />
         <AppToast />
 
-        <AppModal v-model="logoutOpen" title="Keluar dari aplikasi?" size="sm">
+        <AppModal v-model="logoutOpen" :title="t('Keluar dari aplikasi?')" size="sm">
             <p class="text-sm text-on-surface-variant">
-                Sesi <span class="font-semibold text-primary">{{ user?.name || 'Anda' }}</span> akan diakhiri.
-                Lanjutkan?
+                {{ t('Sesi') }} <span class="font-semibold text-primary">{{ user?.name || t('Anda') }}</span> {{ t('akan diakhiri.') }}
+                {{ t('Lanjutkan?') }}
             </p>
             <template #footer>
-                <AppButton variant="secondary" :disabled="logoutForm.processing" @click="logoutOpen = false">Batal</AppButton>
-                <AppButton variant="danger" icon="logout" :loading="logoutForm.processing" @click="logout">Keluar</AppButton>
+                <AppButton variant="secondary" :disabled="logoutForm.processing" @click="logoutOpen = false">{{ t('Batal') }}</AppButton>
+                <AppButton variant="danger" icon="logout" :loading="logoutForm.processing" @click="logout">{{ t('Keluar') }}</AppButton>
             </template>
         </AppModal>
 
@@ -893,7 +955,7 @@ function onParentItemClick(item, event) {
                     <div
                         role="dialog"
                         aria-modal="true"
-                        aria-label="Pencarian"
+                        :aria-label="t('Pencarian')"
                         class="flex max-h-[min(36rem,75vh)] w-full max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl floating-shadow bg-surface-container-lowest ring-1 ring-outline-variant/60 sm:max-w-3xl"
                         @keydown="onPaletteKeydown"
                     >
@@ -903,8 +965,8 @@ function onParentItemClick(item, event) {
                                 ref="searchInput"
                                 v-model="searchQ"
                                 type="search"
-                                placeholder="Cari anggota, kelompok, pinjaman..."
-                                aria-label="Kata kunci pencarian"
+                                :placeholder="t('Cari cepat...')"
+                                :aria-label="t('Kata kunci pencarian')"
                                 class="h-14 min-w-0 flex-1 border-0 bg-transparent text-sm text-primary placeholder:text-on-surface-variant focus:outline-none focus:ring-0"
                                 autocomplete="off"
                                 @input="onSearchInput"
@@ -915,7 +977,7 @@ function onParentItemClick(item, event) {
                                 tone="neutral"
                                 rounded="full"
                                 size="sm"
-                                aria-label="Hapus kata kunci"
+                                :aria-label="t('Hapus kata kunci')"
                                 class="shrink-0 text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
                                 @click="clearSearchQuery"
                             />
@@ -925,7 +987,7 @@ function onParentItemClick(item, event) {
                                 tone="neutral"
                                 rounded="full"
                                 size="sm"
-                                aria-label="Tutup pencarian"
+                                :aria-label="t('Tutup pencarian')"
                                 class="shrink-0 text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
                                 @click="closeSearch"
                             />
@@ -933,9 +995,9 @@ function onParentItemClick(item, event) {
 
                         <div class="min-h-0 flex-1 overflow-y-auto py-2" role="listbox">
                             <p v-if="searchQ.trim().length < 2" class="px-4 py-10 text-center text-sm text-on-surface-variant">
-                                Ketik minimal 2 karakter untuk mencari.
+                                {{ t('Ketik minimal 2 karakter untuk mencari.') }}
                             </p>
-                            <p v-else-if="searchLoading" class="px-4 py-10 text-center text-sm text-on-surface-variant">Mencari...</p>
+                            <p v-else-if="searchLoading" class="px-4 py-10 text-center text-sm text-on-surface-variant">{{ t('Mencari...') }}</p>
                             <template v-else-if="searchGroups.length">
                                 <div v-for="group in searchGroups" :key="group.key" class="mb-1">
                                     <p class="px-4 py-1.5 text-xs font-semibold text-on-surface-variant">{{ group.label }}</p>
@@ -960,14 +1022,14 @@ function onParentItemClick(item, event) {
                                 </div>
                             </template>
                             <p v-else class="px-4 py-10 text-center text-sm text-on-surface-variant">
-                                Tidak ada hasil untuk "{{ searchQ.trim() }}".
+                                {{ t('Tidak ada hasil untuk') }} "{{ searchQ.trim() }}".
                             </p>
                         </div>
 
                         <div class="flex shrink-0 items-center gap-3 inset-divider-t px-4 py-2 text-[11px] text-on-surface-variant">
-                            <span><kbd class="rounded chip-shadow px-1 font-mono ring-1 ring-outline-variant/70">↑↓</kbd> pilih</span>
-                            <span><kbd class="rounded chip-shadow px-1 font-mono ring-1 ring-outline-variant/70">Enter</kbd> buka</span>
-                            <span><kbd class="rounded chip-shadow px-1 font-mono ring-1 ring-outline-variant/70">Esc</kbd> tutup</span>
+                            <span><kbd class="rounded chip-shadow px-1 font-mono ring-1 ring-outline-variant/70">↑↓</kbd> {{ t('pilih') }}</span>
+                            <span><kbd class="rounded chip-shadow px-1 font-mono ring-1 ring-outline-variant/70">Enter</kbd> {{ t('buka') }}</span>
+                            <span><kbd class="rounded chip-shadow px-1 font-mono ring-1 ring-outline-variant/70">Esc</kbd> {{ t('tutup') }}</span>
                         </div>
                     </div>
                 </div>

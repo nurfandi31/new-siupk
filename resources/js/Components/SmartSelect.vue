@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
+import { defaultPlaceholder } from '../composables/usePlaceholderText';
 import AppIcon from './AppIcon.vue';
 
 defineOptions({ inheritAttrs: false });
@@ -260,7 +261,7 @@ watch(() => props.modelValue, (value) => {
                 @click="open ? closeMenu() : openMenu()"
                 @keydown="onKeydown"
             >
-                <span class="block min-w-0 flex-1 truncate whitespace-nowrap" :class="selectedLabel ? 'text-primary' : 'text-outline'">{{ selectedLabel || (placeholder ?? `Pilih ${label.toLowerCase()}`) }}</span>
+                <span class="block min-w-0 flex-1 truncate whitespace-nowrap" :class="selectedLabel ? 'text-primary' : 'text-outline'">{{ selectedLabel || (placeholder ?? defaultPlaceholder('select', label)) }}</span>
                 <AppIcon :name="'expand_more'" :class="['absolute text-outline leading-none transition-transform duration-200', size === 'compact' ? 'right-2.5 !text-base' : 'right-2.5 !text-base', { 'rotate-180': open }]" />
             </button>
             <button

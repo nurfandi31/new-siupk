@@ -410,6 +410,52 @@ final readonly class RegencyConsolidatedReportService
     }
 
     /**
+     * Laporan Perubahan Modal/Equity konsolidasi kabupaten.
+     *
+     * Legacy SIUPK menampilkan rekening modal beserta saldo pada periode
+     * terpilih. Struktur diambil dari neraca konsolidasi agar nilai dan
+     * pemetaan akun tetap konsisten dengan laporan keuangan lainnya.
+     *
+     * @param  list<int>  $tenantIds
+     * @return array<string, mixed>
+     */
+    public function equityChanges(DatabaseShard $shard, array $tenantIds, int $year, ?int $month = null, ?int $specificTenantId = null): array
+    {
+        $balance = $this->balanceSheet($shard, $tenantIds, $year, $month, $specificTenantId);
+
+        $rows = [];
+        $total = 0.0;
+        foreach (($balance['groups'] ?? []) as $group) {
+            if (($group['type'] ?? '') !== 'equity') {
+                continue;
+            }
+
+            foreach (($group['subgroups'] ?? []) as $subgroup) {
+                foreach (($subgroup['rows'] ?? []) as $row) {
+                    $rows[] = [
+                        'code' => (string) ($row['code'] ?? ''),
+                        'name' => (string) ($row['name'] ?? ''),
+                        'total' => round((float) ($row['total'] ?? 0), 2),
+                        'tenants' => $row['tenants'] ?? [],
+                    ];
+                    $total += (float) ($row['total'] ?? 0);
+                }
+            }
+        }
+
+        return [
+            'period' => $balance['period'],
+            'is_consolidated' => $balance['is_consolidated'],
+            'specific_tenant_id' => $balance['specific_tenant_id'],
+            'kecamatans' => $balance['kecamatans'],
+            'rows' => $rows,
+            'summary' => [
+                'total_equity' => round($total, 2),
+            ],
+        ];
+    }
+
+    /**
      * @param  list<int>  $tenantIds
      * @return array<string, mixed>
      */

@@ -115,6 +115,39 @@ final class LoanReportController
         );
     }
 
+    public function lppIndividuDesa(Request $request): InertiaResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+
+        return Inertia::render('Lending/Reports/LppDesa', [
+            ...$this->lpp->buildDesa($year, $month, is_string($product) ? $product : null, 'member'),
+            'report_scope' => 'member',
+            'filters' => [
+                'year' => $year,
+                'month' => $month,
+                'product' => $product,
+                'scope' => 'member',
+            ],
+        ]);
+    }
+
+    public function lppIndividuDesaPdf(Request $request): Response|StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+        $data = $this->lpp->buildDesa($year, $month, is_string($product) ? $product : null, 'member');
+
+        return $this->pdf->stream(
+            'reports.pdf.lending.lpp_desa',
+            [...$data, 'report_scope' => 'member'],
+            sprintf('lpp-desa-individu-%04d-%02d.pdf', $year, $month),
+            'landscape',
+        );
+    }
+
     public function lppKelompok(Request $request): InertiaResponse
     {
         $this->authorize($request);
@@ -196,6 +229,33 @@ final class LoanReportController
             'reports.pdf.lending.kolek_desa',
             $data,
             sprintf('kolektibilitas-desa-%04d-%02d.pdf', $year, $month),
+            'landscape',
+        );
+    }
+
+    public function kolekKelompok(Request $request): InertiaResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+
+        return Inertia::render('Lending/Reports/KolekKelompok', [
+            ...$this->collectibility->buildKelompok($year, $month, is_string($product) ? $product : null),
+            'filters' => ['year' => $year, 'month' => $month, 'product' => $product],
+        ]);
+    }
+
+    public function kolekKelompokPdf(Request $request): Response|StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->yearMonth($request);
+        $product = $request->query('product', 'all');
+        $data = $this->collectibility->buildKelompok($year, $month, is_string($product) ? $product : null);
+
+        return $this->pdf->stream(
+            'reports.pdf.lending.kolek_kelompok',
+            $data,
+            sprintf('kolektibilitas-kelompok-%04d-%02d.pdf', $year, $month),
             'landscape',
         );
     }

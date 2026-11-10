@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
+use App\Models\Platform\Tenant;
 use App\Models\User;
+use App\Tenancy\Services\PlatformHostResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +18,10 @@ use Inertia\Response;
 
 final class AuthController
 {
+    public function __construct(
+        private readonly PlatformHostResolver $platformHosts,
+    ) {}
+
     public function showLogin(Request $request): Response|RedirectResponse
     {
         if (Auth::check()) {
@@ -37,6 +43,7 @@ final class AuthController
                 'username' => 'admin',
                 'password' => 'password',
             ] : null,
+            'centralLogin' => $this->platformHosts->isEnforcedPlatformHost($request->getHost()),
         ]);
     }
 
@@ -57,6 +64,18 @@ final class AuthController
         if ($user === null || ! Hash::check($password, (string) $user->password)) {
             throw ValidationException::withMessages([
                 'identifier' => 'Kredensial yang diberikan tidak valid.',
+            ]);
+        }
+
+        // Domain pusat hanya untuk akun pusat. Akun tenant harus login lewat
+        // domain tenant masing-masing agar tidak tercampur dengan panel pusat.
+        if ($this->platformHosts->isEnforcedPlatformHost($request->getHost()) && $this->isTenantScopedUser($user)) {
+            $domain = $this->tenantLoginDomain($user);
+
+            throw ValidationException::withMessages([
+                'identifier' => $domain !== null
+                    ? "Akun ini adalah akun tenant. Silakan login melalui domain tenant: {$domain}."
+                    : 'Akun ini adalah akun tenant. Silakan login melalui domain tenant yang terdaftar, bukan domain pusat.',
             ]);
         }
 
@@ -119,5 +138,52 @@ final class AuthController
         $request->session()->flash('success', 'Anda telah berhasil keluar.');
 
         return redirect()->route('login');
+    }
+
+    private function isTenantScopedUser(User $user): bool
+    {
+        return $user->is_superadmin !== true
+            && ! $user->isRegencyUser()
+            && ! $user->isProvinceUser();
+    }
+
+    private function tenantLoginDomain(User $user): ?string
+    {
+        $tenant = $this->tenantForUser($user);
+        if ($tenant === null) {
+            return null;
+        }
+
+        $metadata = is_array($tenant->metadata) ? $tenant->metadata : [];
+        $domains = $metadata['domains'] ?? ($metadata['domain'] ?? []);
+        $domains = is_array($domains) ? $domains : [$domains];
+
+        foreach ($domains as $domain) {
+            if (! is_string($domain)) {
+                continue;
+            }
+
+            $clean = strtolower(trim($domain));
+            $clean = preg_replace('#^https?://#', '', $clean);
+            $clean = trim((string) explode('/', $clean)[0]);
+
+            if ($clean !== '') {
+                return $clean;
+            }
+        }
+
+        return null;
+    }
+
+    private function tenantForUser(User $user): ?Tenant
+    {
+        if ($user->tenant_id !== null) {
+            return Tenant::query()->find($user->tenant_id);
+        }
+
+        return $user->memberships()
+            ->with('tenant')
+            ->where('status', 'active')
+            ->first()?->tenant;
     }
 }

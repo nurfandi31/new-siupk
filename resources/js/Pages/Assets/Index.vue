@@ -115,7 +115,7 @@ watch([status, category, asOf], () => {
 
             <AppCard>
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <AppInput v-model="q" label="Cari" placeholder="Kode atau nama" />
+                    <AppInput v-model="q" label="Cari" placeholder="Cari aset..." />
                     <SmartSelect v-model="status" label="Status" :options="status_options" />
                     <SmartSelect v-model="category" label="Kategori" :options="categoryOptions" />
                     <AppDatePicker v-model="asOf" label="Nilai buku per" />

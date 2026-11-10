@@ -104,6 +104,25 @@ const frequencyMultiplier = {
 const selectedProductId = ref(isEdit.value ? String(props.loan.loan_product_id ?? '') : '');
 const selectedMemberId = ref(isEdit.value ? String(props.loan.member_id ?? '') : '');
 
+// Legacy SIUPK menyimpan rincian jaminan per jenis (`data_jaminan[...]`).
+// `kendaraan` adalah nilai lama Next; secara legacy padanannya BPKB.
+const initialCollateral = isEdit.value ? (props.loan.collateral ?? {}) : {};
+const initialCollateralDetails = initialCollateral.details ?? {};
+const legacyCollateralTypes = {
+    1: 'sertifikat_tanah',
+    2: 'bpkb',
+    3: 'sk_pegawai',
+    4: 'lainnya',
+};
+const initialCollateralType = (() => {
+    const rawType = initialCollateral.type
+        || legacyCollateralTypes[String(initialCollateral.jenis_jaminan ?? '')]
+        || 'sertifikat_tanah';
+    if (rawType === 'kendaraan' || rawType === 'cash' || rawType === 'simpanan') return 'bpkb';
+    return ['sertifikat_tanah', 'bpkb', 'sk_pegawai', 'lainnya'].includes(rawType) ? rawType : 'sertifikat_tanah';
+})();
+const collateralDetail = (key, fallback = '') => initialCollateralDetails[key] ?? initialCollateral[key] ?? fallback;
+
 const form = useForm({
     loan_product_id: isEdit.value ? (props.loan.loan_product_id ?? '') : '',
     member_id: isEdit.value ? (props.loan.member_id ?? '') : '',
@@ -118,19 +137,63 @@ const form = useForm({
     interest_grace_months: isEdit.value ? (props.loan.interest_grace_months ?? 0) : 0,
     rounding_step: isEdit.value ? (props.loan.rounding_step ?? '') : '',
     collateral: {
-        type: isEdit.value && props.loan.collateral?.type ? props.loan.collateral.type : 'kendaraan',
-        description: isEdit.value ? (props.loan.collateral?.description ?? '') : '',
-        value: isEdit.value ? (props.loan.collateral?.value ?? '') : '',
-        reference: isEdit.value ? (props.loan.collateral?.reference ?? '') : '',
+        type: initialCollateralType,
+        // Field generik lama tetap dikirim untuk kompatibilitas; dokumen memakai `details`.
+        description: initialCollateral.description ?? '',
+        value: initialCollateral.value ?? '',
+        reference: initialCollateral.reference ?? '',
+        details: {
+            nomor_sertifikat: collateralDetail(
+                'nomor_sertifikat',
+                initialCollateralType === 'sertifikat_tanah' ? (initialCollateral.reference ?? '') : '',
+            ),
+            nama_pemilik: collateralDetail('nama_pemilik'),
+            alamat: collateralDetail(
+                'alamat',
+                initialCollateralType === 'sertifikat_tanah' ? (initialCollateral.description ?? '') : '',
+            ),
+            luas: collateralDetail('luas'),
+            nilai_jual_tanah: collateralDetail(
+                'nilai_jual_tanah',
+                initialCollateralType === 'sertifikat_tanah' ? (initialCollateral.value ?? '') : '',
+            ),
+            nomor: collateralDetail(
+                'nomor',
+                initialCollateralType !== 'sertifikat_tanah' ? (initialCollateral.reference ?? '') : '',
+            ),
+            jenis_kendaraan: collateralDetail(
+                'jenis_kendaraan',
+                initialCollateralType === 'bpkb' ? (initialCollateral.description ?? '') : '',
+            ),
+            nopol: collateralDetail('nopol'),
+            nilai_jual_kendaraan: collateralDetail(
+                'nilai_jual_kendaraan',
+                initialCollateralType === 'bpkb' ? (initialCollateral.value ?? '') : '',
+            ),
+            nama_pegawai: collateralDetail('nama_pegawai'),
+            nama_kuitansi_penerbit: collateralDetail(
+                'nama_kuitansi_penerbit',
+                initialCollateralType === 'sk_pegawai' ? (initialCollateral.description ?? '') : '',
+            ),
+            nama_jaminan: collateralDetail(
+                'nama_jaminan',
+                initialCollateralType === 'lainnya' ? (initialCollateral.description ?? '') : '',
+            ),
+            keterangan: collateralDetail('keterangan'),
+            nilai_jaminan: collateralDetail(
+                'nilai_jaminan',
+                initialCollateralType === 'lainnya' ? (initialCollateral.value ?? '') : '',
+            ),
+        },
     },
     verification_remarks: isEdit.value ? (props.loan.verification_remarks ?? '') : '',
 });
 
 const collateralTypeOptions = [
-    { value: 'kendaraan', label: 'BPKB Kendaraan' },
-    { value: 'sertifikat_tanah', label: 'Sertifikat Tanah' },
-    { value: 'bpkb', label: 'BPKB saja' },
-    { value: 'lainnya', label: 'Lainnya' },
+    { value: 'sertifikat_tanah', label: 'Surat Tanah' },
+    { value: 'bpkb', label: 'BPKB' },
+    { value: 'sk_pegawai', label: 'SK. Pegawai' },
+    { value: 'lainnya', label: 'Lain Lain' },
 ];
 
 const selectedProduct = computed(() => props.products.find((p) => String(p.row_id) === String(selectedProductId.value)) || null);
@@ -308,17 +371,68 @@ function submit() {
 
                     <div class="col-span-12 grid gap-x-5 gap-y-4 sm:grid-cols-12">
                         <div class="sm:col-span-3">
-                            <SmartSelect v-model="form.collateral.type" label="Jaminan" :options="collateralTypeOptions" :error="form.errors['collateral.type']" />
+                            <SmartSelect v-model="form.collateral.type" label="Jenis Jaminan" :options="collateralTypeOptions" :error="form.errors['collateral.type']" />
                         </div>
-                        <div class="sm:col-span-3">
-                            <AppInput v-model="form.collateral.reference" label="No. Dokumen" icon="tag" maxlength="120" :error="form.errors['collateral.reference']" placeholder="BP-1234-XX" />
-                        </div>
-                        <div class="sm:col-span-3">
-                            <AppCurrencyInput v-model="form.collateral.value" label="Estimasi Nilai" icon="payments" :min="0" :error="form.errors['collateral.value']" />
-                        </div>
-                        <div class="sm:col-span-3">
-                            <AppInput v-model="form.collateral.description" label="Keterangan" icon="description" maxlength="120" :error="form.errors['collateral.description']" placeholder="Honda Beat 2022" />
-                        </div>
+
+                        <template v-if="form.collateral.type === 'sertifikat_tanah'">
+                            <div class="sm:col-span-3">
+                                <AppInput v-model="form.collateral.details.nomor_sertifikat" label="Nomor Sertifikat" icon="tag" maxlength="120" :error="form.errors['collateral.details.nomor_sertifikat']" />
+                            </div>
+                            <div class="sm:col-span-3">
+                                <AppInput v-model="form.collateral.details.nama_pemilik" label="Nama Pemilik" icon="person" maxlength="120" :error="form.errors['collateral.details.nama_pemilik']" />
+                            </div>
+                            <div class="sm:col-span-3">
+                                <AppInput v-model="form.collateral.details.alamat" label="Alamat" icon="location_on" maxlength="200" :error="form.errors['collateral.details.alamat']" />
+                            </div>
+                            <div class="sm:col-span-3">
+                                <AppInput v-model="form.collateral.details.luas" label="Luas (m²)" icon="square_foot" maxlength="50" :error="form.errors['collateral.details.luas']" />
+                            </div>
+                            <div class="sm:col-span-3">
+                                <AppCurrencyInput v-model="form.collateral.details.nilai_jual_tanah" label="Nilai Jual Tanah" icon="payments" :min="0" :error="form.errors['collateral.details.nilai_jual_tanah']" />
+                            </div>
+                        </template>
+
+                        <template v-else-if="form.collateral.type === 'bpkb'">
+                            <div class="sm:col-span-3">
+                                <AppInput v-model="form.collateral.details.nomor" label="Nomor" icon="tag" maxlength="120" :error="form.errors['collateral.details.nomor']" />
+                            </div>
+                            <div class="sm:col-span-3">
+                                <AppInput v-model="form.collateral.details.nama_pemilik" label="Nama Pemilik" icon="person" maxlength="120" :error="form.errors['collateral.details.nama_pemilik']" />
+                            </div>
+                            <div class="sm:col-span-3">
+                                <AppInput v-model="form.collateral.details.jenis_kendaraan" label="Jenis Kendaraan" icon="directions_car" maxlength="120" :error="form.errors['collateral.details.jenis_kendaraan']" />
+                            </div>
+                            <div class="sm:col-span-3">
+                                <AppInput v-model="form.collateral.details.nopol" label="Nopol" icon="pin" maxlength="30" :error="form.errors['collateral.details.nopol']" />
+                            </div>
+                            <div class="sm:col-span-3">
+                                <AppCurrencyInput v-model="form.collateral.details.nilai_jual_kendaraan" label="Nilai Jual Kendaraan" icon="payments" :min="0" :error="form.errors['collateral.details.nilai_jual_kendaraan']" />
+                            </div>
+                        </template>
+
+                        <template v-else-if="form.collateral.type === 'sk_pegawai'">
+                            <div class="sm:col-span-4">
+                                <AppInput v-model="form.collateral.details.nomor" label="Nomor" icon="tag" maxlength="120" :error="form.errors['collateral.details.nomor']" />
+                            </div>
+                            <div class="sm:col-span-4">
+                                <AppInput v-model="form.collateral.details.nama_pegawai" label="Nama Pegawai" icon="person" maxlength="120" :error="form.errors['collateral.details.nama_pegawai']" />
+                            </div>
+                            <div class="sm:col-span-4">
+                                <AppInput v-model="form.collateral.details.nama_kuitansi_penerbit" label="Nama Instansi Penerbit" icon="account_balance" maxlength="120" :error="form.errors['collateral.details.nama_kuitansi_penerbit']" />
+                            </div>
+                        </template>
+
+                        <template v-else>
+                            <div class="sm:col-span-4">
+                                <AppInput v-model="form.collateral.details.nama_jaminan" label="Nama Jaminan" icon="inventory_2" maxlength="120" :error="form.errors['collateral.details.nama_jaminan']" />
+                            </div>
+                            <div class="sm:col-span-4">
+                                <AppInput v-model="form.collateral.details.keterangan" label="Keterangan" icon="description" maxlength="200" :error="form.errors['collateral.details.keterangan']" />
+                            </div>
+                            <div class="sm:col-span-4">
+                                <AppCurrencyInput v-model="form.collateral.details.nilai_jaminan" label="Nilai Jaminan" icon="payments" :min="0" :error="form.errors['collateral.details.nilai_jaminan']" />
+                            </div>
+                        </template>
                     </div>
 
                     <div class="col-span-12 my-1 border-t border-outline-variant"></div>
@@ -328,7 +442,7 @@ function submit() {
                             v-model="form.verification_remarks"
                             label=""
                             hide-label
-                            placeholder="Catatan verifikasi (opsional) — sumber dana, tunggakan, dll."
+                            placeholder="Catatan verifikasi"
                             :rows="2"
                             :maxlength="2000"
                             :error="form.errors.verification_remarks"

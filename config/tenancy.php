@@ -29,4 +29,24 @@ return [
 
     'shard_migration_path' => 'database/migrations/shard',
     'platform_migration_path' => 'database/migrations/platform',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Tenant Login Accounts
+    |--------------------------------------------------------------------------
+    |
+    | When a tenant is provisioned, one login account is seeded for every role
+    | in config/permissions.php so the new location can be accessed without
+    | creating users manually. Usernames follow "{tenant code}.{role code}".
+    |
+    | Set TENANCY_SEED_USERS=false to skip automatic account creation. The
+    | password below is only used for newly created accounts; existing users
+    | keep their current password when provisioning is re-run.
+    |
+    */
+
+    'seed_users' => [
+        'enabled' => (bool) env('TENANCY_SEED_USERS', true),
+        'password' => (string) env('TENANCY_SEED_USERS_PASSWORD', 'password'),
+    ],
 ];

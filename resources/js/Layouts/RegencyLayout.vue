@@ -5,7 +5,10 @@ import AppIcon from '../Components/AppIcon.vue';
 import AppIconButton from '../Components/AppIconButton.vue';
 import AppConfirmDialog from '../Components/AppConfirmDialog.vue';
 import AppToast from '../Components/AppToast.vue';
+import AppLanguageSwitcher from '../Components/AppLanguageSwitcher.vue';
+import { useI18n } from '../i18n';
 
+const { t, locale } = useI18n();
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
 const appName = computed(() => page.props.appName || 'siupk Next');
@@ -14,10 +17,16 @@ const mobileMenuOpen = ref(false);
 const logoutForm = useForm({});
 const avatarError = ref(false);
 
+function navLabel(label) {
+    if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : 'Beranda';
+    return t(label);
+}
+
 const navigation = [
-    { label: 'Dashboard', icon: 'dashboard', href: '/regency/dashboard', exact: true },
+    { label: 'Beranda', icon: 'dashboard', href: '/regency/dashboard', exact: true },
     { label: 'Neraca', icon: 'account_balance', href: '/regency/reports/balance-sheet' },
     { label: 'Laba Rugi', icon: 'trending_up', href: '/regency/reports/income-statement' },
+    { label: 'Perubahan Modal', icon: 'balance', href: '/regency/reports/equity-changes' },
     { label: 'Buku Besar', icon: 'menu_book', href: '/regency/reports/general-ledger' },
     { label: 'Arus Kas', icon: 'payments', href: '/regency/reports/cash-flow' },
     { label: 'CALK', icon: 'description', href: '/regency/reports/calk' },
@@ -47,7 +56,7 @@ function logout() {
                 v-if="mobileMenuOpen"
                 type="button"
                 class="fixed inset-0 z-40 bg-primary/45 backdrop-blur-xs lg:hidden"
-                aria-label="Tutup navigasi"
+                :aria-label="t('Tutup navigasi')"
                 @click="mobileMenuOpen = false"
             />
         </Transition>
@@ -57,9 +66,9 @@ function logout() {
             :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'"
         >
             <div class="mb-8 px-6">
-                <p class="text-xs font-bold uppercase tracking-[0.2em] text-on-primary-container">Portal Kabupaten</p>
-                <p class="mt-1 text-lg font-bold text-on-primary">{{ user?.regency_name || 'Kabupaten' }}</p>
-                <p class="text-xs text-primary-fixed-dim">Konsolidasi Multi-Kecamatan</p>
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-on-primary-container">{{ t('Portal Kabupaten') }}</p>
+                <p class="mt-1 text-lg font-bold text-on-primary">{{ user?.regency_name || t('Kabupaten') }}</p>
+                <p class="text-xs text-primary-fixed-dim">{{ t('Konsolidasi Multi-Kecamatan') }}</p>
             </div>
 
             <nav class="flex-1 space-y-1 overflow-y-auto px-3">
@@ -72,7 +81,7 @@ function logout() {
                     @click="mobileMenuOpen = false"
                 >
                     <AppIcon :name="item.icon" :filled="isActive(item)" />
-                    <span>{{ item.label }}</span>
+                    <span>{{ navLabel(item.label) }}</span>
                 </Link>
             </nav>
 
@@ -80,34 +89,35 @@ function logout() {
                 <div class="flex min-w-0 items-center gap-3 rounded-xl bg-primary-container/50 p-3 shadow-inner shadow-black/20">
                     <div class="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-sm font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'Kabupaten'" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'K' }}</span></div>
                     <div class="min-w-0 flex-1">
-                        <p class="truncate font-bold text-on-primary">{{ user?.name || 'Supervisor' }}</p>
-                        <p class="truncate text-xs text-primary-fixed-dim">Level Kabupaten</p>
+                        <p class="truncate font-bold text-on-primary">{{ user?.name || t('Supervisor') }}</p>
+                        <p class="truncate text-xs text-primary-fixed-dim">{{ t('Level Kabupaten') }}</p>
                     </div>
-                    <AppIconButton name="logout" tone="neutral" size="sm" rounded="lg" aria-label="Keluar" class="text-primary-fixed-dim hover:bg-on-primary/10 hover:text-on-primary" @click="logout" />
+                    <AppIconButton name="logout" tone="neutral" size="sm" rounded="lg" :aria-label="t('Keluar')" class="text-primary-fixed-dim hover:bg-on-primary/10 hover:text-on-primary" @click="logout" />
                 </div>
             </div>
         </aside>
 
         <header class="sticky top-0 z-30 flex h-16 items-center justify-between header-shadow bg-surface px-4 lg:ml-64 lg:px-6">
             <div class="flex items-center gap-3">
-                <AppIconButton name="menu" tone="primary" size="sm" rounded="lg" aria-label="Buka navigasi" class="lg:hidden" @click="mobileMenuOpen = true" />
+                <AppIconButton name="menu" tone="primary" size="sm" rounded="lg" :aria-label="t('Buka navigasi')" class="lg:hidden" @click="mobileMenuOpen = true" />
                 <div>
-                    <p class="text-sm font-bold text-primary">Monitoring & Konsolidasi Keuangan Kabupaten</p>
+                    <p class="text-sm font-bold text-primary">{{ t('Monitoring & Konsolidasi Keuangan Kabupaten') }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                <AppLanguageSwitcher />
                 <Link
                     href="/changelog"
                     class="grid size-10 shrink-0 place-items-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary"
                     :class="currentPath === '/changelog' && 'bg-surface-container text-primary'"
-                    title="Catatan Rilis & Changelog"
-                    aria-label="Catatan Rilis & Changelog"
+                    :title="t('Catatan Rilis & Changelog')"
+                    :aria-label="t('Catatan Rilis & Changelog')"
                 >
                     <AppIcon name="history_edu" class="text-2xl leading-none" />
                 </Link>
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-primary-fixed px-3 py-1 text-xs font-semibold text-primary">
                     <span class="size-1.5 rounded-full bg-primary"></span>
-                    {{ user?.regency_name || 'Kabupaten' }}
+                    {{ user?.regency_name || t('Kabupaten') }}
                 </span>
             </div>
         </header>

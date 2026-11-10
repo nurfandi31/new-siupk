@@ -1,0 +1,87 @@
+@extends('reports.pdf.layout')
+
+@section('content')
+    <style>
+        html { margin-left: 40px; margin-right: 40px; }
+        .num { text-align: right; white-space: nowrap; }
+        .village-row td { background: rgb(242, 242, 242); font-weight: bold; }
+        .subtotal-row td { background: rgb(248, 248, 248); font-weight: bold; }
+    </style>
+
+    @foreach ($products as $idx => $prod)
+        @if ($idx > 0)
+            <div class="break"></div>
+        @endif
+
+        <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 11px; margin-bottom: 10px;">
+            <tr>
+                <td align="center">
+                    <div style="font-size: 18px; font-weight: bold;">
+                        DAFTAR KOLEKTIBILITAS PINJAMAN INDIVIDU - {{ strtoupper($prod['product_name']) }} ({{ $prod['product_code'] }})
+                    </div>
+                    <div style="font-size: 16px; font-weight: bold;">
+                        PERIODE: {{ strtoupper($period_label) }}
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 8.5px; table-layout: fixed;">
+            <thead>
+                <tr style="background: rgb(230, 230, 230); font-weight: bold; text-align: center;">
+                    <th class="t l b" rowspan="2" width="16%">Desa</th>
+                    <th class="t l b" rowspan="2" width="24%">Peminjam</th>
+                    <th class="t l b" rowspan="2" width="9%">Alokasi</th>
+                    <th class="t l b" rowspan="2" width="10%">Saldo Pokok</th>
+                    <th class="t l b" colspan="2" width="20%">Tunggakan</th>
+                    <th class="t l b r" rowspan="2" width="11%">Kolek</th>
+                </tr>
+                <tr style="background: rgb(230, 230, 230); font-weight: bold; text-align: center;">
+                    <th class="t l b">Pokok</th>
+                    <th class="t l b">Jasa</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($prod['villages'] as $v)
+                    <tr class="village-row">
+                        <td class="t l b" colspan="7">DESA: {{ strtoupper($v['village_name']) }}</td>
+                    </tr>
+                    @foreach ($v['loans'] as $loan)
+                        <tr>
+                            <td class="l b">{{ $v['village_name'] }}</td>
+                            <td class="l b">
+                                {{ $loan['member_name'] }}
+                                <span style="color: #666;">(#{{ $loan['loan_id'] }})</span>
+                                <br>
+                                <span style="color: #666;">NIK: {{ $loan['nik'] ?: '-' }}</span>
+                            </td>
+                            <td class="l b num">{{ number_format($loan['alokasi'], 0, ',', '.') }}</td>
+                            <td class="l b num">{{ number_format($loan['saldo'], 0, ',', '.') }}</td>
+                            <td class="l b num">{{ number_format($loan['tunggakan_pokok'], 0, ',', '.') }}</td>
+                            <td class="l b num">{{ number_format($loan['tunggakan_jasa'], 0, ',', '.') }}</td>
+                            <td class="l b r">{{ $loan['kolek_nama'] }}</td>
+                        </tr>
+                    @endforeach
+                    <tr class="subtotal-row">
+                        <td class="l b" colspan="2">Subtotal {{ $v['village_name'] }}</td>
+                        <td class="l b num">{{ number_format($v['subtotal']['alokasi'], 0, ',', '.') }}</td>
+                        <td class="l b num">{{ number_format($v['subtotal']['saldo'], 0, ',', '.') }}</td>
+                        <td class="l b num">{{ number_format($v['subtotal']['tunggakan_pokok'], 0, ',', '.') }}</td>
+                        <td class="l b num">{{ number_format($v['subtotal']['tunggakan_jasa'], 0, ',', '.') }}</td>
+                        <td class="l b r">{{ $v['subtotal']['peminjam_count'] }} peminjam</td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr style="background: rgb(232,232,232); font-weight: bold;">
+                    <th class="t l b" align="left" colspan="2">TOTAL {{ $prod['product_code'] }}</th>
+                    <th class="t l b num">{{ number_format($prod['totals']['alokasi'], 0, ',', '.') }}</th>
+                    <th class="t l b num">{{ number_format($prod['totals']['saldo'], 0, ',', '.') }}</th>
+                    <th class="t l b num">{{ number_format($prod['totals']['tunggakan_pokok'], 0, ',', '.') }}</th>
+                    <th class="t l b num">{{ number_format($prod['totals']['tunggakan_jasa'], 0, ',', '.') }}</th>
+                    <th class="t l b r">{{ $prod['totals']['peminjam_count'] }} peminjam</th>
+                </tr>
+            </tfoot>
+        </table>
+    @endforeach
+@endsection

@@ -226,7 +226,7 @@ const filteredReleases = computed(() => {
                         <div class="w-full sm:max-w-xs">
                             <AppInput
                                 v-model="searchQuery"
-                                placeholder="Cari fitur, modul, kode..."
+                                placeholder="Cari changelog..."
                                 icon="search"
                                 clearable
                             />

@@ -93,7 +93,7 @@ watch([type, status], () => {
 
             <AppCard>
                 <div class="grid gap-3 sm:grid-cols-3">
-                    <AppInput v-model="q" label="Cari" placeholder="Kode atau nama akun" />
+                    <AppInput v-model="q" label="Cari" placeholder="Cari akun..." />
                     <SmartSelect v-model="type" label="Jenis" :options="type_options" />
                     <SmartSelect v-model="status" label="Status" :options="statusOptions" />
                 </div>

@@ -110,7 +110,7 @@ function formatDate(value) {
                         :per-page="loans.per_page || 15"
                         :sort="loans.sort || 'disbursed_at'"
                         :direction="loans.direction || 'desc'"
-                        search-placeholder="Cari nomor pinjaman..."
+                        search-placeholder="Cari pinjaman..."
                         empty-title="Belum ada pinjaman"
                         empty-description="Riwayat pinjaman Anda akan tampil di sini."
                     >

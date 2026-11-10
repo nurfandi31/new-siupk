@@ -53,11 +53,14 @@ const donutSlices = computed(() => {
                         </p>
                     </div>
                     <div class="flex shrink-0 flex-row items-center gap-2">
+                        <Link href="/admin/tenants/create">
+                            <AppButton icon="add">Tambah Tenant</AppButton>
+                        </Link>
                         <Link href="/admin/revenue">
                             <AppButton variant="secondary" icon="monitoring">Monitor Pendapatan</AppButton>
                         </Link>
                         <Link href="/admin/invoices/create">
-                            <AppButton icon="receipt_long">Terbitkan Tagihan</AppButton>
+                            <AppButton variant="secondary" icon="receipt_long">Terbitkan Tagihan</AppButton>
                         </Link>
                     </div>
                 </div>

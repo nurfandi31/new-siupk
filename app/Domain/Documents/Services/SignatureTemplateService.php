@@ -16,6 +16,7 @@ final class SignatureTemplateService
         'laporan_keuangan' => 'Laporan Keuangan',
         'rekap_pinjaman' => 'Rekap Pinjaman',
         'perjanjian_kredit' => 'Perjanjian / SPK',
+        'perjanjian_kredit_individu' => 'Perjanjian / SPK Individu',
         'proposal' => 'Proposal',
         'kwitansi' => 'Kwitansi',
     ];

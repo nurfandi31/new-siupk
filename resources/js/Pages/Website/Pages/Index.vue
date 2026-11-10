@@ -72,7 +72,7 @@ async function restore(page) {
                     :sort="sort"
                     :direction="direction"
                     search-label="Cari halaman"
-                    search-placeholder="Judul atau slug"
+                    search-placeholder="Cari halaman..."
                     empty-title="Belum ada halaman"
                     empty-description="Buat halaman statis seperti Tentang Kami atau Program Kerja."
                 >

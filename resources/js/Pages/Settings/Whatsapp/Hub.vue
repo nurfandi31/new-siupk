@@ -700,7 +700,7 @@ async function sendBillingWithProgress() {
 
         <AppModal v-model="showCreateModal" :title="editingInstance ? 'Edit Instance' : 'Tambah Instance'" size="md">
             <form class="space-y-5" @submit.prevent="submitInstance">
-                <AppInput v-model="form.name" label="Nama Instance" required placeholder="Contoh: Customer Service 1" :error="form.errors.name" />
+                <AppInput v-model="form.name" label="Nama Instance" required placeholder="Masukkan nama" :error="form.errors.name" />
                 <AppInput v-model="form.phone_number" label="Nomor WhatsApp (opsional)" placeholder="08xxxxxxxxxx" :error="form.errors.phone_number" hint="Boleh diisi setelah nomor tersambung." />
                 <AppInput v-model.number="form.daily_limit" label="Batas Pesan Harian" type="number" min="0" :error="form.errors.daily_limit" hint="Isi 0 untuk tanpa batas." />
                 <div class="grid gap-3 rounded-xl border border-outline-variant bg-surface-container-low p-4 sm:grid-cols-2">
@@ -951,7 +951,7 @@ async function sendBillingWithProgress() {
         <AppModal v-model="showTestModal" title="Tes Pengiriman WhatsApp" size="sm">
             <form class="space-y-5" @submit.prevent="sendTest">
                 <AppInput v-model="testForm.phone" label="Nomor Tujuan" required placeholder="08xxxxxxxxxx" />
-                <AppTextarea v-model="testForm.message" label="Pesan (opsional)" :rows="4" placeholder="Tes koneksi WhatsApp Gateway siupk." />
+                <AppTextarea v-model="testForm.message" label="Pesan (opsional)" :rows="4" placeholder="Tes koneksi" />
             </form>
             <template #footer>
                 <AppButton variant="ghost" @click="showTestModal = false">Batal</AppButton>

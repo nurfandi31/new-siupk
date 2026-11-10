@@ -1,5 +1,9 @@
 @extends('reports.pdf.layout')
 
+@php
+    $isIndividu = ($report_scope ?? null) === 'member';
+@endphp
+
 @section('content')
     <style>
         html { margin-left: 40px; margin-right: 40px; }
@@ -15,7 +19,7 @@
             <tr>
                 <td align="center">
                     <div style="font-size: 18px; font-weight: bold;">
-                        DAFTAR PERKEMBANGAN PIUTANG (LPP) REKAP DESA — {{ strtoupper($prod['product_name']) }} ({{ $prod['product_code'] }})
+                        DAFTAR PERKEMBANGAN PIUTANG (LPP) REKAP DESA{{ $isIndividu ? ' INDIVIDU' : '' }} - {{ strtoupper($prod['product_name']) }} ({{ $prod['product_code'] }})
                     </div>
                     <div style="font-size: 16px; font-weight: bold;">
                         PERIODE: {{ strtoupper($period_label) }}
@@ -28,8 +32,10 @@
             <thead>
                 <tr style="background: rgb(230, 230, 230); font-weight: bold; text-align: center;">
                     <th class="t l b" rowspan="2" width="18%">Desa</th>
-                    <th class="t l b" rowspan="2" width="4%">Kel</th>
-                    <th class="t l b" rowspan="2" width="4%">Pmf</th>
+                    @if (! $isIndividu)
+                        <th class="t l b" rowspan="2" width="4%">Kel</th>
+                        <th class="t l b" rowspan="2" width="4%">Pmf</th>
+                    @endif
                     <th class="t l b" rowspan="2" width="8%">Alokasi</th>
                     <th class="t l b" colspan="2" width="13%">Target</th>
                     <th class="t l b" colspan="2" width="13%">Real s.d. Lalu</th>
@@ -57,8 +63,10 @@
                 @foreach ($prod['villages'] as $v)
                     <tr>
                         <td class="l b">{{ $v['village_name'] }}</td>
-                        <td class="l b" align="center">{{ $v['kelompok_count'] }}</td>
-                        <td class="l b" align="center">{{ $v['pemanfaat_count'] }}</td>
+                        @if (! $isIndividu)
+                            <td class="l b" align="center">{{ $v['kelompok_count'] }}</td>
+                            <td class="l b" align="center">{{ $v['pemanfaat_count'] }}</td>
+                        @endif
                         <td class="l b num">{{ number_format($v['alokasi'], 0, ',', '.') }}</td>
                         <td class="l b num">{{ number_format($v['target_pokok'], 0, ',', '.') }}</td>
                         <td class="l b num">{{ number_format($v['target_jasa'], 0, ',', '.') }}</td>
@@ -78,8 +86,10 @@
             <tfoot>
                 <tr style="background: rgb(232,232,232); font-weight: bold;">
                     <th class="t l b" align="left">TOTAL {{ $prod['product_code'] }}</th>
-                    <th class="t l b" align="center">{{ $prod['totals']['kelompok_count'] }}</th>
-                    <th class="t l b" align="center">{{ $prod['totals']['pemanfaat_count'] }}</th>
+                    @if (! $isIndividu)
+                        <th class="t l b" align="center">{{ $prod['totals']['kelompok_count'] }}</th>
+                        <th class="t l b" align="center">{{ $prod['totals']['pemanfaat_count'] }}</th>
+                    @endif
                     <th class="t l b num">{{ number_format($prod['totals']['alokasi'], 0, ',', '.') }}</th>
                     <th class="t l b num">{{ number_format($prod['totals']['target_pokok'], 0, ',', '.') }}</th>
                     <th class="t l b num">{{ number_format($prod['totals']['target_jasa'], 0, ',', '.') }}</th>

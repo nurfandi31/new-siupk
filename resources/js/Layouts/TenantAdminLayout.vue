@@ -9,7 +9,10 @@ import AppModal from '../Components/AppModal.vue';
 import AppButton from '../Components/AppButton.vue';
 import ThemeMenu from '../Components/ThemeMenu.vue';
 import NotificationDropdown from '../Components/NotificationDropdown.vue';
+import AppLanguageSwitcher from '../Components/AppLanguageSwitcher.vue';
+import { useI18n } from '../i18n';
 
+const { t, locale } = useI18n();
 const props = defineProps({ unitName: { type: String, default: null } });
 
 const page = usePage();
@@ -35,16 +38,21 @@ watch(sidebarCollapsed, (v) => {
     try { localStorage.setItem(SIDEBAR_KEY, v ? '1' : '0'); } catch (e) { /* ignore */ }
 });
 
+function navLabel(label) {
+    if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : 'Beranda';
+    return t(label);
+}
+
 const sections = [
     {
-        label: 'Dashboard',
-        items: [{ label: 'Dashboard', icon: 'dashboard', href: '/dashboard', exact: true }],
+        label: 'Beranda',
+        items: [{ label: 'Beranda', icon: 'dashboard', href: '/dashboard', exact: true }],
     },
     {
         label: 'Pengaturan',
         items: [
             { label: 'Pengaturan', icon: 'settings', href: '/settings', exact: true },
-            { label: 'WhatsApp Gateway', icon: 'chat', href: '/settings/whatsapp' },
+            { label: 'Gerbang WhatsApp', icon: 'chat', href: '/settings/whatsapp' },
         ],
     },
     {
@@ -107,9 +115,9 @@ const sidebarToggleIcon = computed(() => {
 });
 
 const sidebarToggleLabel = computed(() => {
-    if (mobileMenuOpen.value) return 'Tutup navigasi';
-    if (isDesktop.value) return sidebarCollapsed.value ? 'Buka sidebar' : 'Tutup sidebar';
-    return 'Buka navigasi';
+    if (mobileMenuOpen.value) return t('Tutup navigasi');
+    if (isDesktop.value) return sidebarCollapsed.value ? t('Buka sidebar') : t('Tutup sidebar');
+    return t('Buka navigasi');
 });
 
 function askLogout() {
@@ -139,7 +147,7 @@ function logout() {
                 v-if="mobileMenuOpen"
                 type="button"
                 class="fixed inset-0 z-40 bg-zinc-900/60 backdrop-blur-xs lg:hidden"
-                aria-label="Tutup navigasi"
+                :aria-label="t('Tutup navigasi')"
                 @click="closeMobileMenu"
             />
         </Transition>
@@ -163,19 +171,19 @@ function logout() {
 
             <div class="flex items-center gap-3 px-4 py-6 lg:px-6" :class="sidebarCollapsed && 'lg:justify-center lg:px-2'">
                 <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-zinc-800 text-zinc-100 ring-1 ring-white/10">
-                    <img v-if="logoPath" :src="logoPath" alt="Logo lembaga" class="size-full object-contain" />
+                    <img v-if="logoPath" :src="logoPath" :alt="t('Logo lembaga')" class="size-full object-contain" />
                     <AppIcon v-else name="admin_panel_settings" />
                 </div>
                 <div class="min-w-0 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && 'lg:hidden'">
-                    <p class="truncate font-bold leading-none text-white">Admin Tenant</p>
+                    <p class="truncate font-bold leading-none text-white">{{ t('Admin Tenant') }}</p>
                     <p class="mt-1 truncate text-[10px] font-semibold uppercase tracking-widest text-zinc-400">{{ appName }}</p>
                 </div>
             </div>
 
-            <nav class="scrollbar-hidden flex-1 space-y-5 overflow-y-auto px-2" aria-label="Navigasi admin tenant">
+            <nav class="scrollbar-hidden flex-1 space-y-5 overflow-y-auto px-2" :aria-label="t('Navigasi admin tenant')">
                 <section v-for="section in sections" :key="section.label">
                     <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && 'lg:hidden'">
-                        {{ section.label }}
+                        {{ navLabel(section.label) }}
                     </h2>
                     <div class="space-y-1">
                         <Link
@@ -189,11 +197,11 @@ function logout() {
                                     : 'text-zinc-400 hover:bg-white/5 hover:text-white',
                                 sidebarCollapsed && 'lg:justify-center lg:px-2',
                             ]"
-                            :title="sidebarCollapsed ? item.label : undefined"
+                            :title="sidebarCollapsed ? navLabel(item.label) : undefined"
                             @click="closeMobileMenu"
                         >
                             <AppIcon :name="item.icon" :filled="isActive(item)" class="shrink-0 text-xl leading-none transition-colors" :class="isActive(item) ? 'text-on-primary' : 'text-zinc-400 group-hover:text-white'" />
-                            <span class="truncate transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && 'lg:hidden'">{{ item.label }}</span>
+                            <span class="truncate transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && 'lg:hidden'">{{ navLabel(item.label) }}</span>
                         </Link>
                     </div>
                 </section>
@@ -209,11 +217,11 @@ function logout() {
                 tone="primary"
                 size="sm"
                 rounded="lg"
-                aria-label="Buka navigasi"
+                :aria-label="t('Buka navigasi')"
                 class="mr-3 lg:hidden"
                 @click="toggleSidebar"
             />
-            <p class="font-bold text-primary">{{ unitName ? unitName : 'Admin Tenant' }}</p>
+            <p class="font-bold text-primary">{{ unitName ? unitName : t('Admin Tenant') }}</p>
             <p class="ml-3 hidden items-center gap-1 text-xs text-on-surface-variant md:flex">
                 <AppIcon name="admin_panel_settings" class="text-base text-primary" />
                 {{ appName }}
@@ -227,7 +235,7 @@ function logout() {
                     data-theme-trigger
                     class="shrink-0 text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary"
                     :class="themeOpen && 'bg-surface-container text-primary'"
-                    aria-label="Pilih tema tampilan"
+                    :aria-label="t('Pilih tema tampilan')"
                     aria-haspopup="menu"
                     :aria-expanded="themeOpen"
                     @click="themeOpen = !themeOpen"
@@ -236,8 +244,8 @@ function logout() {
                     href="/changelog"
                     class="grid size-10 shrink-0 place-items-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary"
                     :class="currentPath === '/changelog' && 'bg-surface-container text-primary'"
-                    title="Catatan Rilis & Changelog"
-                    aria-label="Catatan Rilis & Changelog"
+                    :title="t('Catatan Rilis & Changelog')"
+                    :aria-label="t('Catatan Rilis & Changelog')"
                 >
                     <AppIcon name="history_edu" class="text-2xl leading-none" />
                 </Link>
@@ -246,19 +254,20 @@ function logout() {
                 <Link
                     href="/profile"
                     class="ml-1 flex shrink-0 items-center gap-2 rounded-full chip-shadow bg-surface-container-lowest py-1 pl-1 pr-3 ring-1 ring-outline-variant transition hover:bg-surface-container-low hover:ring-primary/40"
-                    aria-label="Buka Profil"
+                    :aria-label="t('Buka Profil')"
                 >
                     <span class="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary">
                         <img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'Admin'" class="size-full object-cover" @error="avatarError = true" />
                         <span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'A' }}</span>
                     </span>
                     <span class="hidden min-w-0 flex-col leading-tight sm:flex">
-                        <span class="truncate text-xs font-bold text-primary">{{ user?.name || 'Admin' }}</span>
-                        <span class="truncate text-[10px] font-medium text-on-surface-variant">Admin Tenant</span>
+                        <span class="truncate text-xs font-bold text-primary">{{ user?.name || t('Admin') }}</span>
+                        <span class="truncate text-[10px] font-medium text-on-surface-variant">{{ t('Admin Tenant') }}</span>
                     </span>
                 </Link>
 
-                <AppIconButton name="logout" tone="danger" size="md" rounded="full" aria-label="Keluar" class="shrink-0" @click="askLogout" />
+                <AppLanguageSwitcher />
+                <AppIconButton name="logout" tone="danger" size="md" rounded="full" :aria-label="t('Keluar')" class="shrink-0" @click="askLogout" />
             </div>
         </header>
 
@@ -277,13 +286,13 @@ function logout() {
         <AppToast />
         <ThemeMenu v-model="themeOpen" />
 
-        <AppModal v-model="logoutOpen" title="Keluar dari Admin Tenant?" size="sm">
+        <AppModal v-model="logoutOpen" :title="t('Keluar dari Admin Tenant?')" size="sm">
             <p class="text-sm text-on-surface-variant">
-                Sesi <span class="font-semibold text-primary">{{ user?.name || 'Admin' }}</span> akan diakhiri. Lanjutkan?
+                {{ t('Sesi') }} <span class="font-semibold text-primary">{{ user?.name || t('Admin') }}</span> {{ t('akan diakhiri. Lanjutkan?') }}
             </p>
             <template #footer>
-                <AppButton variant="secondary" :disabled="logoutForm.processing" @click="logoutOpen = false">Batal</AppButton>
-                <AppButton variant="danger" icon="logout" :loading="logoutForm.processing" @click="logout">Keluar</AppButton>
+                <AppButton variant="secondary" :disabled="logoutForm.processing" @click="logoutOpen = false">{{ t('Batal') }}</AppButton>
+                <AppButton variant="danger" icon="logout" :loading="logoutForm.processing" @click="logout">{{ t('Keluar') }}</AppButton>
             </template>
         </AppModal>
     </div>

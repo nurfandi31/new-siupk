@@ -12,6 +12,7 @@ use App\Services\TenantRegistrationService;
 use App\Tenancy\Services\DefaultChartOfAccountsProvisioner;
 use App\Tenancy\Services\FiscalPeriodProvisioner;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\Concerns\BuildsTenantTestDatabase;
 use Tests\TestCase;
@@ -89,6 +90,41 @@ final class TenantProvisionAndRoleTest extends TestCase
 
         $second = app(TenantRegistrationService::class)->repair($this->testTenant);
         $this->assertSame(0, $second['coa']['inserted']);
+    }
+
+    public function test_repair_seeds_one_login_account_for_every_role(): void
+    {
+        $this->clearTenantTestContext();
+
+        $roles = array_keys((array) config('permissions.roles', []));
+        $this->assertNotEmpty($roles);
+
+        app(TenantRegistrationService::class)->repair($this->testTenant);
+
+        $defaultPassword = (string) config('tenancy.seed_users.password', 'password');
+
+        foreach ($roles as $roleCode) {
+            $username = $this->testTenant->code.'.'.$roleCode;
+            $user = User::query()->where('username', $username)->first();
+
+            $this->assertNotNull($user, "Missing seeded login account [{$username}].");
+            $this->assertSame((int) $this->testTenant->row_id, (int) $user->tenant_id);
+            $this->assertTrue(Hash::check($defaultPassword, (string) $user->password));
+            $this->assertContains(
+                $roleCode,
+                app(TenantUserService::class)->rolesFor($this->testTenant, $user),
+            );
+        }
+
+        $seeded = User::query()->where('tenant_id', $this->testTenant->row_id)->count();
+        $this->assertSame(count($roles), $seeded);
+
+        app(TenantRegistrationService::class)->repair($this->testTenant);
+        $this->assertSame(
+            $seeded,
+            User::query()->where('tenant_id', $this->testTenant->row_id)->count(),
+            'Repair must not duplicate seeded login accounts.',
+        );
     }
 
     private function superadmin(): User

@@ -22,10 +22,13 @@ defineProps({
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <Link
+                <component
+                    :is="report.external ? 'a' : Link"
                     v-for="report in reports"
                     :key="report.key"
                     :href="report.href"
+                    :target="report.external ? '_blank' : undefined"
+                    :rel="report.external ? 'noopener' : undefined"
                     class="block transition hover:-translate-y-0.5"
                 >
                     <AppCard class="h-full p-5 hover:shadow-md">
@@ -35,11 +38,13 @@ defineProps({
                             </div>
                             <div>
                                 <h2 class="font-semibold text-on-surface">{{ report.title }}</h2>
-                                <p class="mt-1 text-xs text-on-surface-variant">Buka laporan</p>
+                                <p class="mt-1 text-xs text-on-surface-variant">
+                                    {{ report.external ? 'Buka PDF' : 'Buka laporan' }}
+                                </p>
                             </div>
                         </div>
                     </AppCard>
-                </Link>
+                </component>
             </div>
         </div>
     </AuthenticatedLayout>

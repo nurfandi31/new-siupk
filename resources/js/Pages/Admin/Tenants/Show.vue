@@ -9,6 +9,9 @@ import AppIcon from '../../../Components/AppIcon.vue';
 import AppIconButton from '../../../Components/AppIconButton.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
+import { useI18n } from '../../../i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     tenant: { type: Object, required: true },
@@ -38,14 +41,14 @@ function money(value, currency = 'IDR') {
 }
 
 function statusBadge(status) {
-    if (status === 'active') return { tone: 'success-soft', label: 'Aktif' };
-    if (status === 'suspended') return { tone: 'error-soft', label: 'Suspended' };
+    if (status === 'active') return { tone: 'success-soft', label: t('Aktif') };
+    if (status === 'suspended') return { tone: 'error-soft', label: t('Suspended') };
     return { tone: 'neutral', label: status || '—' };
 }
 
 function userStatusBadge(status) {
     return status === 'active'
-        ? { tone: 'success-soft', label: 'Aktif' }
+        ? { tone: 'success-soft', label: t('Aktif') }
         : { tone: 'neutral', label: status || '—' };
 }
 
@@ -99,14 +102,14 @@ async function autoLogin(domain = null, userId = null) {
 
         const data = await response.json();
         if (!response.ok || !data.redirect_url) {
-            alert(data.message || 'Gagal membuat sesi auto-login.');
+            alert(data.message || t('Gagal membuat sesi auto-login.'));
             return;
         }
 
         window.open(data.redirect_url, '_blank');
     } catch (err) {
         console.error(err);
-        alert('Terjadi kesalahan saat memulai auto-login.');
+        alert(t('Terjadi kesalahan saat memulai auto-login.'));
     } finally {
         impersonating.value = false;
         impersonatingDomain.value = null;
@@ -122,7 +125,7 @@ async function autoLogin(domain = null, userId = null) {
             <!-- Header -->
             <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div class="flex items-start gap-4">
-                    <Link href="/admin/tenants" aria-label="Kembali ke daftar tenant"
+                    <Link href="/admin/tenants" :aria-label="t('Kembali ke daftar tenant')"
                         class="grid size-11 shrink-0 place-items-center rounded-full bg-primary-container text-primary transition hover:bg-primary hover:text-on-primary">
                         <AppIcon name="arrow_back" class="text-xl" />
                     </Link>
@@ -134,7 +137,7 @@ async function autoLogin(domain = null, userId = null) {
                         <p class="flex flex-wrap items-center gap-x-1.5 text-sm text-on-surface-variant">
                             <span class="font-mono">{{ tenant.code }}</span>
                             <span class="text-outline">·</span>
-                            <span>kec. {{ tenant.district_code || '—' }}</span>
+                            <span>{{ t('kec.') }} {{ tenant.district_code || '—' }}</span>
                             <template v-if="tenant.placement?.shard?.code">
                                 <span class="text-outline">·</span>
                                 <span>shard {{ tenant.placement.shard.code }}</span>
@@ -148,21 +151,21 @@ async function autoLogin(domain = null, userId = null) {
             <div v-if="tenant.status === 'suspended'" class="flex items-start gap-3 rounded-xl border border-error/30 bg-error/10 px-4 py-3">
                 <AppIcon name="block" class="mt-0.5 text-2xl text-error" />
                 <div class="flex-1">
-                    <p class="text-sm font-bold text-error">Tenant disuspend</p>
+                    <p class="text-sm font-bold text-error">{{ t('Tenant disuspend') }}</p>
                     <p class="text-xs text-on-surface-variant">
-                        Tenant tidak dapat diakses sampai diaktifkan kembali.
-                        <template v-if="tenant.suspended_at">Sejak {{ tenant.suspended_at }}.</template>
+                        {{ t('Tenant tidak dapat diakses sampai diaktifkan kembali.') }}
+                        <template v-if="tenant.suspended_at">{{ t('Sejak') }} {{ tenant.suspended_at }}.</template>
                     </p>
                 </div>
-                <AppButton size="compact" variant="success" :loading="activateForm.processing" @click="activate">Aktifkan</AppButton>
+                <AppButton size="compact" variant="success" :loading="activateForm.processing" @click="activate">{{ t('Aktifkan') }}</AppButton>
             </div>
             <div v-else-if="!tenant.provisioned_at" class="flex items-start gap-3 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3">
                 <AppIcon name="warning" class="mt-0.5 text-2xl text-warning" />
                 <div class="flex-1">
-                    <p class="text-sm font-bold text-warning">Tenant belum di-provision</p>
-                    <p class="text-xs text-on-surface-variant">Schema shard belum disiapkan. Jalankan "Lengkapi provision" untuk inisialisasi.</p>
+                    <p class="text-sm font-bold text-warning">{{ t('Tenant belum di-provision') }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Schema shard belum disiapkan. Jalankan "Lengkapi provision" untuk inisialisasi.') }}</p>
                 </div>
-                <AppButton size="compact" variant="primary" icon="build" :loading="repairForm.processing" @click="repair">Lengkapi provision</AppButton>
+                <AppButton size="compact" variant="primary" icon="build" :loading="repairForm.processing" @click="repair">{{ t('Lengkapi provision') }}</AppButton>
             </div>
 
             <!-- Action toolbar -->
@@ -170,7 +173,7 @@ async function autoLogin(domain = null, userId = null) {
                 <div class="space-y-3 px-5 py-4">
                     <div class="flex items-center gap-2 text-sm font-semibold text-primary">
                         <AppIcon name="settings" class="text-outline" />
-                        <span>Tindakan</span>
+                        <span>{{ t('Tindakan') }}</span>
                     </div>
                     <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                         <AppButton
@@ -180,13 +183,13 @@ async function autoLogin(domain = null, userId = null) {
                             icon="login"
                             :loading="impersonating"
                             @click="autoLogin()"
-                        >Login Tenant</AppButton>
-                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="edit" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/edit`)">Edit</AppButton>
-                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="group" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/users`)">Users</AppButton>
-                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="account_balance_wallet" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/onboarding/import`)">Onboarding</AppButton>
-                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="cleaning_services" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/data-purifier`)">Data Purifier</AppButton>
-                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="receipt_long" @click="$inertia.visit(`/admin/invoices/create?tenant_id=${tenant.row_id}`)">Buat Invoice</AppButton>
-                        <AppButton v-if="tenant.status === 'active'" class="min-w-0 flex-1 sm:min-w-[150px]" variant="danger" :loading="suspendForm.processing" @click="suspend">Suspend</AppButton>
+                        >{{ t('Login Tenant') }}</AppButton>
+                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="edit" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/edit`)">{{ t('Edit') }}</AppButton>
+                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="group" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/users`)">{{ t('Users') }}</AppButton>
+                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="account_balance_wallet" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/onboarding/import`)">{{ t('Onboarding') }}</AppButton>
+                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="cleaning_services" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/data-purifier`)">{{ t('Data Purifier') }}</AppButton>
+                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="receipt_long" @click="$inertia.visit(`/admin/invoices/create?tenant_id=${tenant.row_id}`)">{{ t('Buat Invoice') }}</AppButton>
+                        <AppButton v-if="tenant.status === 'active'" class="min-w-0 flex-1 sm:min-w-[150px]" variant="danger" :loading="suspendForm.processing" @click="suspend">{{ t('Suspend') }}</AppButton>
                     </div>
                 </div>
             </AppCard>
@@ -198,36 +201,36 @@ async function autoLogin(domain = null, userId = null) {
                     <template #header>
                         <div class="flex items-center gap-2">
                             <AppIcon name="info" class="text-primary" />
-                            <h2 class="font-bold text-primary">Detail Tenant</h2>
+                            <h2 class="font-bold text-primary">{{ t('Detail Tenant') }}</h2>
                         </div>
-                        <Link :href="`/admin/tenants/${tenant.row_id}/edit`" class="text-xs font-semibold text-primary hover:underline">Edit detail →</Link>
+                        <Link :href="`/admin/tenants/${tenant.row_id}/edit`" class="text-xs font-semibold text-primary hover:underline">{{ t('Edit detail →') }}</Link>
                     </template>
 
                     <dl class="grid gap-x-6 gap-y-4 sm:grid-cols-2">
                         <div>
-                            <dt class="text-xs font-medium uppercase tracking-wide text-on-surface-variant">Shard</dt>
+                            <dt class="text-xs font-medium uppercase tracking-wide text-on-surface-variant">{{ t('Shard') }}</dt>
                             <dd class="mt-1 font-semibold text-primary">{{ tenant.placement?.shard?.code || '—' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-xs font-medium uppercase tracking-wide text-on-surface-variant">Database</dt>
+                            <dt class="text-xs font-medium uppercase tracking-wide text-on-surface-variant">{{ t('Database') }}</dt>
                             <dd class="mt-1 truncate font-mono text-sm text-primary">{{ tenant.placement?.shard?.database_name || '—' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-xs font-medium uppercase tracking-wide text-on-surface-variant">Diprovision</dt>
+                            <dt class="text-xs font-medium uppercase tracking-wide text-on-surface-variant">{{ t('Diprovision') }}</dt>
                             <dd class="mt-1 font-semibold text-primary">{{ tenant.provisioned_at || '—' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-xs font-medium uppercase tracking-wide text-on-surface-variant">Disuspend</dt>
+                            <dt class="text-xs font-medium uppercase tracking-wide text-on-surface-variant">{{ t('Disuspend') }}</dt>
                             <dd class="mt-1 font-semibold text-primary">{{ tenant.suspended_at || '—' }}</dd>
                         </div>
                         <div class="sm:col-span-2">
-                            <dt class="text-xs font-medium uppercase tracking-wide text-on-surface-variant">Koordinat Peta</dt>
+                            <dt class="text-xs font-medium uppercase tracking-wide text-on-surface-variant">{{ t('Koordinat Peta') }}</dt>
                             <dd class="mt-1">
                                 <code v-if="tenant.map_latitude && tenant.map_longitude" class="rounded-md bg-surface-container-low px-2 py-1 font-mono text-xs text-primary">
                                     {{ tenant.map_latitude }}, {{ tenant.map_longitude }}
                                     <span class="text-on-surface-variant">· zoom {{ tenant.map_zoom || 13 }}</span>
                                 </code>
-                                <span v-else class="text-sm text-on-surface-variant">Belum diatur</span>
+                                <span v-else class="text-sm text-on-surface-variant">{{ t('Belum diatur') }}</span>
                             </dd>
                         </div>
                     </dl>
@@ -236,9 +239,9 @@ async function autoLogin(domain = null, userId = null) {
                         <div class="flex items-center justify-between">
                             <h3 class="flex items-center gap-2 text-sm font-bold text-primary">
                                 <AppIcon name="language" class="text-outline" />
-                                Custom Domain
+                                {{ t('Custom Domain') }}
                             </h3>
-                            <Link :href="`/admin/tenants/${tenant.row_id}/edit`" class="text-xs font-semibold text-primary hover:underline">Kelola →</Link>
+                            <Link :href="`/admin/tenants/${tenant.row_id}/edit`" class="text-xs font-semibold text-primary hover:underline">{{ t('Kelola →') }}</Link>
                         </div>
                         <div v-if="tenant.custom_domains && tenant.custom_domains.length > 0" class="mt-3 grid gap-2 sm:grid-cols-2">
                             <div
@@ -254,13 +257,13 @@ async function autoLogin(domain = null, userId = null) {
                                     size="compact"
                                     icon="login"
                                     :loading="impersonatingDomain === dom"
-                                    aria-label="Auto login via domain"
+                                    :aria-label="t('Auto login via domain')"
                                     @click="autoLogin(dom)"
                                 />
                             </div>
                         </div>
                         <p v-else class="mt-3 text-xs text-on-surface-variant">
-                            Belum ada custom domain. Tenant diakses via subdomain default atau route identifier.
+                            {{ t('Belum ada custom domain. Tenant diakses via subdomain default atau route identifier.') }}
                         </p>
                     </div>
                 </AppCard>
@@ -270,7 +273,7 @@ async function autoLogin(domain = null, userId = null) {
                     <template #header>
                         <div class="flex items-center gap-2">
                             <AppIcon name="card_membership" class="text-primary" />
-                            <h2 class="font-bold text-primary">Langganan</h2>
+                            <h2 class="font-bold text-primary">{{ t('Langganan') }}</h2>
                         </div>
                     </template>
 
@@ -283,25 +286,25 @@ async function autoLogin(domain = null, userId = null) {
                             </p>
                         </div>
                         <AppButton class="w-full" size="compact" variant="secondary" icon="receipt_long" :loading="invoiceForm.processing" @click="generateInvoice">
-                            Generate Invoice
+                            {{ t('Generate Invoice') }}
                         </AppButton>
                     </div>
                     <p v-else class="rounded-lg bg-surface-container-low p-3 text-sm text-on-surface-variant">
-                        Belum ada langganan aktif.
+                        {{ t('Belum ada langganan aktif.') }}
                     </p>
 
                     <form class="mt-5 space-y-3 border-t border-outline-variant pt-4" @submit.prevent="assignPlan">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Tetapkan / Ubah Plan</p>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">{{ t('Tetapkan / Ubah Plan') }}</p>
                         <SmartSelect
                             v-model="subForm.plan_id"
-                            label="Plan"
+                            :label="t('Plan')"
                             :options="plans.map((p) => ({ value: p.row_id, label: `${p.name} (${money(p.price_amount, p.currency)}/${p.billing_period})` }))"
-                            placeholder="Pilih plan"
+                            :placeholder="t('Pilih plan')"
                             required
                             :error="subForm.errors.plan_id"
                         />
                         <AppButton type="submit" size="compact" class="w-full" :loading="subForm.processing" :disabled="!plans.length" icon="save">
-                            Simpan langganan
+                            {{ t('Simpan langganan') }}
                         </AppButton>
                     </form>
                 </AppCard>
@@ -313,10 +316,10 @@ async function autoLogin(domain = null, userId = null) {
                     <div class="flex items-center justify-between border-b border-outline-variant px-5 py-3.5">
                         <div class="flex items-center gap-2">
                             <AppIcon name="group" class="text-primary" />
-                            <h2 class="font-bold text-primary">Pengguna</h2>
+                            <h2 class="font-bold text-primary">{{ t('Pengguna') }}</h2>
                             <span class="rounded-full bg-surface-container-low px-2 py-0.5 text-xs font-bold text-on-surface-variant">{{ users.length }}</span>
                         </div>
-                        <Link :href="`/admin/tenants/${tenant.row_id}/users`" class="text-xs font-semibold text-primary hover:underline">Kelola →</Link>
+                        <Link :href="`/admin/tenants/${tenant.row_id}/users`" class="text-xs font-semibold text-primary hover:underline">{{ t('Kelola →') }}</Link>
                     </div>
                     <ul class="divide-y divide-outline-variant">
                         <li v-for="user in users" :key="user.row_id" class="flex items-center gap-3 px-5 py-3">
@@ -325,7 +328,11 @@ async function autoLogin(domain = null, userId = null) {
                             </div>
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-sm font-semibold text-primary">{{ user.name }}</p>
-                                <p class="truncate text-xs text-on-surface-variant">{{ user.username }} · {{ user.email || '—' }}</p>
+                                <p class="truncate text-xs text-on-surface-variant">
+                                    <span v-if="user.role" class="font-semibold text-primary">{{ user.role }}</span>
+                                    <span v-if="user.role"> · </span>
+                                    {{ user.username }} · {{ user.email || '—' }}
+                                </p>
                             </div>
                             <div class="flex items-center gap-2">
                                 <AppButton
@@ -334,7 +341,7 @@ async function autoLogin(domain = null, userId = null) {
                                     size="compact"
                                     icon="login"
                                     :loading="impersonatingUserId === user.row_id"
-                                    aria-label="Login sebagai user ini"
+                                    :aria-label="t('Login sebagai user ini')"
                                     @click="autoLogin(null, user.row_id)"
                                 />
                                 <AppBadge :tone="userStatusBadge(user.status).tone">{{ userStatusBadge(user.status).label }}</AppBadge>
@@ -342,7 +349,7 @@ async function autoLogin(domain = null, userId = null) {
                         </li>
                         <li v-if="!users.length" class="flex flex-col items-center gap-1 px-5 py-8 text-center text-on-surface-variant">
                             <AppIcon name="person_off" class="text-2xl text-outline" />
-                            <span class="text-sm">Belum ada user.</span>
+                            <span class="text-sm">{{ t('Belum ada user.') }}</span>
                         </li>
                     </ul>
                 </AppCard>
@@ -351,16 +358,16 @@ async function autoLogin(domain = null, userId = null) {
                     <div class="flex items-center justify-between border-b border-outline-variant px-5 py-3.5">
                         <div class="flex items-center gap-2">
                             <AppIcon name="receipt_long" class="text-primary" />
-                            <h2 class="font-bold text-primary">Invoice Terbaru</h2>
+                            <h2 class="font-bold text-primary">{{ t('Invoice Terbaru') }}</h2>
                             <span class="rounded-full bg-surface-container-low px-2 py-0.5 text-xs font-bold text-on-surface-variant">{{ invoices.length }}</span>
                         </div>
-                        <Link href="/admin/invoices" class="text-xs font-semibold text-primary hover:underline">Semua →</Link>
+                        <Link href="/admin/invoices" class="text-xs font-semibold text-primary hover:underline">{{ t('Semua →') }}</Link>
                     </div>
                     <ul class="divide-y divide-outline-variant">
                         <li v-for="invoice in invoices" :key="invoice.row_id" class="flex items-center gap-3 px-5 py-3">
                             <div class="min-w-0 flex-1">
                                 <Link :href="`/admin/invoices/${invoice.row_id}`" class="block truncate text-sm font-semibold text-primary hover:underline">{{ invoice.number }}</Link>
-                                <p class="text-xs text-on-surface-variant">Jatuh tempo {{ invoice.due_at || '—' }}</p>
+                                <p class="text-xs text-on-surface-variant">{{ t('Jatuh tempo') }} {{ invoice.due_at || '—' }}</p>
                             </div>
                             <div class="text-right">
                                 <p class="text-sm font-bold text-primary">{{ money(invoice.amount, invoice.currency) }}</p>
@@ -369,7 +376,7 @@ async function autoLogin(domain = null, userId = null) {
                         </li>
                         <li v-if="!invoices.length" class="flex flex-col items-center gap-1 px-5 py-8 text-center text-on-surface-variant">
                             <AppIcon name="receipt" class="text-2xl text-outline" />
-                            <span class="text-sm">Belum ada invoice.</span>
+                            <span class="text-sm">{{ t('Belum ada invoice.') }}</span>
                         </li>
                     </ul>
                 </AppCard>

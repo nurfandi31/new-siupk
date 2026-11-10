@@ -51,7 +51,7 @@ const statusLabels = { active: 'Aktif', exited: 'Keluar', deceased: 'Meninggal' 
                     <Link href="/master-data/members/create"><AppButton icon="add">Tambah Anggota</AppButton></Link>
                 </div>
             </header>
-            <AppCard :padded="false"><SmartDataTable :rows="members.data" :columns="columns" :pagination="members" url="/master-data/members" :search="search" :per-page="perPage" :sort="sort" :direction="direction" search-label="Cari anggota" search-placeholder="Cari NIK / nama / HP" empty-title="Belum ada anggota" empty-description="Tambahkan anggota untuk mulai mengelola data anggota." row-href="/master-data/members/{row_id}"><template #cell-name="{ row }">
+            <AppCard :padded="false"><SmartDataTable :rows="members.data" :columns="columns" :pagination="members" url="/master-data/members" :search="search" :per-page="perPage" :sort="sort" :direction="direction" search-label="Cari anggota" search-placeholder="Cari anggota..." empty-title="Belum ada anggota" empty-description="Tambahkan anggota untuk mulai mengelola data anggota." row-href="/master-data/members/{row_id}"><template #cell-name="{ row }">
                             <Link :href="`/master-data/members/${row.row_id}`" class="font-semibold text-primary hover:underline">
                                 {{ row.name }}
                             </Link>

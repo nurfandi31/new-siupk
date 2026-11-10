@@ -2,6 +2,7 @@
 defineOptions({ inheritAttrs: false });
 
 import { ref, useId, watch } from 'vue';
+import { defaultPlaceholder } from '../composables/usePlaceholderText';
 import AppIcon from './AppIcon.vue';
 import AppTooltip from './AppTooltip.vue';
 
@@ -207,7 +208,7 @@ watch(model, () => {
                     tooltip && `${inputId}-tooltip`
                 ].filter(Boolean).join(' ') || undefined"
                 :readonly="readonly"
-                :placeholder="readonly ? undefined : (placeholder ?? `Masukkan ${label.toLowerCase()}`)"
+                :placeholder="readonly ? undefined : (placeholder ?? defaultPlaceholder('currency', label))"
                 class="h-11 w-full rounded-xl border bg-surface-container-lowest px-3.5 pl-11 text-sm text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant"
                 :class="[error ? 'border-error' : 'border-outline-variant', !readonly && 'pr-16']"
                 v-bind="$attrs"

@@ -68,7 +68,7 @@ const statusLabels = { active: 'Aktif', inactive: 'Tidak aktif' };
                     :direction="direction"
                     :row-href="(row) => `/master-data/groups/${row.row_id}`"
                     search-label="Cari kelompok"
-                    search-placeholder="Cari kode / nama / desa"
+                    search-placeholder="Cari kelompok..."
                     empty-title="Belum ada kelompok"
                     empty-description="Tambahkan kelompok untuk mulai mengelola anggota dan pengurus."
                 >

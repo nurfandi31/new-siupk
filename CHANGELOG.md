@@ -3,6 +3,47 @@
 Semua perubahan penting pada proyek **siupk Next** didokumentasikan dalam berkas ini.
 Format penulisan mengikuti panduan [Keep a Changelog](https://keepachangelog.com/id/1.0.0/).
 
+## [Unreleased] — Pemisahan Halaman /user Pusat dan Tenant
+
+### Added
+- **`/user`** — halaman kartu login otomatis khusus **akun pusat/platform** (superadmin, supervisor provinsi, supervisor kabupaten). Filter hanya `is_superadmin`, `is_regency_user`, atau `is_province_user`; akun tenant tidak pernah muncul.
+- **`/login/user`** — halaman kartu login otomatis khusus **akun lokasi/tenant**. Tenant dideteksi otomatis dari host saat ini, lalu daftar user difilter hanya untuk tenant tersebut.
+- **`/t/{kode-tenant}/user`** — URL eksplisit opsional untuk kondisi beberapa tenant berbagi satu host (mis. localhost).
+- `POST /user/{user}`, `POST /login/user/{user}`, dan `POST /t/{kode-tenant}/user/{user}` — endpoint auto-login dengan guard yang sama seperti filternya, sehingga akun tenant tidak bisa masuk lewat halaman pusat (dan sebaliknya).
+
+### Changed
+- **`UserLoginController`** — satu controller menangani dua scope dengan payload kartu yang sama; role pusat ditampilkan dari flag akun, role tenant dibaca dari tabel `user_roles` tenant terkait.
+- **`Auth/UserLogin.vue`** — tampilan kartu dipakai bersama untuk mode pusat & tenant, dengan teks, badge, dan URL auto-login yang mengikuti scope.
+- **Host tenant membuka `/user`** — otomatis diarahkan ke `/login/user` milik lokasi tersebut, bukan menampilkan akun pusat.
+
+## [Unreleased] — Pemisahan Login Pusat dan Domain Tenant
+
+### Added
+- **`PlatformHostResolver`** (`app/Tenancy/Services/`) — deteksi host pusat vs host tenant. `isPlatformHost()` dipakai untuk resolusi situs publik, sedangkan `isEnforcedPlatformHost()` hanya menganggap domain yang terdaftar di `SITE_PLATFORM_HOSTS`/`APP_URL` sebagai domain pusat (host lokal seperti `localhost` dikecualikan agar alur development/test tetap berjalan).
+- **Test** `tests/Feature/Auth/CentralHostLoginTest.php` — memastikan akun tenant ditolak di domain pusat, tetap bisa login di domain tenant, superadmin tetap bisa login di pusat, dan sesi tenant tidak bisa membuka dashboard tenant lewat domain pusat.
+
+### Changed
+- **`AuthController`** — login di domain pusat hanya untuk akun pusat (superadmin/pusat/regency). Akun tenant yang mencoba login di domain pusat mendapat pesan berisi domain tenant yang harus dipakai.
+- **`ResolveTenant` middleware** — sesi tenant yang sudah aktif tidak dapat mengakses aplikasi tenant melalui domain pusat; diarahkan untuk memakai domain tenant masing-masing (sesi impersonasi superadmin tetap diizinkan).
+- **Halaman login** (`resources/js/Pages/Auth/Login.vue`) — menampilkan keterangan bahwa halaman tersebut adalah login pusat dan akun tenant harus login lewat domain tenant.
+- **`.env.example`** — menambahkan contoh `SITE_PLATFORM_HOSTS` beserta penjelasan bahwa domain pusat harus didaftarkan di sana.
+
+## [Unreleased] — Seed Akun Login Otomatis per Role Tenant
+
+### Added
+- **`TenantLoginAccountProvisioner`** (`app/Tenancy/Services/`) — membuat satu akun login untuk setiap role di `config/permissions.php` saat tenant baru didaftarkan. Username berpola `{kode-tenant}.{kode-role}`, email `{username}@tenant.local`, password awal dari `TENANCY_SEED_USERS_PASSWORD` (default `password`), dan role langsung di-assign ke akun tersebut.
+- **Konfigurasi `tenancy.seed_users`** (`config/tenancy.php`) — `enabled` (`TENANCY_SEED_USERS`) dan `password` (`TENANCY_SEED_USERS_PASSWORD`), plus contoh variabel di `.env.example`.
+- **Test** `test_repair_seeds_one_login_account_for_every_role` — memastikan semua role mendapat akun login dan repair tidak menduplikasi akun.
+
+### Changed
+- **`TenantRegistrationService::register()`** — tidak lagi membuat satu user dari input form; akun login seluruh role dibuat otomatis setelah role sistem disiapkan. `repair()` juga ikut melengkapi akun yang belum ada (idempotent).
+- **Form tambah tenant** (`resources/js/Pages/Admin/Tenants/Create.vue`) — bagian "Pengguna Pertama" dihapus, diganti panel informasi daftar akun login otomatis per role.
+- **Navigasi pusat tenant** (`resources/js/Layouts/AdminLayout.vue` + `resources/js/Pages/Admin/Dashboard.vue`) — menu sidebar "Tambah Tenant" dan tombol cepat "Tambah Tenant" di dashboard admin agar pendaftaran tenant baru langsung terlihat.
+- **`TenantController`** — pesan sukses registrasi/repair menyebut jumlah akun login otomatis; halaman detail tenant menampilkan role tiap user.
+
+### Removed
+- Validasi `user_name`, `username`, `email`, `password`, dan `password_confirmation` dari `StoreTenantRequest` karena sudah tidak diisi manual.
+
 ## [Unreleased] — Paritas Dokumen PDF Pinjaman (1:1 dengan Pacuan)
 
 ### Added

@@ -12,6 +12,7 @@ use App\Domain\Lending\Models\LoanStatusHistory;
 use App\Domain\Lending\Models\LoanWriteOff;
 use App\Domain\Lending\Services\LoanService;
 use App\Domain\Lending\Services\MemberLoanScheduleCalculator;
+use App\Domain\Lending\Services\Reports\LoanDocumentService;
 use App\Domain\Membership\Models\Group;
 use App\Domain\Membership\Models\GroupMember;
 use App\Domain\Membership\Models\GroupOfficer;
@@ -219,6 +220,11 @@ final class MemberLoanLifecycleTest extends TestCase
         self::assertEqualsWithDelta(8_000_000.0, $principalSum, 1.0,
             'Total pokok harus tutup pas ke 8jt (paritas pacuan: angsuran ke-24 = alokasi - sum_pokok)');
 
+        // Paritas pacuan persis: 8jt/24 bulan/24% → 355.000 selama 23 bulan,
+        // lalu bulan ke-24 = 8.000.000 - (23 × 355.000) = -165.000 (quirk legacy).
+        self::assertSame(355_000.0, (float) $rows->first()->principal_due);
+        self::assertSame(-165_000.0, (float) $rows->last()->principal_due);
+
         // Jasa flat: 8jt × 24% = 1.920.000. Pembulatan per baris sehingga bisa ~ ±10rb.
         $interestSum = $rows->sum(fn (LoanInstallment $i) => (float) $i->interest_due);
         self::assertEqualsWithDelta(1_920_000.0, $interestSum, 50.0);
@@ -227,6 +233,45 @@ final class MemberLoanLifecycleTest extends TestCase
         $lastRunningPrincipal = (float) $rows->last()->running_principal;
         self::assertEqualsWithDelta(8_000_000.0, $lastRunningPrincipal, 1.0,
             'running_principal baris terakhir harus sama dengan total pokok');
+    }
+
+    public function test_member_proposal_schedule_handles_system_11_m24_with_24_extra_rows(): void
+    {
+        $loan = app(LoanService::class)->createMemberProposal([
+            'loan_product_id' => $this->memberLoanProductId,
+            'member_id' => $this->member->row_id,
+            'proposed_at' => '2026-07-20',
+            'principal_amount' => 6_000_000,
+            'service_rate_total' => 18.0,
+            'term_months' => 12,
+            'installment_method' => 'flat',
+            'principal_frequency' => 'monthly',
+            'interest_frequency' => 'monthly',
+            'principal_grace_months' => 24,
+            'interest_grace_months' => 0,
+            'collateral' => null,
+            'verification_remarks' => null,
+        ], (int) $this->user->row_id);
+
+        // Pacuan: sa_pokok == 11 menambah jangka +24, tetapi tempo_pokok = jangka - 24.
+        // Baris 1..12 normal, lalu 24 baris ekstra tetap memakai wajib_pokok yang sama.
+        $installments = LoanInstallment::query()
+            ->where('loan_row_id', $loan->row_id)
+            ->orderBy('installment_number')
+            ->get();
+
+        self::assertCount(37, $installments); // header + 36 baris (12 + 24)
+        $rows = $installments->where('installment_number', '>', 0)->values();
+        self::assertCount(36, $rows);
+
+        self::assertSame(570_000.0, (float) $rows[0]->principal_due);
+        self::assertSame(570_000.0, (float) $rows[10]->principal_due);
+        self::assertSame(-270_000.0, (float) $rows[11]->principal_due); // baris ke-12 = alokasi - sum
+        self::assertSame(570_000.0, (float) $rows[12]->principal_due); // baris ekstra pertama
+        self::assertSame(570_000.0, (float) $rows[35]->principal_due);
+
+        self::assertEqualsWithDelta(19_680_000.0, $rows->sum(fn (LoanInstallment $i) => (float) $i->principal_due), 1.0);
+        self::assertEqualsWithDelta(1_080_000.0, $rows->sum(fn (LoanInstallment $i) => (float) $i->interest_due), 1.0);
     }
 
     public function test_verify_to_waiting_to_disburse_to_complete_lifecycle_for_individual(): void
@@ -300,6 +345,7 @@ final class MemberLoanLifecycleTest extends TestCase
         $service->complete($loan, [
             'completed_at' => '2026-08-30',
             'notes' => 'Lunas dipercepat.',
+            'force' => true,
         ], (int) $this->user->row_id);
 
         $loan = $loan->fresh();
@@ -317,6 +363,104 @@ final class MemberLoanLifecycleTest extends TestCase
         self::assertContains('waiting', $statuses);
         self::assertContains('active', $statuses);
         self::assertContains('completed', $statuses);
+    }
+
+    public function test_verified_and_waiting_documents_use_stage_effective_values_and_preview_dates(): void
+    {
+        $service = app(LoanService::class);
+
+        $loan = $service->createMemberProposal([
+            'loan_product_id' => $this->memberLoanProductId,
+            'member_id' => $this->member->row_id,
+            'proposed_at' => '2026-07-20',
+            'principal_amount' => 5_000_000,
+            'service_rate_total' => 12.0,
+            'term_months' => 12,
+            'installment_method' => 'flat',
+            'principal_frequency' => 'monthly',
+            'interest_frequency' => 'monthly',
+            'principal_grace_months' => 0,
+            'interest_grace_months' => 0,
+            'collateral' => null,
+            'verification_remarks' => null,
+        ], (int) $this->user->row_id);
+
+        $service->verify($loan, [
+            'verified_at' => '2026-07-21',
+            'verification_amount' => 4_000_000,
+            'term_months' => 10,
+            'service_rate_total' => 15.0,
+            'principal_frequency' => 'monthly',
+            'interest_frequency' => 'monthly',
+            'principal_grace_months' => 0,
+            'interest_grace_months' => 0,
+            'verification_notes' => 'Plafon disesuaikan.',
+        ], (int) $this->user->row_id);
+
+        $loan = $loan->fresh();
+        self::assertSame('verified', $loan->status);
+        self::assertSame(10, (int) $loan->term_months);
+        self::assertSame(15.0, (float) $loan->service_rate_total);
+        self::assertSame(5_000_000.0, (float) $loan->principal_amount);
+
+        $documents = app(LoanDocumentService::class);
+
+        // Tahap V: nominal verifikasi, jangka/jasa hasil verifikasi, dan
+        // tanggal preview (clamp) dari tgl_verifikasi.
+        $payload = $documents->payload($loan->fresh(), 'rencana_angsuran_individu_proposal');
+        self::assertSame(5_000_000.0, (float) $payload['pinkel']->proposal);
+        self::assertSame(4_000_000.0, (float) $payload['pinkel']->verifikasi);
+        self::assertSame(10, (int) $payload['pinkel']->jangka);
+        self::assertSame(15.0, (float) $payload['pinkel']->pros_jasa);
+
+        $rows = $payload['rencana'];
+        self::assertCount(10, $rows);
+        self::assertSame('2026-08-15', (string) $rows->first()->jatuh_tempo);
+        self::assertSame('2027-05-15', (string) $rows->last()->jatuh_tempo);
+        self::assertEqualsWithDelta(4_000_000.0, $rows->sum(static fn (object $row): float => (float) $row->wajib_pokok), 1.0);
+        self::assertEqualsWithDelta(600_000.0, $rows->sum(static fn (object $row): float => (float) $row->wajib_jasa), 100.0);
+
+        $service->approve($loan, [
+            'approved_at' => '2026-07-22',
+            'planned_disbursed_at' => '2026-07-25',
+            'allocation_amount' => 3_500_000,
+            'term_months' => 8,
+            'service_rate_total' => 10.0,
+            'principal_frequency' => 'monthly',
+            'interest_frequency' => 'monthly',
+            'principal_grace_months' => 0,
+            'interest_grace_months' => 0,
+            'spk_no' => 'SPK-VERIFY-001',
+            'allocation_notes' => 'Alokasi final.',
+        ], (int) $this->user->row_id);
+
+        $loan = $loan->fresh();
+        self::assertSame('waiting', $loan->status);
+        self::assertSame(3_500_000.0, (float) $loan->principal_amount);
+        self::assertSame(8, (int) $loan->term_months);
+        self::assertSame(10.0, (float) $loan->service_rate_total);
+        self::assertSame('SPK-VERIFY-001', $loan->spk_no);
+
+        $waitingHistory = LoanStatusHistory::query()
+            ->where('loan_row_id', $loan->row_id)
+            ->where('to_status', 'waiting')
+            ->latest('changed_at')
+            ->firstOrFail();
+        self::assertSame(3_500_000.0, (float) $waitingHistory->principal_amount);
+
+        // Tahap W: alokasi final, jangka/jasa hasil penetapan, dan tanggal
+        // preview dari rencana tgl_cair (planned_disbursed_at).
+        $payload = $documents->payload($loan->fresh(), 'rencana_angsuran_individu');
+        self::assertSame(3_500_000.0, (float) $payload['pinkel']->alokasi);
+        self::assertSame(8, (int) $payload['pinkel']->jangka);
+        self::assertSame(10.0, (float) $payload['pinkel']->pros_jasa);
+
+        $rows = $payload['rencana'];
+        self::assertCount(8, $rows);
+        self::assertSame('2026-09-15', (string) $rows->first()->jatuh_tempo);
+        self::assertSame('2027-04-15', (string) $rows->last()->jatuh_tempo);
+        self::assertEqualsWithDelta(3_500_000.0, $rows->sum(static fn (object $row): float => (float) $row->wajib_pokok), 1.0);
+        self::assertEqualsWithDelta(350_000.0, $rows->sum(static fn (object $row): float => (float) $row->wajib_jasa), 100.0);
     }
 
     public function test_reject_member_loan_sets_rejected_status_only_from_pre_active_status(): void
@@ -967,5 +1111,13 @@ final class MemberLoanLifecycleTest extends TestCase
             'Mingguan +7 hari dari override jadwal desa (15 Juli).');
         self::assertSame('2026-10-07', $last->due_date->format('Y-m-d'),
             'Mingguan +84 hari (12 × 7) dari override jadwal desa.');
+
+        // Mingguan memakai interval 1 (bukan 12): setiap baris punya porsi pokok.
+        self::assertTrue($installments->every(fn (LoanInstallment $i): bool => (float) $i->principal_due > 0));
+        self::assertEqualsWithDelta(
+            1_200_000.0,
+            $installments->sum(fn (LoanInstallment $i): float => (float) $i->principal_due),
+            1.0,
+        );
     }
 }

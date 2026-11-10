@@ -6,6 +6,10 @@ import AppButton from '../Components/AppButton.vue';
 import AppIcon from '../Components/AppIcon.vue';
 import AppCard from '../Components/AppCard.vue';
 import AppBadge from '../Components/AppBadge.vue';
+import AppLanguageSwitcher from '../Components/AppLanguageSwitcher.vue';
+import { useI18n } from '../i18n';
+
+const { t, locale } = useI18n();
 
 defineProps({
     name: { type: String, default: 'siupk Next' },
@@ -83,7 +87,7 @@ function formatStat(idx) {
     const s = stats[idx];
     const v = statCounters.value[idx];
     if (s.isDecimal) return v.toFixed(1).replace('.', ',') + s.suffix;
-    if (s.formatNumber) return Math.floor(v).toLocaleString('id-ID') + s.suffix;
+    if (s.formatNumber) return Math.floor(v).toLocaleString(locale.value === 'en' ? 'en-US' : 'id-ID') + s.suffix;
     return Math.floor(v) + s.suffix;
 }
 
@@ -378,7 +382,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head title="siupk Next - Sistem Informasi Dana Bergulir Masyarakat" />
+    <Head :title="t('siupk Next - Sistem Informasi Dana Bergulir Masyarakat')" />
 
     <div class="min-h-screen bg-surface font-sans text-on-surface antialiased scroll-smooth selection:bg-primary selection:text-on-primary">
         <!-- Top Banner -->
@@ -399,7 +403,7 @@ onUnmounted(() => {
                                 <path class="banner-shield-check" d="m9 12 2 2 4-4" />
                             </svg>
                         </span>
-                        <span class="hidden font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-primary-fixed-dim sm:inline">Regulasi</span>
+                        <span class="hidden font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-primary-fixed-dim sm:inline">{{ t('Regulasi') }}</span>
                         <span class="font-bold tracking-[0.05em]">PP No.&nbsp;11/2021</span>
                     </div>
 
@@ -408,7 +412,7 @@ onUnmounted(() => {
 
                     <!-- Segment 2: Sistem Nasional (kanan) + Version chip -->
                     <div class="hidden items-center gap-3 justify-self-end md:flex">
-                        <span class="font-semibold">Sistem Informasi Unit Pengelola Kegiatan</span>
+                        <span class="font-semibold">{{ t('Sistem Informasi Unit Pengelola Kegiatan') }}</span>
                         <span class="banner-version-chip inline-flex items-center gap-1.5 rounded-full border border-on-primary/30 bg-on-primary/10 px-2.5 py-0.5 text-[10px] font-black tracking-wider backdrop-blur-sm">
                             <span class="banner-version-dot relative grid size-1.5 place-items-center rounded-full bg-on-primary">
                                 <span class="size-1.5 rounded-full bg-on-primary" />
@@ -439,7 +443,7 @@ onUnmounted(() => {
                     </div>
                     <div>
                         <span class="block text-lg font-black tracking-tight text-primary">siupk <span class="bg-gradient-to-r from-secondary to-secondary-container bg-clip-text text-transparent">Next</span></span>
-                        <span class="block text-[10px] font-bold uppercase tracking-[0.18em] text-outline">BUMDesma LKD Platform</span>
+                        <span class="block text-[10px] font-bold uppercase tracking-[0.18em] text-outline">{{ t('BUMDesma LKD Platform') }}</span>
                     </div>
                 </a>
 
@@ -457,7 +461,7 @@ onUnmounted(() => {
                                 ? 'text-primary'
                                 : 'text-on-surface-variant hover:text-primary'"
                         >
-                            {{ link.label }}
+                            {{ t(link.label) }}
                             <span
                                 class="absolute -bottom-0.5 left-1/2 h-0.5 -translate-x-1/2 rounded-full bg-primary transition-all duration-300"
                                 :class="activeSection === link.id ? 'w-8 opacity-100' : 'w-0 opacity-0'"
@@ -465,10 +469,12 @@ onUnmounted(() => {
                         </a>
                     </nav>
 
+                    <AppLanguageSwitcher />
+
                     <!-- Login Button (Desktop) — pinned to far right -->
                     <Link href="/login" class="hidden md:inline-flex">
                         <AppButton variant="outline" size="compact" icon="login" icon-class="transition-transform duration-300 ease-out group-hover/btn:translate-x-1" class="font-bold group/btn">
-                            <span class="transition-transform duration-300 group-hover/btn:tracking-wide">Masuk Portal</span>
+                            <span class="transition-transform duration-300 group-hover/btn:tracking-wide">{{ t('Masuk Portal') }}</span>
                         </AppButton>
                     </Link>
 
@@ -476,7 +482,7 @@ onUnmounted(() => {
                     <button
                         type="button"
                         class="grid size-10 place-items-center rounded-lg text-on-surface shadow-sm ring-1 ring-inset ring-outline-variant/40 md:hidden transition hover:bg-surface-container-high hover:shadow-md"
-                        :aria-label="mobileNavOpen ? 'Tutup navigasi' : 'Buka navigasi'"
+                        :aria-label="mobileNavOpen ? t('Tutup navigasi') : t('Buka navigasi')"
                         @click="mobileNavOpen = !mobileNavOpen"
                     >
                         <AppIcon :name="mobileNavOpen ? 'close' : 'menu'" class="text-2xl" />
@@ -494,11 +500,11 @@ onUnmounted(() => {
                             :href="`#${link.id}`"
                             @click="smoothScrollTo(link.id)"
                             class="rounded-lg px-3 py-2.5 text-sm font-semibold text-on-surface hover:bg-surface-container-high"
-                        >{{ link.label }}</a>
+                        >{{ t(link.label) }}</a>
                         <div class="pt-2 mt-2 border-t border-outline-variant">
                             <Link href="/login" class="w-full">
                                 <AppButton variant="outline" size="medium" icon="login" icon-class="transition-transform duration-300 ease-out group-hover/btn:translate-x-1" class="w-full font-bold group/btn">
-                                    <span class="transition-transform duration-300 group-hover/btn:tracking-wide">Masuk Portal</span>
+                                    <span class="transition-transform duration-300 group-hover/btn:tracking-wide">{{ t('Masuk Portal') }}</span>
                                 </AppButton>
                             </Link>
                         </div>
@@ -523,24 +529,24 @@ onUnmounted(() => {
                                         <path d="m5 12 5 5 9-11" />
                                     </svg>
                                 </span>
-                                <span>Platform Resmi · PP No. 11/2021</span>
+                                <span>{{ t('Platform Resmi · PP No. 11/2021') }}</span>
                             </div>
 
                             <!-- Headline · Tata Kelola + Dana Bergulir. -->
                             <h1 class="hero-anim-title font-sans text-[2.25rem] font-black leading-[1.02] tracking-[-0.035em] sm:text-[2.5rem] lg:text-[3.25rem] xl:text-[3.5rem]">
-                                <span class="block text-on-surface">Tata Kelola</span>
+                                <span class="block text-on-surface">{{ t('Tata Kelola') }}</span>
                                 <span class="mt-1 block text-primary">
-                                    Dana Bergulir<span class="text-primary-fixed">.</span>
+                                    {{ t('Dana Bergulir') }}<span class="text-primary-fixed">.</span>
                                 </span>
                             </h1>
 
                             <!-- Mono kicker + body copy -->
                             <div class="hero-anim-desc space-y-4">
                                 <p class="font-mono text-[10px] font-bold uppercase tracking-[0.32em] text-outline sm:text-xs">
-                                    Sistem Informasi · Unit Pengelola Kegiatan
+                                    {{ t('Sistem Informasi · Unit Pengelola Kegiatan') }}
                                 </p>
                                 <p class="mx-auto max-w-xl text-base leading-relaxed text-on-surface-variant sm:text-lg lg:mx-0">
-                                    Solusi terintegrasi untuk pengelolaan pinjaman bergulir, pembukuan akuntansi standar <span class="font-bold text-on-surface">SAK Entitas Privat</span>, penerbitan kuitansi WhatsApp, dan pelaporan konsolidasi Pemerintah Kabupaten secara real-time.
+                                    {{ t('Solusi terintegrasi untuk pengelolaan pinjaman bergulir, pembukuan akuntansi standar') }} <span class="font-bold text-on-surface">{{ t('SAK Entitas Privat') }}</span>, {{ t('penerbitan kuitansi WhatsApp, dan pelaporan konsolidasi Pemerintah Kabupaten secara real-time.') }}
                                 </p>
                             </div>
 
@@ -548,12 +554,12 @@ onUnmounted(() => {
                             <div class="hero-anim-actions flex flex-wrap items-center justify-center gap-3 pt-1 lg:justify-start">
                                 <Link href="/login">
                                     <AppButton variant="primary" size="large" icon="login" class="!rounded-full font-bold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300">
-                                        Masuk Portal
+                                        {{ t('Masuk Portal') }}
                                     </AppButton>
                                 </Link>
                                 <a href="#fitur" @click.prevent="smoothScrollTo('fitur')">
                                     <AppButton variant="outline" size="large" icon="arrow_circle_right" icon-class="transition-transform duration-300 ease-out group-hover/btn:translate-x-1" class="!rounded-full font-bold ring-1 ring-inset ring-primary/30 transition-all duration-300 hover:ring-primary/60 group/btn">
-                                        Pelajari Fitur
+                                        {{ t('Pelajari Fitur') }}
                                     </AppButton>
                                 </a>
                             </div>
@@ -596,7 +602,7 @@ onUnmounted(() => {
                                                     <AppIcon name="gavel" class="text-[18px] leading-none text-primary" />
                                                     <div class="leading-tight">
                                                         <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-outline">PP 11/2021</p>
-                                                        <p class="text-[13px] font-bold text-on-surface">BUMDesma compliant</p>
+                                                        <p class="text-[13px] font-bold text-on-surface">{{ t('BUMDesma compliant') }}</p>
                                                     </div>
                                                 </div>
                                                 <AppIcon name="check_circle" class="text-[18px] leading-none text-primary" />
@@ -606,7 +612,7 @@ onUnmounted(() => {
                                                     <AppIcon name="calculate" class="text-[18px] leading-none text-primary" />
                                                     <div class="leading-tight">
                                                         <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-outline">SAK EP / ETAP</p>
-                                                        <p class="text-[13px] font-bold text-on-surface">Standar Akuntansi</p>
+                                                        <p class="text-[13px] font-bold text-on-surface">{{ t('Standar Akuntansi') }}</p>
                                                     </div>
                                                 </div>
                                                 <AppIcon name="check_circle" class="text-[18px] leading-none text-primary" />
@@ -616,7 +622,7 @@ onUnmounted(() => {
                                                     <AppIcon name="database" class="text-[18px] leading-none text-primary" />
                                                     <div class="leading-tight">
                                                         <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-outline">Shard Database</p>
-                                                        <p class="text-[13px] font-bold text-on-surface">Isolasi per BUMDesma</p>
+                                                        <p class="text-[13px] font-bold text-on-surface">{{ t('Isolasi per BUMDesma') }}</p>
                                                     </div>
                                                 </div>
                                                 <AppIcon name="check_circle" class="text-[18px] leading-none text-primary" />
@@ -626,17 +632,17 @@ onUnmounted(() => {
                                         <!-- Key metrics · 2 stats side-by-side -->
                                         <div class="grid grid-cols-2 gap-3 pt-1">
                                             <div class="space-y-1">
-                                                <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-outline">Kolektibilitas</span>
+                                                <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-outline">{{ t('Kolektibilitas') }}</span>
                                                 <p class="text-[1.5rem] font-black leading-none tracking-tight text-on-surface">98,6%</p>
                                                 <span class="inline-flex items-center gap-1 text-[10px] font-bold text-primary">
-                                                    <AppIcon name="check_circle" class="text-[12px] leading-none" /> Lancar
+                                                    <AppIcon name="check_circle" class="text-[12px] leading-none" /> {{ t('Lancar') }}
                                                 </span>
                                             </div>
                                             <div class="space-y-1">
-                                                <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-outline">Wilayah</span>
-                                                <p class="text-[1.5rem] font-black leading-none tracking-tight text-on-surface">38 <span class="text-sm font-bold">Kabupaten</span></p>
+                                                <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-outline">{{ t('Wilayah') }}</span>
+                                                <p class="text-[1.5rem] font-black leading-none tracking-tight text-on-surface">38 <span class="text-sm font-bold">{{ t('Kabupaten') }}</span></p>
                                                 <span class="inline-flex items-center gap-1 text-[10px] font-bold text-primary">
-                                                    <AppIcon name="location_on" class="text-[12px] leading-none" /> se-Indonesia
+                                                    <AppIcon name="location_on" class="text-[12px] leading-none" /> {{ t('se-Indonesia') }}
                                                 </span>
                                             </div>
                                         </div>
@@ -650,9 +656,9 @@ onUnmounted(() => {
                                                     <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
                                                     <polyline points="3 21 3 16 8 16" />
                                                 </svg>
-                                                Sinkronisasi Shard DB
+                                                {{ t('Sinkronisasi Shard DB') }}
                                             </span>
-                                            <span class="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-black tracking-wide text-primary">Terisolasi</span>
+                                            <span class="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-black tracking-wide text-primary">{{ t('Terisolasi') }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -667,10 +673,10 @@ onUnmounted(() => {
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
                     <div class="mb-6 flex flex-col items-start justify-between gap-3 sm:mb-7 sm:flex-row sm:items-end">
                         <div class="space-y-1.5">
-                            <p class="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">Skala & Kualitas Operasional</p>
-                            <h2 class="text-xl sm:text-2xl font-black leading-tight tracking-tight text-on-surface sm:max-w-md">Bukti Nyata, Bukan Sekedar Klaim</h2>
+                            <p class="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">{{ t('Skala & Kualitas Operasional') }}</p>
+                            <h2 class="text-xl sm:text-2xl font-black leading-tight tracking-tight text-on-surface sm:max-w-md">{{ t('Bukti Nyata, Bukan Sekedar Klaim') }}</h2>
                         </div>
-                        <p class="text-xs font-medium text-on-surface-variant sm:max-w-xs sm:text-right">Angka-angka ini dihasilkan langsung dari konsolidasi data lintas BUMDesma yang aktif menggunakan sistem.</p>
+                        <p class="text-xs font-medium text-on-surface-variant sm:max-w-xs sm:text-right">{{ t('Angka-angka ini dihasilkan langsung dari konsolidasi data lintas BUMDesma yang aktif menggunakan sistem.') }}</p>
                     </div>
 
                     <!-- Bento grid: hero card (left, col-span-7) + duo cards (right, col-span-5 stacked) + akurasi banner full-width di bawah -->
@@ -686,7 +692,7 @@ onUnmounted(() => {
                                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
                                     <span class="relative inline-flex size-1.5 rounded-full bg-emerald-300" />
                                 </span>
-                                Live Data
+                                {{ t('Live Data') }}
                             </div>
 
                             <div class="relative z-10 flex h-full flex-col justify-between gap-4">
@@ -695,8 +701,8 @@ onUnmounted(() => {
                                         <AppIcon :name="stats[1].icon" class="text-xl" />
                                     </div>
                                     <div>
-                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-primary-fixed-dim">{{ stats[1].label }}</p>
-                                        <p class="text-[9px] font-medium uppercase tracking-wider text-on-primary/70">Kelompok aktif terdaftar</p>
+                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-primary-fixed-dim">{{ t(stats[1].label) }}</p>
+                                        <p class="text-[9px] font-medium uppercase tracking-wider text-on-primary/70">{{ t('Kelompok aktif terdaftar') }}</p>
                                     </div>
                                 </div>
 
@@ -706,7 +712,7 @@ onUnmounted(() => {
                                             {{ formatStat(1) }}
                                         </p>
                                     </div>
-                                    <p class="mt-2 text-xs font-medium text-primary-fixed-dim max-w-md">Pemanfaat resmi yang tersebar di ratusan desa, tercatat dalam sistem pembukuan digital.</p>
+                                    <p class="mt-2 text-xs font-medium text-primary-fixed-dim max-w-md">{{ t('Pemanfaat resmi yang tersebar di ratusan desa, tercatat dalam sistem pembukuan digital.') }}</p>
                                 </div>
 
                                 <!-- Mini bar chart decoration -->
@@ -730,12 +736,12 @@ onUnmounted(() => {
                                     </div>
                                     <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
                                         <AppIcon name="trending_up" class="text-[11px]" />
-                                        Nasional
+                                        {{ t('Nasional') }}
                                     </span>
                                 </div>
                                 <div>
                                     <p class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums leading-none text-on-surface">{{ formatStat(0) }}</p>
-                                    <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">{{ stats[0].label }}</p>
+                                    <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">{{ t(stats[0].label) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -756,7 +762,7 @@ onUnmounted(() => {
                                 </div>
                                 <div>
                                     <p class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums leading-none text-on-surface">{{ formatStat(2) }}</p>
-                                    <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">{{ stats[2].label }}</p>
+                                    <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant">{{ t(stats[2].label) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -773,8 +779,8 @@ onUnmounted(() => {
                                     <AppIcon :name="stats[3].icon" class="text-lg" />
                                 </div>
                                 <div>
-                                    <p class="text-[9px] font-bold uppercase tracking-wider text-amber-300">Standar Akurasi</p>
-                                    <p class="text-xs font-bold text-white">{{ stats[3].label }}</p>
+                                    <p class="text-[9px] font-bold uppercase tracking-wider text-amber-300">{{ t('Standar Akurasi') }}</p>
+                                    <p class="text-xs font-bold text-white">{{ t(stats[3].label) }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
@@ -801,13 +807,13 @@ onUnmounted(() => {
                     <div class="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
                         <div class="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-container/40 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
                             <AppIcon name="verified" class="text-xs" />
-                            <span>Standar &amp; Regulasi Terkini</span>
+                            <span>{{ t('Standar & Regulasi Terkini') }}</span>
                         </div>
                         <h3 class="text-xl font-black tracking-tight text-primary sm:text-2xl">
-                            Standar Regulasi &amp; Tata Kelola Data
+                            {{ t('Standar Regulasi & Tata Kelola Data') }}
                         </h3>
                         <p class="mt-1.5 text-sm leading-relaxed text-on-surface-variant">
-                            Diselaraskan dengan kerangka hukum nasional dan arsitektur basis data berisolasi per entitas.
+                            {{ t('Diselaraskan dengan kerangka hukum nasional dan arsitektur basis data berisolasi per entitas.') }}
                         </p>
                     </div>
 
@@ -824,7 +830,7 @@ onUnmounted(() => {
                             <div class="relative z-10 flex items-center justify-between mb-4">
                                 <div class="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-on-primary shadow-sm">
                                     <AppIcon name="workspace_premium" class="text-[11px]" />
-                                    Featured
+                                    {{ t('Featured') }}
                                 </div>
                                 <div class="grid size-7 place-items-center rounded-full bg-primary/15 text-primary transition-all duration-500 group-hover:bg-primary group-hover:text-on-primary">
                                     <AppIcon name="verified" class="text-sm" />
@@ -841,14 +847,14 @@ onUnmounted(() => {
                             <div class="relative z-10 space-y-2 flex-1">
                                 <div>
                                     <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary mb-0.5">
-                                        {{ trustLogos[0].sub }}
+                                        {{ t(trustLogos[0].sub) }}
                                     </p>
                                     <h4 class="text-lg sm:text-xl font-black tracking-tight leading-tight text-primary">
-                                        {{ trustLogos[0].label }}
+                                        {{ t(trustLogos[0].label) }}
                                     </h4>
                                 </div>
                                 <p class="text-xs text-on-surface-variant leading-relaxed">
-                                    {{ trustLogos[0].desc }}
+                                    {{ t(trustLogos[0].desc) }}
                                 </p>
                             </div>
 
@@ -856,11 +862,11 @@ onUnmounted(() => {
                             <div class="relative z-10 mt-4 space-y-1.5 pt-4 shadow-[0_-1px_0_0_rgba(3,92,63,0.10)]">
                                 <div class="flex items-center gap-1.5 text-[11px] font-semibold text-on-surface">
                                     <AppIcon name="check_circle" class="text-sm text-secondary" />
-                                    <span>Diacu lintas Kementerian/Lembaga</span>
+                                    <span>{{ t('Diacu lintas Kementerian/Lembaga') }}</span>
                                 </div>
                                 <div class="flex items-center gap-1.5 text-[11px] font-semibold text-on-surface">
                                     <AppIcon name="check_circle" class="text-sm text-secondary" />
-                                    <span>Update mengikuti perubahan regulasi</span>
+                                    <span>{{ t('Update mengikuti perubahan regulasi') }}</span>
                                 </div>
                             </div>
                         </article>
@@ -928,7 +934,7 @@ onUnmounted(() => {
 
                                 <div class="relative z-10 space-y-0.5 mb-2">
                                     <h4 class="text-sm font-black leading-tight text-primary sm:text-base">
-                                        {{ logo.label }}
+                                        {{ t(logo.label) }}
                                     </h4>
                                     <p class="text-[9px] font-bold uppercase tracking-[0.16em]"
                                         :class="{
@@ -937,18 +943,18 @@ onUnmounted(() => {
                                             'text-tertiary': logo.tone === 'tertiary',
                                         }"
                                     >
-                                        {{ logo.sub }}
+                                        {{ t(logo.sub) }}
                                     </p>
                                 </div>
 
                                 <p class="relative z-10 text-[11px] leading-relaxed text-on-surface-variant">
-                                    {{ logo.desc }}
+                                    {{ t(logo.desc) }}
                                 </p>
 
                                 <!-- Verified mini badge -->
                                 <div class="relative z-10 mt-3 flex items-center gap-1 text-[9px] font-bold text-secondary">
                                     <AppIcon name="verified" class="text-xs" />
-                                    <span>Tersertifikasi</span>
+                                    <span>{{ t('Tersertifikasi') }}</span>
                                 </div>
                             </article>
                         </div>
@@ -962,10 +968,10 @@ onUnmounted(() => {
                     <!-- Section header -->
                     <div class="text-center space-y-3 max-w-2xl mx-auto">
                         <h2 class="text-2xl sm:text-3xl font-black text-primary tracking-tight leading-[1.1]">
-                            Fitur Unggulan
+                            {{ t('Fitur Unggulan') }}
                         </h2>
                         <p class="text-on-surface-variant text-sm sm:text-base leading-relaxed">
-                            Modul utama yang menopang tata kelola dana bergulir BUMDesma.
+                            {{ t('Modul utama yang menopang tata kelola dana bergulir BUMDesma.') }}
                         </p>
                     </div>
 
@@ -983,12 +989,12 @@ onUnmounted(() => {
 
                             <!-- Title -->
                             <h3 class="text-base font-bold text-on-surface leading-snug group-hover:text-primary transition-colors">
-                                {{ f.title }}
+                                {{ t(f.title) }}
                             </h3>
 
                             <!-- Description -->
                             <p class="mt-1.5 text-sm text-on-surface-variant leading-relaxed">
-                                {{ f.desc }}
+                                {{ t(f.desc) }}
                             </p>
                         </article>
                     </div>
@@ -1006,23 +1012,23 @@ onUnmounted(() => {
                     <div class="text-center space-y-4 max-w-3xl mx-auto">
                         <div class="inline-flex items-center gap-2 rounded-full border border-secondary/30 bg-secondary-container/40 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-secondary">
                             <AppIcon name="route" class="text-xs" />
-                            Alur Kerja Sistem
+                            {{ t('Alur Kerja Sistem') }}
                         </div>
                         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight">
-                            <span class="bg-gradient-to-br from-primary via-primary-container to-secondary bg-clip-text text-transparent">Tahapan Implementasi Sistematis</span>
+                            <span class="bg-gradient-to-br from-primary via-primary-container to-secondary bg-clip-text text-transparent">{{ t('Tahapan Implementasi Sistematis') }}</span>
                         </h2>
                         <p class="text-on-surface-variant text-sm sm:text-base leading-relaxed">
-                            Tahapan kerja yang terdokumentasi, didampingi tim teknis berpengalaman, dari onboarding hingga pelaporan resmi ke Pemerintah Kabupaten.
+                            {{ t('Tahapan kerja yang terdokumentasi, didampingi tim teknis berpengalaman, dari onboarding hingga pelaporan resmi ke Pemerintah Kabupaten.') }}
                         </p>
                         <!-- Quick info chips -->
                         <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
                             <div class="inline-flex items-center gap-2 rounded-full border border-outline-variant/50 bg-surface-container-lowest px-3 py-1.5 text-xs font-semibold text-on-surface-variant">
                                 <AppIcon name="schedule" class="text-base text-primary" />
-                                Rata-rata 14–21 hari
+                                {{ t('Rata-rata 14–21 hari') }}
                             </div>
                             <div class="inline-flex items-center gap-2 rounded-full border border-outline-variant/50 bg-surface-container-lowest px-3 py-1.5 text-xs font-semibold text-on-surface-variant">
                                 <AppIcon name="groups" class="text-base text-secondary" />
-                                Pendamping Tim Teknis
+                                {{ t('Pendamping Tim Teknis') }}
                             </div>
                         </div>
                     </div>
@@ -1074,12 +1080,12 @@ onUnmounted(() => {
                                             class="text-sm sm:text-base font-black leading-tight transition-colors mb-1"
                                             :class="activeStep === idx ? 'text-primary' : 'text-on-surface'"
                                         >
-                                            {{ step.title }}
+                                            {{ t(step.title) }}
                                         </h3>
                                         <p
                                             class="text-[11px] sm:text-xs text-on-surface-variant leading-snug line-clamp-2 transition-colors"
                                         >
-                                            {{ step.desc }}
+                                            {{ t(step.desc) }}
                                         </p>
                                     </div>
                                 </button>
@@ -1121,11 +1127,11 @@ onUnmounted(() => {
                                                 Step {{ step.num }}
                                             </div>
                                             <p class="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">
-                                                {{ step.role }}
+                                                {{ t(step.role) }}
                                             </p>
                                             <p class="mt-1 text-xs font-semibold text-on-surface-variant">
                                                 <AppIcon name="schedule" class="text-sm align-middle mr-0.5" />
-                                                {{ step.duration }}
+                                                {{ t(step.duration) }}
                                             </p>
                                         </div>
                                     </div>
@@ -1133,10 +1139,10 @@ onUnmounted(() => {
                                     <!-- Title + Desc -->
                                     <div class="relative z-10 space-y-2 mb-5">
                                         <h3 class="text-xl sm:text-2xl font-black tracking-tight text-on-surface leading-tight">
-                                            {{ step.title }}
+                                            {{ t(step.title) }}
                                         </h3>
                                         <p class="text-sm sm:text-base text-on-surface-variant leading-relaxed">
-                                            {{ step.desc }}
+                                            {{ t(step.desc) }}
                                         </p>
                                     </div>
 
@@ -1155,7 +1161,7 @@ onUnmounted(() => {
                                                 class="flex items-start gap-2 text-xs sm:text-sm text-on-surface"
                                             >
                                                 <AppIcon name="check_circle" class="text-base text-secondary shrink-0 mt-0.5" />
-                                                <span class="leading-snug">{{ item }}</span>
+                                                <span class="leading-snug">{{ t(item) }}</span>
                                             </li>
                                         </ul>
                                     </div>
@@ -1172,7 +1178,7 @@ onUnmounted(() => {
                                             <span>Step {{ steps[idx - 1].num }}</span>
                                         </button>
                                         <span v-else class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/60">
-                                            Tahap Awal
+                                            {{ t('Tahap Awal') }}
                                         </span>
                                         <button
                                             v-if="idx < steps.length - 1"
@@ -1180,7 +1186,7 @@ onUnmounted(() => {
                                             @click="setActiveStep(idx + 1)"
                                             class="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-on-primary shadow-md shadow-primary/20 hover:shadow-lg hover:bg-secondary transition-all"
                                         >
-                                            <span>Lanjut Step {{ steps[idx + 1].num }}</span>
+                                            <span>{{ t('Lanjut Step') }} {{ steps[idx + 1].num }}</span>
                                             <AppIcon name="arrow_forward" class="text-sm" />
                                         </button>
                                         <a
@@ -1190,7 +1196,7 @@ onUnmounted(() => {
                                             class="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary to-secondary px-4 py-2 text-xs font-bold text-on-primary shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 active:scale-[0.97] active:shadow-sm transition-all duration-200"
                                         >
                                             <AppIcon name="rocket_launch" class="text-sm" />
-                                            <span>Mulai Sekarang</span>
+                                            <span>{{ t('Mulai Sekarang') }}</span>
                                         </a>
                                     </div>
                                 </div>
@@ -1205,13 +1211,13 @@ onUnmounted(() => {
                                 <AppIcon name="auto_awesome" class="text-lg" />
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-on-surface">Setiap tahap disertai pendampingan langsung</p>
-                                <p class="text-xs text-on-surface-variant mt-0.5">Tim teknis akan hadir secara daring atau luring sesuai kebutuhan BUMDesma Anda.</p>
+                                <p class="text-sm font-bold text-on-surface">{{ t('Setiap tahap disertai pendampingan langsung') }}</p>
+                                <p class="text-xs text-on-surface-variant mt-0.5">{{ t('Tim teknis akan hadir secara daring atau luring sesuai kebutuhan BUMDesma Anda.') }}</p>
                             </div>
                         </div>
                         <a href="#kontak" @click.prevent="smoothScrollTo('kontak')" class="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-on-primary shadow-md shadow-primary/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:bg-secondary shrink-0">
                             <AppIcon name="rocket_launch" class="text-base" />
-                            Mulai Sekarang
+                            {{ t('Mulai Sekarang') }}
                             <AppIcon name="arrow_forward" class="text-base" />
                         </a>
                     </div>
@@ -1247,7 +1253,7 @@ onUnmounted(() => {
                                         </div>
                                         <span class="text-sm sm:text-base font-bold pt-1"
                                             :class="activeFaq === idx ? 'text-primary' : 'text-on-surface group-hover:text-primary transition-colors'">
-                                            {{ faq.q }}
+                                            {{ t(faq.q) }}
                                         </span>
                                     </div>
                                     <span
@@ -1266,7 +1272,7 @@ onUnmounted(() => {
                                             <!-- Left accent bar -->
                                             <div class="absolute left-4 top-0 bottom-4 w-0.5 bg-gradient-to-b from-primary to-secondary rounded-full sm:left-4" />
                                             <p class="pl-4 text-sm text-on-surface-variant leading-relaxed">
-                                                {{ faq.a }}
+                                                {{ t(faq.a) }}
                                             </p>
                                         </div>
                                     </div>
@@ -1281,13 +1287,13 @@ onUnmounted(() => {
                                     <span class="grid size-5 place-items-center rounded-full bg-primary text-on-primary">
                                         <AppIcon name="forum" class="text-xs" />
                                     </span>
-                                    Tanya Jawab
+                                    {{ t('Tanya Jawab') }}
                                 </div>
                                 <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-primary tracking-tight leading-tight">
-                                    Pertanyaan yang <span class="bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent">Sering Diajukan</span>
+                                    {{ t('Pertanyaan yang') }} <span class="bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent">{{ t('Sering Diajukan') }}</span>
                                 </h2>
                                 <p class="text-on-surface-variant text-sm sm:text-base leading-relaxed">
-                                    Jawaban ringkas atas pertanyaan yang paling sering diajukan terkait platform siupk Next, kepatuhan regulasi, dan implementasi sistem.
+                                    {{ t('Jawaban ringkas atas pertanyaan yang paling sering diajukan terkait platform siupk Next, kepatuhan regulasi, dan implementasi sistem.') }}
                                 </p>
                             </div>
 
@@ -1295,11 +1301,11 @@ onUnmounted(() => {
                             <div class="flex flex-wrap gap-2">
                                 <div class="inline-flex items-center gap-2 rounded-full bg-surface-container-low px-3 py-1.5 text-xs font-semibold text-on-surface-variant border border-outline-variant/50">
                                     <AppIcon name="schedule" class="text-base text-secondary" />
-                                    Respons Satu Hari Kerja
+                                    {{ t('Respons Satu Hari Kerja') }}
                                 </div>
                                 <div class="inline-flex items-center gap-2 rounded-full bg-surface-container-low px-3 py-1.5 text-xs font-semibold text-on-surface-variant border border-outline-variant/50">
                                     <AppIcon name="verified_user" class="text-base text-primary" />
-                                    Tim Teknis Tersertifikasi
+                                    {{ t('Tim Teknis Tersertifikasi') }}
                                 </div>
                             </div>
 
@@ -1309,8 +1315,8 @@ onUnmounted(() => {
                                     <AppIcon name="shield_lock" class="text-xl" />
                                 </div>
                                 <div class="text-xs">
-                                    <p class="font-bold text-on-surface">Data Anda Aman & Terisolasi</p>
-                                    <p class="text-on-surface-variant leading-snug mt-0.5">Setiap BUMDesma punya database shard terpisah & terenkripsi.</p>
+                                    <p class="font-bold text-on-surface">{{ t('Data Anda Aman & Terisolasi') }}</p>
+                                    <p class="text-on-surface-variant leading-snug mt-0.5">{{ t('Setiap BUMDesma punya database shard terpisah & terenkripsi.') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -1340,30 +1346,30 @@ onUnmounted(() => {
                         <!-- Eyebrow pill · gradient -->
                         <div class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-fixed to-secondary-fixed px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary-deep ring-1 ring-inset ring-white/30 shadow-lg shadow-primary-deep/40">
                             <AppIcon name="rocket_launch" class="text-xs" />
-                            <span>Mulai Sekarang</span>
+                            <span>{{ t('Mulai Sekarang') }}</span>
                         </div>
 
                         <!-- Heading -->
                         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black leading-[1.15] tracking-tight max-w-2xl mx-auto">
-                            Tata Kelola Dana Bergulir dalam
-                            <span class="block bg-gradient-to-r from-secondary-fixed via-primary-fixed to-secondary-fixed bg-clip-text text-transparent">Satu Platform Terpadu</span>
+                            {{ t('Tata Kelola Dana Bergulir dalam') }}
+                            <span class="block bg-gradient-to-r from-secondary-fixed via-primary-fixed to-secondary-fixed bg-clip-text text-transparent">{{ t('Satu Platform Terpadu') }}</span>
                         </h2>
 
                         <!-- Body -->
                         <p class="mx-auto max-w-xl text-sm sm:text-base leading-relaxed text-primary-fixed-dim">
-                            Portal operasional untuk pengurus BUMDesma, atau jadwalkan demonstrasi bersama tim teknis untuk instansi pembina di tingkat Kabupaten.
+                            {{ t('Portal operasional untuk pengurus BUMDesma, atau jadwalkan demonstrasi bersama tim teknis untuk instansi pembina di tingkat Kabupaten.') }}
                         </p>
 
                         <!-- Buttons -->
                         <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                             <Link href="/login">
                                 <AppButton variant="secondary" size="large" icon="login" class="!rounded-full !px-6 !py-3 font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
-                                    Masuk Portal Operasional
+                                    {{ t('Masuk Portal Operasional') }}
                                 </AppButton>
                             </Link>
                             <a href="#kontak" @click.prevent="smoothScrollTo('kontak')">
                                 <AppButton variant="ghost" size="large" icon="event_available" class="!rounded-full !px-6 !py-3 font-semibold !bg-white/10 !text-on-primary hover:!bg-white/20 transition-all duration-300 hover:-translate-y-0.5">
-                                    Jadwalkan Demonstrasi
+                                    {{ t('Jadwalkan Demonstrasi') }}
                                 </AppButton>
                             </a>
                         </div>
@@ -1372,17 +1378,17 @@ onUnmounted(() => {
                         <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-3 text-[11px] font-semibold text-primary-fixed-dim">
                             <span class="inline-flex items-center gap-1.5">
                                 <AppIcon name="bolt" class="text-xs text-secondary-fixed" />
-                                Onboarding 7 Hari
+                                {{ t('Onboarding 7 Hari') }}
                             </span>
                             <span class="hidden sm:inline opacity-40">•</span>
                             <span class="inline-flex items-center gap-1.5">
                                 <AppIcon name="support_agent" class="text-xs text-secondary-fixed" />
-                                Pendamping Sen–Jum
+                                {{ t('Pendamping Sen–Jum') }}
                             </span>
                             <span class="hidden sm:inline opacity-40">•</span>
                             <span class="inline-flex items-center gap-1.5">
                                 <AppIcon name="shield_lock" class="text-xs text-secondary-fixed" />
-                                Basis Data Berisolasi
+                                {{ t('Basis Data Berisolasi') }}
                             </span>
                         </div>
                     </div>
@@ -1405,10 +1411,10 @@ onUnmounted(() => {
                     </div>
 
                     <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold text-outline">
-                        <a href="#fitur" @click.prevent="smoothScrollTo('fitur')" class="hover:text-primary transition-colors">Fitur</a>
-                        <a href="#alur" @click.prevent="smoothScrollTo('alur')" class="hover:text-primary transition-colors">Alur Kerja</a>
-                        <a href="#faq" @click.prevent="smoothScrollTo('faq')" class="hover:text-primary transition-colors">Tanya Jawab</a>
-                        <Link href="/login" class="hover:text-primary transition-colors">Portal Login</Link>
+                        <a href="#fitur" @click.prevent="smoothScrollTo('fitur')" class="hover:text-primary transition-colors">{{ t('Fitur') }}</a>
+                        <a href="#alur" @click.prevent="smoothScrollTo('alur')" class="hover:text-primary transition-colors">{{ t('Alur Kerja') }}</a>
+                        <a href="#faq" @click.prevent="smoothScrollTo('faq')" class="hover:text-primary transition-colors">{{ t('Tanya Jawab') }}</a>
+                        <Link href="/login" class="hover:text-primary transition-colors">{{ t('Portal Login') }}</Link>
                     </div>
                 </div>
 
@@ -1416,7 +1422,7 @@ onUnmounted(() => {
                     <p>&copy; 2026 siupk Next &mdash; BUMDesma & LKD Financial Information System.</p>
                     <p class="inline-flex items-center gap-1.5">
                         <AppIcon name="verified" class="text-sm text-secondary" />
-                        <span>Sesuai PP No. 11/2021 & SAK EP / ETAP</span>
+                        <span>{{ t('Sesuai PP No. 11/2021 & SAK EP / ETAP') }}</span>
                     </p>
                 </div>
             </div>
@@ -1427,7 +1433,7 @@ onUnmounted(() => {
             <button
                 v-show="showScrollTop"
                 type="button"
-                aria-label="Kembali ke atas"
+                :aria-label="t('Kembali ke atas')"
                 class="group fixed bottom-6 right-6 z-50 grid size-12 place-items-center rounded-full bg-gradient-to-br from-primary via-primary to-primary-container text-on-primary shadow-lg shadow-primary/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/50 active:scale-95 sm:bottom-8 sm:right-8 sm:size-14"
                 @click="scrollToTop"
             >

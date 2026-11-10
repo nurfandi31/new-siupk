@@ -7,6 +7,9 @@ import AppCard from '../../../../Components/AppCard.vue';
 import AppIconButton from '../../../../Components/AppIconButton.vue';
 import SmartDataTable from '../../../../Components/SmartDataTable.vue';
 import AdminLayout from '../../../../Layouts/AdminLayout.vue';
+import { useI18n } from '../../../../i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     tenant: { type: Object, required: true },
@@ -38,14 +41,14 @@ async function autoLoginUser(user) {
 
         const data = await response.json();
         if (!response.ok || !data.redirect_url) {
-            alert(data.message || 'Gagal membuat sesi auto-login.');
+            alert(data.message || t('Gagal membuat sesi auto-login.'));
             return;
         }
 
         window.open(data.redirect_url, '_blank');
     } catch (err) {
         console.error(err);
-        alert('Terjadi kesalahan saat memulai auto-login.');
+        alert(t('Terjadi kesalahan saat memulai auto-login.'));
     } finally {
         impersonatingUserId.value = null;
     }
@@ -68,15 +71,15 @@ const columns = [
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                 <div class="space-y-3">
                     <Link :href="`/admin/tenants/${tenant.row_id}`" class="inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:text-primary-container">
-                        <AppIconButton name="arrow_back" size="sm" tone="primary" rounded="full" aria-label="Kembali" />
+                        <AppIconButton name="arrow_back" size="sm" tone="primary" rounded="full" :aria-label="t('Kembali')" />
                         <span>{{ tenant.name }}</span>
                     </Link>
                     <div>
-                        <h1 class="text-2xl font-bold text-primary">Pengguna Tenant</h1>
+                        <h1 class="text-2xl font-bold text-primary">{{ t('Pengguna Tenant') }}</h1>
                         <p class="mt-1 text-on-surface-variant">{{ tenant.code }}</p>
                     </div>
                 </div>
-                <Link :href="`/admin/tenants/${tenant.row_id}/users/create`"><AppButton icon="person_add">Tambah User</AppButton></Link>
+                <Link :href="`/admin/tenants/${tenant.row_id}/users/create`"><AppButton icon="person_add">{{ t('Tambah User') }}</AppButton></Link>
             </header>
 
             <AppCard :padded="false">
@@ -90,8 +93,8 @@ const columns = [
                     :sort="sort"
                     :direction="direction"
 
-                    empty-title="Belum ada pengguna"
-                    empty-description="Tambahkan user untuk tenant ini."
+                    :empty-title="t('Belum ada pengguna')"
+                    :empty-description="t('Tambahkan user untuk tenant ini.')"
                 >
                     <template #cell-role="{ row }">
                         <span class="text-sm text-on-surface-variant">{{ row.role || '—' }}</span>
@@ -107,13 +110,13 @@ const columns = [
                                 size="compact"
                                 icon="login"
                                 :loading="impersonatingUserId === row.row_id"
-                                aria-label="Auto login sebagai user ini"
+                                :aria-label="t('Auto login sebagai user ini')"
                                 @click="autoLoginUser(row)"
                             >
                                 Auto Login
                             </AppButton>
                             <Link :href="`/admin/tenants/${tenant.row_id}/users/${row.row_id}/edit`">
-                                <AppButton variant="ghost" size="compact" icon="edit">Edit</AppButton>
+                                <AppButton variant="ghost" size="compact" icon="edit">{{ t('Edit') }}</AppButton>
                             </Link>
                         </div>
                     </template>

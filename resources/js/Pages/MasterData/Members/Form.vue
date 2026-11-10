@@ -136,7 +136,7 @@ function submit() {
                         <AppDatePicker v-model="form.birth_date" label="Tanggal Lahir" icon="calendar_month" placeholder="Pilih tanggal lahir" :max="today" clearable :error="form.errors.birth_date" />
                         <AppInput v-model="form.phone" label="No. HP" icon="phone" type="tel" :error="form.errors.phone" />
                         <SmartSelect v-model="form.status" label="Status" :options="statusOptions" required :error="form.errors.status" />
-                        <AppDatePicker v-model="form.registered_at" label="Tanggal Terdaftar" icon="event" placeholder="Pilih tanggal terdaftar" :max="today" required :error="form.errors.registered_at" />
+                        <AppDatePicker v-model="form.registered_at" label="Tanggal Terdaftar" icon="event" placeholder="Pilih tanggal" :max="today" required :error="form.errors.registered_at" />
                     </fieldset>
 
                     <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -148,13 +148,13 @@ function submit() {
                     <fieldset v-if="form.has_guarantor" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         <AppInput v-model="form.guarantor_nik" label="NIK Penjamin" icon="badge" inputmode="numeric" maxlength="16" required :error="form.errors.guarantor_nik" />
                         <AppInput v-model="form.guarantor_name" label="Nama Penjamin" icon="person" required :error="form.errors.guarantor_name" />
-                        <AppInput v-model="form.guarantor_relationship" label="Hubungan" icon="family_restroom" required placeholder="Contoh: Saudara, Tetangga" :error="form.errors.guarantor_relationship" />
+                        <AppInput v-model="form.guarantor_relationship" label="Hubungan" icon="family_restroom" required placeholder="Masukkan hubungan" :error="form.errors.guarantor_relationship" />
                     </fieldset>
 
                     <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         <AppSwitch v-model="form.has_business" label="Tambah Usaha" description="Aktifkan untuk menambahkan usaha utama." icon="storefront" field />
                         <AppInput v-model="form.business_name" label="Nama Usaha" icon="storefront" :required="form.has_business" :disabled="!form.has_business" :error="form.errors.business_name" />
-                        <AppInput v-model="form.business_description" label="Deskripsi Usaha" icon="description" placeholder="Contoh: Warung sembako, Pertanian padi" :required="form.has_business" :disabled="!form.has_business" :error="form.errors.business_description" />
+                        <AppInput v-model="form.business_description" label="Deskripsi Usaha" icon="description" placeholder="Masukkan deskripsi" :required="form.has_business" :disabled="!form.has_business" :error="form.errors.business_description" />
                     </fieldset>
 
                     <div class="flex justify-end gap-3 border-t border-outline-variant pt-4">

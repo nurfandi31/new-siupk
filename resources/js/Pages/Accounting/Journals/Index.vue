@@ -303,7 +303,7 @@ function submitBulkReverse() {
                         v-model="q"
                         label="Cari"
                         icon="search"
-                        placeholder="No. jurnal, ID, atau uraian…"
+                        placeholder="Cari jurnal..."
                     />
                 </div>
             </AppCard>
@@ -545,7 +545,7 @@ function submitBulkReverse() {
                         v-model="reverseForm.reason"
                         label="Alasan pembatalan"
                         :error="reverseForm.errors.reason"
-                        placeholder="Salah nominal / salah akun / transaksi dibatalkan…"
+                        placeholder="Masukkan alasan"
                     />
                     <div class="flex justify-end gap-2">
                         <AppButton type="button" variant="secondary" @click="reverseOpen = false">Batal</AppButton>
@@ -573,7 +573,7 @@ function submitBulkReverse() {
                         v-model="bulkReverseForm.reason"
                         label="Alasan pembatalan massal"
                         :error="bulkReverseForm.errors.reason"
-                        placeholder="Alasan pembatalan transaksi terpilih…"
+                        placeholder="Masukkan alasan"
                     />
                     <div class="flex justify-end gap-2">
                         <AppButton type="button" variant="secondary" @click="bulkReverseOpen = false">Batal</AppButton>

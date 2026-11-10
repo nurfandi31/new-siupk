@@ -71,7 +71,7 @@ async function restore(post) {
                     :sort="sort"
                     :direction="direction"
                     search-label="Cari berita"
-                    search-placeholder="Judul atau slug"
+                    search-placeholder="Cari berita..."
                     empty-title="Belum ada berita"
                     empty-description="Tulis berita pertama untuk ditampilkan di situs publik."
                 >

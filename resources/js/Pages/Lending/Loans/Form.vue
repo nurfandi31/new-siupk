@@ -24,7 +24,8 @@ const today = (() => {
 
 const productOptions = computed(() => props.products.map((product) => ({
     value: product.row_id,
-    label: `${product.name} · ${product.code}`,
+    label: product.name,
+    subtitle: product.code,
 })));
 
 const installmentMethodOptions = [
@@ -34,33 +35,33 @@ const installmentMethodOptions = [
 ];
 
 const principalFrequencyOptions = [
-    { value: 'weekly', label: 'Frekuensi — Mingguan' },
-    { value: 'biweekly', label: 'Frekuensi — Dua Mingguan' },
-    { value: 'monthly', label: 'Frekuensi — Bulanan' },
-    { value: 'bimonthly', label: 'Frekuensi — Tiap 2 Bulan' },
-    { value: 'quarterly', label: 'Frekuensi — Tiap 3 Bulan' },
-    { value: 'every_4_months', label: 'Frekuensi — Tiap 4 Bulan' },
-    { value: 'every_5_months', label: 'Frekuensi — Tiap 5 Bulan' },
-    { value: 'every_6_months', label: 'Frekuensi — Tiap 6 Bulan' },
-    { value: 'every_7_months', label: 'Frekuensi — Tiap 7 Bulan' },
-    { value: 'every_8_months', label: 'Frekuensi — Tiap 8 Bulan' },
-    { value: 'every_9_months', label: 'Frekuensi — Tiap 9 Bulan' },
-    { value: 'every_10_months', label: 'Frekuensi — Tiap 10 Bulan' },
-    { value: 'every_11_months', label: 'Frekuensi — Tiap 11 Bulan' },
-    { value: 'every_12_months', label: 'Frekuensi — Tiap 12 Bulan' },
-    { value: 'every_24_months', label: 'Frekuensi — Tiap 24 Bulan' },
-    { value: 'every_36_months', label: 'Frekuensi — Tiap 36 Bulan' },
-    { value: 'at_maturity', label: 'Lainnya — Sekaligus di Akhir' },
+    { value: 'weekly', label: 'Mingguan' },
+    { value: 'biweekly', label: 'Dua Mingguan' },
+    { value: 'monthly', label: 'Bulanan' },
+    { value: 'bimonthly', label: 'Tiap 2 Bulan' },
+    { value: 'quarterly', label: 'Tiap 3 Bulan' },
+    { value: 'every_4_months', label: 'Tiap 4 Bulan' },
+    { value: 'every_5_months', label: 'Tiap 5 Bulan' },
+    { value: 'every_6_months', label: 'Tiap 6 Bulan' },
+    { value: 'every_7_months', label: 'Tiap 7 Bulan' },
+    { value: 'every_8_months', label: 'Tiap 8 Bulan' },
+    { value: 'every_9_months', label: 'Tiap 9 Bulan' },
+    { value: 'every_10_months', label: 'Tiap 10 Bulan' },
+    { value: 'every_11_months', label: 'Tiap 11 Bulan' },
+    { value: 'every_12_months', label: 'Tiap 12 Bulan' },
+    { value: 'every_24_months', label: 'Tiap 24 Bulan' },
+    { value: 'every_36_months', label: 'Tiap 36 Bulan' },
+    { value: 'at_maturity', label: 'Sekaligus di Akhir' },
 ];
 
 const graceOptions = [
     { value: 0, label: 'Tanpa Penundaan' },
-    { value: 1, label: 'M1 — Angsuran ditunda 1 bulan' },
-    { value: 2, label: 'M2 — Pokok ditunda 2 bulan' },
-    { value: 3, label: 'M3 — Pokok ditunda 3 bulan' },
-    { value: 6, label: 'M6 — Pokok ditunda 6 bulan' },
-    { value: 12, label: 'M12 — Pokok ditunda 12 bulan' },
-    { value: 24, label: 'M24 — Pokok ditunda 24 bulan' },
+    { value: 1, label: '1 Bulan' },
+    { value: 2, label: '2 Bulan' },
+    { value: 3, label: '3 Bulan' },
+    { value: 6, label: '6 Bulan' },
+    { value: 12, label: '12 Bulan' },
+    { value: 24, label: '24 Bulan' },
 ];
 
 const roundingOptions = [
@@ -75,23 +76,23 @@ const roundingOptions = [
 ];
 
 const interestFrequencyOptions = [
-    { value: 'weekly', label: 'Frekuensi — Mingguan' },
-    { value: 'biweekly', label: 'Frekuensi — Dua Mingguan' },
-    { value: 'monthly', label: 'Frekuensi — Bulanan' },
-    { value: 'bimonthly', label: 'Frekuensi — Tiap 2 Bulan' },
-    { value: 'quarterly', label: 'Frekuensi — Tiap 3 Bulan' },
-    { value: 'every_4_months', label: 'Frekuensi — Tiap 4 Bulan' },
-    { value: 'every_5_months', label: 'Frekuensi — Tiap 5 Bulan' },
-    { value: 'every_6_months', label: 'Frekuensi — Tiap 6 Bulan' },
-    { value: 'every_7_months', label: 'Frekuensi — Tiap 7 Bulan' },
-    { value: 'every_8_months', label: 'Frekuensi — Tiap 8 Bulan' },
-    { value: 'every_9_months', label: 'Frekuensi — Tiap 9 Bulan' },
-    { value: 'every_10_months', label: 'Frekuensi — Tiap 10 Bulan' },
-    { value: 'every_11_months', label: 'Frekuensi — Tiap 11 Bulan' },
-    { value: 'every_12_months', label: 'Frekuensi — Tiap 12 Bulan' },
-    { value: 'every_24_months', label: 'Frekuensi — Tiap 24 Bulan' },
-    { value: 'every_36_months', label: 'Frekuensi — Tiap 36 Bulan' },
-    { value: 'at_maturity', label: 'Lainnya — Sekaligus di Akhir' },
+    { value: 'weekly', label: 'Mingguan' },
+    { value: 'biweekly', label: 'Dua Mingguan' },
+    { value: 'monthly', label: 'Bulanan' },
+    { value: 'bimonthly', label: 'Tiap 2 Bulan' },
+    { value: 'quarterly', label: 'Tiap 3 Bulan' },
+    { value: 'every_4_months', label: 'Tiap 4 Bulan' },
+    { value: 'every_5_months', label: 'Tiap 5 Bulan' },
+    { value: 'every_6_months', label: 'Tiap 6 Bulan' },
+    { value: 'every_7_months', label: 'Tiap 7 Bulan' },
+    { value: 'every_8_months', label: 'Tiap 8 Bulan' },
+    { value: 'every_9_months', label: 'Tiap 9 Bulan' },
+    { value: 'every_10_months', label: 'Tiap 10 Bulan' },
+    { value: 'every_11_months', label: 'Tiap 11 Bulan' },
+    { value: 'every_12_months', label: 'Tiap 12 Bulan' },
+    { value: 'every_24_months', label: 'Tiap 24 Bulan' },
+    { value: 'every_36_months', label: 'Tiap 36 Bulan' },
+    { value: 'at_maturity', label: 'Sekaligus di Akhir' },
 ];
 
 const frequencyMultiplier = {
@@ -292,7 +293,7 @@ function addBeneficiary() {
                     <!-- Produk & Kelompok -->
                     <section>
                         <div class="grid gap-3 sm:grid-cols-2">
-                            <SmartSelect v-model="selectedProductId" label="Produk Pinjaman" :options="productOptions" placeholder="Pilih produk (SPP/UEP/PL)" required searchable :error="form.errors.loan_product_id" />
+                            <SmartSelect v-model="selectedProductId" label="Produk Pinjaman" :options="productOptions" placeholder="Pilih produk" required searchable :error="form.errors.loan_product_id" />
                             <SmartSelect v-model="selectedGroupId" label="Kelompok" :options="groups.map((g) => ({ value: g.value, label: g.label }))" placeholder="Pilih kelompok" required searchable :error="form.errors.group_id" />
                         </div>
                         <div v-if="selectedProduct" class="mt-2 rounded-lg border border-secondary/30 bg-secondary/10 px-3 py-2 text-xs text-primary">
@@ -306,8 +307,8 @@ function addBeneficiary() {
                     <section>
                         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                             <AppDatePicker v-model="form.proposed_at" label="Tgl Pengajuan" icon="event" placeholder="Pilih tanggal" :max="today" required :error="form.errors.proposed_at" />
-                            <AppCurrencyInput v-model="form.principal_amount" label="Plafon" icon="payments" :min="0" required :error="form.errors.principal_amount" />
-                            <AppInput v-model="form.term_months" label="Tenor (bln)" icon="schedule" type="number" inputmode="numeric" min="1" max="120" required :error="form.errors.term_months" />
+                            <AppCurrencyInput v-model="form.principal_amount" label="Plafon" icon="payments" :min="0" placeholder="0" required :error="form.errors.principal_amount" />
+                            <AppInput v-model="form.term_months" label="Tenor (bln)" icon="schedule" type="number" inputmode="numeric" min="1" max="120" placeholder="12" required :error="form.errors.term_months" />
                             <AppInput
                                 v-model="form.service_rate_total"
                                 label="Jasa Total (%)"
@@ -316,6 +317,7 @@ function addBeneficiary() {
                                 inputmode="decimal"
                                 min="0"
                                 step="0.01"
+                                placeholder="18"
                                 required
                                 :error="form.errors.service_rate_total"
                                 tooltip="Total jasa sepanjang pinjaman. Contoh: 1,5%/bulan × 12 bulan = 18"
@@ -359,7 +361,7 @@ function addBeneficiary() {
                         <div v-if="!selectedGroup" class="rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface-variant">Pilih kelompok terlebih dahulu.</div>
                         <template v-else>
                             <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
-                                <div class="flex-1"><SmartSelect v-model="beneficiaryCandidateId" label="Tambah Pemanfaat" :options="beneficiaryCandidateOptions" searchable :loading="beneficiaryLoading" placeholder="Cari NIK atau nama" @search-change="updateBeneficiarySearch" @search="searchBeneficiaries" /></div>
+                                <div class="flex-1"><SmartSelect v-model="beneficiaryCandidateId" label="Tambah Pemanfaat" :options="beneficiaryCandidateOptions" searchable :loading="beneficiaryLoading" placeholder="Cari nama/NIK" @search-change="updateBeneficiarySearch" @search="searchBeneficiaries" /></div>
                                 <AppButton type="button" variant="secondary" icon="person_add" class="min-h-11 w-full sm:w-auto" :disabled="!beneficiaryCandidateId" @click="addBeneficiary">Tambah</AppButton>
                             </div>
                             <div v-if="memberOptions.length === 0" class="mt-2 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface-variant">Belum ada pemanfaat.</div>

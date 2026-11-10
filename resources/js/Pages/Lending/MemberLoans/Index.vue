@@ -87,7 +87,7 @@ const emptyMessage = computed(() => emptyMessages[props.tab] ?? { title: 'Belum 
                     :direction="direction"
                     :row-href="(row) => `/lending/member-loans/${row.row_id}`"
                     search-label="Cari pinjaman individu"
-                    search-placeholder="Cari nama anggota, NIK, atau nomor anggota"
+                    search-placeholder="Cari anggota..."
                     :empty-title="emptyMessage.title"
                     :empty-description="emptyMessage.description"
                 >

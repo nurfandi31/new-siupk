@@ -9,10 +9,15 @@ use App\Domain\Lending\Models\Loan;
 use App\Domain\Lending\Models\LoanBeneficiary;
 use App\Domain\Lending\Models\LoanBorrower;
 use App\Domain\Lending\Models\LoanCommittee;
+use App\Domain\Lending\Models\LoanInstallment;
+use App\Domain\Lending\Models\LoanPayment;
+use App\Domain\Lending\Models\LoanPaymentAllocation;
 use App\Domain\Lending\Services\Reports\LoanDocumentService;
 use App\Domain\Membership\Models\Group;
+use App\Domain\Membership\Models\GroupMember;
 use App\Domain\Membership\Models\GroupOfficer;
 use App\Domain\Membership\Models\Member;
+use App\Domain\Membership\Models\MemberAddress;
 use App\Domain\Membership\Models\MemberGuarantor;
 use App\Domain\Membership\Models\OrganizationProfile;
 use App\Domain\Membership\Models\Person;
@@ -121,12 +126,57 @@ final class LoanDocumentTest extends TestCase
         ]);
         $this->memberId = (int) $member->row_id;
 
-        GroupOfficer::query()->create([
-            'group_row_id' => $this->group->row_id,
-            'member_row_id' => $this->memberId,
-            'position' => 'chair',
-            'started_at' => '2026-01-01',
+        $secretaryPerson = Person::query()->create([
+            'public_id' => (string) Str::ulid(),
+            'full_name' => 'Siti Aminah',
+            'national_identity_number' => '3201234567890011',
+            'gender' => 'P',
         ]);
+        $secretary = Member::query()->create([
+            'public_id' => (string) Str::ulid(),
+            'person_row_id' => $secretaryPerson->row_id,
+            'organization_unit_row_id' => 1,
+            'member_number' => 'AGT-002',
+            'registered_at' => '2026-01-01',
+            'status' => 'active',
+        ]);
+
+        $treasurerPerson = Person::query()->create([
+            'public_id' => (string) Str::ulid(),
+            'full_name' => 'Ahmad Fauzi',
+            'national_identity_number' => '3201234567890012',
+            'gender' => 'L',
+        ]);
+        $treasurer = Member::query()->create([
+            'public_id' => (string) Str::ulid(),
+            'person_row_id' => $treasurerPerson->row_id,
+            'organization_unit_row_id' => 1,
+            'member_number' => 'AGT-003',
+            'registered_at' => '2026-01-01',
+            'status' => 'active',
+        ]);
+
+        foreach ([$member, $secretary, $treasurer] as $groupMember) {
+            GroupMember::query()->create([
+                'group_row_id' => $this->group->row_id,
+                'member_row_id' => $groupMember->row_id,
+                'joined_at' => '2026-01-01',
+                'status' => 'active',
+            ]);
+        }
+
+        foreach ([
+            [$this->memberId, 'chair'],
+            [(int) $secretary->row_id, 'secretary'],
+            [(int) $treasurer->row_id, 'treasurer'],
+        ] as [$officerId, $position]) {
+            GroupOfficer::query()->create([
+                'group_row_id' => $this->group->row_id,
+                'member_row_id' => $officerId,
+                'position' => $position,
+                'started_at' => '2026-01-01',
+            ]);
+        }
 
         app(TenantLoanProductProvisioner::class)->ensureDefaults();
         $this->productId = (int) DB::connection('tenant')->table('loan_products')->where('code', 'spp')->value('row_id');
@@ -311,10 +361,63 @@ final class LoanDocumentTest extends TestCase
             $meta = $service->resolve($key);
             self::assertSame($key, $meta['key']);
             self::assertNotEmpty($meta['view']);
-            self::assertStringStartsWith('reports.pdf.loan_documents.', $meta['view']);
+            self::assertMatchesRegularExpression('/^(reports\\.pdf\\.loan_documents\\.|legacy\\.perguliran_i\\.)/', $meta['view']);
             self::assertContains($meta['orientation'], ['portrait', 'landscape']);
             self::assertStringStartsWith('individual_', $meta['stage']);
         }
+    }
+
+    public function test_individual_document_registry_matches_legacy_menu_order_and_labels(): void
+    {
+        $service = app(LoanDocumentService::class);
+        $loan = $this->seedMemberLoan('active');
+
+        $expected = [
+            // 8 dokumen proposal, urutan persis menu SIUPK (`perguliran_i/detail.blade.php`).
+            ['key' => 'cover_proposal_individu', 'label' => 'Cover', 'stage' => 'individual_proposal'],
+            ['key' => 'pengajuan_kredit_individu', 'label' => 'Surat Permohonan Pinjaman', 'stage' => 'individual_proposal'],
+            ['key' => 'rekomendasi_kredit_individu', 'label' => 'Surat Rekomendasi Kredit', 'stage' => 'individual_proposal'],
+            ['key' => 'pernyataan_peminjam_individu', 'label' => 'Surat Pernyataan Peminjam', 'stage' => 'individual_proposal'],
+            ['key' => 'form_verifikasi_individu', 'label' => 'Form Verifikasi', 'stage' => 'individual_proposal'],
+            ['key' => 'rencana_angsuran_individu_proposal', 'label' => 'Rencana Angsuran', 'stage' => 'individual_proposal'],
+            ['key' => 'surat_persetujuan_kuasa_individu', 'label' => 'Surat Kuasa Khusus', 'stage' => 'individual_proposal'],
+            ['key' => 'tanda_terima_jaminan', 'label' => 'Penyerahan Jaminan', 'stage' => 'individual_proposal'],
+
+            // 16 dokumen pencairan, urutan persis menu SIUPK.
+            ['key' => 'cover_pencairan_individu', 'label' => 'Cover', 'stage' => 'individual_disbursement'],
+            ['key' => 'spk_individu', 'label' => 'Surat Perjanjian Kredit', 'stage' => 'individual_disbursement'],
+            ['key' => 'rencana_angsuran_individu', 'label' => 'Rencana Angsuran', 'stage' => 'individual_disbursement'],
+            ['key' => 'ba_pencairan_individu', 'label' => 'Berita Acara Pencairan', 'stage' => 'individual_disbursement'],
+            ['key' => 'kuitansi_pencairan_individu', 'label' => 'Kuitansi', 'stage' => 'individual_disbursement'],
+            ['key' => 'kartu_angsuran_individu', 'label' => 'Kartu Angsuran', 'stage' => 'individual_disbursement'],
+            ['key' => 'analisis_keputusan_kredit', 'label' => 'analisis keputusan kredit', 'stage' => 'individual_disbursement'],
+            ['key' => 'surat_pemberitahuan', 'label' => 'surat pemberitahuan', 'stage' => 'individual_disbursement'],
+            ['key' => 'pengikat_diri_penjamin', 'label' => 'pengikat diri sebagai penjamin', 'stage' => 'individual_disbursement'],
+            ['key' => 'surat_pernyataan_suami', 'label' => 'surat pernyataan suami', 'stage' => 'individual_disbursement'],
+            ['key' => 'tagihan_individu', 'label' => 'Surat Tagihan', 'stage' => 'individual_disbursement'],
+            ['key' => 'surat_kelayakan_individu', 'label' => 'Surat Kelayakan', 'stage' => 'individual_disbursement'],
+            ['key' => 'daftar_hadir_pencairan_individu', 'label' => 'Daftar Hadir Pencairan', 'stage' => 'individual_disbursement'],
+            ['key' => 'pemberitahuan_desa_individu', 'label' => 'Pemberitahuan Ke Desa', 'stage' => 'individual_disbursement'],
+            ['key' => 'surat_ahli_waris_individu', 'label' => 'Surat Ahli Waris', 'stage' => 'individual_disbursement'],
+            ['key' => 'form_verifikasi_individu_pencairan', 'label' => 'Form Verifikasi', 'stage' => 'individual_disbursement'],
+        ];
+
+        $actual = array_values(array_filter(
+            $service->availableDocuments($loan),
+            static fn (array $document): bool => str_starts_with((string) $document['stage'], 'individual_'),
+        ));
+
+        self::assertSame(
+            array_column($expected, 'key'),
+            array_column($actual, 'key'),
+            'Urutan dokumen individu harus sama dengan menu legacy.',
+        );
+        self::assertSame(array_column($expected, 'label'), array_column($actual, 'label'));
+        self::assertSame(array_column($expected, 'stage'), array_column($actual, 'stage'));
+        self::assertCount(8, array_filter($actual, static fn (array $d): bool => $d['stage'] === 'individual_proposal'));
+        self::assertCount(16, array_filter($actual, static fn (array $d): bool => $d['stage'] === 'individual_disbursement'));
+        self::assertCount(24, $actual);
+        self::assertSame('perjanjian_kredit_individu', collect($actual)->firstWhere('key', 'spk_individu')['signature']);
     }
 
     public function test_individual_documents_not_available_for_group_loan(): void
@@ -355,6 +458,32 @@ final class LoanDocumentTest extends TestCase
             // Identitas harus terisi (OrganizationProfile sudah dibuat di setUp)
             self::assertSame('Koperasi Maju Bersama', $payload['identity']['legal_name']);
         }
+    }
+
+    public function test_individual_spk_signature_uses_dedicated_template_with_generic_fallback(): void
+    {
+        $signatures = app(SignatureTemplateService::class);
+        $signatures->save([
+            'perjanjian_kredit' => '<p>Template SPK Umum</p>',
+        ]);
+
+        $service = app(LoanDocumentService::class);
+        $loan = $this->seedMemberLoan('active');
+
+        // Belum ada template individu: fallback ke template SPK umum, bukan default.
+        $payload = $service->payload($loan, 'spk_individu');
+        self::assertStringContainsString('Template SPK Umum', $payload['signature']);
+
+        $signatures->save([
+            'perjanjian_kredit' => '<p>Template SPK Umum</p>',
+            'perjanjian_kredit_individu' => '<p>Template SPK Individu</p>',
+        ]);
+
+        app()->forgetInstance(LoanDocumentService::class);
+        $service = app(LoanDocumentService::class);
+        $payload = $service->payload($loan->refresh(), 'spk_individu');
+        self::assertStringContainsString('Template SPK Individu', $payload['signature']);
+        self::assertStringNotContainsString('Template SPK Umum', $payload['signature']);
     }
 
     public function test_individual_token_replacer_includes_penjamin_and_spouse_tokens(): void
@@ -545,11 +674,11 @@ final class LoanDocumentTest extends TestCase
         self::assertStringContainsString('ANALISA DAN KEPUTUSAN KREDIT', $html);
         self::assertStringContainsString('I. DATA POKOK PEMINJAM', $html);
         self::assertStringContainsString('II. PERMOHONAN PINJAMAN', $html);
-        self::assertStringContainsString('III. PERHITUNGAN KREDIT', $html);
+        self::assertStringContainsString('a. Provisi Kredit', $html);
         self::assertStringContainsString('IV. REKOMENDASI PEMBERIAN KREDIT', $html);
-        self::assertStringContainsString('BUDI SANTOSO', $html); // strtoupper borrower
+        self::assertStringContainsString('Budi Santoso', $html); // borrower
         self::assertStringContainsString('3201234567890001', $html); // NIK
-        self::assertStringContainsString('SITI AMINAH', $html); // penjamin name
+        self::assertStringContainsString('Siti Aminah', $html); // penjamin name
         self::assertStringNotContainsString("{{ '' }}", $html);
 
         // 2. SP2K — cek header + 8 poin fasilitas kredit
@@ -576,7 +705,7 @@ final class LoanDocumentTest extends TestCase
         self::assertStringContainsString('SURAT PERNYATAAN', $html);
         self::assertStringContainsString('PENGIKAT DIRI SEBAGAI PENJAMIN', $html);
         self::assertStringContainsString('Saya <b>menyetujui dan menjamin</b>', $html);
-        self::assertStringContainsString('SITI AMINAH', $html);
+        self::assertStringContainsString('Siti Aminah', $html);
         self::assertStringContainsString('3201234567890002', $html); // penjamin NIK
         self::assertStringContainsString('tidak memenuhi kewajibannya', $html);
         self::assertStringNotContainsString("{{ '' }}", $html);
@@ -586,12 +715,414 @@ final class LoanDocumentTest extends TestCase
         $html = view($payload['document']['view'], $payload)->render();
         self::assertStringContainsString('SURAT PERNYATAAN', $html);
         self::assertStringContainsString('PERSETUJUAN SUAMI', $html);
-        self::assertStringContainsString('SITI AMINAH', $html); // spouse = guarantor
+        self::assertStringContainsString('Siti Aminah', $html); // spouse = guarantor
         self::assertStringContainsString('3201234567890002', $html);
-        self::assertStringContainsString('BUDI SANTOSO', $html);
+        self::assertStringContainsString('Budi Santoso', $html);
         self::assertStringContainsString('Rupiah', $html); // ucapkan suffix
         self::assertStringContainsString('Delapan Juta', $html); // 8000000 → delapan juta
         self::assertStringNotContainsString("{{ '' }}", $html);
+    }
+
+    public function test_all_individual_documents_render_without_errors(): void
+    {
+        DB::connection('tenant')->table('people')->where('row_id', 1)->update([
+            'birth_place' => 'Bandung',
+            'birth_date' => '1985-05-15',
+            'gender' => 'L',
+            'phone' => '081234567890',
+            'family_card_number' => '3201234567890003',
+        ]);
+
+        $loan = $this->seedMemberLoan('active');
+        $this->seedMemberInstallments($loan);
+
+        $service = app(LoanDocumentService::class);
+        $documents = $service->availableDocuments($loan);
+        self::assertNotEmpty($documents);
+
+        foreach ($documents as $document) {
+            $payload = $service->payload($loan, $document['key']);
+            $html = view($payload['document']['view'], $payload)->render();
+
+            self::assertNotSame('', trim($html), "Dokumen {$document['key']} kosong.");
+            self::assertStringNotContainsString('Undefined variable', $html, "Dokumen {$document['key']} mengandung undefined variable.");
+            self::assertStringNotContainsString('Undefined property', $html, "Dokumen {$document['key']} mengandung undefined property.");
+            self::assertStringNotContainsString('Undefined array key', $html, "Dokumen {$document['key']} mengandung undefined array key.");
+            self::assertStringNotContainsString('Undefined index', $html, "Dokumen {$document['key']} mengandung undefined index.");
+        }
+
+        // Settlement document hanya tersedia pada status completed; render eksplisit.
+        $payload = $service->payload($loan, 'bukti_pengembalian_jaminan');
+        $html = view($payload['document']['view'], $payload)->render();
+        self::assertNotSame('', trim($html));
+        self::assertStringNotContainsString('Undefined variable', $html);
+
+        // Barcode kartu angsuran harus ter-render sebagai PNG data URI.
+        $payload = $service->payload($loan, 'kartu_angsuran_individu');
+        self::assertStringStartsWith('data:image/png;base64,', (string) $payload['barcode']);
+        $html = view($payload['document']['view'], $payload)->render();
+        self::assertStringContainsString('data:image/png;base64,', $html);
+
+        // Data kelompok/pengurus harus terisi seperti pacuan.
+        $payload = $service->payload($loan, 'daftar_hadir_pencairan_individu');
+        $html = view($payload['document']['view'], $payload)->render();
+        self::assertStringContainsString('Kelompok Tani Maju', $html);
+        self::assertStringContainsString('Budi Santoso', $html);
+
+        $payload = $service->payload($loan, 'tanda_terima_jaminan');
+        $html = view($payload['document']['view'], $payload)->render();
+        self::assertStringContainsString('Budi Santoso', $html);
+
+        $payload = $service->payload($loan, 'ba_pencairan_individu');
+        $html = view($payload['document']['view'], $payload)->render();
+        self::assertStringContainsString('KLP-001', $html);
+    }
+
+    public function test_all_individual_documents_render_for_every_status(): void
+    {
+        DB::connection('tenant')->table('people')->where('row_id', 1)->update([
+            'birth_place' => 'Bandung',
+            'birth_date' => '1985-05-15',
+            'gender' => 'L',
+            'phone' => '081234567890',
+            'family_card_number' => '3201234567890003',
+        ]);
+
+        $service = app(LoanDocumentService::class);
+        $statuses = ['draft', 'verified', 'waiting', 'approved', 'active', 'disbursed', 'completed', 'written_off'];
+
+        foreach ($statuses as $status) {
+            $loan = $this->seedMemberLoan($status);
+            $this->seedMemberInstallments($loan);
+
+            $documents = $service->availableDocuments($loan);
+            self::assertNotEmpty($documents, "Status {$status} tidak punya dokumen.");
+
+            foreach ($documents as $document) {
+                $payload = $service->payload($loan, $document['key']);
+                $html = view($payload['document']['view'], $payload)->render();
+
+                self::assertNotSame('', trim($html), "Dokumen {$document['key']} ({$status}) kosong.");
+                self::assertStringNotContainsString('Undefined variable', $html, "Dokumen {$document['key']} ({$status}) mengandung undefined variable.");
+                self::assertStringNotContainsString('Undefined property', $html, "Dokumen {$document['key']} ({$status}) mengandung undefined property.");
+                self::assertStringNotContainsString('Undefined array key', $html, "Dokumen {$document['key']} ({$status}) mengandung undefined array key.");
+                self::assertStringNotContainsString('Undefined index', $html, "Dokumen {$document['key']} ({$status}) mengandung undefined index.");
+            }
+        }
+    }
+
+    public function test_individual_documents_render_with_primary_member_address(): void
+    {
+        DB::connection('tenant')->table('people')->where('row_id', 1)->update([
+            'birth_place' => 'Bandung',
+            'birth_date' => '1985-05-15',
+            'gender' => 'L',
+            'phone' => '081234567890',
+            'family_card_number' => '3201234567890003',
+        ]);
+        MemberAddress::query()->create([
+            'member_row_id' => $this->memberId,
+            'type' => 'home',
+            'address' => 'Dusun Krajan RT 02 RW 03',
+            'is_primary' => true,
+        ]);
+        DB::connection('tenant')->table('organization_profiles')->where('id', 1)->update([
+            'district_name' => 'Tegalrejo',
+            'regency_name' => 'MAGELANG',
+            'registration_number' => 'AHU-0070319.AH.01.07 Tahun 2016',
+            'manager_nik' => '3201234567899999',
+            'manager_name' => 'Drs. H. Sudirman',
+            'manager_title' => 'Direktur Utama',
+            'manager_position' => 'Direktur Utama',
+            'manager_address' => 'Jl. Manager No. 1',
+            'verifier_name' => 'Rina Verifikator',
+            'verifier_title' => 'Verifikator',
+            'kepala_desa_name' => 'H. Ahmad',
+            'kepala_desa_nip' => '196801011990031001',
+            'court_of_jurisdiction' => 'Pengadilan Negeri Bandung',
+        ]);
+
+        $loan = $this->seedMemberLoan('active');
+        $this->seedMemberInstallments($loan);
+
+        $service = app(LoanDocumentService::class);
+        foreach ($service->availableDocuments($loan) as $document) {
+            $payload = $service->payload($loan, $document['key']);
+            $html = view($document['view'], $payload)->render();
+
+            self::assertNotSame('', trim($html), "Dokumen {$document['key']} kosong.");
+            self::assertStringNotContainsString('Undefined variable', $html, "Dokumen {$document['key']} mengandung undefined variable.");
+            self::assertStringNotContainsString('Undefined relationship', $html, "Dokumen {$document['key']} mengandung undefined relationship.");
+        }
+
+        $payload = $service->payload($loan, 'spk_individu');
+        $html = view('legacy.perguliran_i.dokumen.spk', $payload)->render();
+        self::assertStringContainsString('Dusun Krajan RT 02 RW 03', $html);
+        self::assertStringContainsString('Drs.', $html);
+        self::assertStringContainsString('H. Sudirman', $html);
+        self::assertStringContainsString('3201234567899999', $html);
+        self::assertStringContainsString('Jl. Raya No. 1, Kota Test', $html);
+        self::assertStringContainsString('Pengadilan Negeri', $html);
+        self::assertStringContainsString('Magelang', $html);
+
+        $response = $this->actingAs($this->user)
+            ->get("/lending/loans/{$loan->row_id}/documents/spk_individu");
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        self::assertStringStartsWith('%PDF-', (string) $response->getContent());
+    }
+
+    public function test_all_individual_documents_stream_pdf_for_every_status(): void
+    {
+        DB::connection('tenant')->table('people')->where('row_id', 1)->update([
+            'birth_place' => 'Bandung',
+            'birth_date' => '1985-05-15',
+            'gender' => 'L',
+            'phone' => '081234567890',
+            'family_card_number' => '3201234567890003',
+        ]);
+
+        $service = app(LoanDocumentService::class);
+        $statuses = [
+            'draft' => 8,
+            'verified' => 8,
+            'waiting' => 24,
+            'approved' => 24,
+            'active' => 24,
+            'disbursed' => 24,
+            'completed' => 1,
+            'written_off' => 1,
+        ];
+
+        $generated = [];
+
+        foreach ($statuses as $status => $expectedCount) {
+            $loan = $this->seedMemberLoan($status);
+            $this->seedMemberInstallments($loan);
+
+            $documents = $service->availableDocuments($loan);
+            self::assertCount($expectedCount, $documents, "Jumlah dokumen status {$status} tidak sesuai menu legacy.");
+
+            foreach ($documents as $document) {
+                $response = $this->actingAs($this->user)
+                    ->get("/lending/loans/{$loan->row_id}/documents/{$document['key']}");
+
+                $response->assertOk();
+                $response->assertHeader('content-type', 'application/pdf');
+
+                $content = $response->getContent();
+                self::assertIsString($content, "PDF {$document['key']} ({$status}) tidak menghasilkan body.");
+                self::assertStringStartsWith('%PDF-', $content, "PDF {$document['key']} ({$status}) bukan PDF valid.");
+                self::assertGreaterThan(1000, strlen($content), "PDF {$document['key']} ({$status}) terlalu kecil/blank.");
+
+                $generated[$status][$document['key']] = strlen($content);
+            }
+        }
+
+        // Semua 114 kombinasi status x dokumen harus benar-benar tercetak.
+        self::assertSame(114, array_sum(array_map('count', $generated)));
+    }
+
+    public function test_individual_documents_render_without_payments(): void
+    {
+        DB::connection('tenant')->table('people')->where('row_id', 1)->update([
+            'birth_place' => 'Bandung',
+            'birth_date' => '1985-05-15',
+            'gender' => 'L',
+            'phone' => '081234567890',
+            'family_card_number' => '3201234567890003',
+        ]);
+
+        $loan = $this->seedMemberLoan('active');
+        $this->seedMemberInstallments($loan, false);
+
+        $service = app(LoanDocumentService::class);
+
+        foreach ($service->availableDocuments($loan) as $document) {
+            $payload = $service->payload($loan, $document['key']);
+            self::assertNull($payload['real'], 'Tanpa pembayaran, $real harus null seperti pacuan.');
+
+            $html = view($payload['document']['view'], $payload)->render();
+
+            self::assertNotSame('', trim($html), "Dokumen {$document['key']} kosong.");
+            self::assertStringNotContainsString('Undefined variable', $html, "Dokumen {$document['key']} mengandung undefined variable.");
+            self::assertStringNotContainsString('Undefined property', $html, "Dokumen {$document['key']} mengandung undefined property.");
+            self::assertStringNotContainsString('Undefined array key', $html, "Dokumen {$document['key']} mengandung undefined array key.");
+            self::assertStringNotContainsString('Undefined index', $html, "Dokumen {$document['key']} mengandung undefined index.");
+        }
+    }
+
+    public function test_individual_collateral_details_render_in_legacy_shape_and_order(): void
+    {
+        $loan = $this->seedMemberLoan('active');
+        $service = app(LoanDocumentService::class);
+
+        $cases = [
+            'sertifikat_tanah' => [
+                'details' => [
+                    'nomor_sertifikat' => 'SHM-123',
+                    'nama_pemilik' => 'Budi Santoso',
+                    'alamat' => 'Dusun Krajan',
+                    'luas' => '120',
+                    'nilai_jual_tanah' => '25000000',
+                ],
+                'expected' => [
+                    'nomor_sertifikat' => 'SHM-123',
+                    'nama_pemilik' => 'Budi Santoso',
+                    'alamat' => 'Dusun Krajan',
+                    'luas' => '120',
+                    'nilai_jual_tanah' => '25000000',
+                    'jenis_jaminan' => '1',
+                ],
+            ],
+            'bpkb' => [
+                'details' => [
+                    'nomor' => 'BP-9999',
+                    'nama_pemilik' => 'Budi Santoso',
+                    'jenis_kendaraan' => 'Honda Beat',
+                    'nopol' => 'D 1234 AB',
+                    'nilai_jual_kendaraan' => '8000000',
+                ],
+                'expected' => [
+                    'nomor' => 'BP-9999',
+                    'nama_pemilik' => 'Budi Santoso',
+                    'jenis_kendaraan' => 'Honda Beat',
+                    'nopol' => 'D 1234 AB',
+                    'nilai_jual_kendaraan' => '8000000',
+                    'jenis_jaminan' => '2',
+                ],
+            ],
+            'sk_pegawai' => [
+                'details' => [
+                    'nomor' => 'SK-001',
+                    'nama_pegawai' => 'Budi Santoso',
+                    'nama_kuitansi_penerbit' => 'Dinas Pendidikan',
+                ],
+                'expected' => [
+                    'nomor' => 'SK-001',
+                    'nama_pegawai' => 'Budi Santoso',
+                    'nama_kuitansi_penerbit' => 'Dinas Pendidikan',
+                    'jenis_jaminan' => '3',
+                ],
+            ],
+            'lainnya' => [
+                'details' => [
+                    'nama_jaminan' => 'Mesin Jahit',
+                    'keterangan' => 'Kondisi baik',
+                    'nilai_jaminan' => '3500000',
+                ],
+                'expected' => [
+                    'nama_jaminan' => 'Mesin Jahit',
+                    'keterangan' => 'Kondisi baik',
+                    'nilai_jaminan' => '3500000',
+                    'jenis_jaminan' => '4',
+                ],
+            ],
+        ];
+
+        foreach ($cases as $type => $case) {
+            $loan->update([
+                'collateral' => [
+                    'type' => $type,
+                    'details' => $case['details'],
+                ],
+            ]);
+
+            $payload = $service->payload($loan, 'pernyataan_peminjam_individu');
+            $jaminan = json_decode((string) $payload['pinkel']->jaminan, true);
+
+            self::assertSame($case['expected'], $jaminan, "Jaminan {$type} tidak sesuai bentuk legacy.");
+        }
+
+        // Cek isi dokumen nyata untuk tipe tanah.
+        $loan->update([
+            'collateral' => [
+                'type' => 'sertifikat_tanah',
+                'details' => $cases['sertifikat_tanah']['details'],
+            ],
+        ]);
+
+        $payload = $service->payload($loan, 'pernyataan_peminjam_individu');
+        $html = view($payload['document']['view'], $payload)->render();
+        self::assertStringContainsString('Nomor Sertifikat', $html);
+        self::assertStringContainsString('SHM-123', $html);
+        self::assertStringContainsString('Dusun Krajan', $html);
+        self::assertStringContainsString('Rp 25.000.000', $html);
+
+        // Data lama tanpa type/jenis_jaminan tidak boleh di-remap menjadi
+        // "Lain Lain" dan harus mempertahankan key detail aslinya.
+        $loan->update([
+            'collateral' => [
+                'nomor' => 'BP-LAMA-01',
+                'nama_pemilik' => 'Budi Santoso',
+                'jenis_kendaraan' => 'Honda Beat',
+                'nopol' => 'D 1234 AB',
+            ],
+        ]);
+
+        $payload = $service->payload($loan, 'pernyataan_peminjam_individu');
+        self::assertSame([
+            'nomor' => 'BP-LAMA-01',
+            'nama_pemilik' => 'Budi Santoso',
+            'jenis_kendaraan' => 'Honda Beat',
+            'nopol' => 'D 1234 AB',
+        ], json_decode((string) $payload['pinkel']->jaminan, true));
+    }
+
+    private function seedMemberInstallments(Loan $loan, bool $withPayment = true): void
+    {
+        // 8jt / 12 bulan / 18% flat → pokok 666.666,67 + jasa 120.000 per bulan.
+        $principal = 666666.67;
+        $interest = 120000.00;
+
+        LoanInstallment::query()->create([
+            'loan_row_id' => $loan->row_id,
+            'installment_number' => 0,
+            'due_date' => '2026-02-25',
+            'principal_due' => 0,
+            'interest_due' => 0,
+            'status' => 'pending',
+        ]);
+
+        $rows = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $paid = $withPayment && $i === 1;
+            $rows[] = LoanInstallment::query()->create([
+                'loan_row_id' => $loan->row_id,
+                'installment_number' => $i,
+                'due_date' => date('Y-m-d', strtotime('2026-03-25 +'.($i - 1).' months')),
+                'principal_due' => $principal,
+                'interest_due' => $interest,
+                'principal_paid' => $paid ? $principal : 0,
+                'interest_paid' => $paid ? $interest : 0,
+                'status' => $paid ? 'paid' : 'pending',
+                'paid_at' => $paid ? '2026-03-25 10:00:00' : null,
+            ]);
+        }
+
+        if (! $withPayment) {
+            return;
+        }
+
+        $payment = LoanPayment::query()->create([
+            'loan_row_id' => $loan->row_id,
+            'paid_at' => '2026-03-25 10:00:00',
+            'amount' => $principal + $interest,
+            'payment_method' => 'cash',
+        ]);
+
+        LoanPaymentAllocation::query()->create([
+            'payment_row_id' => $payment->row_id,
+            'installment_row_id' => $rows[0]->row_id,
+            'component' => 'principal',
+            'amount' => $principal,
+        ]);
+        LoanPaymentAllocation::query()->create([
+            'payment_row_id' => $payment->row_id,
+            'installment_row_id' => $rows[0]->row_id,
+            'component' => 'interest',
+            'amount' => $interest,
+        ]);
     }
 
     /**
@@ -746,6 +1277,8 @@ final class LoanDocumentTest extends TestCase
             'interest_frequency' => 'monthly',
             'verification_notes' => 'Pemohon memiliki agunan BPKB.',
             'collateral' => ['type' => 'bpkb', 'nomor' => 'BP-12345', 'atas_nama' => 'Budi Santoso'],
+            'spk_no' => 'SPK-DOC-001',
+            'disbursement_slot' => '10:00 WIB Â· Kantor BUMDes',
             'status' => $status,
         ]);
 
@@ -806,5 +1339,83 @@ final class LoanDocumentTest extends TestCase
         }
 
         return $loan;
+    }
+
+    public function test_individual_spk_uses_legacy_member_date_and_clean_disbursement_place(): void
+    {
+        DB::connection('tenant')->table('people')->where('row_id', 1)->update([
+            'birth_place' => 'Bandung',
+            'birth_date' => '1985-05-15',
+            'gender' => 'm',
+            'phone' => '081234567890',
+        ]);
+
+        $loan = $this->seedMemberLoan('active');
+        $this->seedMemberInstallments($loan);
+
+        $service = app(LoanDocumentService::class);
+        $payload = $service->payload($loan, 'spk_individu');
+
+        // Legacy `anggota` tidak punya tgl_cair; SPK menampilkan tanggal cetak.
+        self::assertNull($payload['pinkel']->anggota->tgl_cair);
+        self::assertSame('L', (string) $payload['pinkel']->anggota->jk);
+        self::assertSame('10:00_Kantor BUMDes', (string) $payload['pinkel']->wt_cair);
+
+        $spkHtml = view($payload['document']['view'], $payload)->render();
+        self::assertStringContainsString('bertempat di <strong>Kantor BUMDes</strong>', $spkHtml);
+
+        // Semua dokumen yang membaca wt_cair harus bersih dari separator mojibake.
+        foreach ([
+            'daftar_hadir_pencairan_individu',
+            'pemberitahuan_desa_individu',
+            'surat_kelayakan_individu',
+        ] as $documentKey) {
+            $documentPayload = $service->payload($loan, $documentKey);
+            $html = view($documentPayload['document']['view'], $documentPayload)->render();
+
+            self::assertStringContainsString('Kantor BUMDes', $html, "Tempat cair tidak bersih di {$documentKey}.");
+            self::assertStringNotContainsString('Â·', $html, "Separator mojibake muncul di {$documentKey}.");
+            self::assertStringNotContainsString('· Kantor BUMDes', $html, "Separator titik muncul di {$documentKey}.");
+        }
+    }
+
+    public function test_individual_installment_card_uses_latest_due_target_for_arrears(): void
+    {
+        $loan = $this->seedMemberLoan('active');
+        $this->seedMemberInstallments($loan);
+        $loan = $loan->fresh();
+
+        $installment = $loan->installments->firstWhere('installment_number', 2);
+        self::assertNotNull($installment);
+
+        $payment = LoanPayment::query()->create([
+            'loan_row_id' => $loan->row_id,
+            'paid_at' => '2026-07-26 10:00:00',
+            'amount' => 666666.67 + 120000,
+            'payment_method' => 'cash',
+        ]);
+
+        LoanPaymentAllocation::query()->create([
+            'payment_row_id' => $payment->row_id,
+            'installment_row_id' => $installment->row_id,
+            'component' => 'principal',
+            'amount' => 666666.67,
+        ]);
+        LoanPaymentAllocation::query()->create([
+            'payment_row_id' => $payment->row_id,
+            'installment_row_id' => $installment->row_id,
+            'component' => 'interest',
+            'amount' => 120000,
+        ]);
+
+        $payload = app(LoanDocumentService::class)->payload($loan->fresh(), 'kartu_angsuran_individu');
+
+        self::assertCount(2, $payload['pinkel']->real_i);
+
+        // Pembayaran kedua (26 Juli) menunggak 3 angsuran: target s.d. 25 Juli
+        // (5 x 666.666,67) dikurangi pokok yang sudah dibayar (2 x 666.666,67).
+        self::assertEqualsWithDelta(2_000_000.01, (float) $payload['real']->tunggakan_pokok, 0.01);
+        self::assertEqualsWithDelta(360_000.0, (float) $payload['real']->tunggakan_jasa, 0.01);
+        self::assertEqualsWithDelta(6_666_666.66, (float) $payload['real']->saldo_pokok, 0.01);
     }
 }

@@ -2,6 +2,7 @@
 defineOptions({ inheritAttrs: false });
 
 import { useId } from 'vue';
+import { defaultPlaceholder } from '../composables/usePlaceholderText';
 import AppIcon from './AppIcon.vue';
 import AppTooltip from './AppTooltip.vue';
 
@@ -46,7 +47,7 @@ const inputId = props.id || generatedId;
                 ].filter(Boolean).join(' ') || undefined"
                 :readonly="readonly"
                 :disabled="disabled"
-                :placeholder="(readonly || disabled) ? undefined : (placeholder ?? `Masukkan ${label.toLowerCase()}`)"
+                :placeholder="(readonly || disabled) ? undefined : (placeholder ?? defaultPlaceholder('input', label))"
                 :class="[
                     size === 'compact'
                         ? 'h-9 rounded-lg px-3 text-sm'

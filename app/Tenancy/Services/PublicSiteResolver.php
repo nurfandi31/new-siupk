@@ -21,13 +21,15 @@ final class PublicSiteResolver
 
     public const CACHE_TTL_SECONDS = 300;
 
-    private const RESERVED_HOSTS = ['localhost', '127.0.0.1', '::1', 'host.docker.internal'];
+    public function __construct(
+        private readonly PlatformHostResolver $platformHosts,
+    ) {}
 
     public function resolve(string $host): ?Tenant
     {
         $normalizedHost = $this->normalizeHost($host);
 
-        if ($normalizedHost === '' || $this->isPlatformHost($normalizedHost)) {
+        if ($normalizedHost === '' || $this->platformHosts->isPlatformHost($normalizedHost)) {
             return null;
         }
 
@@ -46,7 +48,7 @@ final class PublicSiteResolver
 
     public function normalizeHost(string $host): string
     {
-        return strtolower(trim(explode(':', trim($host))[0]));
+        return $this->platformHosts->normalize($host);
     }
 
     private function cacheKey(string $normalizedHost): string
@@ -65,21 +67,5 @@ final class PublicSiteResolver
             ->orderByDesc('row_id')
             ->get()
             ->first(fn (Tenant $candidate): bool => $candidate->matchesHost($normalizedHost));
-    }
-
-    private function isPlatformHost(string $normalizedHost): bool
-    {
-        if (in_array($normalizedHost, self::RESERVED_HOSTS, true)) {
-            return true;
-        }
-
-        $appHost = $this->normalizeHost((string) (parse_url((string) config('app.url'), PHP_URL_HOST) ?: ''));
-        if ($appHost !== '' && $appHost === $normalizedHost) {
-            return true;
-        }
-
-        return collect(explode(',', (string) config('site.platform_hosts', '')))
-            ->map(fn (string $host): string => $this->normalizeHost($host))
-            ->contains($normalizedHost);
     }
 }

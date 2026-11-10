@@ -162,7 +162,7 @@ const emptyMessages = {
                     :direction="direction"
                     :row-href="`/lending/loans/{row_id}`"
                     search-label="Cari"
-                    search-placeholder="Cari kelompok atau nomor pinjaman"
+                    search-placeholder="Cari pinjaman..."
                     :empty-title="emptyMessages[tab]?.title || 'Belum ada data'"
                     :empty-description="emptyMessages[tab]?.description || ''"
                 >

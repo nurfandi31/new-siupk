@@ -10,6 +10,7 @@ use App\Models\Platform\Plan;
 use App\Models\Platform\Tenant;
 use App\Models\User;
 use App\Services\Admin\AuditLogger;
+use App\Services\Admin\TenantUserService;
 use App\Services\Billing\SubscriptionService;
 use App\Services\TenantRegistrationService;
 use App\Tenancy\Services\PublicSiteResolver;
@@ -62,7 +63,20 @@ final class TenantController
 
     public function create(): Response
     {
-        return Inertia::render('Admin/Tenants/Create');
+        $roles = collect(config('permissions.roles', []))
+            ->map(fn ($definition, $code): array => [
+                'code' => (string) $code,
+                'name' => (string) ($definition['name'] ?? $code),
+            ])
+            ->values()
+            ->all();
+
+        return Inertia::render('Admin/Tenants/Create', [
+            'seedRoles' => $roles,
+            'seedPassword' => (bool) config('tenancy.seed_users.enabled', true)
+                ? (string) config('tenancy.seed_users.password', 'password')
+                : null,
+        ]);
     }
 
     public function store(StoreTenantRequest $request, TenantRegistrationService $registration, AuditLogger $audit): RedirectResponse
@@ -78,7 +92,18 @@ final class TenantController
             ['name' => $tenant->name],
         );
 
-        return to_route('admin.tenants.show', $tenant)->with('success', "Tenant [{$tenant->name}] berhasil didaftarkan.");
+        $userCount = User::query()->where('tenant_id', $tenant->row_id)->count();
+        $credentialsHint = (bool) config('tenancy.seed_users.enabled', true)
+            ? sprintf(
+                ' %d akun login otomatis dibuat (username: %s.{role}, password awal: %s).',
+                $userCount,
+                $tenant->code,
+                (string) config('tenancy.seed_users.password', 'password'),
+            )
+            : '';
+
+        return to_route('admin.tenants.show', $tenant)
+            ->with('success', "Tenant [{$tenant->name}] berhasil didaftarkan.{$credentialsHint}");
     }
 
     public function show(Tenant $tenant): Response
@@ -92,8 +117,24 @@ final class TenantController
         $users = User::query()
             ->where('tenant_id', $tenant->row_id)
             ->orderBy('name')
-            ->limit(10)
+            ->limit(50)
             ->get(['row_id', 'name', 'username', 'email', 'status', 'last_login_at']);
+
+        $roleMap = [];
+        try {
+            $roleMap = app(TenantUserService::class)->rolesForMany(
+                $tenant,
+                $users->pluck('row_id')->map(fn ($id): int => (int) $id)->all(),
+            );
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
+
+        $users = $users->map(fn (User $user): array => [
+            ...$user->only(['row_id', 'name', 'username', 'email', 'status', 'last_login_at']),
+            'roles' => $roleMap[(int) $user->row_id] ?? [],
+            'role' => $roleMap[(int) $user->row_id][0] ?? null,
+        ]);
 
         $invoices = $tenant->invoices()
             ->latest('row_id')
@@ -258,7 +299,7 @@ final class TenantController
 
         return back()->with(
             'success',
-            "Provision dilengkapi: COA +{$coa['inserted']} (skip {$coa['skipped']}), fiscal +{$result['fiscal_created']}."
+            "Provision dilengkapi: COA +{$coa['inserted']} (skip {$coa['skipped']}), fiscal +{$result['fiscal_created']}, akun login {$result['login_accounts']}."
         );
     }
 

@@ -196,7 +196,7 @@ function backHref(): string {
                     <AppInput
                         v-model="form.subject"
                         label="Judul Catatan"
-                        placeholder="Contoh: Pertumbuhan piutang perlu perhatian"
+                        placeholder="Masukkan judul"
                         required
                         :error="errors.subject"
                     />
@@ -205,7 +205,7 @@ function backHref(): string {
                         v-model="form.content"
                         label="Isi Catatan"
                         rows="10"
-                        placeholder="Tuliskan catatan, observasi, atau rekomendasi pengawas..."
+                        placeholder="Tulis catatan..."
                         required
                         :error="errors.content"
                     />

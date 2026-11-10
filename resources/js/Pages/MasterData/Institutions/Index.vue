@@ -59,7 +59,7 @@ const csvColumns = ['nama', 'desa', 'nomor_identitas', 'pimpinan', 'penanggungja
                         :sort="sort"
                         :direction="direction"
                         search-label="Cari lembaga"
-                        search-placeholder="Kode, nama, atau nomor identitas"
+                        search-placeholder="Cari institusi..."
                         empty-title="Belum ada lembaga"
                         empty-description="Tambahkan lembaga lain untuk mulai mengelola master data."
                     >

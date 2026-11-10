@@ -2,6 +2,9 @@
 import { Head, Link } from '@inertiajs/vue3';
 import AppIcon from '@/Components/AppIcon.vue';
 import PublicSiteHeader from '@/Components/PublicSiteHeader.vue';
+import { useI18n } from '@/i18n';
+
+const { t, locale } = useI18n();
 
 const props = defineProps({
     organization: { type: Object, required: true },
@@ -11,22 +14,22 @@ const props = defineProps({
 
 function formatDateTime(value) {
     if (!value) return '';
-    return new Date(value).toLocaleDateString('id-ID', { dateStyle: 'long' });
+    return new Date(value).toLocaleDateString(locale.value === 'en' ? 'en-US' : 'id-ID', { dateStyle: 'long' });
 }
 </script>
 
 <template>
     <Head :title="`${post.title} — ${organization.name}`">
-        <meta head-key="description" name="description" :content="post.meta_description ?? post.excerpt ?? `Berita dari ${organization.name}.`" />
+        <meta head-key="description" name="description" :content="post.meta_description ?? post.excerpt ?? `${t('Berita dari')} ${organization.name}.`" />
         <meta head-key="og:title" property="og:title" :content="post.title" />
-        <meta head-key="og:description" property="og:description" :content="post.meta_description ?? post.excerpt ?? `Berita dari ${organization.name}.`" />
+        <meta head-key="og:description" property="og:description" :content="post.meta_description ?? post.excerpt ?? `${t('Berita dari')} ${organization.name}.`" />
         <meta head-key="og:type" property="og:type" content="article" />
         <meta head-key="og:url" property="og:url" :content="$page.url" />
         <meta v-if="post.cover_image_url" head-key="og:image" property="og:image" :content="post.cover_image_url" />
         <meta v-if="post.published_at" head-key="article:published_time" property="article:published_time" :content="post.published_at" />
         <meta head-key="twitter:card" name="twitter:card" content="summary_large_image" />
         <meta head-key="twitter:title" name="twitter:title" :content="post.title" />
-        <meta head-key="twitter:description" name="twitter:description" :content="post.meta_description ?? post.excerpt ?? `Berita dari ${organization.name}.`" />
+        <meta head-key="twitter:description" name="twitter:description" :content="post.meta_description ?? post.excerpt ?? `${t('Berita dari')} ${organization.name}.`" />
     </Head>
 
     <div class="flex min-h-screen flex-col bg-surface font-sans text-on-surface antialiased">
@@ -61,7 +64,7 @@ function formatDateTime(value) {
                 <footer class="mt-10 border-t border-outline-variant/60 pt-6">
                     <Link href="/berita" class="inline-flex min-h-10 items-center gap-2 rounded-full bg-primary-container px-5 text-sm font-semibold text-on-primary-container hover:bg-primary/20">
                         <AppIcon name="newspaper" />
-                        Lihat semua berita
+                        {{ t('Lihat semua berita') }}
                     </Link>
                 </footer>
             </article>
@@ -74,9 +77,9 @@ function formatDateTime(value) {
                     © {{ new Date().getFullYear() }} {{ organization.legal_name }}
                 </p>
                 <p class="mt-1.5 text-xs text-on-surface-variant">
-                    Dikelola dengan
+                    {{ t('Dikelola dengan') }}
                     <a href="/" class="font-semibold text-primary hover:underline">siupk Next</a>
-                    — Sistem Informasi Dana Bergulir Masyarakat
+                    — {{ t('Sistem Informasi Dana Bergulir Masyarakat') }}
                 </p>
             </div>
         </footer>

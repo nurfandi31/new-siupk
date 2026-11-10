@@ -92,11 +92,11 @@ const tampilkanLevels = computed(() => props.kolek.levels.filter((l) => l.aktif)
                             </div>
                             <div class="space-y-1">
                                 <label class="text-xs font-medium text-on-surface-variant">Prosentase (%)</label>
-                                <AppInput v-model="row.prosentase" type="number" step="0.01" :min="0" :max="100" placeholder="mis. 1, 10, 50, 100" />
+                                <AppInput v-model="row.prosentase" type="number" step="0.01" :min="0" :max="100" placeholder="1, 10, 50, 100" />
                             </div>
                             <div class="space-y-1">
                                 <label class="text-xs font-medium text-on-surface-variant">Durasi</label>
-                                <AppInput v-model="row.durasi" type="number" step="0.01" :min="0" placeholder="mis. 3, 6" />
+                                <AppInput v-model="row.durasi" type="number" step="0.01" :min="0" placeholder="3, 6" />
                             </div>
                             <div class="space-y-1">
                                 <label class="text-xs font-medium text-on-surface-variant">Satuan</label>

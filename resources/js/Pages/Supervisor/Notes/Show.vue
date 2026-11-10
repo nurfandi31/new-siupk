@@ -180,7 +180,7 @@ function formatDateTime(value: string | null): string {
                         v-model="ackForm.acknowledgment_note"
                         label="Catatan Tanggapan (opsional)"
                         rows="4"
-                        placeholder="Tanggapan/tindakan manajemen atas catatan pengawas..."
+                        placeholder="Tulis tanggapan..."
                     />
                     <div class="flex justify-end gap-2">
                         <button

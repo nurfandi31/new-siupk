@@ -43,10 +43,12 @@ final class MemberLoanRequest extends FormRequest
             'interest_grace_months' => ['nullable', 'integer', 'min:0', 'max:120'],
             'rounding_step' => ['nullable', 'integer', 'in:0,100,500,1000,5000,10000,50000'],
             'collateral' => ['nullable'],
-            'collateral.type' => ['nullable', 'string', 'in:kendaraan,sertifikat_tanah,bpkb,lainnya'],
+            'collateral.type' => ['nullable', 'string', 'in:kendaraan,sertifikat_tanah,bpkb,sk_pegawai,lainnya'],
             'collateral.description' => ['nullable', 'string', 'max:500'],
             'collateral.value' => ['nullable', 'numeric', 'min:0', 'max:9999999999999.99'],
             'collateral.reference' => ['nullable', 'string', 'max:120'],
+            'collateral.details' => ['nullable', 'array'],
+            'collateral.details.*' => ['nullable'],
             'verification_remarks' => ['nullable', 'string', 'max:2000'],
         ];
     }
@@ -70,6 +72,7 @@ final class MemberLoanRequest extends FormRequest
             'collateral.description' => 'deskripsi jaminan',
             'collateral.value' => 'nilai jaminan',
             'collateral.reference' => 'nomor dokumen jaminan',
+            'collateral.details' => 'rincian jaminan',
             'verification_remarks' => 'catatan verifikasi',
         ];
     }
@@ -86,12 +89,16 @@ final class MemberLoanRequest extends FormRequest
 
         if ($this->has('collateral') && is_array($this->input('collateral'))) {
             $raw = $this->input('collateral');
-            if (($raw['description'] ?? '') !== '' || (isset($raw['value']) && $raw['value'] !== '' && $raw['value'] !== null) || ($raw['reference'] ?? '') !== '') {
+            $details = isset($raw['details']) && is_array($raw['details']) ? $raw['details'] : [];
+            $hasDetails = array_filter($details, static fn ($value): bool => is_scalar($value) && trim((string) $value) !== '') !== [];
+
+            if (($raw['description'] ?? '') !== '' || (isset($raw['value']) && $raw['value'] !== '' && $raw['value'] !== null) || ($raw['reference'] ?? '') !== '' || $hasDetails) {
                 $collateral = [
                     'type' => $raw['type'] ?? 'lainnya',
                     'description' => $raw['description'] ?? null,
                     'value' => isset($raw['value']) && $raw['value'] !== '' ? (float) $raw['value'] : null,
                     'reference' => $raw['reference'] ?? null,
+                    'details' => $details,
                 ];
             }
         }

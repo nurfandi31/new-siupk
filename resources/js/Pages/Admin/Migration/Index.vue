@@ -495,7 +495,7 @@ const getStepStatusVariant = (status) => {
                                             v-else
                                             v-model="form.suffix"
                                             label="ID Lokasi (Suffix Legacy DB)"
-                                            placeholder="misal: 1 atau 76"
+                                            placeholder="Masukkan ID"
                                             hint="Akhiran tabel transaksi_* di database legacy (contoh: 1 untuk transaksi_1)"
                                             required
                                             :error="form.errors.suffix"

@@ -44,6 +44,29 @@ final class RegencyReportController
         ]);
     }
 
+    public function equityChanges(Request $request): Response
+    {
+        $shard = $this->resolveShard($request);
+        $user = $request->user();
+
+        $year = (int) $request->query('year', date('Y'));
+        $month = $request->query('month') !== null && $request->query('month') !== '' ? (int) $request->query('month') : (int) date('n');
+        $tenantId = $request->query('tenant_id') ? (int) $request->query('tenant_id') : null;
+
+        $kecamatans = $this->reportService->listKecamatans($shard, $user?->regency_code);
+        $tenantIds = $kecamatans->pluck('row_id')->map(fn ($id) => (int) $id)->all();
+
+        $data = $this->reportService->equityChanges($shard, $tenantIds, $year, $month, $tenantId);
+
+        return Inertia::render('Regency/Reports/EquityChanges', [
+            'report' => $data,
+            'year' => $year,
+            'month' => $month,
+            'selected_tenant_id' => $tenantId,
+            'regency_name' => $user?->regency_name ?: ($shard->regency_name ?: 'Kabupaten'),
+        ]);
+    }
+
     public function incomeStatement(Request $request): Response
     {
         $shard = $this->resolveShard($request);
@@ -172,6 +195,9 @@ final class RegencyReportController
             case 'income-statement':
                 $data = $this->reportService->incomeStatement($shard, $tenantIds, $year, $month, $tenantId);
                 $orientation = 'landscape';
+                break;
+            case 'equity-changes':
+                $data = $this->reportService->equityChanges($shard, $tenantIds, $year, $month, $tenantId);
                 break;
             case 'general-ledger':
                 $defaultAccount = Account::withoutGlobalScopes()

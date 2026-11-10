@@ -1650,8 +1650,10 @@ final class LoanController
             return $value !== null ? (float) $value : null;
         };
 
-        $serviceRate = (float) ($histories->get('draft')?->service_rate_total ?? $loan->service_rate_total ?? $loan->interest_rate ?? 0);
-        $termMonths = (int) ($histories->get('draft')?->term_months ?? $loan->term_months ?? 0);
+        // Pinjaman individu: legacy menulis hasil verifikasi/penetapan ke
+        // kolom pinjaman, jadi tampilkan nilai efektif saat ini.
+        $serviceRate = (float) ($loan->service_rate_total ?? $loan->interest_rate ?? 0);
+        $termMonths = (int) ($loan->term_months ?? 0);
 
         $member = $loan->borrower?->member;
         $person = $member?->person;
@@ -1672,7 +1674,7 @@ final class LoanController
             'next_due_date' => $nextDue?->format('Y-m-d'),
             'proposed_amount' => $snapshot('draft'),
             'verification_amount' => $snapshot('verified'),
-            'allocated_amount' => $snapshot('active') ?? $snapshot('disbursed'),
+            'allocated_amount' => $snapshot('waiting') ?? $snapshot('active') ?? $snapshot('disbursed'),
             'service_rate' => round($serviceRate, 2),
             'term_months' => $termMonths,
             'status' => $loan->status,
@@ -1757,7 +1759,7 @@ final class LoanController
             'total_interest_paid' => round($interestPaid, 2),
             'proposed_amount' => $snapshot('draft'),
             'verification_amount' => $snapshot('verified'),
-            'allocated_amount' => $snapshot('active') ?? $snapshot('disbursed'),
+            'allocated_amount' => $snapshot('waiting') ?? $snapshot('active') ?? $snapshot('disbursed'),
             'service_rate_total' => (float) $loan->service_rate_total,
             'term_months' => (int) $loan->term_months,
             'installment_method' => $loan->installment_method,

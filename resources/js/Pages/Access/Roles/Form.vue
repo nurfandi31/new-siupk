@@ -118,7 +118,7 @@ function submit() {
                         <AppInput
                             v-model="form.name"
                             label="Nama Role"
-                            placeholder="Contoh: Petugas Lapangan"
+                            placeholder="Masukkan nama role"
                             required
                             :readonly="isLocked"
                             :error="form.errors.name"
@@ -126,7 +126,7 @@ function submit() {
                         <AppInput
                             v-model="form.code"
                             label="Kode Role (Huruf kecil, angka, atau underscore)"
-                            placeholder="Contoh: petugas_lapangan"
+                            placeholder="Masukkan kode role"
                             required
                             :readonly="isLocked || isSystem"
                             :error="form.errors.code"
@@ -135,7 +135,7 @@ function submit() {
                             <AppInput
                                 v-model="form.description"
                                 label="Deskripsi / Catatan Peran (Opsional)"
-                                placeholder="Jelaskan tanggung jawab atau wewenang peran ini..."
+                                placeholder="Masukkan deskripsi"
                                 :readonly="isLocked"
                                 :error="form.errors.description"
                             />

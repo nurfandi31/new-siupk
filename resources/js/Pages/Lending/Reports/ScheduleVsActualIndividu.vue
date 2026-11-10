@@ -222,7 +222,7 @@ function statusClass(s: string): string {
                         <input
                             v-model="selectedLoanId"
                             type="text"
-                            placeholder="contoh: 123 atau L-2025-001"
+                            placeholder="Cari nomor pinjaman"
                             class="block w-full rounded-xl border border-outline-variant bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>

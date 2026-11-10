@@ -2,6 +2,9 @@
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import PublicSiteHeader from '@/Components/PublicSiteHeader.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     organization: { type: Object, required: true },
@@ -37,10 +40,10 @@ const social = computed(() => props.settings?.social ?? {});
 </script>
 
 <template>
-    <Head :title="`Kontak — ${orgName}`">
-        <meta head-key="description" name="description" :content="`Hubungi ${orgName} — alamat, telepon, dan formulir pesan.`" />
-        <meta head-key="og:title" property="og:title" :content="`Kontak — ${orgName}`" />
-        <meta head-key="og:description" property="og:description" :content="`Hubungi ${orgName} — alamat, telepon, dan formulir pesan.`" />
+    <Head :title="`${t('Kontak')} — ${orgName}`">
+        <meta head-key="description" name="description" :content="`${t('Hubungi')} ${orgName} — ${t('alamat, telepon, dan formulir pesan.')}`" />
+        <meta head-key="og:title" property="og:title" :content="`${t('Kontak')} — ${orgName}`" />
+        <meta head-key="og:description" property="og:description" :content="`${t('Hubungi')} ${orgName} — ${t('alamat, telepon, dan formulir pesan.')}`" />
         <meta head-key="og:type" property="og:type" content="website" />
         <meta head-key="og:url" property="og:url" :content="$page.url" />
     </Head>
@@ -53,9 +56,9 @@ const social = computed(() => props.settings?.social ?? {});
                 <!-- Info -->
                 <div class="space-y-6 lg:col-span-2">
                     <div>
-                        <h1 class="text-3xl font-extrabold tracking-tight text-primary">Kontak Kami</h1>
+                        <h1 class="text-3xl font-extrabold tracking-tight text-primary">{{ t('Kontak Kami') }}</h1>
                         <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">
-                            Silakan hubungi kami melalui alamat, telepon, email, atau formulir di samping.
+                            {{ t('Silakan hubungi kami melalui alamat, telepon, email, atau formulir di samping.') }}
                         </p>
                     </div>
 
@@ -63,14 +66,14 @@ const social = computed(() => props.settings?.social ?? {});
                         <div v-if="address" class="flex gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
                             <span class="material-symbols-rounded text-primary">place</span>
                             <div>
-                                <p class="text-xs font-bold uppercase tracking-wider text-primary">Alamat</p>
+                                <p class="text-xs font-bold uppercase tracking-wider text-primary">{{ t('Alamat') }}</p>
                                 <p class="mt-1 text-sm text-on-surface-variant">{{ address }}</p>
                             </div>
                         </div>
                         <div v-if="phone" class="flex gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
                             <span class="material-symbols-rounded text-primary">call</span>
                             <div>
-                                <p class="text-xs font-bold uppercase tracking-wider text-primary">Telepon</p>
+                                <p class="text-xs font-bold uppercase tracking-wider text-primary">{{ t('Telepon') }}</p>
                                 <a :href="`tel:${phone}`" class="mt-1 block text-sm font-semibold text-primary hover:underline">{{ phone }}</a>
                             </div>
                         </div>
@@ -105,8 +108,8 @@ const social = computed(() => props.settings?.social ?? {});
 
                             <div class="grid gap-4 sm:grid-cols-2">
                                 <div class="space-y-1.5">
-                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Nama <span class="text-error">*</span></label>
-                                    <input v-model="form.name" type="text" maxlength="120" required placeholder="Nama lengkap" class="h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Nama') }} <span class="text-error">*</span></label>
+                                    <input v-model="form.name" type="text" maxlength="120" required :placeholder="t('Nama lengkap')" class="h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                                     <p v-if="form.errors.name" class="ml-1 text-sm text-error">{{ form.errors.name }}</p>
                                 </div>
                                 <div class="space-y-1.5">
@@ -118,27 +121,27 @@ const social = computed(() => props.settings?.social ?? {});
 
                             <div class="grid gap-4 sm:grid-cols-2">
                                 <div class="space-y-1.5">
-                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Telepon</label>
+                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Telepon') }}</label>
                                     <input v-model="form.phone" type="text" maxlength="40" placeholder="08xx-xxxx-xxxx" class="h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                                     <p v-if="form.errors.phone" class="ml-1 text-sm text-error">{{ form.errors.phone }}</p>
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Subjek</label>
-                                    <input v-model="form.subject" type="text" maxlength="200" placeholder="Perihal pesan" class="h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Subjek') }}</label>
+                                    <input v-model="form.subject" type="text" maxlength="200" :placeholder="t('Perihal pesan')" class="h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                                     <p v-if="form.errors.subject" class="ml-1 text-sm text-error">{{ form.errors.subject }}</p>
                                 </div>
                             </div>
 
                             <div class="space-y-1.5">
-                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Pesan <span class="text-error">*</span></label>
-                                <textarea v-model="form.message" rows="5" maxlength="5000" required placeholder="Tuliskan pesan Anda di sini..." class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Pesan') }} <span class="text-error">*</span></label>
+                                <textarea v-model="form.message" rows="5" maxlength="5000" required :placeholder="t('Tulis pesan...')" class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
                                 <p v-if="form.errors.message" class="ml-1 text-sm text-error">{{ form.errors.message }}</p>
                             </div>
 
                             <div class="flex justify-end pt-2">
                                 <button type="submit" :disabled="form.processing" class="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-on-primary hover:bg-primary/90 disabled:opacity-60">
                                     <span v-if="form.processing" class="size-4 animate-spin rounded-full border-2 border-on-primary/30 border-t-on-primary" />
-                                    <span>Kirim Pesan</span>
+                                    <span>{{ t('Kirim Pesan') }}</span>
                                 </button>
                             </div>
                         </form>

@@ -271,8 +271,8 @@ final class LoanService
                 principal: $principal,
                 termMonths: $term,
                 serviceRateTotal: $serviceRateTotal,
-                principalFrequency: $this->mapFrequencyToSystemId($principalFreq),
-                interestFrequency: $this->mapFrequencyToSystemId($interestFreq),
+                principalFrequency: $this->mapFrequencyToSystemId($principalFreq, $principalGraceMonths),
+                interestFrequency: $this->mapFrequencyToSystemId($interestFreq, $interestGraceMonths),
                 principalGraceMonths: $principalGraceMonths,
                 interestGraceMonths: $interestGraceMonths,
                 disbursementDate: CarbonImmutable::parse((string) $data['proposed_at']),
@@ -401,8 +401,8 @@ final class LoanService
                 principal: $principal,
                 termMonths: $term,
                 serviceRateTotal: $serviceRateTotal,
-                principalFrequency: $this->mapFrequencyToSystemId($principalFreq),
-                interestFrequency: $this->mapFrequencyToSystemId($interestFreq),
+                principalFrequency: $this->mapFrequencyToSystemId($principalFreq, $principalGraceMonths),
+                interestFrequency: $this->mapFrequencyToSystemId($interestFreq, $interestGraceMonths),
                 principalGraceMonths: $principalGraceMonths,
                 interestGraceMonths: $interestGraceMonths,
                 disbursementDate: CarbonImmutable::parse((string) $data['proposed_at']),
@@ -549,6 +549,14 @@ final class LoanService
             $loan->update([
                 'verified_at' => $data['verified_at'],
                 'verification_notes' => $data['verification_notes'] ?? null,
+                // Legacy update V menulis jangka/pros_jasa/sistem angsuran ke
+                // kolom pinjaman, tetapi nominal `proposal` tetap terpisah.
+                'term_months' => $termMonths,
+                'service_rate_total' => $serviceRateTotal,
+                'principal_frequency' => $principalFrequency,
+                'interest_frequency' => $interestFrequency,
+                'principal_grace_months' => $principalGraceMonths,
+                'interest_grace_months' => $interestGraceMonths,
                 'status' => 'verified',
             ]);
 
@@ -583,6 +591,13 @@ final class LoanService
                     ->where('to_status', 'verified')
                     ->orderByDesc('changed_at')
                     ->first();
+                // Legacy tahap W memakai nominal `alokasi` dari form; nilai ini
+                // boleh berbeda dari proposal maupun hasil verifikasi.
+                $allocationAmount = $this->optionalFloat(
+                    $data,
+                    'allocation_amount',
+                    (float) ($verification?->principal_amount ?? $loan->principal_amount),
+                );
                 $termMonths = $this->optionalInteger($data, 'term_months', (int) ($verification?->term_months ?? $loan->term_months));
                 $serviceRateTotal = $this->optionalFloat($data, 'service_rate_total', (float) ($verification?->service_rate_total ?? $loan->service_rate_total));
                 $principalFrequency = $data['principal_frequency'] ?? (string) ($verification?->principal_frequency ?? $loan->principal_frequency);
@@ -593,6 +608,10 @@ final class LoanService
                 $loan->update([
                     'approved_at' => $data['approved_at'],
                     'funded_at' => $data['planned_disbursed_at'],
+                    'principal_amount' => $allocationAmount,
+                    'spk_no' => array_key_exists('spk_no', $data) && $data['spk_no'] !== null && $data['spk_no'] !== ''
+                        ? (string) $data['spk_no']
+                        : $loan->spk_no,
                     'term_months' => $termMonths,
                     'service_rate_total' => $serviceRateTotal,
                     'principal_frequency' => $principalFrequency,
@@ -604,21 +623,21 @@ final class LoanService
 
                 $this->regenerateIndividualSchedule(
                     loan: $loan,
-                    principal: (float) $loan->principal_amount,
+                    principal: $allocationAmount,
                     termMonths: $termMonths,
                     serviceRateTotal: $serviceRateTotal,
-                    principalFrequency: $this->mapFrequencyToSystemId($principalFrequency),
-                    interestFrequency: $this->mapFrequencyToSystemId($interestFrequency),
+                    principalFrequency: $this->mapFrequencyToSystemId($principalFrequency, $principalGraceMonths),
+                    interestFrequency: $this->mapFrequencyToSystemId($interestFrequency, $interestGraceMonths),
                     principalGraceMonths: $principalGraceMonths,
                     interestGraceMonths: $interestGraceMonths,
                     disbursementDate: CarbonImmutable::parse((string) $data['planned_disbursed_at']),
                 );
 
-                $defaultNotes = sprintf('Alokasi pinjaman individu ditetapkan sebesar %s. Rencana pencairan: %s.', number_format((float) $loan->principal_amount, 2, ',', '.'), $data['planned_disbursed_at']);
+                $defaultNotes = sprintf('Alokasi pinjaman individu ditetapkan sebesar %s. Rencana pencairan: %s.', number_format($allocationAmount, 2, ',', '.'), $data['planned_disbursed_at']);
                 $loan->statusHistories()->create([
                     'from_status' => $fromStatus,
                     'to_status' => 'waiting',
-                    'principal_amount' => (float) $loan->principal_amount,
+                    'principal_amount' => $allocationAmount,
                     'product_row_id' => $loan->loan_product_row_id,
                     'term_months' => $termMonths,
                     'service_rate_total' => $serviceRateTotal,
@@ -728,13 +747,38 @@ final class LoanService
                 'disbursement_account_row_id' => (int) $data['disbursement_account_row_id'],
                 'disbursement_notes' => $data['disbursement_notes'] ?? null,
                 'status' => 'active',
-                'spk_no' => $data['spk_no'] ?? $loan->spk_no,
+                'spk_no' => array_key_exists('spk_no', $data) && trim((string) $data['spk_no']) !== ''
+                    ? (string) $data['spk_no']
+                    : $loan->spk_no,
                 'disbursement_slot' => $data['disbursement_slot'] ?? $loan->disbursement_slot,
                 'funding_source' => array_key_exists('funding_source', $data) && $data['funding_source'] !== null && $data['funding_source'] !== ''
                     ? (int) $data['funding_source']
                     : $loan->funding_source,
                 'verification_remarks' => $data['verification_remarks'] ?? $loan->verification_remarks,
             ]);
+
+            // Pacuan meregenerasi rencana angsuran saat pencairan (`generate($id)` dengan
+            // `?save=true`), memakai tgl_cair terbaru. Lakukan hal yang sama supaya jadwal
+            // aktif memakai tanggal cair aktual, bukan tanggal rencana.
+            if ($isMemberLoan) {
+                $this->regenerateIndividualSchedule(
+                    loan: $loan,
+                    principal: $totalAllocated,
+                    termMonths: (int) $loan->term_months,
+                    serviceRateTotal: (float) ($loan->service_rate_total ?? 0),
+                    principalFrequency: $this->mapFrequencyToSystemId(
+                        (string) ($loan->principal_frequency ?: 'monthly'),
+                        (int) ($loan->principal_grace_months ?? 0),
+                    ),
+                    interestFrequency: $this->mapFrequencyToSystemId(
+                        (string) ($loan->interest_frequency ?: $loan->principal_frequency ?: 'monthly'),
+                        (int) ($loan->interest_grace_months ?? 0),
+                    ),
+                    principalGraceMonths: (int) ($loan->principal_grace_months ?? 0),
+                    interestGraceMonths: (int) ($loan->interest_grace_months ?? 0),
+                    disbursementDate: CarbonImmutable::parse($disbursedAt),
+                );
+            }
 
             $loan->statusHistories()->create([
                 'from_status' => $fromStatus,
@@ -807,31 +851,47 @@ final class LoanService
      * Untuk dipakai oleh MemberLoanScheduleCalculator yang expect pacuan-style integer id,
      * string frekuensi dipetakan ke id yang relevan.
      */
-    private function mapFrequencyToSystemId(string $frequency): string
+    private function mapFrequencyToSystemId(string $frequency, int $graceMonths = 0): string
     {
         // Kalau sudah berupa id integer (legacy import / direct call), kembalikan apa adanya.
         if (preg_match('/^\d+$/', $frequency) === 1) {
             return $frequency;
         }
 
+        $frequency = trim($frequency);
+        $grace = max(0, $graceMonths);
+
+        if ($frequency === 'monthly') {
+            return match ($grace) {
+                24 => '11', // M24
+                12 => '20', // M12
+                6 => '26',  // M6
+                3 => '14',  // M3
+                2 => '15',  // M2
+                1 => '25',  // M1
+                default => '1',
+            };
+        }
+
+        if ($frequency === 'weekly' || $frequency === 'biweekly') {
+            return '12'; // Mingguan (+x*7 days)
+        }
+
         return match ($frequency) {
-            'weekly' => '12',           // Mingguan (+x*7 days)
-            'biweekly' => '14',         // 2-mingguan
-            'monthly' => '1',           // Bulanan
-            'bimonthly' => '2',         // 2-bulanan
-            'quarterly' => '3',         // 3-bulanan (triwulan)
-            'every_4_months' => '4',
-            'every_5_months' => '5',
-            'every_6_months' => '6',     // Semester
-            'every_7_months' => '7',
-            'every_8_months' => '8',
-            'every_9_months' => '9',
-            'every_10_months' => '10',
-            'every_11_months' => '11',   // khusus pacuan: jangka += 24
-            'every_12_months' => '15',   // pacuan: grace 2 bulan
-            'every_24_months' => '20',   // pacuan: grace 12 bulan
-            'every_36_months' => '20',   // map ke 20 (grace 12) — fallback
-            'at_maturity' => '15',       // sekaligus di akhir → map ke grace-2 style
+            'bimonthly' => '9',        // 2 Bulan
+            'quarterly' => '2',        // 3 Bulan
+            'every_4_months' => '3',   // 4 Bulan
+            'every_5_months' => '6',   // 5 Bulan
+            'every_6_months' => '4',   // 6 Bulan
+            'every_7_months' => '7',   // 7 Bulan
+            'every_8_months' => '8',   // 8 Bulan
+            'every_9_months' => '13',  // 9 Bulan
+            'every_10_months' => '21', // 10 Bulan
+            'every_11_months' => '24', // 11 Bulan
+            'every_12_months' => '10', // 12 Bulan
+            'every_24_months' => '22', // 24 Bulan
+            'every_36_months' => '23', // 36 Bulan
+            'at_maturity' => '22',     // 24 Bulan (fallback)
             default => $frequency,
         };
     }
@@ -872,7 +932,7 @@ final class LoanService
         }
 
         $type = isset($raw['type']) ? trim((string) $raw['type']) : 'lainnya';
-        $allowedTypes = ['kendaraan', 'sertifikat_tanah', 'bpkb', 'lainnya'];
+        $allowedTypes = ['kendaraan', 'sertifikat_tanah', 'bpkb', 'sk_pegawai', 'lainnya'];
         if (! in_array($type, $allowedTypes, true)) {
             $type = 'lainnya';
         }
@@ -889,7 +949,41 @@ final class LoanService
             $reference = null;
         }
 
-        if ($description === null && $value === null && $reference === null) {
+        // Rincian jaminan legacy: field per jenis jaminan, disimpan sebagai string
+        // seperti request SIUPK asli (`data_jaminan[...]`).
+        $detailKeys = [
+            'nomor_sertifikat', 'nama_pemilik', 'alamat', 'luas', 'nilai_jual_tanah',
+            'nomor', 'jenis_kendaraan', 'nopol', 'nilai_jual_kendaraan',
+            'nama_pegawai', 'nama_kuitansi_penerbit',
+            'nama_jaminan', 'keterangan', 'nilai_jaminan',
+        ];
+        $details = [];
+        if (isset($raw['details']) && is_array($raw['details'])) {
+            foreach ($detailKeys as $key) {
+                if (! array_key_exists($key, $raw['details'])) {
+                    continue;
+                }
+
+                $detail = $raw['details'][$key];
+                if ($detail === null || is_array($detail) || is_object($detail)) {
+                    continue;
+                }
+
+                $detail = trim((string) $detail);
+                if ($detail === '') {
+                    continue;
+                }
+
+                // Legacy membuang pemisah ribuan pada semua field `nilai`.
+                if (str_starts_with($key, 'nilai')) {
+                    $detail = (string) preg_replace('/[^\d-]/', '', $detail);
+                }
+
+                $details[$key] = $detail;
+            }
+        }
+
+        if ($description === null && $value === null && $reference === null && $details === []) {
             return null;
         }
 
@@ -898,6 +992,7 @@ final class LoanService
             'description' => $description,
             'value' => $value,
             'reference' => $reference,
+            'details' => $details,
             'recorded_at' => now()->toDateString(),
         ];
     }
@@ -1315,10 +1410,6 @@ final class LoanService
      */
     private function resolveApplicationStartDate(): ?string
     {
-        $fromSetting = setting('application_start_date');
-        if (is_string($fromSetting) && $fromSetting !== '') {
-            return $fromSetting;
-        }
         $profile = OrganizationProfile::query()->first();
         $start = $profile?->operational_start_date ?? $profile?->operational_start_date_v2;
         if ($start instanceof \DateTimeInterface) {
@@ -1805,11 +1896,13 @@ final class LoanService
                     loan: $newLoan,
                     term: $term,
                     principal: $principalRemaining,
-                    principalSystem: $this->mapFrequencyToSystemId($principalFreq),
-                    interestSystem: $this->mapFrequencyToSystemId($interestFreq),
+                    principalSystem: $this->mapFrequencyToSystemId($principalFreq, $principalGraceMonths),
+                    interestSystem: $this->mapFrequencyToSystemId($interestFreq, $interestGraceMonths),
                     serviceRateTotal: $serviceRateTotal,
                     interestMethod: $method,
                     disbursementDate: $rescheduledAt,
+                    principalGraceMonths: $principalGraceMonths,
+                    interestGraceMonths: $interestGraceMonths,
                 );
             } else {
                 $this->generatePrincipalSchedule($newLoan, $principalRemaining, $principalPeriods, $principalRatePerPeriod, $principalFreq, $rescheduledAt->toDateString(), $principalGraceMonths);
@@ -2252,6 +2345,8 @@ final class LoanService
             serviceRateTotal: $serviceRateTotal,
             interestMethod: (string) ($loan->installment_method ?: 'flat'),
             disbursementDate: $disbursementDate,
+            principalGraceMonths: $principalGraceMonths,
+            interestGraceMonths: $interestGraceMonths,
         );
     }
 

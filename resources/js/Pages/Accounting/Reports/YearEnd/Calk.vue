@@ -185,7 +185,7 @@ function save() {
                         <AppTextarea
                             v-model="form.notes[chapter.key]"
                             :error="form.errors[`notes.${chapter.key}`]"
-                            placeholder="Tulis catatan untuk bab ini…"
+                            placeholder="Tulis catatan..."
                         />
                     </div>
                     <div class="flex justify-end">

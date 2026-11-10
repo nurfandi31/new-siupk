@@ -580,7 +580,7 @@ function applySignatureStarter() {
                                     Isi Template 1×3
                                 </AppButton>
                             </div>
-                            <AppRichEditor :key="signatureReportKey" v-model="currentSignatureHtml" placeholder="Sisipkan tabel penandatangan (ikon tabel di toolbar)…" />
+                            <AppRichEditor :key="signatureReportKey" v-model="currentSignatureHtml" placeholder="Sisipkan tabel..." />
                             <p v-if="signatureForm.errors.templates" class="text-sm text-error">{{ signatureForm.errors.templates }}</p>
                             <div class="flex flex-wrap justify-end gap-2 border-t border-outline-variant pt-4">
                                 <AppButton type="submit" icon="save" :loading="signatureForm.processing" :disabled="signatureForm.processing">Simpan Tanda Tangan</AppButton>

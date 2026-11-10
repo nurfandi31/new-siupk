@@ -11,6 +11,7 @@ use App\Domain\Regulatory\Controllers\Ojk\BalanceSheetController;
 use App\Domain\Regulatory\Controllers\Ojk\CollectibilityController;
 use App\Domain\Regulatory\Controllers\Ojk\CollectibilityV2Controller;
 use App\Domain\Regulatory\Controllers\Ojk\CoverController;
+use App\Domain\Regulatory\Controllers\Ojk\HealthController;
 use App\Domain\Regulatory\Controllers\Ojk\IncomeStatementController;
 use App\Domain\Regulatory\Controllers\Ojk\LoansReceivedController;
 use App\Domain\Regulatory\Controllers\Ojk\PaidGroupLoansController;
@@ -162,16 +163,38 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-// Passwordless quick-login switcher. Always scoped to the tenant that owns the
-// current host (never the central/platform users) — see UserLoginController.
+// Passwordless quick-login switcher.
+//
+// Two scopes are deliberately separated by URL because central and tenant
+// logins share the same /login page:
+//
+//   /user        -> platform/central users only (superadmin, province,
+//                   regency supervisors). Never tenant users.
+//   /login/user  -> users of the tenant/location resolved automatically from
+//                   the current host. Never central users.
+//
+// This keeps the card list filter unambiguous for the double-click auto-login.
+Route::get('/user', [UserLoginController::class, 'indexCentral'])->name('login.users');
+Route::post('/user/{user}', [UserLoginController::class, 'loginCentral'])
+    ->middleware('throttle:30,1')
+    ->name('login.users.login');
+
 Route::middleware('tenant')->group(function (): void {
-    Route::get('/login/user', [UserLoginController::class, 'index'])
+    // Canonical tenant URL: location is detected automatically from the host.
+    Route::get('/login/user', [UserLoginController::class, 'indexTenant'])
         ->defaults('tenant_from_host', true)
-        ->name('login.users');
-    Route::post('/login/user/{user}', [UserLoginController::class, 'login'])
+        ->name('login.tenant-users');
+    Route::post('/login/user/{user}', [UserLoginController::class, 'loginTenantAuto'])
         ->defaults('tenant_from_host', true)
         ->middleware('throttle:30,1')
-        ->name('login.users.login');
+        ->name('login.tenant-users.login');
+
+    // Optional explicit URL for testing several tenants on the same host.
+    Route::get('/t/{tenant}/user', [UserLoginController::class, 'indexTenant'])
+        ->name('login.tenant-users.explicit');
+    Route::post('/t/{tenant}/user/{user}', [UserLoginController::class, 'loginTenant'])
+        ->middleware('throttle:30,1')
+        ->name('login.tenant-users.explicit.login');
 });
 
 Route::get('/auth/impersonate/{token}', [ImpersonationController::class, 'consume'])->name('auth.impersonate');
@@ -196,6 +219,7 @@ Route::middleware(['auth', 'regency.user'])->prefix('regency')->name('regency.')
     Route::get('/dashboard', [RegencyDashboardController::class, 'index'])->name('dashboard');
     Route::get('/reports/balance-sheet', [RegencyReportController::class, 'balanceSheet'])->name('reports.balance-sheet');
     Route::get('/reports/income-statement', [RegencyReportController::class, 'incomeStatement'])->name('reports.income-statement');
+    Route::get('/reports/equity-changes', [RegencyReportController::class, 'equityChanges'])->name('reports.equity-changes');
     Route::get('/reports/general-ledger', [RegencyReportController::class, 'generalLedger'])->name('reports.general-ledger');
     Route::get('/reports/cash-flow', [RegencyReportController::class, 'cashFlow'])->name('reports.cash-flow');
     Route::get('/reports/calk', [RegencyReportController::class, 'calk'])->name('reports.calk');
@@ -554,12 +578,16 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::get('/schedule-vs-actual/pdf', [LoanReportController::class, 'scheduleVsActualPdf'])->name('schedule-vs-actual.pdf');
         Route::get('/lpp-desa', [LoanReportController::class, 'lppDesa'])->name('lpp-desa');
         Route::get('/lpp-desa/pdf', [LoanReportController::class, 'lppDesaPdf'])->name('lpp-desa.pdf');
+        Route::get('/lpp-desa-individu', [LoanReportController::class, 'lppIndividuDesa'])->name('lpp-desa-individu');
+        Route::get('/lpp-desa-individu/pdf', [LoanReportController::class, 'lppIndividuDesaPdf'])->name('lpp-desa-individu.pdf');
         Route::get('/lpp-kelompok', [LoanReportController::class, 'lppKelompok'])->name('lpp-kelompok');
         Route::get('/lpp-kelompok/pdf', [LoanReportController::class, 'lppKelompokPdf'])->name('lpp-kelompok.pdf');
         Route::get('/lpp-individu', [LoanReportController::class, 'lppIndividu'])->name('lpp-individu');
         Route::get('/lpp-individu/pdf', [LoanReportController::class, 'lppIndividuPdf'])->name('lpp-individu.pdf');
         Route::get('/kolek-desa', [LoanReportController::class, 'kolekDesa'])->name('kolek-desa');
         Route::get('/kolek-desa/pdf', [LoanReportController::class, 'kolekDesaPdf'])->name('kolek-desa.pdf');
+        Route::get('/kolek-kelompok', [LoanReportController::class, 'kolekKelompok'])->name('kolek-kelompok');
+        Route::get('/kolek-kelompok/pdf', [LoanReportController::class, 'kolekKelompokPdf'])->name('kolek-kelompok.pdf');
         Route::get('/kolek-desa-individu', [LoanReportController::class, 'kolekDesaIndividu'])->name('kolek-desa-individu');
         Route::get('/kolek-desa-individu/pdf', [LoanReportController::class, 'kolekDesaIndividuPdf'])->name('kolek-desa-individu.pdf');
         Route::get('/kolek-individu', [LoanReportController::class, 'kolekIndividu'])->name('kolek-individu');
@@ -938,6 +966,10 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         // DRT — Daftar Rincian Tabungan
         Route::get('savings', [SavingsController::class, 'index'])->name('savings');
         Route::get('savings/pdf', [SavingsController::class, 'pdf'])->name('savings.pdf');
+
+        // Penilaian Tingkat Kesehatan LKM (POJK 19 / POJK 41)
+        Route::get('health', [HealthController::class, 'index'])->name('health');
+        Route::get('health/pdf', [HealthController::class, 'pdf'])->name('health.pdf');
     });
 
     // Supervisor Notes

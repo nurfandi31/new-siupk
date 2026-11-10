@@ -95,7 +95,7 @@ function statusLabel(status) {
                         :per-page="perPage"
                         :sort="sort"
                         :direction="direction"
-                        search-placeholder="Nomor atau deskripsi"
+                        search-placeholder="Cari invoice..."
                         empty-title="Belum ada tagihan"
                         empty-description="Tagihan akan muncul di sini setelah diterbitkan."
                     >

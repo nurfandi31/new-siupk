@@ -4,13 +4,16 @@ import { computed, ref } from 'vue';
 import AppIcon from '../../Components/AppIcon.vue';
 
 const props = defineProps({
-    tenant: { type: Object, required: true },
+    scope: { type: String, default: 'tenant' },
+    context: { type: Object, required: true },
     users: { type: Array, default: () => [] },
 });
 
 const search = ref('');
 const loggingInId = ref(null);
 const notice = ref('');
+
+const isCentral = computed(() => props.scope === 'central');
 
 const filteredUsers = computed(() => {
     const term = search.value.trim().toLowerCase();
@@ -76,7 +79,10 @@ function login(user) {
     loggingInId.value = user.row_id;
     notice.value = '';
 
-    router.post(route('login.users.login', { user: user.row_id }), {}, {
+    const routeName = isCentral.value ? 'login.users.login' : 'login.tenant-users.login';
+    const params = { user: user.row_id };
+
+    router.post(route(routeName, params), {}, {
         preserveScroll: true,
         onFinish: () => {
             loggingInId.value = null;
@@ -89,7 +95,7 @@ function login(user) {
 </script>
 
 <template>
-    <Head title="Pilih Akun - siupk Next" />
+    <Head :title="`Pilih Akun ${isCentral ? 'Pusat' : 'Tenant'} - siupk Next`" />
 
     <main class="min-h-screen bg-surface font-sans text-on-surface">
         <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 sm:py-10">
@@ -103,7 +109,7 @@ function login(user) {
                             siupk <span class="text-secondary">Next</span>
                         </span>
                         <span class="block truncate text-[11px] font-medium uppercase tracking-[0.18em] text-outline">
-                            {{ tenant.name }}
+                            {{ context.name }}
                         </span>
                     </span>
                 </Link>
@@ -123,13 +129,21 @@ function login(user) {
                         <span class="absolute inset-0 rounded-full bg-primary opacity-75" />
                         <span class="relative inline-flex size-1.5 rounded-full bg-primary" />
                     </span>
-                    {{ tenant.code }} &middot; {{ tenant.host }}
+                    {{ context.label }} &middot; {{ context.code }} &middot; {{ context.host }}
                 </span>
-                <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Pilih Akun Login</h1>
+                <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">
+                    {{ isCentral ? 'Pilih Akun Pusat' : 'Pilih Akun Login' }}
+                </h1>
                 <p class="max-w-2xl text-sm text-on-surface-variant">
                     Klik dua kali pada kartu pengguna untuk langsung masuk tanpa mengetik password.
-                    Daftar ini hanya memuat pengguna milik tenant
-                    <strong class="font-semibold text-on-surface">{{ tenant.name }}</strong>, bukan akun pusat.
+                    <template v-if="isCentral">
+                        Daftar ini hanya memuat akun platform pusat (superadmin, supervisor provinsi,
+                        supervisor kabupaten), bukan akun tenant lokasi.
+                    </template>
+                    <template v-else>
+                        Daftar ini hanya memuat pengguna milik tenant
+                        <strong class="font-semibold text-on-surface">{{ context.name }}</strong>, bukan akun pusat.
+                    </template>
                 </p>
             </section>
 
@@ -140,7 +154,7 @@ function login(user) {
                     <input
                         v-model="search"
                         type="search"
-                        placeholder="Cari nama, username, atau email..."
+                        placeholder="Cari pengguna..."
                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-2.5 pl-10 pr-3 text-sm text-on-surface shadow-sm outline-none transition placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/20"
                     >
                 </label>
@@ -276,13 +290,13 @@ function login(user) {
                     </span>
                     <h2 class="mt-4 text-base font-bold">Tidak ada pengguna yang cocok</h2>
                     <p class="mt-1 max-w-sm text-sm text-on-surface-variant">
-                        {{ search ? 'Coba kata kunci lain atau hapus pencarian.' : 'Belum ada pengguna aktif pada tenant ini.' }}
+                        {{ search ? 'Coba kata kunci lain atau hapus pencarian.' : (isCentral ? 'Belum ada pengguna pusat yang aktif.' : 'Belum ada pengguna aktif pada tenant ini.') }}
                     </p>
                 </div>
             </section>
 
             <footer class="mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/40 pt-4 text-[11px] text-outline">
-                <span>&copy; {{ new Date().getFullYear() }} siupk Next &mdash; {{ tenant.name }}</span>
+                <span>&copy; {{ new Date().getFullYear() }} siupk Next &mdash; {{ context.name }}</span>
                 <span>Halaman bantuan demo &mdash; jangan gunakan pada instalasi produksi.</span>
             </footer>
         </div>

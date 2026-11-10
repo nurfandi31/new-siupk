@@ -73,36 +73,37 @@ final class LoanDocumentService
         ['key' => 'daftar_hadir_pencairan',       'label' => 'Daftar Hadir Pencairan',        'stage' => 'disbursement', 'view' => 'reports.pdf.loan_documents.daftar_hadir_pencairan',       'signature' => null,                'orientation' => 'portrait',  'icon' => 'event_available'],
 
         // Iterasi 5 — Cetakan khusus Pinjaman Individu (member_loan)
-        ['key' => 'spk_individu',                'label' => 'Surat Perjanjian Kredit Individu', 'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.spk_individu',          'signature' => 'perjanjian_kredit', 'orientation' => 'portrait',  'icon' => 'gavel'],
-        ['key' => 'kuitansi_pencairan_individu', 'label' => 'Kuitansi Pencairan Individu',      'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.kuitansi_pencairan_individu', 'signature' => 'kwitansi',          'orientation' => 'portrait',  'icon' => 'receipt_long'],
-        ['key' => 'berita_acara_pencairan_individu', 'label' => 'Berita Acara Pencairan Individu', 'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.berita_acara_pencairan_individu', 'signature' => 'perjanjian_kredit', 'orientation' => 'portrait',  'icon' => 'fact_check'],
-        ['key' => 'tanda_terima_jaminan',        'label' => 'Tanda Terima Jaminan',              'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.tanda_terima_jaminan',     'signature' => 'default',            'orientation' => 'portrait',  'icon' => 'inventory_2'],
-        ['key' => 'bukti_pengembalian_jaminan',  'label' => 'Bukti Pengembalian Jaminan',        'stage' => 'individual_settlement',    'view' => 'reports.pdf.loan_documents.bukti_pengembalian_jaminan', 'signature' => 'default',            'orientation' => 'portrait',  'icon' => 'assignment_return'],
+        // Urutan & label mengikuti menu dokumen SIUPK asli (`perguliran_i/detail.blade.php`).
+        // Tahap Proposal (8 dokumen)
+        ['key' => 'cover_proposal_individu',           'label' => 'Cover',                        'stage' => 'individual_proposal',     'view' => 'legacy.perguliran_i.dokumen.cover_proposal',           'signature' => null,        'orientation' => 'portrait',  'icon' => 'auto_stories'],
+        ['key' => 'pengajuan_kredit_individu',         'label' => 'Surat Permohonan Pinjaman',    'stage' => 'individual_proposal',     'view' => 'legacy.perguliran_i.dokumen.pengajuan_kredit',         'signature' => 'proposal',  'orientation' => 'portrait',  'icon' => 'mail'],
+        ['key' => 'rekomendasi_kredit_individu',       'label' => 'Surat Rekomendasi Kredit',     'stage' => 'individual_proposal',     'view' => 'legacy.perguliran_i.dokumen.rekomendasi_kredit',       'signature' => 'proposal',  'orientation' => 'portrait',  'icon' => 'verified'],
+        ['key' => 'pernyataan_peminjam_individu',      'label' => 'Surat Pernyataan Peminjam',    'stage' => 'individual_proposal',     'view' => 'legacy.perguliran_i.dokumen.pernyataan_peminjam',      'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'history_edu'],
+        ['key' => 'form_verifikasi_individu',          'label' => 'Form Verifikasi',              'stage' => 'individual_proposal',     'view' => 'legacy.perguliran_i.dokumen.form_verifikasi',          'signature' => null,        'orientation' => 'portrait',  'icon' => 'assignment'],
+        ['key' => 'rencana_angsuran_individu_proposal', 'label' => 'Rencana Angsuran',            'stage' => 'individual_proposal',     'view' => 'legacy.perguliran_i.dokumen.rencana_angsuran',         'signature' => null,        'orientation' => 'portrait',  'icon' => 'calendar_month'],
+        ['key' => 'surat_persetujuan_kuasa_individu',  'label' => 'Surat Kuasa Khusus',           'stage' => 'individual_proposal',     'view' => 'legacy.perguliran_i.dokumen.surat_persetujuan_kuasa',  'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'assignment_late'],
+        ['key' => 'tanda_terima_jaminan',              'label' => 'Penyerahan Jaminan',           'stage' => 'individual_proposal',     'view' => 'legacy.perguliran_i.dokumen.tanda_terima_jaminan',     'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'inventory_2'],
 
-        // Iterasi 6 — Cetakan individu kelengkapan SPK & penjamin (paritas pacuan)
-        ['key' => 'analisis_keputusan_kredit',   'label' => 'Analisa & Keputusan Kredit',         'stage' => 'individual_verification', 'view' => 'reports.pdf.loan_documents.analisis_keputusan_kredit',   'signature' => null,                 'orientation' => 'portrait',  'icon' => 'analytics'],
-        ['key' => 'surat_pemberitahuan',         'label' => 'Surat Pemberitahuan Kredit (SP2K)', 'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.surat_pemberitahuan',         'signature' => 'default',            'orientation' => 'portrait',  'icon' => 'campaign'],
-        ['key' => 'pengikat_diri_penjamin',      'label' => 'Surat Pengikat Diri Penjamin',       'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.pengikat_diri_sebagai_penjamin', 'signature' => 'default',      'orientation' => 'portrait',  'icon' => 'volunteer_activism'],
-        ['key' => 'surat_pernyataan_suami',      'label' => 'Surat Pernyataan Suami/Istri',       'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.surat_pernyataan_suami',     'signature' => 'default',            'orientation' => 'portrait',  'icon' => 'favorite'],
+        // Tahap Pencairan (16 dokumen; Rencana Angsuran & Form Verifikasi juga muncul di proposal)
+        ['key' => 'cover_pencairan_individu',          'label' => 'Cover',                        'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.cover_pencairan',          'signature' => null,        'orientation' => 'portrait',  'icon' => 'auto_stories'],
+        ['key' => 'spk_individu',                      'label' => 'Surat Perjanjian Kredit',      'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.spk',                      'signature' => 'perjanjian_kredit_individu', 'orientation' => 'portrait',  'icon' => 'gavel'],
+        ['key' => 'rencana_angsuran_individu',         'label' => 'Rencana Angsuran',             'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.rencana_angsuran',         'signature' => null,        'orientation' => 'portrait',  'icon' => 'calendar_month'],
+        ['key' => 'ba_pencairan_individu',             'label' => 'Berita Acara Pencairan',       'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.ba_pencairan',             'signature' => 'perjanjian_kredit', 'orientation' => 'portrait',  'icon' => 'fact_check'],
+        ['key' => 'kuitansi_pencairan_individu',       'label' => 'Kuitansi',                     'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.kuitansi',                 'signature' => 'kwitansi',  'orientation' => 'portrait',  'icon' => 'receipt_long'],
+        ['key' => 'kartu_angsuran_individu',           'label' => 'Kartu Angsuran',               'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.kartu_angsuran',           'signature' => null,        'orientation' => 'portrait',  'icon' => 'credit_card'],
+        ['key' => 'analisis_keputusan_kredit',         'label' => 'analisis keputusan kredit',    'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.analisis_keputusan_kredit', 'signature' => null,        'orientation' => 'portrait',  'icon' => 'analytics'],
+        ['key' => 'surat_pemberitahuan',               'label' => 'surat pemberitahuan',          'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.surat_pemberitahuan',      'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'campaign'],
+        ['key' => 'pengikat_diri_penjamin',            'label' => 'pengikat diri sebagai penjamin', 'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.pengikat_diri_sebagai_penjamin', 'signature' => 'default', 'orientation' => 'portrait', 'icon' => 'volunteer_activism'],
+        ['key' => 'surat_pernyataan_suami',            'label' => 'surat pernyataan suami',       'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.surat_pernyataan_suami',   'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'favorite'],
+        ['key' => 'tagihan_individu',                  'label' => 'Surat Tagihan',                'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.tagihan',                  'signature' => 'kwitansi',  'orientation' => 'portrait',  'icon' => 'request_quote'],
+        ['key' => 'surat_kelayakan_individu',          'label' => 'Surat Kelayakan',              'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.surat_kelayakan',          'signature' => 'proposal',  'orientation' => 'portrait',  'icon' => 'verified_user'],
+        ['key' => 'daftar_hadir_pencairan_individu',   'label' => 'Daftar Hadir Pencairan',       'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.daftar_hadir_pencairan',   'signature' => null,        'orientation' => 'portrait',  'icon' => 'event_available'],
+        ['key' => 'pemberitahuan_desa_individu',       'label' => 'Pemberitahuan Ke Desa',        'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.pemberitahuan_desa',       'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'campaign'],
+        ['key' => 'surat_ahli_waris_individu',         'label' => 'Surat Ahli Waris',             'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.surat_ahli_waris',         'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'family_restroom'],
+        ['key' => 'form_verifikasi_individu_pencairan', 'label' => 'Form Verifikasi',             'stage' => 'individual_disbursement', 'view' => 'legacy.perguliran_i.dokumen.form_verifikasi',          'signature' => null,        'orientation' => 'portrait',  'icon' => 'assignment'],
 
-        // Iterasi 7 — Cetakan Individu tahap Proposal & Pencairan (paritas pinjol)
-        ['key' => 'cover_proposal_individu',           'label' => 'Cover Proposal Individu',                    'stage' => 'individual_proposal',     'view' => 'reports.pdf.loan_documents.cover_proposal_individu',           'signature' => null,        'orientation' => 'portrait',  'icon' => 'auto_stories'],
-        ['key' => 'cover_pencairan_individu',          'label' => 'Cover Pencairan Individu',                  'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.cover_pencairan_individu',          'signature' => null,        'orientation' => 'portrait',  'icon' => 'auto_stories'],
-        ['key' => 'pengajuan_kredit_individu',         'label' => 'Surat Pengajuan Kredit Individu',          'stage' => 'individual_proposal',     'view' => 'reports.pdf.loan_documents.pengajuan_kredit_individu',         'signature' => 'proposal',  'orientation' => 'portrait',  'icon' => 'mail'],
-        ['key' => 'rekomendasi_kredit_individu',       'label' => 'Surat Rekomendasi Kredit Individu',        'stage' => 'individual_proposal',     'view' => 'reports.pdf.loan_documents.rekomendasi_kredit_individu',       'signature' => 'proposal',  'orientation' => 'portrait',  'icon' => 'verified'],
-        ['key' => 'rekomendasi_verifikator_individu',  'label' => 'Surat Rekomendasi Verifikator Individu',   'stage' => 'individual_proposal',     'view' => 'reports.pdf.loan_documents.rekomendasi_verifikator_individu',  'signature' => 'proposal',  'orientation' => 'portrait',  'icon' => 'verified_user'],
-        ['key' => 'pernyataan_peminjam_individu',      'label' => 'Surat Pengakuan Utang Peminjam Individu',  'stage' => 'individual_proposal',     'view' => 'reports.pdf.loan_documents.pernyataan_peminjam_individu',      'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'history_edu'],
-        ['key' => 'form_verifikasi_individu',          'label' => 'Form Verifikasi Individu',                 'stage' => 'individual_proposal',     'view' => 'reports.pdf.loan_documents.form_verifikasi_individu',          'signature' => null,        'orientation' => 'portrait',  'icon' => 'assignment'],
-        ['key' => 'surat_persetujuan_kuasa_individu',  'label' => 'Surat Persetujuan Kuasa Individu',         'stage' => 'individual_proposal',     'view' => 'reports.pdf.loan_documents.surat_persetujuan_kuasa_individu',  'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'assignment_late'],
-        ['key' => 'kartu_angsuran_individu',           'label' => 'Kartu Angsuran Individu',                  'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.kartu_angsuran_individu',           'signature' => null,        'orientation' => 'portrait',  'icon' => 'credit_card'],
-        ['key' => 'rencana_angsuran_individu',         'label' => 'Rencana Angsuran Individu',                'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.rencana_angsuran_individu',         'signature' => null,        'orientation' => 'portrait',  'icon' => 'calendar_month'],
-        ['key' => 'ba_pencairan_individu',             'label' => 'Berita Acara Pencairan Individu',          'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.ba_pencairan_individu',             'signature' => 'perjanjian_kredit', 'orientation' => 'portrait',  'icon' => 'fact_check'],
-        ['key' => 'tagihan_individu',                  'label' => 'Surat Tagihan Individu',                   'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.tagihan_individu',                  'signature' => 'kwitansi',  'orientation' => 'portrait',  'icon' => 'request_quote'],
-        ['key' => 'surat_kelayakan_individu',          'label' => 'Surat Kelayakan Piutang Individu',         'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.surat_kelayakan_individu',          'signature' => 'proposal',  'orientation' => 'portrait',  'icon' => 'verified_user'],
-        ['key' => 'daftar_hadir_pencairan_individu',   'label' => 'Daftar Hadir Pencairan Individu',          'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.daftar_hadir_pencairan_individu',   'signature' => null,        'orientation' => 'portrait',  'icon' => 'event_available'],
-        ['key' => 'pemberitahuan_desa_individu',       'label' => 'Surat Pemberitahuan ke Desa (Individu)',   'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.pemberitahuan_desa_individu',       'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'campaign'],
-        ['key' => 'surat_ahli_waris_individu',         'label' => 'Surat Pernyataan Ahli Waris (Individu)',   'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.surat_ahli_waris_individu',         'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'family_restroom'],
-        ['key' => 'tanda_terima_individu',             'label' => 'Tanda Terima Dana Individu',               'stage' => 'individual_disbursement', 'view' => 'reports.pdf.loan_documents.tanda_terima_individu',             'signature' => 'default',   'orientation' => 'portrait',  'icon' => 'task_alt'],
+        // Dokumen penyelesaian (di luar menu legacy, dipakai saat pinjaman lunas).
+        ['key' => 'bukti_pengembalian_jaminan',        'label' => 'Bukti Pengembalian Jaminan',   'stage' => 'individual_settlement',   'view' => 'legacy.perguliran_i.partials.bukti_pengembalian_jaminan', 'signature' => 'default', 'orientation' => 'portrait', 'icon' => 'assignment_return'],
     ];
 
     /**
@@ -115,9 +116,11 @@ final class LoanDocumentService
         'verification' => ['verified', 'waiting', 'approved', 'active', 'disbursed', 'completed'],
         'disbursement' => ['waiting', 'approved', 'active', 'disbursed', 'completed'],
         // Cetakan khusus individu (legacy_source='member_loan')
-        'individual_proposal' => ['draft', 'verified', 'waiting', 'approved', 'active', 'disbursed', 'completed'],
-        'individual_verification' => ['verified', 'waiting', 'approved', 'active', 'disbursed', 'completed'],
-        'individual_disbursement' => ['waiting', 'approved', 'active', 'disbursed', 'completed'],
+        // Legacy hanya menampilkan menu proposal/pencairan sampai status A.
+        // Pada L/H menu normal diganti dokumen penyelesaian.
+        'individual_proposal' => ['draft', 'verified', 'waiting', 'approved', 'active', 'disbursed'],
+        'individual_verification' => ['verified', 'waiting', 'approved', 'active', 'disbursed'],
+        'individual_disbursement' => ['waiting', 'approved', 'active', 'disbursed'],
         'individual_settlement' => ['completed', 'written_off'],
     ];
 
@@ -125,6 +128,7 @@ final class LoanDocumentService
         private readonly SignatureTemplateService $signatures,
         private readonly SignatureImageService $signatureImages,
         private readonly SpkTokenResolver $tokenResolver,
+        private readonly LegacyIndividualDocumentContext $legacyContext,
     ) {}
 
     /**
@@ -180,13 +184,16 @@ final class LoanDocumentService
 
         if ($isIndividual) {
             $loan->loadMissing([
-                'product:row_id,code,name,default_interest_rate,default_term_months',
+                'product',
                 'borrower.member.person',
                 'borrower.member.address',
-                'borrower.member.village:row_id,name',
-                'borrower.member.village.parent:row_id,name',
+                'borrower.member.business',
+                'borrower.member.village.villageNaming',
+                'borrower.member.village.parent',
                 'borrower.member.guarantor.person',
                 'installments',
+                'payments.allocations',
+                'statusHistories',
             ]);
         } else {
             $loan->loadMissing([
@@ -212,7 +219,7 @@ final class LoanDocumentService
         $signature = $this->renderSignatureForDocument($meta, $loan);
         $profile = OrganizationProfile::query()->first();
 
-        return [
+        $payload = [
             'identity' => $this->identityBlock(),
             'profile' => $profile,
             'loan' => $this->loanBlock($loan),
@@ -228,6 +235,17 @@ final class LoanDocumentService
             'today' => CarbonImmutable::now()->toDateString(),
             'today_label' => $this->formatDateIndo(CarbonImmutable::now()->toDateString()),
         ];
+
+        if ($isIndividual) {
+            // Template dokumen legacy memakai object graph `$pinkel`, `$kec`, `$kab`,
+            // `$dir`, `$real`, `$ra`, dst. Merge di atas payload modern.
+            $payload = array_merge(
+                $payload,
+                $this->legacyContext->build($loan, $documentKey, $signature, $tokens),
+            );
+        }
+
+        return $payload;
     }
 
     /**
@@ -685,7 +703,19 @@ final class LoanDocumentService
             return '';
         }
 
-        return $this->renderSignature($meta['signature'], $loan);
+        $signatureKey = (string) $meta['signature'];
+
+        // Legacy membedakan TTD SPK individu (`tanda_tangan_spk_i`) dari SPK
+        // kelompok (`tanda_tangan_spk`). Bila tenant belum mengisi template
+        // individu, pakai template SPK umum agar dokumen lama tetap tercetak.
+        if ($signatureKey === 'perjanjian_kredit_individu') {
+            $stored = $this->signatures->all();
+            if (($stored['perjanjian_kredit_individu'] ?? '') === '') {
+                $signatureKey = 'perjanjian_kredit';
+            }
+        }
+
+        return $this->renderSignature($signatureKey, $loan);
     }
 
     private function activeOfficerName(?int $groupRowId, string $position): string

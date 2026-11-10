@@ -45,7 +45,7 @@ const columns = [
                         :sort="sort"
                         :direction="direction"
                         search-label="Cari desa"
-                        search-placeholder="Kode atau nama desa"
+                        search-placeholder="Cari desa..."
                         empty-title="Belum ada desa"
                         empty-description="Desa akan dibuat otomatis saat tenant didaftarkan."
                     >

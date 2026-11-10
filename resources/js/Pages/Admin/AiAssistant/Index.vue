@@ -946,7 +946,7 @@ onBeforeUnmount(() => {
                         <p class="mt-0.5 text-xs text-on-surface-variant">File akan di-chunk dan di-embed untuk retrieval.</p>
                     </header>
                     <form class="space-y-4" @submit.prevent="submitUpload">
-                        <AppInput v-model="uploadForm.title" label="Judul (opsional)" placeholder="Mis. Buku Pedoman Koperasi 2024" />
+                        <AppInput v-model="uploadForm.title" label="Judul (opsional)" placeholder="Masukkan judul" />
                         <div>
                             <SmartSelect
                                 v-model="uploadForm.persona_id"
@@ -1183,9 +1183,9 @@ onBeforeUnmount(() => {
             <!-- Person modal -->
             <AppModal v-model="personaModal.open" :title="personaModal.mode === 'create' ? 'Buat Persona' : 'Edit Persona'" size="lg">
                 <div class="space-y-4">
-                    <AppInput v-model="personaModal.data.name" label="Nama" placeholder="Contoh: Koperasi Assistant" />
-                    <AppInput v-model="personaModal.data.slug" label="Slug" placeholder="Contoh: koperasi-assistant (otomatis dari nama jika kosong)" />
-                    <AppTextarea v-model="personaModal.data.system_prompt" label="System Prompt" placeholder="Deskripsikan kepribadian, gaya bahasa, dan batasan persona ini…" :rows="8" />
+                    <AppInput v-model="personaModal.data.name" label="Nama" placeholder="Masukkan nama" />
+                    <AppInput v-model="personaModal.data.slug" label="Slug" placeholder="Masukkan slug" />
+                    <AppTextarea v-model="personaModal.data.system_prompt" label="System Prompt" placeholder="Masukkan prompt" :rows="8" />
                     <div class="space-y-1.5">
                         <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tool Scope (kosongkan = semua tools)</label>
                         <div class="grid max-h-56 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-3 sm:grid-cols-2">

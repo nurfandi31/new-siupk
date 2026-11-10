@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tenancy\Middleware;
 
+use App\Tenancy\Services\PlatformHostResolver;
 use App\Tenancy\Services\ShardConnectionManager;
 use App\Tenancy\TenantContext;
 use App\Tenancy\TenantResolver;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 final readonly class ResolveTenant
@@ -18,6 +20,7 @@ final readonly class ResolveTenant
         private TenantResolver $resolver,
         private TenantContext $context,
         private ShardConnectionManager $connectionManager,
+        private PlatformHostResolver $platformHosts,
     ) {}
 
     public function handle(Request $request, Closure $next): Response
@@ -52,6 +55,7 @@ final readonly class ResolveTenant
                 ? $this->resolver->resolveById((int) $trimmed, $request->user())
                 : $this->resolver->resolveByCode($trimmed, $request->user());
         } elseif ($request->user() !== null && $request->user()->getAttribute('tenant_id') !== null) {
+            $this->guardPlatformHost($request);
             $tenant = $this->resolver->resolveForUser($request->user());
         } else {
             $tenant = $this->resolver->resolveByHost($request->getHost(), $request->user());
@@ -73,5 +77,31 @@ final readonly class ResolveTenant
             $this->context->clear();
             $this->connectionManager->disconnect();
         }
+    }
+
+    private function guardPlatformHost(Request $request): void
+    {
+        $user = $request->user();
+        if ($user === null) {
+            return;
+        }
+
+        if ((bool) $user->getAttribute('is_superadmin')
+            || (bool) $user->getAttribute('is_regency_user')
+            || (bool) $user->getAttribute('is_province_user')) {
+            return;
+        }
+
+        if ($request->session()->get('impersonated_by') !== null) {
+            return;
+        }
+
+        if (! $this->platformHosts->isEnforcedPlatformHost($request->getHost())) {
+            return;
+        }
+
+        throw new AccessDeniedHttpException(
+            'Akun tenant tidak dapat mengakses aplikasi tenant melalui domain pusat. Silakan gunakan domain tenant masing-masing.'
+        );
     }
 }

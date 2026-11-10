@@ -87,6 +87,10 @@ final class RegencyConsolidatedReportTest extends TestCase
             ->assertOk();
 
         $this->actingAs($this->regencySupervisor)
+            ->get('/regency/reports/equity-changes?year=2026&month=7')
+            ->assertOk();
+
+        $this->actingAs($this->regencySupervisor)
             ->get('/regency/reports/general-ledger?year=2026&month=7')
             ->assertOk();
 
@@ -144,6 +148,18 @@ final class RegencyConsolidatedReportTest extends TestCase
         self::assertEqualsWithDelta(500000.0, $reportKec2['summary']['after_tax']['ytd'], 0.02);
     }
 
+    public function test_consolidated_equity_changes_lists_modal_accounts(): void
+    {
+        $service = app(RegencyConsolidatedReportService::class);
+        $tenantIds = [(int) $this->kecamatan1->row_id, (int) $this->kecamatan2->row_id];
+
+        $report = $service->equityChanges($this->shard, $tenantIds, 2026, 7);
+
+        self::assertEqualsWithDelta(3900000.0, $report['summary']['total_equity'], 0.02);
+        self::assertNotEmpty($report['rows']);
+        self::assertSame(3900000.0, round(array_sum(array_column($report['rows'], 'total')), 2));
+    }
+
     public function test_consolidated_cash_flow_and_calk(): void
     {
         $service = app(RegencyConsolidatedReportService::class);
@@ -172,7 +188,7 @@ final class RegencyConsolidatedReportTest extends TestCase
 
     public function test_regency_pdf_generation_streams_successfully(): void
     {
-        $types = ['balance-sheet', 'income-statement', 'general-ledger', 'cash-flow', 'calk'];
+        $types = ['balance-sheet', 'income-statement', 'equity-changes', 'general-ledger', 'cash-flow', 'calk'];
 
         foreach ($types as $type) {
             $response = $this->actingAs($this->regencySupervisor)

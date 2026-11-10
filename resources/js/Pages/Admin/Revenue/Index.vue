@@ -137,7 +137,7 @@ watch([status, planId, perPage], () => {
                     <AppInput
                         v-model="search"
                         label="Cari Tenant / Invoice"
-                        placeholder="Ketik nama tenant atau no invoice..."
+                        placeholder="Cari tenant/invoice"
                         icon="search"
                     />
                     <SmartSelect

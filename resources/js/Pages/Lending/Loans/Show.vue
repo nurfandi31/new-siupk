@@ -988,7 +988,7 @@ const beneficiaryStats = computed(() => ({
                             <SmartSelect v-model="verifyForm.interest_frequency" label="Sistem Jasa" :options="frequencyOptions" :error="verifyForm.errors.interest_frequency" />
                             <SmartSelect v-model="verifyForm.interest_grace_months" label="Grace Jasa" :options="graceOptions" :error="verifyForm.errors.interest_grace_months" />
                         </div>
-                        <AppTextarea v-model="verifyForm.verification_notes" label="Catatan Verifikasi" :error="verifyForm.errors.verification_notes" placeholder="Hasil pemeriksaan lapangan, kelengkapan dokumen, dll." required hint="Wajib diisi untuk audit trail." />
+                        <AppTextarea v-model="verifyForm.verification_notes" label="Catatan Verifikasi" :error="verifyForm.errors.verification_notes" placeholder="Masukkan catatan" required hint="Wajib diisi untuk audit trail." />
                         <div class="flex justify-end pt-1">
                             <AppButton type="submit" :loading="verifyForm.processing">Simpan &amp; Verifikasi</AppButton>
                         </div>
@@ -1020,7 +1020,7 @@ const beneficiaryStats = computed(() => ({
                             <SmartSelect v-model="approveForm.interest_grace_months" label="Grace Jasa" :options="graceOptions" required :error="approveForm.errors.interest_grace_months" />
                         </div>
                         <p v-if="approveTotal > approveForm.allocated_principal" class="text-xs text-error">Total alokasi per anggota ({{ currency(approveTotal) }}) melebihi plafon kelompok ({{ currency(approveForm.allocated_principal) }}).</p>
-                        <AppTextarea v-model="approveForm.allocation_notes" label="Catatan Penetapan (opsional)" :error="approveForm.errors.allocation_notes" placeholder="Akan muncul di riwayat status." />
+                        <AppTextarea v-model="approveForm.allocation_notes" label="Catatan Penetapan (opsional)" :error="approveForm.errors.allocation_notes" placeholder="Masukkan catatan" />
                         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                             <Link :href="backUrl"><AppButton type="button" variant="secondary">Kembali</AppButton></Link>
                             <div class="flex flex-wrap items-center gap-2">
@@ -1047,7 +1047,7 @@ const beneficiaryStats = computed(() => ({
                             <AppDatePicker v-model="disburseForm.disbursed_at" label="Tanggal Cair" :max="today" :error="disburseForm.errors.disbursed_at" required />
                             <SmartSelect v-model="disburseForm.disbursement_account_row_id" :options="disbursementAccounts" label="Akun Sumber Dana" placeholder="Pilih akun kas/bank" :error="disburseForm.errors.disbursement_account_row_id" required />
                         </div>
-                        <AppTextarea v-model="disburseForm.disbursement_notes" label="Catatan Pencairan (opsional)" :error="disburseForm.errors.disbursement_notes" placeholder="Referensi transfer, nomor slip, dll." />
+                        <AppTextarea v-model="disburseForm.disbursement_notes" label="Catatan Pencairan (opsional)" :error="disburseForm.errors.disbursement_notes" placeholder="Masukkan catatan" />
                         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                             <Link :href="backUrl"><AppButton type="button" variant="secondary">Kembali</AppButton></Link>
                             <div class="flex flex-wrap items-center gap-2">
@@ -1341,7 +1341,7 @@ const beneficiaryStats = computed(() => ({
                         v-model="rejectForm.notes"
                         label="Alasan penolakan"
                         :error="rejectForm.errors.notes"
-                        placeholder="Jelaskan alasan pinjaman tidak layak (wajib, min. 3 karakter)."
+                        placeholder="Masukkan alasan"
                         rows="3"
                         required
                     />
@@ -1393,7 +1393,7 @@ const beneficiaryStats = computed(() => ({
             <form class="space-y-5" @submit.prevent="submitWriteOff">
                 <AppDatePicker v-model="writeOffForm.written_off_at" label="Tanggal Penghapusan" :max="today" :error="writeOffForm.errors.written_off_at" required />
                 <AppCurrencyInput :model-value="loan.principal_remaining" label="Sisa Pokok Dihapus" icon="payments" readonly />
-                <AppTextarea v-model="writeOffForm.reason" label="Alasan Penghapusan" :error="writeOffForm.errors.reason" required placeholder="Dasar penghapusan, hasil musyawarah, dll." />
+                <AppTextarea v-model="writeOffForm.reason" label="Alasan Penghapusan" :error="writeOffForm.errors.reason" required placeholder="Masukkan alasan" />
             </form>
             <template #footer>
                 <AppButton variant="secondary" @click="writeOffModalOpen = false" :disabled="writeOffForm.processing">Batal</AppButton>
@@ -1414,7 +1414,7 @@ const beneficiaryStats = computed(() => ({
                     <AppInput v-model="beneficiaryWriteOffForm.installment_number" label="Sisipkan Setelah Angsuran Ke-" icon="schedule" type="number" inputmode="numeric" min="1" required :error="beneficiaryWriteOffForm.errors.installment_number" />
                 </div>
                 <AppCurrencyInput :model-value="beneficiaryWriteOffTarget ? beneficiaryWriteOffTarget.allocated_amount : 0" label="Alokasi Pokok Pemanfaat" icon="payments" readonly />
-                <AppTextarea v-model="beneficiaryWriteOffForm.reason" label="Alasan Penghapusan" :error="beneficiaryWriteOffForm.errors.reason" required placeholder="Misal: Anggota meninggal dunia, hasil musyawarah kelompok, dll." />
+                <AppTextarea v-model="beneficiaryWriteOffForm.reason" label="Alasan Penghapusan" :error="beneficiaryWriteOffForm.errors.reason" required placeholder="Masukkan alasan" />
             </form>
             <template #footer>
                 <AppButton variant="secondary" @click="beneficiaryWriteOffModalOpen = false" :disabled="beneficiaryWriteOffForm.processing">Batal</AppButton>
@@ -1427,7 +1427,7 @@ const beneficiaryStats = computed(() => ({
                 Tindakan ini akan menghapus pinjaman baru hasil reschedule dan mengembalikan pinjaman asal ke status aktif sebelumnya. Hanya dapat dilakukan sebelum ada angsuran dibayar di pinjaman baru. Kedua jurnal reschedule akan ditandai dihapus (soft-delete) untuk audit trail.
             </p>
             <form class="space-y-5" @submit.prevent="submitCancelReschedule">
-                <AppTextarea v-model="cancelRescheduleForm.reason" label="Alasan Pembatalan" :error="cancelRescheduleForm.errors.reason" required placeholder="Misal: Salah input suku bunga, akan dilakukan reschedule ulang dengan parameter benar." />
+                <AppTextarea v-model="cancelRescheduleForm.reason" label="Alasan Pembatalan" :error="cancelRescheduleForm.errors.reason" required placeholder="Masukkan alasan" />
             </form>
             <template #footer>
                 <AppButton variant="secondary" @click="cancelRescheduleModalOpen = false" :disabled="cancelRescheduleForm.processing">Batal</AppButton>
@@ -1441,7 +1441,7 @@ const beneficiaryStats = computed(() => ({
             </p>
             <form class="space-y-5" @submit.prevent="submitComplete">
                 <AppDatePicker v-model="completeForm.completed_at" label="Tanggal Pelunasan" :max="today" :error="completeForm.errors.completed_at" required />
-                <AppTextarea v-model="completeForm.notes" label="Catatan Validasi Pelunasan (opsional)" placeholder="Misal: Berkas pelunasan dan kartu angsuran telah diverifikasi lengkap." :error="completeForm.errors.notes" />
+                <AppTextarea v-model="completeForm.notes" label="Catatan Validasi Pelunasan (opsional)" placeholder="Masukkan catatan" :error="completeForm.errors.notes" />
             </form>
             <template #footer>
                 <AppButton variant="secondary" @click="completeModalOpen = false" :disabled="completeForm.processing">Batal</AppButton>

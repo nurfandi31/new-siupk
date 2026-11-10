@@ -545,6 +545,254 @@ final class CollectibilityReportService
     }
 
     /**
+     * Laporan Kolektabilitas per Kelompok (detail pinjaman kelompok).
+     * Struktur mengikuti `kolek_kelompok.blade.php` di SIUPK original.
+     *
+     * @return array{
+     *   year:int, month:int, period_label:string,
+     *   identity:array{legal_name:string, short_name:?string},
+     *   levels:list<array{level:int, nama:string, prosentase:float, bucket_key:string}>,
+     *   products:list<array<string, mixed>>,
+     *   totals:array<string, float>
+     * }
+     */
+    public function buildKelompok(int $year, int $month, ?string $productCode = null): array
+    {
+        $tenantId = $this->context->id();
+        $endOfMonth = CarbonImmutable::createFromDate($year, $month, 1)->endOfMonth()->toDateString();
+        $profile = OrganizationProfile::query()->first();
+
+        $productsQuery = DB::connection('tenant')
+            ->table('loan_products')
+            ->where('tenant_id', $tenantId)
+            ->orderBy('code');
+
+        if ($productCode !== null && $productCode !== 'all') {
+            $productsQuery->where('code', $productCode);
+        }
+
+        $products = $productsQuery->get(['row_id', 'code', 'name']);
+
+        $loans = DB::connection('tenant')
+            ->table('loans as l')
+            ->leftJoin('loan_borrowers as b', function ($j): void {
+                $j->on('b.tenant_id', '=', 'l.tenant_id')
+                    ->on('b.loan_row_id', '=', 'l.row_id');
+            })
+            ->leftJoin('groups as g', function ($j): void {
+                $j->on('g.tenant_id', '=', 'b.tenant_id')
+                    ->on('g.row_id', '=', 'b.group_row_id');
+            })
+            ->leftJoin('organization_units as v', function ($j): void {
+                $j->on('v.tenant_id', '=', 'g.tenant_id')
+                    ->on('v.row_id', '=', 'g.organization_unit_row_id');
+            })
+            ->where('l.tenant_id', $tenantId)
+            ->whereIn('l.status', self::ACTIVE)
+            ->where(function ($w): void {
+                $w->whereNull('l.legacy_source')
+                    ->orWhere('l.legacy_source', 'group_loan');
+            })
+            ->orderBy('v.name')
+            ->orderBy('g.name')
+            ->orderBy('l.id')
+            ->get([
+                'l.row_id',
+                'l.id',
+                'l.loan_number',
+                'l.loan_product_row_id',
+                'l.disbursed_at',
+                'l.principal_amount',
+                'g.row_id as group_row_id',
+                'g.code as group_code',
+                'g.name as group_name',
+                'v.row_id as village_row_id',
+                'v.name as village_name',
+            ]);
+
+        $loanRowIds = $loans->pluck('row_id')->map(fn ($id) => (int) $id)->all();
+
+        $installments = $loanRowIds === []
+            ? collect()
+            : DB::connection('tenant')
+                ->table('loan_installments')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('loan_row_id', $loanRowIds)
+                ->get(['loan_row_id', 'installment_number', 'due_date', 'principal_due', 'interest_due']);
+
+        $payments = $loanRowIds === []
+            ? collect()
+            : DB::connection('tenant')
+                ->table('loan_payment_allocations as a')
+                ->join('loan_payments as p', function ($j): void {
+                    $j->on('p.tenant_id', '=', 'a.tenant_id')
+                        ->on('p.row_id', '=', 'a.payment_row_id');
+                })
+                ->where('a.tenant_id', $tenantId)
+                ->whereIn('p.loan_row_id', $loanRowIds)
+                ->get(['p.loan_row_id', 'p.paid_at', 'a.component', 'a.amount']);
+
+        $instByLoan = $installments->groupBy('loan_row_id');
+        $payByLoan = $payments->groupBy('loan_row_id');
+
+        $activeLevels = $this->config->activeOnly();
+        if ($activeLevels === []) {
+            $activeLevels = [['nama' => 'Lancar', 'prosentase' => '0.5', 'durasi' => '999', 'satuan' => 'bulan']];
+        }
+        $levelKeyByIdx = $this->buildLevelBucketKeys($activeLevels);
+        $levelsPayload = array_map(
+            static fn (array $row, int $idx): array => [
+                'level' => $idx + 1,
+                'nama' => (string) ($row['nama'] ?? ''),
+                'prosentase' => (float) ($row['prosentase'] ?? 0),
+                'bucket_key' => $levelKeyByIdx[$idx],
+            ],
+            $activeLevels,
+            array_keys($activeLevels),
+        );
+
+        $productBlocks = [];
+        $grandTotals = $this->buildEmptyTotals($activeLevels);
+
+        foreach ($products as $prod) {
+            $prodLoans = $loans->where('loan_product_row_id', $prod->row_id);
+            if ($prodLoans->isEmpty()) {
+                continue;
+            }
+
+            $villagesMap = [];
+            $prodTotals = $this->buildEmptyTotals($activeLevels);
+
+            foreach ($prodLoans as $loan) {
+                $vKey = (string) ($loan->village_name ?? 'Lain-lain');
+                if (! isset($villagesMap[$vKey])) {
+                    $villagesMap[$vKey] = [
+                        'village_name' => $vKey,
+                        'loans' => [],
+                        'subtotal' => $this->buildEmptyTotals($activeLevels),
+                    ];
+                }
+
+                $alokasi = (float) $loan->principal_amount;
+                $loanInsts = $instByLoan->get($loan->row_id) ?? collect();
+                $loanPays = $payByLoan->get($loan->row_id) ?? collect();
+
+                $sumPokok = 0.0;
+                $sumJasa = 0.0;
+                $totalPokokDue = 0.0;
+                $totalJasaDue = 0.0;
+                $maxInstNumber = 0;
+
+                foreach ($loanInsts as $inst) {
+                    $totalPokokDue += (float) $inst->principal_due;
+                    $totalJasaDue += (float) $inst->interest_due;
+                    $maxInstNumber = max($maxInstNumber, (int) $inst->installment_number);
+                    $dueDate = (string) $inst->due_date;
+                    if ($dueDate > $endOfMonth) {
+                        continue;
+                    }
+                    $sumPokok += (float) $inst->principal_due;
+                    $sumJasa += (float) $inst->interest_due;
+                }
+
+                $paidPokok = 0.0;
+                $paidJasa = 0.0;
+                foreach ($loanPays as $pay) {
+                    $paidAt = (string) $pay->paid_at;
+                    if ($paidAt > $endOfMonth) {
+                        continue;
+                    }
+                    if ((string) $pay->component === 'principal') {
+                        $paidPokok += (float) $pay->amount;
+                    } elseif ((string) $pay->component === 'interest') {
+                        $paidJasa += (float) $pay->amount;
+                    }
+                }
+
+                $saldo = max(0.0, round($totalPokokDue - $paidPokok, 2));
+                $tunggakanPokok = max(0.0, round($sumPokok - $paidPokok, 2));
+                $tunggakanJasa = max(0.0, round($sumJasa - $paidJasa, 2));
+
+                $levelIndex = $this->resolveKolekLevel(
+                    $tunggakanPokok,
+                    $alokasi,
+                    $loan->disbursed_at,
+                    null,
+                    $endOfMonth,
+                    $maxInstNumber,
+                    $activeLevels,
+                );
+                $bucket = $levelKeyByIdx[$levelIndex];
+                $kolekNama = (string) ($activeLevels[$levelIndex]['nama'] ?? 'Lancar');
+
+                $loanData = [
+                    'loan_id' => (int) $loan->id,
+                    'loan_number' => (string) $loan->loan_number,
+                    'group_name' => (string) ($loan->group_name ?? '-'),
+                    'group_code' => (string) ($loan->group_code ?? ''),
+                    'disbursed_at' => (string) $loan->disbursed_at,
+                    'alokasi' => $alokasi,
+                    'saldo' => $saldo,
+                    'tunggakan_pokok' => $tunggakanPokok,
+                    'tunggakan_jasa' => $tunggakanJasa,
+                    'kolek' => $levelIndex + 1,
+                    'kolek_nama' => $kolekNama,
+                ];
+
+                $villagesMap[$vKey]['loans'][] = $loanData;
+
+                $sub = &$villagesMap[$vKey]['subtotal'];
+                $sub['alokasi'] += $alokasi;
+                $sub['saldo'] += $saldo;
+                $sub['tunggakan_pokok'] += $tunggakanPokok;
+                $sub['tunggakan_jasa'] += $tunggakanJasa;
+                $sub[$bucket] = ($sub[$bucket] ?? 0) + $saldo;
+                $sub['peminjam_count'] = ($sub['peminjam_count'] ?? 0) + 1;
+                unset($sub);
+
+                $prodTotals['alokasi'] += $alokasi;
+                $prodTotals['saldo'] += $saldo;
+                $prodTotals['tunggakan_pokok'] += $tunggakanPokok;
+                $prodTotals['tunggakan_jasa'] += $tunggakanJasa;
+                $prodTotals[$bucket] += $saldo;
+                $prodTotals['peminjam_count'] = ($prodTotals['peminjam_count'] ?? 0) + 1;
+            }
+
+            ksort($villagesMap);
+
+            $productBlocks[] = [
+                'product_code' => (string) $prod->code,
+                'product_name' => (string) $prod->name,
+                'villages' => array_values($villagesMap),
+                'totals' => $prodTotals,
+            ];
+
+            foreach ($prodTotals as $k => $val) {
+                $grandTotals[$k] = ($grandTotals[$k] ?? 0) + (is_numeric($val) ? (float) $val : 0);
+            }
+        }
+
+        $monthNames = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+        ];
+
+        return [
+            'year' => $year,
+            'month' => $month,
+            'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
+            'identity' => [
+                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'short_name' => $profile?->short_name,
+            ],
+            'levels' => $levelsPayload,
+            'products' => $productBlocks,
+            'totals' => $grandTotals,
+        ];
+    }
+
+    /**
      * Laporan Kolektabilitas per Desa KHUSUS pinjaman INDIVIDU.
      * Rekap per desa (tanpa breakdown per anggota) seperti `kolek_desa_individu.blade.php`
      * di SIUPK original. Hanya `legacy_source='member_loan'`.

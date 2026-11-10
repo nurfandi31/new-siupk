@@ -297,7 +297,7 @@ const FREQUENCY_OPTIONS = [
 // State form & submit handler untuk form yang ditampilkan di section tab "Aksi".
 const verifyForm = ref({
     verified_at: props.today,
-    verification_amount: Number(props.loan.principal_amount ?? 0),
+    verification_amount: Number(props.loan.verification_amount ?? props.loan.principal_amount ?? 0),
     term_months: Number(props.loan.term_months ?? 12),
     service_rate_total: Number(props.loan.service_rate_total ?? 0),
     principal_frequency: props.loan.principal_frequency ?? 'monthly',
@@ -318,7 +318,7 @@ function submitVerify() {
 const approveForm = ref({
     approved_at: props.today,
     planned_disbursed_at: props.today,
-    allocation_amount: Number(props.loan.principal_amount ?? 0),
+    allocation_amount: Number(props.loan.verification_amount ?? props.loan.principal_amount ?? 0),
     term_months: Number(props.loan.term_months ?? 12),
     service_rate_total: Number(props.loan.service_rate_total ?? 0),
     principal_frequency: props.loan.principal_frequency ?? 'monthly',
@@ -341,7 +341,7 @@ const disburseForm = ref({
     disbursed_at: props.today,
     disbursement_account_row_id: '',
     disbursement_notes: '',
-    spk_no: '',
+    spk_no: props.loan.spk_no ?? '',
     disbursement_slot: '',
 });
 const disburseProcessing = ref(false);
@@ -485,9 +485,9 @@ const paymentRows = computed(() => {
 });
 
 // ===== Documents modal =====
-const STAGE_INDIVIDUAL_PROPOSAL = ['draft', 'verified', 'waiting', 'approved', 'active', 'disbursed', 'completed'];
-const STAGE_INDIVIDUAL_VERIFICATION = ['verified', 'waiting', 'approved', 'active', 'disbursed', 'completed'];
-const STAGE_INDIVIDUAL_DISBURSEMENT = ['waiting', 'approved', 'active', 'disbursed', 'completed'];
+const STAGE_INDIVIDUAL_PROPOSAL = ['draft', 'verified', 'waiting', 'approved', 'active', 'disbursed'];
+const STAGE_INDIVIDUAL_VERIFICATION = ['verified', 'waiting', 'approved', 'active', 'disbursed'];
+const STAGE_INDIVIDUAL_DISBURSEMENT = ['waiting', 'approved', 'active', 'disbursed'];
 const STAGE_INDIVIDUAL_SETTLEMENT = ['completed', 'written_off'];
 
 const STAGE_META = {
@@ -1112,7 +1112,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             </label>
                             <label class="block">
                                 <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Nomor SPK (opsional)</span>
-                                <input v-model="approveForm.spk_no" type="text" maxlength="80" placeholder="mis. SPK/2024/001" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
+                                <input v-model="approveForm.spk_no" type="text" maxlength="80" placeholder="Masukkan no. SPK" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
                                 <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Sistem Angs. Pokok</span>
@@ -1179,7 +1179,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             </label>
                             <label class="block">
                                 <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Waktu & Tempat Pencairan (opsional)</span>
-                                <input v-model="disburseForm.disbursement_slot" type="text" maxlength="120" placeholder="mis. 09:00 WIB · Kantor BUMDes" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
+                                <input v-model="disburseForm.disbursement_slot" type="text" maxlength="120" placeholder="09:00 WIB · Tempat" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                         </div>
                         <label class="block">

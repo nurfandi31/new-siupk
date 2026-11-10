@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
+import { defaultPlaceholder } from '../composables/usePlaceholderText';
 import AppIcon from './AppIcon.vue';
 
 const model = defineModel({ type: String, default: '' });
@@ -347,7 +348,7 @@ const todayActionLabel = computed(() => props.mode === 'year' ? 'Tahun ini' : pr
                 @keydown.esc="closeCalendar(true)"
             >
                 <AppIcon v-if="icon" :name="icon" class="shrink-0 text-base text-outline" />
-                <span class="min-w-0 flex-1 truncate" :class="displayValue ? 'text-primary' : 'text-outline'">{{ displayValue || (placeholder ?? `Pilih ${label.toLowerCase()}`) }}</span>
+                <span class="min-w-0 flex-1 truncate" :class="displayValue ? 'text-primary' : 'text-outline'">{{ displayValue || (placeholder ?? defaultPlaceholder('date', label)) }}</span>
                 <button
                     v-if="clearable && model"
                     type="button"

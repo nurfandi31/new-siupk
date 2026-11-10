@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { reactive, ref, watch, onMounted } from 'vue';
+import { computed, reactive, ref, watch, onMounted } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
 import AppIcon from '../../../Components/AppIcon.vue';
@@ -9,6 +9,9 @@ import AppInput from '../../../Components/AppInput.vue';
 import LocationMapPicker from '../../../Components/LocationMapPicker.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
+import { useI18n } from '../../../i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     tenant: { type: Object, required: true },
@@ -38,12 +41,12 @@ const regencies = ref([]);
 const districts = ref([]);
 const loading = ref(false);
 
-const statusOptions = [
-    { value: 'active', label: 'Aktif' },
-    { value: 'suspended', label: 'Ditangguhkan' },
-    { value: 'provisioning', label: 'Provisioning' },
-    { value: 'provisioning_failed', label: 'Provisioning gagal' },
-];
+const statusOptions = computed(() => [
+    { value: 'active', label: t('Aktif') },
+    { value: 'suspended', label: t('Ditangguhkan') },
+    { value: 'provisioning', label: t('Provisioning') },
+    { value: 'provisioning_failed', label: t('Provisioning gagal') },
+]);
 
 const regencyCenter = reactive({
     lat: -7.5,
@@ -76,7 +79,7 @@ function addDomain() {
     if (!clean) return;
 
     if (form.custom_domains.includes(clean)) {
-        domainError.value = `Domain "${clean}" sudah ada di daftar.`;
+        domainError.value = t('Domain ":domain" sudah ada di daftar.', { domain: clean });
         return;
     }
 
@@ -93,7 +96,7 @@ async function load(url, target) {
     try {
         const response = await fetch(url, { headers: { Accept: 'application/json' } });
         const payload = await response.json();
-        if (!response.ok) throw new Error(payload.message || 'Data wilayah gagal dimuat.');
+        if (!response.ok) throw new Error(payload.message || t('Data wilayah gagal dimuat.'));
         target.value = payload.data || [];
     } catch (error) {
         target.value = [];
@@ -134,12 +137,12 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Edit Tenant" />
+    <Head :title="t('Edit Tenant')" />
     <AdminLayout>
         <div class="mx-auto max-w-5xl space-y-6">
             <header class="flex flex-col gap-3">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Edit Tenant</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Edit Tenant') }}</h1>
                     <p class="mt-1 text-on-surface-variant">{{ tenant.code }} · {{ tenant.name }}</p>
                 </div>
             </header>
@@ -148,34 +151,34 @@ function submit() {
                 <form class="space-y-5" @submit.prevent="submit">
                     <!-- Identitas -->
                     <section class="space-y-3">
-                        <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Identitas</h2>
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Identitas') }}</h2>
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <AppInput v-model="form.name" label="Nama Tenant" required :error="form.errors.name" />
-                            <SmartSelect v-model="form.status" label="Status" :options="statusOptions" required :error="form.errors.status" />
+                            <AppInput v-model="form.name" :label="t('Nama Tenant')" required :error="form.errors.name" />
+                            <SmartSelect v-model="form.status" :label="t('Status')" :options="statusOptions" required :error="form.errors.status" />
                         </div>
-                        <AppInput v-model="form.timezone" label="Zona waktu" :error="form.errors.timezone" />
+                        <AppInput v-model="form.timezone" :label="t('Zona waktu')" :error="form.errors.timezone" />
                     </section>
 
                     <!-- Custom Domains Section -->
                     <section class="space-y-3 border-t border-outline-variant pt-5">
                         <div>
-                            <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Custom Domain</h2>
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Custom Domain') }}</h2>
                             <p class="mt-0.5 text-xs text-on-surface-variant">
-                                Daftarkan domain atau subdomain (misal <code>bumdesma-sukamaju.id</code>). Arahkan DNS ke IP server siupk.
+                                {{ t('Daftarkan domain atau subdomain (misal') }} <code>bumdesma-sukamaju.id</code>). {{ t('Arahkan DNS ke IP server siupk.') }}
                             </p>
                         </div>
 
                         <div class="flex gap-2">
                             <AppInput
                                 v-model="domainInput"
-                                label="Tambah Domain"
-                                placeholder="contoh: bumdesma-sukamaju.id"
+                                :label="t('Tambah Domain')"
+                                :placeholder="t('Masukkan domain')"
                                 class="flex-1"
                                 :error="domainError || form.errors.custom_domains"
                                 @keydown.enter.prevent="addDomain"
                             />
                             <div class="flex items-end pb-0.5">
-                                <AppButton type="button" variant="primary" icon="add" @click="addDomain">Tambah</AppButton>
+                                <AppButton type="button" variant="primary" icon="add" @click="addDomain">{{ t('Tambah') }}</AppButton>
                             </div>
                         </div>
 
@@ -192,14 +195,14 @@ function submit() {
                                     size="sm"
                                     tone="neutral"
                                     rounded="full"
-                                    aria-label="Hapus domain"
+                                    :aria-label="t('Hapus domain')"
                                     class="hover:bg-error-container hover:text-error"
                                     @click="removeDomain(idx)"
                                 />
                             </div>
                         </div>
                         <p v-else class="text-xs italic text-on-surface-variant">
-                            Belum ada custom domain yang didaftarkan.
+                            {{ t('Belum ada custom domain yang didaftarkan.') }}
                         </p>
 
                         <div v-if="Object.keys(form.errors).some(k => k.startsWith('custom_domains.'))" class="space-y-1">
@@ -214,21 +217,21 @@ function submit() {
                     <!-- Wilayah Kecamatan Section -->
                     <section class="space-y-3 border-t border-outline-variant pt-5">
                         <div>
-                            <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Wilayah Kecamatan</h2>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">Asosiasi tenant dengan kode wilayah resmi Indonesia.</p>
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Wilayah Kecamatan') }}</h2>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Asosiasi tenant dengan kode wilayah resmi Indonesia.') }}</p>
                         </div>
                         <div class="grid gap-4 sm:grid-cols-3">
-                            <SmartSelect v-model="form.province_code" label="Provinsi" :options="provinces.map((item) => ({ value: item.code, label: item.name }))" placeholder="Pilih provinsi" :error="form.errors.province_code" :loading="loading" searchable />
-                            <SmartSelect v-model="form.regency_code" label="Kabupaten/Kota" :options="regencies.map((item) => ({ value: item.code, label: item.name }))" placeholder="Pilih kabupaten/kota" :error="form.errors.regency_code" :disabled="!form.province_code" :loading="loading" searchable />
-                            <SmartSelect v-model="form.district_code" label="Kecamatan" :options="districts.map((item) => ({ value: item.code, label: item.name }))" placeholder="Pilih kecamatan" :error="form.errors.district_code" :disabled="!form.regency_code" :loading="loading" searchable />
+                            <SmartSelect v-model="form.province_code" :label="t('Provinsi')" :options="provinces.map((item) => ({ value: item.code, label: item.name }))" :placeholder="t('Pilih provinsi')" :error="form.errors.province_code" :loading="loading" searchable />
+                            <SmartSelect v-model="form.regency_code" :label="t('Kabupaten/Kota')" :options="regencies.map((item) => ({ value: item.code, label: item.name }))" :placeholder="t('Pilih kabupaten/kota')" :error="form.errors.regency_code" :disabled="!form.province_code" :loading="loading" searchable />
+                            <SmartSelect v-model="form.district_code" :label="t('Kecamatan')" :options="districts.map((item) => ({ value: item.code, label: item.name }))" :placeholder="t('Pilih kecamatan')" :error="form.errors.district_code" :disabled="!form.regency_code" :loading="loading" searchable />
                         </div>
                     </section>
 
                     <!-- Titik Koordinat & Peta Lokasi Section -->
                     <section class="space-y-3 border-t border-outline-variant pt-5">
                         <div>
-                            <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Titik Koordinat & Peta Lokasi</h2>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">Tentukan titik koordinat kantor / wilayah tenant.</p>
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Titik Koordinat & Peta Lokasi') }}</h2>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Tentukan titik koordinat kantor / wilayah tenant.') }}</p>
                         </div>
                         <LocationMapPicker
                             v-model:latitude="form.map_latitude"
@@ -240,8 +243,8 @@ function submit() {
                     </section>
 
                     <div class="flex justify-end gap-3 border-t border-outline-variant pt-5">
-                        <Link :href="`/admin/tenants/${tenant.row_id}`"><AppButton variant="secondary">Batal</AppButton></Link>
-                        <AppButton type="submit" :loading="form.processing" icon="save">Simpan Perubahan</AppButton>
+                        <Link :href="`/admin/tenants/${tenant.row_id}`"><AppButton variant="secondary">{{ t('Batal') }}</AppButton></Link>
+                        <AppButton type="submit" :loading="form.processing" icon="save">{{ t('Simpan Perubahan') }}</AppButton>
                     </div>
                 </form>
             </AppCard>

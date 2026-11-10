@@ -78,7 +78,7 @@ function markRead(row) {
                 <div class="p-6">
                     <div class="flex flex-wrap items-center gap-3">
                         <div class="flex items-center gap-2">
-                            <input v-model="q" type="search" placeholder="Cari nama / subjek / isi..." class="h-10 w-64 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-sm text-primary placeholder:text-outline transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none" @keydown.enter="applySearch" />
+                            <input v-model="q" type="search" placeholder="Cari pesan..." class="h-10 w-64 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-sm text-primary placeholder:text-outline transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none" @keydown.enter="applySearch" />
                             <AppButton variant="secondary" size="compact" icon="search" @click="applySearch">Cari</AppButton>
                         </div>
                     </div>

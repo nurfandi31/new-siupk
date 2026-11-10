@@ -7,6 +7,9 @@ import AppInput from '../../../Components/AppInput.vue';
 import LocationMapPicker from '../../../Components/LocationMapPicker.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
+import { useI18n } from '../../../i18n';
+
+const { t } = useI18n();
 
 const form = useForm({
     name: '',
@@ -16,11 +19,11 @@ const form = useForm({
     map_latitude: null,
     map_longitude: null,
     map_zoom: 13,
-    user_name: '',
-    username: '',
-    email: '',
-    password: '',
-    password_confirmation: '',
+});
+
+const props = defineProps({
+    seedRoles: { type: Array, default: () => [] },
+    seedPassword: { type: String, default: null },
 });
 
 const provinces = ref([]);
@@ -39,7 +42,7 @@ async function load(url, target) {
     try {
         const response = await fetch(url, { headers: { Accept: 'application/json' } });
         const payload = await response.json();
-        if (!response.ok) throw new Error(payload.message || 'Data wilayah gagal dimuat.');
+        if (!response.ok) throw new Error(payload.message || t('Data wilayah gagal dimuat.'));
         target.value = payload.data || [];
     } catch (error) {
         target.value = [];
@@ -90,30 +93,30 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Tambah Tenant" />
+    <Head :title="t('Tambah Tenant')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header>
-                <h1 class="text-2xl font-bold text-primary">Tambah Tenant</h1>
-                <p class="mt-1 text-on-surface-variant">Tenant dibuat bersama desa dari kecamatan terpilih dan pengguna pertama.</p>
+                <h1 class="text-2xl font-bold text-primary">{{ t('Tambah Tenant') }}</h1>
+                <p class="mt-1 text-on-surface-variant">{{ t('Tenant dibuat bersama desa dari kecamatan terpilih. Akun login setiap role dibuat otomatis.') }}</p>
             </header>
 
             <AppCard>
                 <form class="space-y-5" @submit.prevent="submit">
-                    <AppInput v-model="form.name" label="Nama Tenant" icon="business" required :error="form.errors.name" hint="Kode tenant dibuat otomatis dari nama." />
+                    <AppInput v-model="form.name" :label="t('Nama Tenant')" icon="business" required :error="form.errors.name" :hint="t('Kode tenant dibuat otomatis dari nama.')" />
 
                     <div class="border-t border-outline-variant pt-5">
-                        <h2 class="font-semibold text-primary">Wilayah Tenant</h2>
+                        <h2 class="font-semibold text-primary">{{ t('Wilayah Tenant') }}</h2>
                         <div class="mt-4 grid gap-4 xl:grid-cols-3">
-                            <SmartSelect v-model="form.province_code" label="Provinsi" :options="provinces.map((item) => ({ value: item.code, label: item.name }))" placeholder="Pilih provinsi" required :error="form.errors.province_code" :loading="loading" searchable />
-                            <SmartSelect v-model="form.regency_code" label="Kabupaten/Kota" :options="regencies.map((item) => ({ value: item.code, label: item.name }))" placeholder="Pilih kabupaten/kota" required :error="form.errors.regency_code" :disabled="!form.province_code" :loading="loading" searchable />
-                            <SmartSelect v-model="form.district_code" label="Kecamatan" :options="districts.map((item) => ({ value: item.code, label: item.name }))" placeholder="Pilih kecamatan" required :error="form.errors.district_code" :disabled="!form.regency_code" :loading="loading" searchable />
+                            <SmartSelect v-model="form.province_code" :label="t('Provinsi')" :options="provinces.map((item) => ({ value: item.code, label: item.name }))" :placeholder="t('Pilih provinsi')" required :error="form.errors.province_code" :loading="loading" searchable />
+                            <SmartSelect v-model="form.regency_code" :label="t('Kabupaten/Kota')" :options="regencies.map((item) => ({ value: item.code, label: item.name }))" :placeholder="t('Pilih kabupaten/kota')" required :error="form.errors.regency_code" :disabled="!form.province_code" :loading="loading" searchable />
+                            <SmartSelect v-model="form.district_code" :label="t('Kecamatan')" :options="districts.map((item) => ({ value: item.code, label: item.name }))" :placeholder="t('Pilih kecamatan')" required :error="form.errors.district_code" :disabled="!form.regency_code" :loading="loading" searchable />
                         </div>
                     </div>
 
                     <div class="border-t border-outline-variant pt-5">
-                        <h2 class="font-semibold text-primary">Titik Koordinat & Peta Lokasi</h2>
-                        <p class="text-xs text-on-surface-variant mb-4">Tentukan titik koordinat kantor / wilayah tenant untuk keperluan pemetaan konsolidasi.</p>
+                        <h2 class="font-semibold text-primary">{{ t('Titik Koordinat & Peta Lokasi') }}</h2>
+                        <p class="text-xs text-on-surface-variant mb-4">{{ t('Tentukan titik koordinat kantor / wilayah tenant untuk keperluan pemetaan konsolidasi.') }}</p>
                         <LocationMapPicker
                             v-model:latitude="form.map_latitude"
                             v-model:longitude="form.map_longitude"
@@ -123,20 +126,30 @@ function submit() {
                         />
                     </div>
 
-                    <div class="border-t border-outline-variant pt-5">
-                        <h2 class="font-semibold text-primary">Pengguna Pertama</h2>
-                        <div class="mt-4 grid gap-4 xl:grid-cols-3">
-                            <AppInput v-model="form.user_name" label="Nama Pengguna" icon="person" required :error="form.errors.user_name" />
-                            <AppInput v-model="form.username" label="Username" icon="account_circle" required :error="form.errors.username" />
-                            <AppInput v-model="form.email" label="Email" icon="mail" type="email" required :error="form.errors.email" />
-                            <AppInput v-model="form.password" label="Password" icon="lock" type="password" required :error="form.errors.password" />
-                            <AppInput v-model="form.password_confirmation" label="Konfirmasi Password" icon="lock_reset" type="password" required />
+                    <div v-if="props.seedRoles.length" class="border-t border-outline-variant pt-5">
+                        <h2 class="font-semibold text-primary">{{ t('Akun Login Otomatis') }}</h2>
+                        <p class="mt-1 text-xs text-on-surface-variant">
+                            {{ t('Satu akun dibuat untuk setiap role di bawah ini. Username memakai pola') }}
+                            <code class="rounded bg-surface-container-low px-1 py-0.5 font-mono text-[11px] text-primary">{kode-tenant}.{kode-role}</code>.
+                            <template v-if="props.seedPassword">
+                                {{ t('Password awal:') }} <code class="rounded bg-surface-container-low px-1 py-0.5 font-mono text-[11px] text-primary">{{ props.seedPassword }}</code>.
+                            </template>
+                            {{ t('Password dapat diubah lewat menu Users setelah tenant dibuat.') }}
+                        </p>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <span
+                                v-for="role in props.seedRoles"
+                                :key="role.code"
+                                class="rounded-full border border-outline-variant bg-surface-container-low px-3 py-1 text-xs font-semibold text-on-surface-variant"
+                            >
+                                {{ role.name }}
+                            </span>
                         </div>
                     </div>
 
                     <div class="flex justify-end gap-3">
-                        <Link href="/admin/tenants"><AppButton variant="secondary">Batal</AppButton></Link>
-                        <AppButton type="submit" :loading="form.processing" icon="save">Daftarkan Tenant</AppButton>
+                        <Link href="/admin/tenants"><AppButton variant="secondary">{{ t('Batal') }}</AppButton></Link>
+                        <AppButton type="submit" :loading="form.processing" icon="save">{{ t('Daftarkan Tenant') }}</AppButton>
                     </div>
                 </form>
             </AppCard>

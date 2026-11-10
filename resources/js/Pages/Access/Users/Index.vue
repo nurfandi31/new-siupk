@@ -90,7 +90,7 @@ function confirmDelete(user) {
                         :per-page="perPage"
                         :sort="sort"
                         :direction="direction"
-                        search-placeholder="Cari nama, username, atau email..."
+                        search-placeholder="Cari pengguna..."
                         empty-title="Belum ada pengguna"
                         empty-description="Tambahkan pengguna staf atau operator untuk unit ini."
                     >

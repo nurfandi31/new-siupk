@@ -7,7 +7,10 @@ import { createApp, h } from 'vue';
 import AppOfflineBanner from './Components/AppOfflineBanner.vue';
 import DesktopSplashScreen from './Components/DesktopSplashScreen.vue';
 import DesktopTitleBar from './Components/DesktopTitleBar.vue';
+import { initI18n } from './i18n';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/index.esm.js';
+
+initI18n();
 
 if (typeof window !== 'undefined' && window.desktopAPI?.onNavigate) {
     window.desktopAPI.onNavigate((url) => {

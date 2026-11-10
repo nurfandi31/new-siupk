@@ -99,10 +99,10 @@ function submit() {
             <form class="space-y-6" @submit.prevent="submit">
                 <AppCard title="Informasi Akun">
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <AppInput v-model="form.name" label="Nama Lengkap" placeholder="Contoh: Budi Santoso" required :error="form.errors.name" />
-                        <AppInput v-model="form.username" label="Username Login" placeholder="Contoh: budi_s" required :error="form.errors.username" />
+                        <AppInput v-model="form.name" label="Nama Lengkap" placeholder="Nama lengkap" required :error="form.errors.name" />
+                        <AppInput v-model="form.username" label="Username Login" placeholder="Masukkan username" required :error="form.errors.username" />
                         <div class="sm:col-span-2">
-                            <AppInput v-model="form.email" label="Alamat Email (Opsional)" placeholder="Contoh: budi@contoh.id" type="email" :error="form.errors.email" />
+                            <AppInput v-model="form.email" label="Alamat Email (Opsional)" placeholder="Masukkan email" type="email" :error="form.errors.email" />
                         </div>
                         <div class="sm:col-span-2">
                             <AppInput v-model="form.phone" label="Nomor HP (WhatsApp)" icon="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" required :error="form.errors.phone" />
@@ -116,7 +116,7 @@ function submit() {
                                 searchable
                                 required
                                 clearable
-                                placeholder="Cari nama atau nomor anggota..."
+                                placeholder="Cari anggota..."
                                 :loading="memberLoading"
                                 :error="form.errors.member_row_id"
                                 @search="searchMembers"
@@ -173,7 +173,7 @@ function submit() {
                                     label="Pilih Desa Penugasan"
                                     :options="villageOptions"
                                     searchable
-                                    placeholder="Cari nama atau kode desa..."
+                                    placeholder="Cari desa..."
                                     :error="form.errors.village_row_id"
                                 />
                             </div>

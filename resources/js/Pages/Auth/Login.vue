@@ -9,6 +9,7 @@ import AppInput from '../../Components/AppInput.vue';
 
 const props = defineProps({
     demo: { type: Object, default: null },
+    centralLogin: { type: Boolean, default: false },
 });
 
 const showPassword = ref(Boolean(props.demo));
@@ -167,6 +168,15 @@ const trustItems = [
                             {{ demo ? 'Kredensial demo sudah terisi otomatis. Klik tombol masuk untuk menjelajah sistem.' : 'Masukkan kredensial pengguna terdaftar BUMDesma Anda.' }}
                         </p>
                     </header>
+
+                    <!-- Central/tenant separation notice -->
+                    <div v-if="centralLogin && !demo" role="status" class="flex items-start gap-2.5 rounded-lg border border-primary/30 bg-primary-container/30 p-3 text-sm text-on-surface">
+                        <AppIcon name="info" class="text-xl shrink-0 mt-0.5 leading-none text-primary" />
+                        <div class="leading-snug">
+                            <p class="font-semibold">Ini halaman login pusat.</p>
+                            <p class="mt-0.5 text-on-surface-variant">Gunakan akun superadmin/pusat. Akun tenant harus login melalui domain tenant masing-masing.</p>
+                        </div>
+                    </div>
 
                     <!-- Demo banner info -->
                     <div v-if="demo" role="status" class="flex items-start gap-2.5 rounded-lg border border-tertiary/30 bg-tertiary-fixed/30 p-3 text-sm text-on-surface">

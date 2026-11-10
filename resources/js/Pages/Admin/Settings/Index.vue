@@ -122,7 +122,7 @@ async function removeSetting(key) {
             <!-- Form setting baru -->
             <AppCard v-if="createOpen">
                 <form class="grid gap-4 sm:grid-cols-[1fr_10rem_2fr_auto] sm:items-end" @submit.prevent="saveCreate">
-                    <AppInput v-model="createForm.key" label="Key" placeholder="misal. wa.gateway.url" required />
+                    <AppInput v-model="createForm.key" label="Key" placeholder="Masukkan key" required />
                     <SmartSelect
                         v-model="createForm.value_type"
                         label="Tipe"
@@ -132,7 +132,7 @@ async function removeSetting(key) {
                     <AppInput
                         v-model="createForm.value"
                         label="Nilai"
-                        placeholder="Kosongkan untuk null; JSON harus valid"
+                        placeholder="Masukkan nilai"
                         :type="/(secret|api_key|private_key|token|password)/i.test(createForm.key) ? 'password' : 'text'"
                     />
                     <AppButton type="submit" icon="save" :loading="createForm.processing">Simpan</AppButton>
@@ -171,7 +171,7 @@ async function removeSetting(key) {
                                 hide-label
                                 class="min-w-64 flex-1"
                                 :type="row.is_sensitive ? 'password' : 'text'"
-                                :placeholder="row.is_sensitive ? 'Isi untuk mengganti nilai tersimpan' : 'Nilai baru'"
+                                :placeholder="row.is_sensitive ? 'Ganti nilai' : 'Nilai baru'"
                             />
                             <AppButton type="submit" variant="success" size="compact" icon="check" :loading="editForm.processing">Simpan</AppButton>
                             <AppButton variant="ghost" size="compact" @click="cancelEdit">Batal</AppButton>

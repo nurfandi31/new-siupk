@@ -27,10 +27,6 @@ final class StoreTenantRequest extends FormRequest
             'map_latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'map_longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'map_zoom' => ['nullable', 'integer', 'between:3,19'],
-            'user_name' => ['required', 'string', 'max:150'],
-            'username' => ['required', 'string', 'max:100', 'alpha_dash', Rule::unique('users', 'username')],
-            'email' => ['required', 'email', 'max:190', Rule::unique('users', 'email')],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
     }
 
@@ -74,10 +70,6 @@ final class StoreTenantRequest extends FormRequest
             'map_latitude' => 'latitude peta',
             'map_longitude' => 'longitude peta',
             'map_zoom' => 'zoom peta',
-            'user_name' => 'nama pengguna pertama',
-            'username' => 'nama pengguna',
-            'email' => 'surel',
-            'password' => 'kata sandi',
             'district_code' => 'kecamatan',
             'regency_code' => 'kabupaten/kota',
             'province_code' => 'provinsi',

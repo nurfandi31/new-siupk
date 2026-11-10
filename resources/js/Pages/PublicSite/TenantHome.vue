@@ -3,6 +3,10 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import gsap from 'gsap';
 import AppIcon from '@/Components/AppIcon.vue';
+import AppLanguageSwitcher from '@/Components/AppLanguageSwitcher.vue';
+import { useI18n } from '@/i18n';
+
+const { t, locale } = useI18n();
 
 const props = defineProps({
     organization: { type: Object, required: true },
@@ -40,7 +44,7 @@ function formatPostDate(iso) {
     if (!iso) return '';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    return d.toLocaleDateString(locale.value === 'en' ? 'en-US' : 'id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 const mobileNavOpen = ref(false);
@@ -91,12 +95,12 @@ const orgInitial = computed(() =>
 const heroTagline = computed(
     () =>
         props.settings?.hero_tagline ||
-        `${orgLegalName.value} — Sistem Tata Kelola Keuangan & Dana Bergulir Masyarakat.`
+        `${orgLegalName.value} — ${t('Sistem Tata Kelola Keuangan & Dana Bergulir Masyarakat.')}`
 );
 const heroDescription = computed(
     () =>
         props.settings?.hero_description ||
-        `Portal informasi resmi ${orgLegalName.value} — mengelola pinjaman, pembukuan, dan pelaporan keuangan BUMDesma LKD sesuai regulasi yang berlaku.`
+        `${t('Portal informasi resmi')} ${orgLegalName.value} — ${t('mengelola pinjaman, pembukuan, dan pelaporan keuangan BUMDesma LKD sesuai regulasi yang berlaku.')}`
 );
 
 const navAnchors = [
@@ -370,9 +374,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head :title="`${orgLegalName} — Sistem Informasi Dana Bergulir Masyarakat`">
+    <Head :title="`${orgLegalName} — ${t('Sistem Informasi Dana Bergulir Masyarakat')}`">
         <meta head-key="description" name="description" :content="heroDescription" />
-        <meta head-key="og:title" property="og:title" :content="`${orgLegalName} — Situs Resmi`" />
+        <meta head-key="og:title" property="og:title" :content="`${orgLegalName} — ${t('Situs Resmi')}`" />
         <meta head-key="og:description" property="og:description" :content="heroDescription" />
         <meta head-key="og:type" property="og:type" content="website" />
         <meta head-key="og:url" property="og:url" :content="$page.url" />
@@ -427,7 +431,7 @@ onUnmounted(() => {
                             class="relative rounded-lg px-3 py-2 text-[13px] font-semibold transition-all duration-300"
                             :class="activeSection === link.id ? 'text-emerald-700' : 'text-slate-600 hover:text-slate-900'"
                         >
-                            {{ link.label }}
+                            {{ t(link.label) }}
                             <span
                                 class="absolute inset-x-3 -bottom-0.5 h-0.5 origin-left rounded-full bg-gradient-to-r from-emerald-700 to-teal-500 transition-transform duration-500"
                                 :class="activeSection === link.id ? 'scale-x-100' : 'scale-x-0'"
@@ -435,21 +439,23 @@ onUnmounted(() => {
                         </a>
                     </nav>
 
+                        <AppLanguageSwitcher tone="light" />
+
                     <Link
                         href="/login"
                         class="group relative inline-flex shrink-0 items-center gap-2 overflow-hidden whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2.5 text-[12px] font-bold text-white shadow-lg shadow-slate-900/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/40 sm:px-4 sm:text-[13px]"
                     >
                         <span class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
                         <AppIcon name="login" class="relative text-base" />
-                        <span class="relative hidden min-[420px]:inline">Masuk Sistem</span>
-                        <span class="relative min-[420px]:hidden">Masuk</span>
+                        <span class="relative hidden min-[420px]:inline">{{ t('Masuk Sistem') }}</span>
+                        <span class="relative min-[420px]:hidden">{{ t('Masuk') }}</span>
                         <AppIcon name="arrow_forward" class="relative text-sm transition-transform duration-300 group-hover:translate-x-0.5" />
                     </Link>
 
                     <button
                         type="button"
                         class="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-slate-700 shadow-md shadow-slate-900/10 ring-1 ring-slate-200 transition-all duration-300 hover:bg-slate-50 hover:shadow-lg hover:shadow-slate-900/15 sm:size-11 lg:hidden"
-                        :aria-label="mobileNavOpen ? 'Tutup navigasi' : 'Buka navigasi'"
+                        :aria-label="mobileNavOpen ? t('Tutup navigasi') : t('Buka navigasi')"
                         @click="mobileNavOpen = !mobileNavOpen"
                     >
                         <AppIcon :name="mobileNavOpen ? 'close' : 'menu'" class="text-xl" />
@@ -466,7 +472,7 @@ onUnmounted(() => {
                             :href="`#${link.id}`"
                             @click.prevent="smoothScrollTo(link.id)"
                             class="rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-emerald-700"
-                        >{{ link.label }}</a>
+                        >{{ t(link.label) }}</a>
                     </nav>
                 </div>
             </transition>
@@ -483,7 +489,7 @@ onUnmounted(() => {
                                 <span class="absolute inset-0 animate-ping rounded-full bg-emerald-500/70" />
                                 <span class="relative size-1.5 rounded-full bg-emerald-500" />
                             </span>
-                            Situs Resmi · {{ tenant?.code?.toUpperCase() || 'TENANT' }}
+                            {{ t('Situs Resmi ·') }} {{ tenant?.code?.toUpperCase() || 'TENANT' }}
                         </span>
                     </div>
 
@@ -504,7 +510,7 @@ onUnmounted(() => {
                                 class="group inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-gradient-to-r from-emerald-700 to-teal-500 px-4 py-2.5 text-[13px] font-bold text-white shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-600/40"
                             >
                                 <AppIcon name="login" class="text-base" />
-                                Masuk Sistem
+                                {{ t('Masuk Sistem') }}
                                 <AppIcon name="arrow_forward" class="text-sm transition-transform duration-300 group-hover:translate-x-1" />
                             </Link>
                             <Link
@@ -513,7 +519,7 @@ onUnmounted(() => {
                                 class="group inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-white px-4 py-2.5 text-[13px] font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md"
                             >
                                 <AppIcon name="play_circle" class="text-base text-emerald-700" />
-                                Jelajahi Layanan
+                                {{ t('Jelajahi Layanan') }}
                             </Link>
                         </div>
 
@@ -561,13 +567,13 @@ onUnmounted(() => {
                                         <span class="font-mono text-[10px] font-bold tracking-[0.18em] text-slate-400">0{{ idx + 1 }}</span>
                                     </div>
                                     <!-- Label -->
-                                    <p class="mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 sm:text-[10.5px] sm:tracking-[0.22em]">{{ s.top }}</p>
+                                    <p class="mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 sm:text-[10.5px] sm:tracking-[0.22em]">{{ t(s.top) }}</p>
                                     <!-- Value (big, gradient) -->
                                     <div class="mt-2 flex items-baseline gap-1 sm:mt-2.5">
                                         <span class="bg-gradient-to-br from-emerald-700 via-green-600 to-teal-500 bg-clip-text text-[1.9rem] font-black leading-[1.05] tracking-[-0.03em] text-transparent sm:text-[2.5rem]">{{ s.value }}</span>
                                     </div>
                                     <!-- Caption -->
-                                    <p class="mt-2.5 text-[12px] font-medium leading-[1.5] text-slate-500 sm:mt-3 sm:text-[13px]">{{ s.label }}</p>
+                                    <p class="mt-2.5 text-[12px] font-medium leading-[1.5] text-slate-500 sm:mt-3 sm:text-[13px]">{{ t(s.label) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -603,17 +609,17 @@ onUnmounted(() => {
                         <div class="lg:col-span-7">
                             <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-emerald-700 ring-1 ring-emerald-100 sm:text-[11px] sm:tracking-[0.18em]">
                                 <span class="grid size-1.5 place-items-center rounded-full bg-emerald-500" />
-                                01 · Layanan
+                                01 · {{ t('Layanan') }}
                             </div>
                             <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
-                                Modul kelola dana
+                                {{ t('Modul kelola dana') }}
                                 <span class="block bg-gradient-to-r from-emerald-700 to-teal-600 bg-clip-text text-transparent">
-                                    siap pakai sejak hari pertama.
+                                    {{ t('siap pakai sejak hari pertama.') }}
                                 </span>
                             </h2>
                         </div>
                         <p class="anim-fade-up text-[13.5px] leading-relaxed text-slate-600 sm:text-[14px] lg:col-span-5">
-                            Dari verifikasi anggota hingga laporan keuangan tahunan, semua kebutuhan operasional BUMDesma tersedia dalam satu sistem yang saling terintegrasi.
+                            {{ t('Dari verifikasi anggota hingga laporan keuangan tahunan, semua kebutuhan operasional BUMDesma tersedia dalam satu sistem yang saling terintegrasi.') }}
                         </p>
                     </div>
 
@@ -643,7 +649,7 @@ onUnmounted(() => {
                                             <AppIcon :name="m.icon" class="text-base sm:text-[17px]" />
                                         </span>
                                         <p class="truncate text-[10.5px] font-bold uppercase tracking-[0.14em]" :class="toneStyles[m.tone].text">
-                                            {{ m.tag }}
+                                            {{ t(m.tag) }}
                                         </p>
                                     </div>
                                     <span class="shrink-0 text-[10.5px] font-semibold text-slate-400">· {{ m.num }}</span>
@@ -651,15 +657,15 @@ onUnmounted(() => {
 
                                 <!-- Title (big, slate-900) -->
                                 <h3 class="mt-4 text-[1.25rem] font-black leading-tight tracking-[-0.015em] text-slate-900 sm:text-[1.4rem]">
-                                    {{ m.title }}
+                                    {{ t(m.title) }}
                                 </h3>
 
                                 <!-- Description (muted) -->
-                                <p class="mt-1.5 text-[12.5px] leading-relaxed text-slate-500 sm:text-[13px]">{{ m.desc }}</p>
+                                <p class="mt-1.5 text-[12.5px] leading-relaxed text-slate-500 sm:text-[13px]">{{ t(m.desc) }}</p>
 
                                 <!-- Period (right-aligned, smaller) -->
                                 <p class="mt-4 text-right text-[11px] font-medium text-slate-400">
-                                    Periode <span class="font-semibold text-slate-500">{{ m.period }}</span>
+                                    {{ t('Periode') }} <span class="font-semibold text-slate-500">{{ t(m.period) }}</span>
                                 </p>
 
                                 <!-- Divider -->
@@ -672,15 +678,15 @@ onUnmounted(() => {
                                             class="whitespace-nowrap text-[15px] font-black tabular-nums sm:text-[16px]"
                                             :class="stat.highlight ? toneStyles[m.tone].text : 'text-slate-900'"
                                         >{{ stat.value }}</span>
-                                        <span class="truncate text-[11.5px] font-medium text-slate-500 sm:text-[12px]">{{ stat.label }}</span>
+                                        <span class="truncate text-[11.5px] font-medium text-slate-500 sm:text-[12px]">{{ t(stat.label) }}</span>
                                     </div>
                                 </div>
 
                                 <!-- Hover reveal: "Pelajari modul" -->
                                 <div class="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3 opacity-0 transition-all duration-500 group-hover:opacity-100">
-                                    <span class="text-[11.5px] font-semibold text-slate-500">Detail modul tersedia setelah login</span>
+                                    <span class="text-[11.5px] font-semibold text-slate-500">{{ t('Detail modul tersedia setelah login') }}</span>
                                     <span class="inline-flex items-center gap-1 text-[12px] font-bold" :class="toneStyles[m.tone].text">
-                                        Pelajari
+                                        {{ t('Pelajari') }}
                                         <AppIcon name="arrow_forward" class="text-[13px] transition-transform duration-300 group-hover:translate-x-1" />
                                     </span>
                                 </div>
@@ -717,17 +723,17 @@ onUnmounted(() => {
                     <div class="mx-auto max-w-3xl px-2 text-center sm:px-0">
                         <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-amber-700 ring-1 ring-amber-100 sm:text-[11px] sm:tracking-[0.18em]">
                             <span class="grid size-1.5 place-items-center rounded-full bg-amber-500" />
-                                02 · Produk Pinjaman
+                                02 · {{ t('Produk Pinjaman') }}
                         </div>
                         <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
-                            Dua skema, satu
+                            {{ t('Dua skema, satu') }}
                             <span class="relative inline-block">
                                 <span class="absolute inset-x-0 bottom-1 h-3 bg-gradient-to-r from-emerald-200 to-green-200 sm:bottom-2 sm:h-4" />
-                                <span class="relative">tujuan.</span>
+                                <span class="relative">{{ t('tujuan.') }}</span>
                             </span>
                         </h2>
                         <p class="anim-fade-up mt-4 text-[14px] leading-relaxed text-slate-600 sm:mt-5 sm:text-[15px]">
-                            Pilih skema yang sesuai dengan kebutuhan dan profil risiko peminjam. Kedua jenis pinjaman tercatat otomatis dalam laporan.
+                            {{ t('Pilih skema yang sesuai dengan kebutuhan dan profil risiko peminjam. Kedua jenis pinjaman tercatat otomatis dalam laporan.') }}
                         </p>
                     </div>
 
@@ -753,21 +759,21 @@ onUnmounted(() => {
                                             <AppIcon :name="p.icon" class="text-lg sm:text-xl" />
                                         </span>
                                         <div class="min-w-0">
-                                            <p class="truncate text-[10px] font-bold uppercase tracking-[0.2em]" :class="toneStyles[p.tone].text">Pinjaman {{ p.key === 'kelompok' ? 'Kelompok' : 'Individu' }}</p>
-                                            <h3 class="truncate text-[15px] font-black tracking-tight text-slate-900 sm:text-base">{{ idx === 0 ? 'Solidaritas & gotong-royong' : 'Fleksibel & personal' }}</h3>
+                                            <p class="truncate text-[10px] font-bold uppercase tracking-[0.2em]" :class="toneStyles[p.tone].text">{{ t('Pinjaman') }} {{ t(p.key === 'kelompok' ? 'Kelompok' : 'Individu') }}</p>
+                                            <h3 class="truncate text-[15px] font-black tracking-tight text-slate-900 sm:text-base">{{ t(idx === 0 ? 'Solidaritas & gotong-royong' : 'Fleksibel & personal') }}</h3>
                                         </div>
                                     </div>
                                     <span class="shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
                                           :class="`${toneStyles[p.tone].bg} ${toneStyles[p.tone].text}`">
-                                        {{ idx === 0 ? 'Rekomendasi' : 'Plafon Besar' }}
+                                        {{ t(idx === 0 ? 'Rekomendasi' : 'Plafon Besar') }}
                                     </span>
                                 </div>
 
                                 <p class="mt-5 text-[13.5px] leading-relaxed text-slate-600 sm:text-[14px]">
-                                    {{ p.ringkasan }}
+                                    {{ t(p.ringkasan) }}
                                 </p>
                                 <p class="mt-3 text-[12.5px] leading-relaxed text-slate-500 sm:text-[13px]">
-                                    {{ p.desc }}
+                                    {{ t(p.desc) }}
                                 </p>
 
                                 <!-- Stats grid -->
@@ -782,7 +788,7 @@ onUnmounted(() => {
                                                   :class="`bg-gradient-to-br ${toneStyles[p.tone].grad}`">
                                                 <AppIcon :name="s.icon" class="text-[10px] sm:text-xs" />
                                             </span>
-                                            <span class="truncate text-[9.5px] font-bold uppercase tracking-[0.16em] text-slate-500 sm:text-[10px] sm:tracking-[0.18em]">{{ s.label }}</span>
+                                            <span class="truncate text-[9.5px] font-bold uppercase tracking-[0.16em] text-slate-500 sm:text-[10px] sm:tracking-[0.18em]">{{ t(s.label) }}</span>
                                         </div>
                                         <p class="mt-1.5 truncate text-[15px] font-black tracking-tight tabular-nums text-slate-900 sm:text-lg">{{ s.value }}</p>
                                     </div>
@@ -791,23 +797,23 @@ onUnmounted(() => {
                                 <!-- Manfaat + Syarat -->
                                 <div class="mt-4 grid gap-2.5 sm:grid-cols-2">
                                     <div class="rounded-2xl bg-gradient-to-br from-slate-50 to-white p-3.5 shadow-sm shadow-slate-900/[0.04] ring-1 ring-slate-200/70 sm:p-4">
-                                        <p class="text-[10px] font-bold uppercase tracking-[0.2em]" :class="toneStyles[p.tone].text">· Manfaat</p>
+                                        <p class="text-[10px] font-bold uppercase tracking-[0.2em]" :class="toneStyles[p.tone].text">· {{ t('Manfaat') }}</p>
                                         <ul class="mt-3 space-y-2">
                                             <li v-for="(b, i) in p.manfaat" :key="i" class="flex items-start gap-2 text-[12.5px] leading-snug text-slate-700">
                                                 <span class="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full text-white"
                                                       :class="`bg-gradient-to-br ${toneStyles[p.tone].grad}`">
                                                     <AppIcon name="check" class="text-[9px] font-black" />
                                                 </span>
-                                                <span class="min-w-0">{{ b }}</span>
+                                                <span class="min-w-0">{{ t(b) }}</span>
                                             </li>
                                         </ul>
                                     </div>
                                     <div class="rounded-2xl bg-gradient-to-br from-slate-50 to-white p-3.5 shadow-sm shadow-slate-900/[0.04] ring-1 ring-slate-200/70 sm:p-4">
-                                        <p class="text-[10px] font-bold uppercase tracking-[0.2em]" :class="toneStyles[p.tone].text">· Syarat</p>
+                                        <p class="text-[10px] font-bold uppercase tracking-[0.2em]" :class="toneStyles[p.tone].text">· {{ t('Syarat') }}</p>
                                         <ul class="mt-3 space-y-2">
                                             <li v-for="(s, i) in p.syarat" :key="i" class="flex items-start gap-2 text-[12.5px] leading-snug text-slate-700">
                                                 <span class="mt-0.5 font-mono text-[10px] font-black tabular-nums" :class="toneStyles[p.tone].text">0{{ i + 1 }}</span>
-                                                <span class="min-w-0">{{ s }}</span>
+                                                <span class="min-w-0">{{ t(s) }}</span>
                                             </li>
                                         </ul>
                                     </div>
@@ -815,9 +821,9 @@ onUnmounted(() => {
 
                                 <!-- CTA -->
                                 <div class="mt-4 flex flex-col gap-2.5 border-t border-slate-200 pt-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                                    <span class="text-[12px] font-medium text-slate-500">Detail tersedia setelah login</span>
+                                    <span class="text-[12px] font-medium text-slate-500">{{ t('Detail tersedia setelah login') }}</span>
                                     <Link href="/login" class="group/btn inline-flex shrink-0 items-center gap-1.5 text-[12.5px] font-bold transition-colors" :class="toneStyles[p.tone].text">
-                                        Lihat di sistem
+                                        {{ t('Lihat di sistem') }}
                                         <AppIcon name="arrow_forward" class="text-sm transition-transform duration-300 group-hover/btn:translate-x-1" />
                                     </Link>
                                 </div>
@@ -854,12 +860,12 @@ onUnmounted(() => {
                     <div class="mx-auto max-w-3xl px-2 text-center sm:px-0">
                         <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-green-800 ring-1 ring-green-100 sm:text-[11px] sm:tracking-[0.18em]">
                             <span class="grid size-1.5 place-items-center rounded-full bg-green-500" />
-                                03 · Alur Layanan
+                                03 · {{ t('Alur Layanan') }}
                         </div>
                         <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
-                            Empat langkah mudah,
+                            {{ t('Empat langkah mudah,') }}
                             <span class="block bg-gradient-to-r from-green-700 to-teal-500 bg-clip-text text-transparent">
-                                terdokumentasi otomatis.
+                                {{ t('terdokumentasi otomatis.') }}
                             </span>
                         </h2>
                     </div>
@@ -879,12 +885,12 @@ onUnmounted(() => {
                                         </span>
                                         <span class="font-mono text-[11px] font-black tracking-wider text-slate-300">{{ step.num }}</span>
                                     </div>
-                                    <h3 class="mt-4 text-[15px] font-black leading-tight text-slate-900 sm:text-base">{{ step.title }}</h3>
-                                    <p class="mt-2 text-[12.5px] leading-relaxed text-slate-600 sm:text-[13px]">{{ step.desc }}</p>
+                                    <h3 class="mt-4 text-[15px] font-black leading-tight text-slate-900 sm:text-base">{{ t(step.title) }}</h3>
+                                    <p class="mt-2 text-[12.5px] leading-relaxed text-slate-600 sm:text-[13px]">{{ t(step.desc) }}</p>
                                     <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 text-[10px] font-bold uppercase tracking-[0.16em] sm:text-[10.5px] sm:tracking-[0.18em]">
-                                        <span class="rounded-md bg-slate-100 px-2 py-1 text-slate-700">{{ step.role }}</span>
+                                        <span class="rounded-md bg-slate-100 px-2 py-1 text-slate-700">{{ t(step.role) }}</span>
                                         <span class="text-slate-400">·</span>
-                                        <span class="text-green-700">{{ step.duration }}</span>
+                                        <span class="text-green-700">{{ t(step.duration) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -921,17 +927,17 @@ onUnmounted(() => {
                         <div class="lg:col-span-7">
                             <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-slate-200/70 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-slate-700 ring-1 ring-slate-300 sm:text-[11px] sm:tracking-[0.18em]">
                                 <span class="grid size-1.5 place-items-center rounded-full bg-slate-700" />
-                                04 · Standar &amp; Regulasi
+                                04 · {{ t('Standar & Regulasi') }}
                             </div>
                             <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
-                                Selaras dengan
+                                {{ t('Selaras dengan') }}
                                 <span class="bg-gradient-to-r from-slate-700 via-slate-900 to-black bg-clip-text text-transparent">
-                                    kerangka hukum nasional.
+                                    {{ t('kerangka hukum nasional.') }}
                                 </span>
                             </h2>
                         </div>
                         <p class="anim-fade-up text-[13.5px] leading-relaxed text-slate-600 sm:text-[14px] lg:col-span-5">
-                            Sistem mengikuti PP No. 11/2021, standar akuntansi SAK EP/ETAP, arsitektur basis data terisolasi per entitas, dan payment gateway nasional.
+                            {{ t('Sistem mengikuti PP No. 11/2021, standar akuntansi SAK EP/ETAP, arsitektur basis data terisolasi per entitas, dan payment gateway nasional.') }}
                         </p>
                     </div>
 
@@ -951,9 +957,9 @@ onUnmounted(() => {
                                     </span>
                                     <span class="font-mono text-[11px] font-black tracking-wider text-slate-500">0{{ i + 1 }}</span>
                                 </div>
-                                <h3 class="mt-4 text-[15px] font-black leading-tight tracking-tight sm:text-base">{{ r.label }}</h3>
-                                <p class="mt-1 text-[10.5px] font-bold uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em]" :class="toneStyles[r.tone].text">{{ r.sub }}</p>
-                                <p class="mt-3 text-[12.5px] leading-relaxed text-slate-300">{{ r.desc }}</p>
+                                <h3 class="mt-4 text-[15px] font-black leading-tight tracking-tight sm:text-base">{{ t(r.label) }}</h3>
+                                <p class="mt-1 text-[10.5px] font-bold uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em]" :class="toneStyles[r.tone].text">{{ t(r.sub) }}</p>
+                                <p class="mt-3 text-[12.5px] leading-relaxed text-slate-300">{{ t(r.desc) }}</p>
                             </div>
                         </div>
                     </div>
@@ -967,17 +973,17 @@ onUnmounted(() => {
                         <div class="lg:col-span-7">
                             <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-emerald-700 ring-1 ring-emerald-200 sm:text-[11px] sm:tracking-[0.18em]">
                                 <span class="grid size-1.5 place-items-center rounded-full bg-emerald-500" />
-                                05 · Kabar &amp; Pengumuman
+                                05 · {{ t('Kabar & Pengumuman') }}
                             </div>
                             <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
-                                Berita &amp;
+                                {{ t('Berita &') }}
                                 <span class="bg-gradient-to-r from-emerald-700 via-teal-600 to-emerald-500 bg-clip-text text-transparent">
-                                    pengumuman terbaru.
+                                    {{ t('pengumuman terbaru.') }}
                                 </span>
                             </h2>
                         </div>
                         <p class="anim-fade-up text-[13.5px] leading-relaxed text-slate-600 sm:text-[14px] lg:col-span-5">
-                            Update harian dari sekretariat: berita kegiatan, pengumuman, dan dokumentasi perguliran dana yang dipublikasikan lewat panel admin.
+                            {{ t('Update harian dari sekretariat: berita kegiatan, pengumuman, dan dokumentasi perguliran dana yang dipublikasikan lewat panel admin.') }}
                         </p>
                     </div>
 
@@ -1000,7 +1006,7 @@ onUnmounted(() => {
                                 <h3 class="mt-2 line-clamp-2 text-[15.5px] font-black leading-tight tracking-tight text-slate-900 sm:text-base">{{ post.title }}</h3>
                                 <p v-if="post.excerpt" class="mt-2 line-clamp-3 text-[12.5px] leading-relaxed text-slate-600 sm:text-[13px]">{{ post.excerpt }}</p>
                                 <span class="mt-4 inline-flex items-center gap-1.5 text-[12px] font-bold text-emerald-700 transition-transform duration-300 group-hover:translate-x-0.5">
-                                    Baca selengkapnya
+                                    {{ t('Baca selengkapnya') }}
                                     <AppIcon name="arrow_forward" class="text-sm" />
                                 </span>
                             </div>
@@ -1011,13 +1017,13 @@ onUnmounted(() => {
                         <div class="grid size-12 place-items-center rounded-xl bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
                             <AppIcon name="campaign" class="text-2xl" />
                         </div>
-                        <p class="mt-4 text-[14px] font-bold text-slate-900">Belum ada publikasi berita.</p>
-                        <p class="mt-1 max-w-md text-[12.5px] text-slate-600">Berita akan tampil di sini setelah admin mengirim publikasi melalui menu <strong>Website → Berita</strong>.</p>
+                        <p class="mt-4 text-[14px] font-bold text-slate-900">{{ t('Belum ada publikasi berita.') }}</p>
+                        <p class="mt-1 max-w-md text-[12.5px] text-slate-600">{{ t('Berita akan tampil di sini setelah admin mengirim publikasi melalui menu') }} <strong>{{ t('Website → Berita') }}</strong>.</p>
                     </div>
 
                     <div v-if="recent_posts && recent_posts.length > 0" class="mt-8 flex justify-center sm:mt-10">
                         <Link href="/berita" class="group inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-[13px] font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-50 hover:text-emerald-700 hover:shadow-md">
-                            Lihat semua berita
+                            {{ t('Lihat semua berita') }}
                             <AppIcon name="arrow_forward" class="text-sm transition-transform duration-300 group-hover:translate-x-1" />
                         </Link>
                     </div>
@@ -1032,20 +1038,20 @@ onUnmounted(() => {
                         <div class="max-w-2xl">
                             <div class="anim-fade-up inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-amber-700 ring-1 ring-amber-200 sm:text-[11px] sm:tracking-[0.18em]">
                                 <span class="grid size-1.5 place-items-center rounded-full bg-amber-500" />
-                                06 · Halaman Informasi
+                                06 · {{ t('Halaman Informasi') }}
                             </div>
                             <h2 class="anim-fade-up mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2rem]">
-                                Halaman
+                                {{ t('Halaman') }}
                                 <span class="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-500 bg-clip-text text-transparent">
-                                    profil &amp; layanan.
+                                    {{ t('profil & layanan.') }}
                                 </span>
                             </h2>
                             <p class="anim-fade-up mt-3 text-[13.5px] leading-relaxed text-slate-600 sm:text-[14px]">
-                                Halaman statis yang dikelola admin: profil lembaga, layanan, AD/ART, dan dokumen publik lain yang dapat diakses pengunjung.
+                                {{ t('Halaman statis yang dikelola admin: profil lembaga, layanan, AD/ART, dan dokumen publik lain yang dapat diakses pengunjung.') }}
                             </p>
                         </div>
                         <Link href="/halaman" class="anim-fade-up group inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3.5 py-2 text-[11.5px] font-bold uppercase tracking-[0.14em] text-amber-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-amber-50 hover:shadow-md">
-                            Lihat semua halaman
+                            {{ t('Lihat semua halaman') }}
                             <AppIcon name="arrow_forward" class="text-xs transition-transform duration-300 group-hover:translate-x-0.5" />
                         </Link>
                     </div>
@@ -1064,7 +1070,7 @@ onUnmounted(() => {
                                 <h3 class="text-[14px] font-black leading-tight tracking-tight text-slate-900 sm:text-[15px]">{{ page.title }}</h3>
                                 <p v-if="page.excerpt" class="mt-1 line-clamp-2 text-[11.5px] leading-relaxed text-slate-600 sm:text-[12px]">{{ page.excerpt }}</p>
                                 <span class="mt-2 inline-flex items-center gap-1 text-[11.5px] font-bold text-amber-700">
-                                    Buka halaman
+                                    {{ t('Buka halaman') }}
                                     <AppIcon name="arrow_forward" class="text-xs transition-transform duration-300 group-hover:translate-x-0.5" />
                                 </span>
                             </div>
@@ -1077,13 +1083,13 @@ onUnmounted(() => {
                             <AppIcon name="description" class="text-2xl" />
                         </span>
                         <div class="max-w-md">
-                            <p class="text-[14px] font-black text-slate-900">Belum ada halaman yang dipublikasikan</p>
+                            <p class="text-[14px] font-black text-slate-900">{{ t('Belum ada halaman yang dipublikasikan') }}</p>
                             <p class="mt-1 text-[12.5px] leading-relaxed text-slate-600">
-                                Halaman akan tampil di sini setelah admin mempublikasikan halaman melalui menu <strong>Website → Halaman</strong>. Contoh: profil lembaga, layanan, AD/ART.
+                                {{ t('Halaman akan tampil di sini setelah admin mempublikasikan halaman melalui menu') }} <strong>{{ t('Website → Halaman') }}</strong>. {{ t('Contoh: profil lembaga, layanan, AD/ART.') }}
                             </p>
                         </div>
                         <Link href="/halaman" class="mt-1 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-600 to-orange-600 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg">
-                            Buka halaman indeks
+                            {{ t('Buka halaman indeks') }}
                             <AppIcon name="arrow_forward" class="text-xs" />
                         </Link>
                     </div>
@@ -1101,12 +1107,12 @@ onUnmounted(() => {
                     <div class="anim-fade-up max-w-2xl">
                         <div class="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] text-slate-700 ring-1 ring-slate-200 backdrop-blur-sm sm:text-[11px] sm:tracking-[0.18em]">
                             <span class="grid size-1.5 place-items-center rounded-full bg-gradient-to-r from-sky-500 to-emerald-500" />
-                            07 · Hubungi &amp; Coba Langsung
+                            07 · {{ t('Hubungi & Coba Langsung') }}
                         </div>
                         <h2 class="mt-4 text-[1.6rem] font-black leading-[1.12] tracking-[-0.02em] text-slate-900 sm:text-3xl sm:leading-[1.15] lg:text-[2.05rem]">
-                            Kirim pesan atau
+                            {{ t('Kirim pesan atau') }}
                             <span class="bg-gradient-to-r from-sky-700 via-blue-600 to-emerald-600 bg-clip-text text-transparent">
-                                eksplorasi langsung.
+                                {{ t('eksplorasi langsung.') }}
                             </span>
                         </h2>
                     </div>
@@ -1116,7 +1122,7 @@ onUnmounted(() => {
                         <!-- Connector pill (desktop only) -->
                         <div class="pointer-events-none absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
                             <div class="grid size-12 place-items-center rounded-full bg-white shadow-lg ring-1 ring-slate-200">
-                                <span class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">atau</span>
+                                <span class="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">{{ t('atau') }}</span>
                             </div>
                         </div>
 
@@ -1132,15 +1138,15 @@ onUnmounted(() => {
                                             <AppIcon name="send" class="text-lg" />
                                         </span>
                                         <div class="min-w-0">
-                                            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-sky-700">Saluran 01</p>
-                                            <h3 class="text-[15px] font-black tracking-tight text-slate-900">Kirim Pesan</h3>
+                                            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-sky-700">{{ t('Saluran 01') }}</p>
+                                            <h3 class="text-[15px] font-black tracking-tight text-slate-900">{{ t('Kirim Pesan') }}</h3>
                                         </div>
                                     </div>
-                                    <span class="hidden rounded-full bg-emerald-50 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-700 ring-1 ring-emerald-200 sm:inline-flex">Respons &lt; 24 jam</span>
+                                    <span class="hidden rounded-full bg-emerald-50 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-700 ring-1 ring-emerald-200 sm:inline-flex">{{ t('Respons < 24 jam') }}</span>
                                 </div>
 
                                 <p class="mt-3 text-[12.5px] leading-relaxed text-slate-600">
-                                    Pesan akan tersimpan di menu <strong>Pesan Masuk</strong> admin sekretariat.
+                                    {{ t('Pesan akan tersimpan di menu') }} <strong>{{ t('Pesan Masuk') }}</strong> {{ t('admin sekretariat.') }}
                                 </p>
 
                                 <!-- Info strip -->
@@ -1172,8 +1178,8 @@ onUnmounted(() => {
 
                                         <div class="grid gap-2.5 sm:grid-cols-2">
                                             <div>
-                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">Nama <span class="text-error">*</span></label>
-                                                <input v-model="messageForm.name" type="text" maxlength="120" required placeholder="Nama lengkap" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
+                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{{ t('Nama') }} <span class="text-error">*</span></label>
+                                                <input v-model="messageForm.name" type="text" maxlength="120" required :placeholder="t('Nama lengkap')" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
                                                 <p v-if="messageForm.errors.name" class="ml-1 mt-0.5 text-[10.5px] text-error">{{ messageForm.errors.name }}</p>
                                             </div>
                                             <div>
@@ -1185,31 +1191,31 @@ onUnmounted(() => {
 
                                         <div class="grid gap-2.5 sm:grid-cols-2">
                                             <div>
-                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">Telepon</label>
+                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{{ t('Telepon') }}</label>
                                                 <input v-model="messageForm.phone" type="text" maxlength="40" placeholder="08xx-xxxx-xxxx" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
                                                 <p v-if="messageForm.errors.phone" class="ml-1 mt-0.5 text-[10.5px] text-error">{{ messageForm.errors.phone }}</p>
                                             </div>
                                             <div>
-                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">Subjek</label>
-                                                <input v-model="messageForm.subject" type="text" maxlength="200" placeholder="Perihal pesan" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
+                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{{ t('Subjek') }}</label>
+                                                <input v-model="messageForm.subject" type="text" maxlength="200" :placeholder="t('Perihal pesan')" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
                                                 <p v-if="messageForm.errors.subject" class="ml-1 mt-0.5 text-[10.5px] text-error">{{ messageForm.errors.subject }}</p>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">Pesan <span class="text-error">*</span></label>
-                                            <textarea v-model="messageForm.message" rows="3" maxlength="5000" required placeholder="Tulis pesan Anda di sini..." class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"></textarea>
+                                            <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{{ t('Pesan') }} <span class="text-error">*</span></label>
+                                            <textarea v-model="messageForm.message" rows="3" maxlength="5000" required :placeholder="t('Tulis pesan...')" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"></textarea>
                                             <p v-if="messageForm.errors.message" class="ml-1 mt-0.5 text-[10.5px] text-error">{{ messageForm.errors.message }}</p>
                                         </div>
 
                                         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                                             <p class="inline-flex items-center gap-1 text-[10.5px] text-slate-500">
-                                                <AppIcon name="lock" class="text-xs" />Pesan terenkripsi, hanya admin yang dapat membaca.
+                                                <AppIcon name="lock" class="text-xs" />{{ t('Pesan terenkripsi, hanya admin yang dapat membaca.') }}
                                             </p>
                                             <button type="submit" :disabled="messageSending || messageForm.processing" class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-sky-700 to-blue-600 px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-md shadow-sky-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-sky-600/40 disabled:opacity-60">
                                                 <span v-if="messageSending || messageForm.processing" class="size-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                                                 <AppIcon v-else name="send" class="text-sm" />
-                                                Kirim Pesan
+                                                {{ t('Kirim Pesan') }}
                                             </button>
                                         </div>
                                     </form>
@@ -1231,8 +1237,8 @@ onUnmounted(() => {
                                                 <AppIcon name="rocket_launch" class="text-lg" />
                                             </span>
                                             <div class="min-w-0">
-                                                <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">Saluran 02</p>
-                                                <h3 class="text-[15px] font-black tracking-tight text-white">Akun Demo</h3>
+                                                <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">{{ t('Saluran 02') }}</p>
+                                                <h3 class="text-[15px] font-black tracking-tight text-white">{{ t('Akun Demo') }}</h3>
                                             </div>
                                         </div>
                                         <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-300 ring-1 ring-emerald-400/30">
@@ -1240,48 +1246,48 @@ onUnmounted(() => {
                                                 <span class="absolute inset-0 animate-ping rounded-full bg-emerald-400/70" />
                                                 <span class="relative size-1.5 rounded-full bg-emerald-400" />
                                             </span>
-                                            Sandbox
+                                            {{ t('Sandbox') }}
                                         </span>
                                     </div>
 
                                     <p class="mt-3 text-[12.5px] leading-relaxed text-emerald-100/90">
-                                        Coba setiap modul dengan akun demo publik — semua eksperimen terjadi di sandbox tanpa menyentuh data produksi.
+                                        {{ t('Coba setiap modul dengan akun demo publik — semua eksperimen terjadi di sandbox tanpa menyentuh data produksi.') }}
                                     </p>
 
                                     <!-- Quick stats -->
                                     <div class="mt-4 grid grid-cols-3 gap-2">
                                         <div class="rounded-xl bg-white/[0.06] p-3 ring-1 ring-white/10 backdrop-blur-sm">
-                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">Modul</p>
+                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">{{ t('Modul') }}</p>
                                             <p class="mt-1 text-[18px] font-black leading-none tracking-tight">4</p>
-                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">inti</p>
+                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">{{ t('inti') }}</p>
                                         </div>
                                         <div class="rounded-xl bg-white/[0.06] p-3 ring-1 ring-white/10 backdrop-blur-sm">
-                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">Laporan</p>
+                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">{{ t('Laporan') }}</p>
                                             <p class="mt-1 text-[18px] font-black leading-none tracking-tight">30+</p>
-                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">PDF siap cetak</p>
+                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">{{ t('PDF siap cetak') }}</p>
                                         </div>
                                         <div class="rounded-xl bg-white/[0.06] p-3 ring-1 ring-white/10 backdrop-blur-sm">
-                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">Role</p>
+                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">{{ t('Role') }}</p>
                                             <p class="mt-1 text-[18px] font-black leading-none tracking-tight">5</p>
-                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">sistem default</p>
+                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">{{ t('sistem default') }}</p>
                                         </div>
                                     </div>
 
                                     <!-- Feature checklist -->
                                     <ul class="mt-4 space-y-1.5 text-[12px] text-emerald-50/85">
-                                        <li class="flex items-start gap-2"><span class="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40"><AppIcon name="check" class="text-[10px] text-emerald-300" /></span>Simulasi kredit, angsuran, kolektibilitas</li>
-                                        <li class="flex items-start gap-2"><span class="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40"><AppIcon name="check" class="text-[10px] text-emerald-300" /></span>Jurnal otomatis &amp; tutup buku akhir periode</li>
-                                        <li class="flex items-start gap-2"><span class="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40"><AppIcon name="check" class="text-[10px] text-emerald-300" /></span>Multi-role: admin, kasir, ketua, pengawas</li>
+                                        <li class="flex items-start gap-2"><span class="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40"><AppIcon name="check" class="text-[10px] text-emerald-300" /></span>{{ t('Simulasi kredit, angsuran, kolektibilitas') }}</li>
+                                        <li class="flex items-start gap-2"><span class="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40"><AppIcon name="check" class="text-[10px] text-emerald-300" /></span>{{ t('Jurnal otomatis & tutup buku akhir periode') }}</li>
+                                        <li class="flex items-start gap-2"><span class="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-emerald-500/20 ring-1 ring-emerald-400/40"><AppIcon name="check" class="text-[10px] text-emerald-300" /></span>{{ t('Multi-role: admin, kasir, ketua, pengawas') }}</li>
                                     </ul>
 
                                     <div class="mt-5 flex flex-1 flex-col justify-end gap-2.5">
                                         <Link v-if="orgPhone" :href="`tel:${orgPhone}`" class="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/20 bg-white/[0.04] px-5 py-3 text-[11.5px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/10">
                                             <AppIcon name="call" class="text-base" />
-                                            Telepon Sekretariat
+                                            {{ t('Telepon Sekretariat') }}
                                         </Link>
                                         <Link href="/berita" class="group inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/20 bg-white/[0.04] px-5 py-3 text-[11.5px] font-bold uppercase tracking-[0.14em] text-emerald-100 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/10 hover:text-white">
                                             <AppIcon name="campaign" class="text-base" />
-                                            Kabar Terbaru
+                                            {{ t('Kabar Terbaru') }}
                                             <AppIcon name="arrow_forward" class="text-sm transition-transform duration-300 group-hover:translate-x-1" />
                                         </Link>
                                     </div>
@@ -1301,7 +1307,7 @@ onUnmounted(() => {
                     <div class="flex min-w-0 items-start gap-3 lg:max-w-sm lg:shrink-0">
                         <Link href="/" class="group flex shrink-0 items-center gap-2.5">
                             <span class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-emerald-700 to-teal-500 text-white shadow-md shadow-emerald-600/30 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-3">
-                                <img v-if="orgLogo" :src="orgLogo" :alt="`Logo ${orgLegalName}`" class="size-full object-contain" />
+                                <img v-if="orgLogo" :src="orgLogo" :alt="`${t('Logo')} ${orgLegalName}`" class="size-full object-contain" />
                                 <span v-else class="text-sm font-black">{{ orgInitial }}</span>
                             </span>
                             <div class="min-w-0 text-left">
@@ -1315,22 +1321,22 @@ onUnmounted(() => {
                     <div class="flex min-w-0 flex-1 flex-col gap-3">
                         <!-- Baris 1: Tautan horizontal (wrap) -->
                         <div class="flex flex-wrap items-center gap-x-1 gap-y-1.5 text-[11.5px] sm:text-[12px]">
-                            <span class="mr-1 text-[9.5px] font-black uppercase tracking-[0.2em] text-slate-400">Tautan</span>
+                            <span class="mr-1 text-[9.5px] font-black uppercase tracking-[0.2em] text-slate-400">{{ t('Tautan') }}</span>
                             <a v-for="l in navAnchors" :key="l.id" :href="`#${l.id}`" @click.prevent="smoothScrollTo(l.id)" class="rounded-full px-2 py-0.5 font-semibold text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700">
-                                {{ l.label }}
+                                {{ t(l.label) }}
                             </a>
                             <span class="mx-0.5 text-slate-300">·</span>
-                            <Link href="/berita" class="rounded-full px-2 py-0.5 font-semibold text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700">Berita</Link>
-                            <Link href="/halaman" class="rounded-full px-2 py-0.5 font-semibold text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700">Halaman</Link>
-                            <Link href="/kontak" class="rounded-full px-2 py-0.5 font-semibold text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700">Kontak</Link>
+                            <Link href="/berita" class="rounded-full px-2 py-0.5 font-semibold text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700">{{ t('Berita') }}</Link>
+                            <Link href="/halaman" class="rounded-full px-2 py-0.5 font-semibold text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700">{{ t('Halaman') }}</Link>
+                            <Link href="/kontak" class="rounded-full px-2 py-0.5 font-semibold text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700">{{ t('Kontak') }}</Link>
                             <Link href="/login" class="ml-auto inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10.5px] font-black uppercase tracking-[0.14em] text-white transition-all hover:-translate-y-0.5 hover:bg-slate-800">
-                                <AppIcon name="login" class="text-xs" />Masuk
+                                <AppIcon name="login" class="text-xs" />{{ t('Masuk') }}
                             </Link>
                         </div>
 
                         <!-- Baris 2: Sekretariat chip horizontal -->
                         <div v-if="orgAddress || orgPhone || orgEmail" class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-600 sm:text-[11.5px]">
-                            <span class="text-[9.5px] font-black uppercase tracking-[0.2em] text-slate-400">Sekretariat</span>
+                            <span class="text-[9.5px] font-black uppercase tracking-[0.2em] text-slate-400">{{ t('Sekretariat') }}</span>
                             <span v-if="orgPhone" class="inline-flex items-center gap-1">
                                 <AppIcon name="call" class="text-xs text-emerald-600" />
                                 <a :href="`tel:${orgPhone}`" class="font-semibold hover:text-emerald-700">{{ orgPhone }}</a>
@@ -1354,7 +1360,7 @@ onUnmounted(() => {
                     <p class="text-[11px] text-slate-500 sm:text-[11.5px]">
                         &copy; {{ new Date().getFullYear() }} {{ orgLegalName }}.
                         <span v-if="props.settings?.footer_note"> · {{ props.settings.footer_note }}</span>
-                        <span v-else> · Dikelola dengan SIUPK Next.</span>
+                        <span v-else> · {{ t('Dikelola dengan SIUPK Next.') }}</span>
                     </p>
                     <p class="text-[9.5px] font-bold uppercase tracking-[0.2em] text-slate-400">
                         Powered by SIUPK Next
@@ -1377,8 +1383,8 @@ onUnmounted(() => {
                 type="button"
                 @click="scrollToTop"
                 class="fixed bottom-5 right-5 z-50 inline-flex size-12 items-center justify-center rounded-full bg-emerald-700 text-white shadow-md ring-1 ring-emerald-700/20 transition hover:-translate-y-0.5 hover:bg-emerald-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:bottom-6 sm:right-6"
-                aria-label="Kembali ke atas halaman"
-                title="Kembali ke atas"
+                :aria-label="t('Kembali ke atas halaman')"
+                :title="t('Kembali ke atas')"
             >
                 <AppIcon name="arrow_upward" class="text-2xl" />
             </button>

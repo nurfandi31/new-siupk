@@ -14,11 +14,16 @@ const props = defineProps({
     products: { type: Array, required: true },
     totals: { type: Object, required: true },
     filters: { type: Object, required: true },
+    report_scope: { type: String, default: 'group' },
 });
 
 const selectedYear = ref(String(props.filters.year));
 const selectedMonth = ref(String(props.filters.month));
 const selectedProduct = ref(props.filters.product || 'all');
+const isIndividu = computed(() => props.report_scope === 'member');
+const routeBase = computed(() =>
+    isIndividu.value ? '/lending/reports/lpp-desa-individu' : '/lending/reports/lpp-desa',
+);
 
 const monthOptions = [
     { value: '1', label: 'Januari' },
@@ -51,11 +56,12 @@ function formatMoney(v) {
 
 function apply() {
     router.get(
-        '/lending/reports/lpp-desa',
+        routeBase.value,
         {
             year: selectedYear.value,
             month: selectedMonth.value,
             product: selectedProduct.value,
+            scope: isIndividu.value ? 'member' : 'all',
         },
         { preserveState: true, replace: true },
     );
@@ -66,21 +72,25 @@ const pdfUrl = computed(() => {
         year: selectedYear.value,
         month: selectedMonth.value,
         product: selectedProduct.value,
+        scope: isIndividu.value ? 'member' : 'all',
     });
-    return `/lending/reports/lpp-desa/pdf?${q.toString()}`;
+    return `${routeBase.value}/pdf?${q.toString()}`;
 });
 </script>
 
 <template>
-    <Head title="LPP Rekap Desa" />
+    <Head :title="isIndividu ? 'LPP Rekap Desa Individu' : 'LPP Rekap Desa'" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Laporan Piutang</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">LPP Rekap per Desa</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">
+                        {{ isIndividu ? 'LPP Rekap Desa Individu' : 'LPP Rekap per Desa' }}
+                    </h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Daftar perkembangan piutang rekapitulasi desa (Target, Realisasi, Saldo, dan Tunggakan)
+                        Daftar perkembangan piutang {{ isIndividu ? 'individu' : '' }} rekapitulasi desa
+                        (Target, Realisasi, Saldo, dan Tunggakan)
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -123,8 +133,8 @@ const pdfUrl = computed(() => {
                         <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                             <tr class="border-b border-outline-variant/30 text-center">
                                 <th rowspan="2" class="p-3 text-left">Desa</th>
-                                <th rowspan="2" class="p-3">Kel</th>
-                                <th rowspan="2" class="p-3">Pmf</th>
+                                <th v-if="!isIndividu" rowspan="2" class="p-3">Kel</th>
+                                <th v-if="!isIndividu" rowspan="2" class="p-3">Pmf</th>
                                 <th rowspan="2" class="p-3 text-right">Alokasi</th>
                                 <th colspan="2" class="p-3 border-l border-outline-variant/20">Target</th>
                                 <th colspan="2" class="p-3 border-l border-outline-variant/20">Real s.d. Lalu</th>
@@ -151,8 +161,8 @@ const pdfUrl = computed(() => {
                         <tbody class="divide-y divide-outline-variant/20">
                             <tr v-for="v in prod.villages" :key="v.village_name" class="hover:bg-surface-variant/20">
                                 <td class="p-3 font-medium text-on-surface">{{ v.village_name }}</td>
-                                <td class="p-3 text-center">{{ v.kelompok_count }}</td>
-                                <td class="p-3 text-center">{{ v.pemanfaat_count }}</td>
+                                <td v-if="!isIndividu" class="p-3 text-center">{{ v.kelompok_count }}</td>
+                                <td v-if="!isIndividu" class="p-3 text-center">{{ v.pemanfaat_count }}</td>
                                 <td class="p-3 text-right">{{ formatMoney(v.alokasi) }}</td>
                                 <td class="p-3 text-right border-l border-outline-variant/20">{{ formatMoney(v.target_pokok) }}</td>
                                 <td class="p-3 text-right">{{ formatMoney(v.target_jasa) }}</td>
@@ -175,8 +185,8 @@ const pdfUrl = computed(() => {
                         <tfoot class="bg-surface-variant/40 font-bold text-on-surface">
                             <tr class="border-t border-outline-variant/40">
                                 <td class="p-3">TOTAL {{ prod.product_code }}</td>
-                                <td class="p-3 text-center">{{ prod.totals.kelompok_count }}</td>
-                                <td class="p-3 text-center">{{ prod.totals.pemanfaat_count }}</td>
+                                <td v-if="!isIndividu" class="p-3 text-center">{{ prod.totals.kelompok_count }}</td>
+                                <td v-if="!isIndividu" class="p-3 text-center">{{ prod.totals.pemanfaat_count }}</td>
                                 <td class="p-3 text-right">{{ formatMoney(prod.totals.alokasi) }}</td>
                                 <td class="p-3 text-right border-l border-outline-variant/20">{{ formatMoney(prod.totals.target_pokok) }}</td>
                                 <td class="p-3 text-right">{{ formatMoney(prod.totals.target_jasa) }}</td>

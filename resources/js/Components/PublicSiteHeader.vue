@@ -2,6 +2,10 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import AppIcon from '@/Components/AppIcon.vue';
+import AppLanguageSwitcher from '@/Components/AppLanguageSwitcher.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     organization: { type: Object, required: true },
@@ -36,7 +40,7 @@ onBeforeUnmount(() => {
     <header class="sticky top-0 z-40 border-b border-outline-variant/60 bg-surface-container-lowest/95 backdrop-blur-md">
         <div class="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3 md:gap-4 md:px-6 md:py-3.5 lg:px-8">
             <!-- LEFT: Brand -->
-            <Link href="/" class="flex min-w-0 items-center gap-2.5 sm:gap-3" aria-label="Kembali ke beranda">
+            <Link href="/" class="flex min-w-0 items-center gap-2.5 sm:gap-3" :aria-label="t('Kembali ke beranda')">
                 <div class="grid size-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-primary-container shadow-md sm:size-10 md:size-11">
                     <img
                         v-if="organization.logo_url"
@@ -60,10 +64,10 @@ onBeforeUnmount(() => {
                     href="/"
                     class="inline-flex min-h-9 min-w-9 items-center justify-center gap-1.5 rounded-full px-2.5 text-[12px] font-semibold transition-all duration-300 sm:min-h-10 sm:gap-1.5 sm:px-3 sm:text-sm md:gap-2 md:px-4"
                     :class="active === 'beranda' ? 'bg-primary text-on-primary shadow-md' : 'bg-primary-container text-on-primary-container hover:bg-primary/15'"
-                    aria-label="Kembali ke beranda"
+                    :aria-label="t('Kembali ke beranda')"
                 >
                     <AppIcon name="home" class="text-base sm:text-lg" />
-                    <span class="hidden sm:inline">Beranda</span>
+                    <span class="hidden sm:inline">{{ t('Beranda') }}</span>
                 </Link>
                 <Link
                     href="/berita"
@@ -71,7 +75,7 @@ onBeforeUnmount(() => {
                     :class="active === 'berita' ? 'bg-primary text-on-primary shadow-md' : 'bg-primary-container text-on-primary-container hover:bg-primary/15'"
                 >
                     <AppIcon name="article" class="text-base sm:text-lg" />
-                    <span class="hidden sm:inline">Berita</span>
+                    <span class="hidden sm:inline">{{ t('Berita') }}</span>
                 </Link>
                 <Link
                     href="/halaman"
@@ -79,7 +83,7 @@ onBeforeUnmount(() => {
                     :class="active === 'halaman' ? 'bg-primary text-on-primary shadow-md' : 'bg-primary-container text-on-primary-container hover:bg-primary/15'"
                 >
                     <AppIcon name="description" class="text-base sm:text-lg" />
-                    <span class="hidden sm:inline">Halaman</span>
+                    <span class="hidden sm:inline">{{ t('Halaman') }}</span>
                 </Link>
                 <Link
                     href="/kontak"
@@ -87,15 +91,16 @@ onBeforeUnmount(() => {
                     :class="active === 'kontak' ? 'bg-primary text-on-primary shadow-md' : 'bg-primary-container text-on-primary-container hover:bg-primary/15'"
                 >
                     <AppIcon name="mail" class="text-base sm:text-lg" />
-                    <span class="hidden sm:inline">Kontak</span>
+                    <span class="hidden sm:inline">{{ t('Kontak') }}</span>
                 </Link>
+                <AppLanguageSwitcher />
                 <Link
                     href="/login"
                     class="inline-flex min-h-9 min-w-9 items-center justify-center gap-1.5 rounded-full bg-primary px-2.5 text-[12px] font-semibold text-on-primary shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-deep sm:min-h-10 sm:gap-1.5 sm:px-3 sm:text-sm md:gap-2 md:px-4"
-                    aria-label="Masuk ke sistem"
+                    :aria-label="t('Masuk ke sistem')"
                 >
                     <AppIcon name="login" class="text-base sm:text-lg" />
-                    <span class="hidden sm:inline">Masuk</span>
+                    <span class="hidden sm:inline">{{ t('Masuk') }}</span>
                 </Link>
             </nav>
         </div>
@@ -115,8 +120,8 @@ onBeforeUnmount(() => {
             type="button"
             @click="scrollToTop"
             class="fixed bottom-5 right-5 z-50 inline-flex size-12 items-center justify-center rounded-full bg-primary text-on-primary shadow-md ring-1 ring-primary/20 transition hover:bg-primary-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:bottom-6 sm:right-6"
-            aria-label="Kembali ke atas halaman"
-            title="Kembali ke atas"
+            :aria-label="t('Kembali ke atas halaman')"
+            :title="t('Kembali ke atas')"
         >
             <AppIcon name="arrow_upward" class="text-2xl" />
         </button>

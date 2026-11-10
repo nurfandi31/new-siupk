@@ -6,6 +6,9 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import AppButton from './AppButton.vue';
 import AppIcon from './AppIcon.vue';
 import AppInput from './AppInput.vue';
+import { useI18n } from '../i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     latitude: { type: [Number, String], default: null },
@@ -163,7 +166,7 @@ defineExpose({ invalidateSize });
                 :model-value="latitude"
                 type="number"
                 step="0.000001"
-                label="Latitude"
+                :label="t('Latitude')"
                 placeholder="-7.535000"
                 :disabled="disabled"
                 :error="error"
@@ -173,7 +176,7 @@ defineExpose({ invalidateSize });
                 :model-value="longitude"
                 type="number"
                 step="0.000001"
-                label="Longitude"
+                :label="t('Longitude')"
                 placeholder="108.985000"
                 :disabled="disabled"
                 @update:model-value="emit('update:longitude', $event === '' ? null : Number($event))"
@@ -183,8 +186,8 @@ defineExpose({ invalidateSize });
                 type="number"
                 min="3"
                 max="19"
-                label="Zoom peta"
-                hint="Opsional"
+                :label="t('Zoom peta')"
+                :hint="t('Opsional')"
                 :disabled="disabled"
                 @update:model-value="emit('update:zoom', $event === '' ? null : Number($event))"
             />
@@ -195,7 +198,7 @@ defineExpose({ invalidateSize });
             <div class="flex flex-wrap items-center justify-between gap-2 inset-divider-t bg-surface-container p-3">
                 <p class="flex items-center gap-2 text-xs text-on-surface-variant">
                     <AppIcon name="location_on" />
-                    Klik peta atau geser pin untuk mengatur titik lokasi tenant.
+                    {{ t('Klik peta atau geser pin untuk mengatur titik lokasi tenant.') }}
                 </p>
                 <AppButton
                     type="button"
@@ -205,7 +208,7 @@ defineExpose({ invalidateSize });
                     :disabled="disabled"
                     @click="resetToRegency"
                 >
-                    Reset
+                    {{ t('Reset') }}
                 </AppButton>
             </div>
         </div>

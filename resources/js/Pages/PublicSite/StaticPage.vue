@@ -1,6 +1,9 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import PublicSiteHeader from '@/Components/PublicSiteHeader.vue';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     organization: { type: Object, required: true },
@@ -11,9 +14,9 @@ const props = defineProps({
 
 <template>
     <Head :title="`${page.title} — ${organization.name}`">
-        <meta head-key="description" name="description" :content="page.meta_description ?? `Halaman ${page.title} dari ${organization.name}.`" />
+        <meta head-key="description" name="description" :content="page.meta_description ?? `${t('Halaman')} ${page.title} ${t('dari')} ${organization.name}.`" />
         <meta head-key="og:title" property="og:title" :content="page.title" />
-        <meta head-key="og:description" property="og:description" :content="page.meta_description ?? `Halaman ${page.title} dari ${organization.name}.`" />
+        <meta head-key="og:description" property="og:description" :content="page.meta_description ?? `${t('Halaman')} ${page.title} ${t('dari')} ${organization.name}.`" />
         <meta head-key="og:type" property="og:type" content="article" />
         <meta head-key="og:url" property="og:url" :content="$page.url" />
         <meta head-key="twitter:card" name="twitter:card" content="summary" />
@@ -47,9 +50,9 @@ const props = defineProps({
                     © {{ new Date().getFullYear() }} {{ organization.legal_name }}
                 </p>
                 <p class="mt-1.5 text-xs text-on-surface-variant">
-                    Dikelola dengan
+                    {{ t('Dikelola dengan') }}
                     <a href="/" class="font-semibold text-primary hover:underline">siupk Next</a>
-                    — Sistem Informasi Dana Bergulir Masyarakat
+                    — {{ t('Sistem Informasi Dana Bergulir Masyarakat') }}
                 </p>
             </div>
         </footer>

@@ -184,7 +184,7 @@ searchMembers();
 
                     <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <div class="sm:col-span-2 xl:col-span-4">
-                            <AppTextarea v-model="form.address" label="Alamat" icon="home" placeholder="Alamat lengkap kelompok" :rows="3" :error="form.errors.address" />
+                            <AppTextarea v-model="form.address" label="Alamat" icon="home" placeholder="Masukkan alamat" :rows="3" :error="form.errors.address" />
                         </div>
                         <SmartSelect v-model="form.group_function_id" label="Fungsi Kelompok" :options="functionOptions" required :error="form.errors.group_function_id" />
                         <AppInput v-model="form.phone" label="No. HP" icon="phone" type="tel" :error="form.errors.phone" />
@@ -201,7 +201,7 @@ searchMembers();
                             :loading="memberLoading"
                             :hint="memberHint"
                             :empty-action-label="memberSearchEmpty && memberSearch ? 'Daftarkan anggota baru' : null"
-                            placeholder="Cari NIK atau nama"
+                            placeholder="Cari anggota..."
                             searchable
                             @search-change="updateMemberSearch"
                             @search="searchMembers"

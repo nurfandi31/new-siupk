@@ -73,7 +73,7 @@ function submit() {
                             <AppTextarea
                                 v-model="form.excerpt"
                                 label="Ringkasan (excerpt)"
-                                placeholder="Ringkasan singkat yang tampil di daftar berita…"
+                                placeholder="Masukkan ringkasan"
                                 :error="form.errors.excerpt"
                             />
                             <AppFileUpload

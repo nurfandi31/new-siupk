@@ -22,7 +22,7 @@ final class DemoAdminSeeder extends Seeder
             [
                 'public_id' => (string) Str::ulid(),
                 'name' => 'Demo Tenant SIUPK Next',
-                'district_code' => '320101',
+                'district_code' => '320102',
                 'status' => 'active',
                 'timezone' => 'Asia/Jakarta',
                 'metadata' => ['domains' => ['demo.siupknext.test']],

@@ -359,8 +359,8 @@ function closeHistoryModal() {
 
                         <template v-if="isInventory">
                             <div class="grid gap-4 sm:grid-cols-3">
-                                <AppInput v-model="form.reference" label="Relasi" :error="form.errors.reference" placeholder="No referensi / vendor" />
-                                <AppInput v-model="form.asset_name" label="Nama Barang" required :error="form.errors.asset_name" placeholder="Contoh: Laptop" />
+                                <AppInput v-model="form.reference" label="Relasi" :error="form.errors.reference" placeholder="Masukkan referensi" />
+                                <AppInput v-model="form.asset_name" label="Nama Barang" required :error="form.errors.asset_name" placeholder="Masukkan nama" />
                                 <AppInput v-model="form.asset_quantity" label="Jml. Unit" type="number" min="1" required :error="form.errors.asset_quantity" placeholder="1" />
                             </div>
                             <div class="grid gap-4 sm:grid-cols-3">
@@ -380,7 +380,7 @@ function closeHistoryModal() {
                         </template>
 
                         <template v-else>
-                            <AppInput v-model="form.reference" label="Relasi (opsional)" :error="form.errors.reference" placeholder="No referensi / catatan tambahan" />
+                            <AppInput v-model="form.reference" label="Relasi (opsional)" :error="form.errors.reference" placeholder="Masukkan referensi" />
                             <AppCurrencyInput v-model="form.amount" label="Nominal" icon="payments" :min="1" required :error="form.errors.amount" placeholder="0" />
                         </template>
 
@@ -390,7 +390,7 @@ function closeHistoryModal() {
                             label="Keterangan / Deskripsi"
                             required
                             :error="form.errors.description"
-                            placeholder="Contoh: Pencatatan biaya operasional bulanan"
+                            placeholder="Masukkan keterangan"
                         />
 
                         <div class="flex gap-3 border-t border-outline-variant pt-4">

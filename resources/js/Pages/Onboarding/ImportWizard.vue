@@ -12,6 +12,7 @@ import AppIconButton from '../../Components/AppIconButton.vue';
 import AppTabs from '../../Components/AppTabs.vue';
 import SmartSelect from '../../Components/SmartSelect.vue';
 import { useMoney } from '../../composables/useMoney';
+import { useI18n } from '../../i18n';
 
 const props = defineProps({
     tenantRowId: { type: Number, required: true },
@@ -24,16 +25,17 @@ const props = defineProps({
 const baseUrl = computed(() => `/admin/tenants/${props.tenantRowId}`);
 
 const { money: formatMoney } = useMoney();
+const { t } = useI18n();
 const activeTab = ref('balances');
 
-const wizardTabs = [
-    { key: 'balances', label: '1. Saldo Awal Keuangan (Neraca)' },
-    { key: 'masterdata', label: '2. Impor Anggota & Kelompok' },
-    { key: 'loans', label: '3. Impor Pinjaman Aktif & Angsuran' },
-    { key: 'templates', label: '4. Template File Excel/CSV' },
-    { key: 'manual-opening', label: '5. Saldo Awal Manual per Tahun' },
-    { key: 'aggregate-journal', label: '6. Jurnal Agregat Mid-Year' },
-];
+const wizardTabs = computed(() => [
+    { key: 'balances', label: t('1. Saldo Awal Keuangan (Neraca)') },
+    { key: 'masterdata', label: t('2. Impor Anggota & Kelompok') },
+    { key: 'loans', label: t('3. Impor Pinjaman Aktif & Angsuran') },
+    { key: 'templates', label: t('4. Template File Excel/CSV') },
+    { key: 'manual-opening', label: t('5. Saldo Awal Manual per Tahun') },
+    { key: 'aggregate-journal', label: t('6. Jurnal Agregat Mid-Year') },
+]);
 
 // ============================================================
 // TAB 1: Form Saldo Awal Keuangan (existing, post jurnal)
@@ -249,7 +251,7 @@ const uploadLoans = () => {
 </script>
 
 <template>
-    <Head title="Migrasi & Saldo Awal Tenant Baru" />
+    <Head :title="t('Migrasi & Saldo Awal Tenant Baru')" />
 
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
@@ -258,11 +260,11 @@ const uploadLoans = () => {
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <span class="inline-block rounded-full bg-primary-container px-3 py-1 text-xs font-semibold uppercase tracking-wider text-on-primary-container">
-                            Pusat Onboarding Tenant Baru
+                            {{ t('Pusat Onboarding Tenant Baru') }}
                         </span>
-                        <h1 class="mt-2 text-2xl font-bold">Migrasi Data & Saldo Awal Mandiri</h1>
+                        <h1 class="mt-2 text-2xl font-bold">{{ t('Migrasi Data & Saldo Awal Mandiri') }}</h1>
                         <p class="mt-1 max-w-2xl text-sm text-on-primary-container">
-                            Impor neraca keuangan awal, daftar kelompok, keanggotaan, dan portofolio pinjaman aktif beserta akumulasi angsurannya.
+                            {{ t('Impor neraca keuangan awal, daftar kelompok, keanggotaan, dan portofolio pinjaman aktif beserta akumulasi angsurannya.') }}
                         </p>
                     </div>
                 </div>
@@ -274,7 +276,7 @@ const uploadLoans = () => {
                     v-model="activeTab"
                     :items="wizardTabs"
                     variant="underline"
-                    aria-label="Langkah wizard onboarding"
+                    :aria-label="t('Langkah wizard onboarding')"
                 />
             </div>
 
@@ -284,14 +286,14 @@ const uploadLoans = () => {
                     <template #header>
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div>
-                                <h2 class="text-lg font-semibold text-primary">Form Neraca Saldo Awal Akun COA</h2>
-                                <p class="text-xs text-on-surface-variant">Masukkan nilai saldo pada tanggal awal konversi operasional aplikasi.</p>
+                                <h2 class="text-lg font-semibold text-primary">{{ t('Form Neraca Saldo Awal Akun COA') }}</h2>
+                                <p class="text-xs text-on-surface-variant">{{ t('Masukkan nilai saldo pada tanggal awal konversi operasional aplikasi.') }}</p>
                             </div>
                             <div class="flex items-center space-x-3">
-                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tanggal Saldo Awal</label>
+                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tanggal Saldo Awal') }}</label>
                                 <AppDatePicker
                                     v-model="asOfDate"
-                                    label="Tanggal Saldo Awal"
+                                    :label="t('Tanggal Saldo Awal')"
                                     hide-label
                                 />
                             </div>
@@ -305,16 +307,16 @@ const uploadLoans = () => {
                                 <div class="text-2xl">{{ isBalanced ? '?' : '??' }}</div>
                                 <div>
                                     <h3 class="text-sm font-bold text-primary">
-                                        Status Saldo Awal: {{ isBalanced ? 'SEIMBANG (BALANCED)' : 'BELUM SEIMBANG' }}
+                                        {{ t('Status Saldo Awal:') }} {{ isBalanced ? t('SEIMBANG (BALANCED)') : t('BELUM SEIMBANG') }}
                                     </h3>
                                     <p class="text-xs text-on-surface-variant">
-                                        Total Debit: <strong>Rp {{ formatMoney(totalDebit) }}</strong> | Total Kredit: <strong>Rp {{ formatMoney(totalCredit) }}</strong>
+                                        {{ t('Total Debit:') }} <strong>Rp {{ formatMoney(totalDebit) }}</strong> | {{ t('Total Kredit:') }} <strong>Rp {{ formatMoney(totalCredit) }}</strong>
                                     </p>
                                 </div>
                             </div>
                             <div>
                                 <AppBadge :tone="isBalanced ? 'success' : 'warning'">
-                                    Selisih: Rp {{ formatMoney(Math.abs(totalDebit - totalCredit)) }}
+                                    {{ t('Selisih:') }} Rp {{ formatMoney(Math.abs(totalDebit - totalCredit)) }}
                                 </AppBadge>
                             </div>
                         </div>
@@ -325,11 +327,11 @@ const uploadLoans = () => {
                         <table class="min-w-full divide-y divide-outline-variant">
                             <thead class="bg-surface-container-low">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface">Kode Akun</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface">Nama Akun (COA)</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface">Kategori</th>
-                                    <th class="px-4 py-3 text-right text-xs font-semibold text-on-surface">Saldo Debit (Rp)</th>
-                                    <th class="px-4 py-3 text-right text-xs font-semibold text-on-surface">Saldo Kredit (Rp)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface">{{ t('Kode Akun') }}</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface">{{ t('Nama Akun (COA)') }}</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface">{{ t('Kategori') }}</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-on-surface">{{ t('Saldo Debit (Rp)') }}</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-on-surface">{{ t('Saldo Kredit (Rp)') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-outline-variant">
@@ -361,7 +363,7 @@ const uploadLoans = () => {
                             </tbody>
                             <tfoot class="bg-surface-container font-bold text-xs">
                                 <tr>
-                                    <td colspan="3" class="px-4 py-3 text-right text-primary">TOTAL SALDO AWAL:</td>
+                                    <td colspan="3" class="px-4 py-3 text-right text-primary">{{ t('TOTAL SALDO AWAL:') }}</td>
                                     <td class="px-4 py-3 text-right text-secondary font-mono">Rp {{ formatMoney(totalDebit) }}</td>
                                     <td class="px-4 py-3 text-right text-secondary font-mono">Rp {{ formatMoney(totalCredit) }}</td>
                                 </tr>
@@ -375,8 +377,8 @@ const uploadLoans = () => {
                             @click="submitOpeningBalances"
                             :disabled="!isBalanced || balanceForm.processing"
                         >
-                            <span v-if="balanceForm.processing">Memproses Saldo...</span>
-                            <span v-else>?? Simpan & Posting Saldo Awal Keuangan</span>
+                            <span v-if="balanceForm.processing">{{ t('Memproses Saldo...') }}</span>
+                            <span v-else>?? {{ t('Simpan & Posting Saldo Awal Keuangan') }}</span>
                         </AppButton>
                     </div>
                 </AppCard>
@@ -387,11 +389,11 @@ const uploadLoans = () => {
                 <!-- Impor Anggota -->
                 <AppCard>
                     <template #header>
-                        <h2 class="text-lg font-semibold text-primary">Impor Massal Anggota</h2>
+                        <h2 class="text-lg font-semibold text-primary">{{ t('Impor Massal Anggota') }}</h2>
                     </template>
                     <form @submit.prevent="uploadMembers" class="space-y-4">
                         <p class="text-xs text-on-surface-variant">
-                            Upload file CSV berisi daftar anggota lengkap (NIK, Nama, Jenis Kelamin, Alamat, Desa, Phone).
+                            {{ t('Upload file CSV berisi daftar anggota lengkap (NIK, Nama, Jenis Kelamin, Alamat, Desa, Phone).') }}
                         </p>
                         <div>
                             <input
@@ -403,10 +405,10 @@ const uploadLoans = () => {
                         </div>
                         <div class="flex justify-between items-center pt-2">
                             <a :href="`${baseUrl}/onboarding/templates/anggota`" class="text-sm text-secondary hover:underline font-semibold">
-                                ?? Download Template CSV Anggota
+                                ?? {{ t('Download Template CSV Anggota') }}
                             </a>
                             <AppButton type="submit" variant="primary" size="compact" :disabled="!memberFileForm.file || memberFileForm.processing">
-                                Upload & Impor Anggota
+                                {{ t('Upload & Impor Anggota') }}
                             </AppButton>
                         </div>
                     </form>
@@ -415,11 +417,11 @@ const uploadLoans = () => {
                 <!-- Impor Kelompok -->
                 <AppCard>
                     <template #header>
-                        <h2 class="text-lg font-semibold text-primary">Impor Massal Kelompok</h2>
+                        <h2 class="text-lg font-semibold text-primary">{{ t('Impor Massal Kelompok') }}</h2>
                     </template>
                     <form @submit.prevent="uploadGroups" class="space-y-4">
                         <p class="text-xs text-on-surface-variant">
-                            Upload file CSV daftar kelompok usaha/masyarakat (Nama Kelompok, Desa, Alamat, Telepon).
+                            {{ t('Upload file CSV daftar kelompok usaha/masyarakat (Nama Kelompok, Desa, Alamat, Telepon).') }}
                         </p>
                         <div>
                             <input
@@ -431,10 +433,10 @@ const uploadLoans = () => {
                         </div>
                         <div class="flex justify-between items-center pt-2">
                             <a :href="`${baseUrl}/onboarding/templates/kelompok`" class="text-sm text-secondary hover:underline font-semibold">
-                                ?? Download Template CSV Kelompok
+                                ?? {{ t('Download Template CSV Kelompok') }}
                             </a>
                             <AppButton type="submit" variant="primary" size="compact" :disabled="!groupFileForm.file || groupFileForm.processing">
-                                Upload & Impor Kelompok
+                                {{ t('Upload & Impor Kelompok') }}
                             </AppButton>
                         </div>
                     </form>
@@ -445,25 +447,25 @@ const uploadLoans = () => {
             <div v-if="activeTab === 'loans'" class="space-y-6">
                 <AppCard>
                     <template #header>
-                        <h2 class="text-lg font-semibold text-primary">Impor Portofolio Pinjaman Aktif & Akumulasi Realisasi Angsuran</h2>
+                        <h2 class="text-lg font-semibold text-primary">{{ t('Impor Portofolio Pinjaman Aktif & Akumulasi Realisasi Angsuran') }}</h2>
                     </template>
                     <div class="space-y-4 text-xs text-on-surface-variant">
                         <p>
-                            Fitur ini digunakan untuk mengimpor pinjaman berjalan beserta <strong>akumulasi pokok & bunga yang sudah terbayar</strong> sampai hari ini. Sistem akan secara otomatis mengalokasikan angsuran FIFO pada jadwal bulanan dan menghitung sisa tagihan berjalan.
+                            {{ t('Fitur ini digunakan untuk mengimpor pinjaman berjalan beserta') }} <strong>{{ t('akumulasi pokok & bunga yang sudah terbayar') }}</strong> {{ t('sampai hari ini. Sistem akan secara otomatis mengalokasikan angsuran FIFO pada jadwal bulanan dan menghitung sisa tagihan berjalan.') }}
                         </p>
 
                         <div class="rounded-lg bg-secondary-container p-4 border border-secondary text-on-secondary-container">
-                            <h4 class="font-bold text-sm">?? Alokasi Otomatis Angsuran Terbayar:</h4>
+                            <h4 class="font-bold text-sm">?? {{ t('Alokasi Otomatis Angsuran Terbayar:') }}</h4>
                             <ul class="list-disc pl-5 mt-1 space-y-1">
-                                <li>Nilai <code class="font-mono font-bold">akumulasi_pokok_dibayar</code> dan <code class="font-mono font-bold">akumulasi_bunga_dibayar</code> diisi total akumulasi pembayaran hingga saat migrasi.</li>
-                                <li>Sistem membagi jadwal angsuran 1..N bulan dan mengisi status <span class="font-bold text-secondary">Lunas (Paid)</span> untuk bulan-bulan yang sudah tercukupi.</li>
-                                <li>Sisa pokok & sisa bunga yang belum terbayar akan otomatis masuk ke tagihan berjalan.</li>
+                                <li>{{ t('Nilai') }} <code class="font-mono font-bold">akumulasi_pokok_dibayar</code> {{ t('dan') }} <code class="font-mono font-bold">akumulasi_bunga_dibayar</code> {{ t('diisi total akumulasi pembayaran hingga saat migrasi.') }}</li>
+                                <li>{{ t('Sistem membagi jadwal angsuran 1..N bulan dan mengisi status') }} <span class="font-bold text-secondary">{{ t('Lunas (Paid)') }}</span> {{ t('untuk bulan-bulan yang sudah tercukupi.') }}</li>
+                                <li>{{ t('Sisa pokok & sisa bunga yang belum terbayar akan otomatis masuk ke tagihan berjalan.') }}</li>
                             </ul>
                         </div>
 
                         <form @submit.prevent="uploadLoans" class="space-y-4 pt-2">
                             <div class="space-y-1.5">
-                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Pilih File CSV Pinjaman Aktif & Angsuran</label>
+                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Pilih File CSV Pinjaman Aktif & Angsuran') }}</label>
                                 <input
                                     type="file"
                                     accept=".csv"
@@ -473,10 +475,10 @@ const uploadLoans = () => {
                             </div>
                             <div class="flex justify-between items-center pt-2">
                                 <a :href="`${baseUrl}/onboarding/templates/pinjaman-aktif`" class="text-sm text-secondary hover:underline font-semibold">
-                                    ?? Download Format Template CSV Pinjaman Aktif (.csv)
+                                    ?? {{ t('Download Format Template CSV Pinjaman Aktif (.csv)') }}
                                 </a>
                                 <AppButton type="submit" variant="primary" size="compact" :disabled="!loanFileForm.file || loanFileForm.processing">
-                                    Upload & Impor Pinjaman Aktif
+                                    {{ t('Upload & Impor Pinjaman Aktif') }}
                                 </AppButton>
                             </div>
                         </form>
@@ -487,33 +489,33 @@ const uploadLoans = () => {
             <!-- TAB 4: Download Seluruh Template -->
             <div v-if="activeTab === 'templates'" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <AppCard class="hover:border-primary transition-colors">
-                    <h3 class="font-bold text-sm text-primary">1. Template Saldo Awal</h3>
-                    <p class="text-xs text-on-surface-variant mt-1">Format neraca saldo awal akun COA debit/kredit.</p>
-                    <a :href="`${baseUrl}/onboarding/templates/saldo-awal`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? Download CSV Template</a>
+                    <h3 class="font-bold text-sm text-primary">{{ t('1. Template Saldo Awal') }}</h3>
+                    <p class="text-xs text-on-surface-variant mt-1">{{ t('Format neraca saldo awal akun COA debit/kredit.') }}</p>
+                    <a :href="`${baseUrl}/onboarding/templates/saldo-awal`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? {{ t('Download CSV Template') }}</a>
                 </AppCard>
 
                 <AppCard class="hover:border-primary transition-colors">
-                    <h3 class="font-bold text-sm text-primary">2. Template Anggota</h3>
-                    <p class="text-xs text-on-surface-variant mt-1">Format data NIK, Nama, Alamat, Desa, Phone.</p>
-                    <a :href="`${baseUrl}/onboarding/templates/anggota`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? Download CSV Template</a>
+                    <h3 class="font-bold text-sm text-primary">{{ t('2. Template Anggota') }}</h3>
+                    <p class="text-xs text-on-surface-variant mt-1">{{ t('Format data NIK, Nama, Alamat, Desa, Phone.') }}</p>
+                    <a :href="`${baseUrl}/onboarding/templates/anggota`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? {{ t('Download CSV Template') }}</a>
                 </AppCard>
 
                 <AppCard class="hover:border-primary transition-colors">
-                    <h3 class="font-bold text-sm text-primary">3. Template Kelompok</h3>
-                    <p class="text-xs text-on-surface-variant mt-1">Format nama kelompok, alamat, desa, pengurus.</p>
-                    <a :href="`${baseUrl}/onboarding/templates/kelompok`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? Download CSV Template</a>
+                    <h3 class="font-bold text-sm text-primary">{{ t('3. Template Kelompok') }}</h3>
+                    <p class="text-xs text-on-surface-variant mt-1">{{ t('Format nama kelompok, alamat, desa, pengurus.') }}</p>
+                    <a :href="`${baseUrl}/onboarding/templates/kelompok`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? {{ t('Download CSV Template') }}</a>
                 </AppCard>
 
                 <AppCard class="hover:border-primary transition-colors">
-                    <h3 class="font-bold text-sm text-primary">4. Template Pinjaman Aktif & Angsuran</h3>
-                    <p class="text-xs text-on-surface-variant mt-1">Format portofolio pinjaman berjalan & akumulasi angsuran.</p>
-                    <a :href="`${baseUrl}/onboarding/templates/pinjaman-aktif`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? Download CSV Template</a>
+                    <h3 class="font-bold text-sm text-primary">{{ t('4. Template Pinjaman Aktif & Angsuran') }}</h3>
+                    <p class="text-xs text-on-surface-variant mt-1">{{ t('Format portofolio pinjaman berjalan & akumulasi angsuran.') }}</p>
+                    <a :href="`${baseUrl}/onboarding/templates/pinjaman-aktif`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? {{ t('Download CSV Template') }}</a>
                 </AppCard>
 
                 <AppCard class="hover:border-primary transition-colors">
-                    <h3 class="font-bold text-sm text-primary">5. Template Aset Tetap Awal</h3>
-                    <p class="text-xs text-on-surface-variant mt-1">Format barang inventaris, harga perolehan, depresiasi.</p>
-                    <a :href="`${baseUrl}/onboarding/templates/aset-tetap`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? Download CSV Template</a>
+                    <h3 class="font-bold text-sm text-primary">{{ t('5. Template Aset Tetap Awal') }}</h3>
+                    <p class="text-xs text-on-surface-variant mt-1">{{ t('Format barang inventaris, harga perolehan, depresiasi.') }}</p>
+                    <a :href="`${baseUrl}/onboarding/templates/aset-tetap`" class="mt-4 inline-block text-sm font-semibold text-secondary">?? {{ t('Download CSV Template') }}</a>
                 </AppCard>
             </div>
 
@@ -523,17 +525,17 @@ const uploadLoans = () => {
                     <template #header>
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div>
-                                <h2 class="text-lg font-semibold text-primary">Saldo Awal per Tahun Fiskal (Manual)</h2>
+                                <h2 class="text-lg font-semibold text-primary">{{ t('Saldo Awal per Tahun Fiskal (Manual)') }}</h2>
                                 <p class="text-xs text-on-surface-variant max-w-2xl">
-                                    Tulis langsung ke tabel <code class="font-mono">account_opening_balances</code> per tahun fiskal. Cocok untuk tenant baru yang join di tengah tahun (mis. tahu saldo 1 Jan lalu backfill jurnal Jan-Mei terpisah di tab berikutnya).
+                                    {{ t('Tulis langsung ke tabel') }} <code class="font-mono">account_opening_balances</code> {{ t('per tahun fiskal. Cocok untuk tenant baru yang join di tengah tahun (mis. tahu saldo 1 Jan lalu backfill jurnal Jan-Mei terpisah di tab berikutnya).') }}
                                 </p>
                             </div>
                             <div class="flex items-center space-x-3">
-                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun Fiskal</label>
+                                <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun Fiskal') }}</label>
                                 <AppInput
                                     v-model="manualFiscalYear"
                                     type="number"
-                                    label="Tahun Fiskal"
+                                    :label="t('Tahun Fiskal')"
                                     hide-label
                                     min="2000"
                                     max="2100"
@@ -548,10 +550,10 @@ const uploadLoans = () => {
                             <div class="text-xl">⚠️</div>
                             <div>
                                 <h3 class="text-sm font-bold text-primary">
-                                    Saldo Awal Tahun {{ manualFiscalYear }} Sudah Ada
+                                    {{ t('Saldo Awal Tahun') }} {{ manualFiscalYear }} {{ t('Sudah Ada') }}
                                 </h3>
                                 <p class="text-xs text-on-surface-variant">
-                                    Menyimpan akan memperbarui nilai existing (preserve source). Tidak menimpa source='migration' (legacy).
+                                    {{ t("Menyimpan akan memperbarui nilai existing (preserve source). Tidak menimpa source='migration' (legacy).") }}
                                 </p>
                             </div>
                         </div>
@@ -563,16 +565,16 @@ const uploadLoans = () => {
                                 <div class="text-2xl">{{ manualIsBalanced ? '✅' : '⚠️' }}</div>
                                 <div>
                                     <h3 class="text-sm font-bold text-primary">
-                                        Status: {{ manualIsBalanced ? 'SEIMBANG' : 'BELUM SEIMBANG' }}
+                                        {{ t('Status:') }} {{ manualIsBalanced ? t('SEIMBANG') : t('BELUM SEIMBANG') }}
                                     </h3>
                                     <p class="text-xs text-on-surface-variant">
-                                        Total Debit: <strong>Rp {{ formatMoney(manualTotalDebit) }}</strong> | Total Kredit: <strong>Rp {{ formatMoney(manualTotalCredit) }}</strong>
+                                        {{ t('Total Debit:') }} <strong>Rp {{ formatMoney(manualTotalDebit) }}</strong> | {{ t('Total Kredit:') }} <strong>Rp {{ formatMoney(manualTotalCredit) }}</strong>
                                     </p>
                                 </div>
                             </div>
                             <div>
                                 <AppBadge :tone="manualIsBalanced ? 'success' : 'warning'">
-                                    Selisih: Rp {{ formatMoney(Math.abs(manualTotalDebit - manualTotalCredit)) }}
+                                    {{ t('Selisih:') }} Rp {{ formatMoney(Math.abs(manualTotalDebit - manualTotalCredit)) }}
                                 </AppBadge>
                             </div>
                         </div>
@@ -582,10 +584,10 @@ const uploadLoans = () => {
                         <table class="min-w-full divide-y divide-outline-variant">
                             <thead class="bg-surface-container-low">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface">Kode Akun</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface">Nama Akun</th>
-                                    <th class="px-4 py-3 text-right text-xs font-semibold text-on-surface">Saldo Debit (Rp)</th>
-                                    <th class="px-4 py-3 text-right text-xs font-semibold text-on-surface">Saldo Kredit (Rp)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface">{{ t('Kode Akun') }}</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-on-surface">{{ t('Nama Akun') }}</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-on-surface">{{ t('Saldo Debit (Rp)') }}</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-on-surface">{{ t('Saldo Kredit (Rp)') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-outline-variant">
@@ -616,7 +618,7 @@ const uploadLoans = () => {
                             </tbody>
                             <tfoot class="bg-surface-container font-bold text-xs">
                                 <tr>
-                                    <td colspan="2" class="px-4 py-3 text-right text-primary">TOTAL TAHUN {{ manualFiscalYear }}:</td>
+                                    <td colspan="2" class="px-4 py-3 text-right text-primary">{{ t('TOTAL TAHUN') }} {{ manualFiscalYear }}:</td>
                                     <td class="px-4 py-3 text-right text-secondary font-mono">Rp {{ formatMoney(manualTotalDebit) }}</td>
                                     <td class="px-4 py-3 text-right text-secondary font-mono">Rp {{ formatMoney(manualTotalCredit) }}</td>
                                 </tr>
@@ -630,8 +632,8 @@ const uploadLoans = () => {
                             @click="submitManualOpening"
                             :disabled="!manualIsBalanced || manualOpeningForm.processing"
                         >
-                            <span v-if="manualOpeningForm.processing">Menyimpan...</span>
-                            <span v-else>💾 Simpan Saldo Awal Tahun {{ manualFiscalYear }}</span>
+                            <span v-if="manualOpeningForm.processing">{{ t('Menyimpan...') }}</span>
+                            <span v-else>💾 {{ t('Simpan Saldo Awal Tahun') }} {{ manualFiscalYear }}</span>
                         </AppButton>
                     </div>
                 </AppCard>
@@ -642,9 +644,9 @@ const uploadLoans = () => {
                 <AppCard>
                     <template #header>
                         <div>
-                            <h2 class="text-lg font-semibold text-primary">Jurnal Agregat Mid-Year (Backfill Banyak Bulan)</h2>
+                            <h2 class="text-lg font-semibold text-primary">{{ t('Jurnal Agregat Mid-Year (Backfill Banyak Bulan)') }}</h2>
                             <p class="text-xs text-on-surface-variant max-w-3xl">
-                                Posting 1 jurnal <strong>multi-line</strong> untuk backfill agregat transaksi antar tanggal opening balance dan tanggal join (mis. Jan-Mei). Saldo akhir bulan = Opening + Jurnal Agregat + jurnal reguler bulanan.
+                                {{ t('Posting 1 jurnal') }} <strong>{{ t('multi-line') }}</strong> {{ t('untuk backfill agregat transaksi antar tanggal opening balance dan tanggal join (mis. Jan-Mei). Saldo akhir bulan = Opening + Jurnal Agregat + jurnal reguler bulanan.') }}
                             </p>
                         </div>
                     </template>
@@ -653,12 +655,12 @@ const uploadLoans = () => {
                         <div class="flex items-start space-x-3">
                             <div class="text-xl">📌</div>
                             <div class="text-xs text-on-surface">
-                                <p class="font-bold">Cara Pakai:</p>
+                                <p class="font-bold">{{ t('Cara Pakai:') }}</p>
                                 <ol class="list-decimal pl-5 mt-1 space-y-1">
-                                    <li>Set <code>transaction_date</code> = tanggal join (mis. 2026-06-01).</li>
-                                    <li>Tambah baris untuk setiap akun yang berubah (Kas debit, Piutang/Modal/Pendapatan credit, dll).</li>
-                                    <li>Total Debit HARUS = Total Kredit.</li>
-                                    <li>Submit — jurnal akan di-post lewat <code>JournalPostingService</code> (validasi period open otomatis).</li>
+                                    <li>{{ t('Set') }} <code>transaction_date</code> = {{ t('tanggal join (mis. 2026-06-01).') }}</li>
+                                    <li>{{ t('Tambah baris untuk setiap akun yang berubah (Kas debit, Piutang/Modal/Pendapatan credit, dll).') }}</li>
+                                    <li>{{ t('Total Debit HARUS = Total Kredit.') }}</li>
+                                    <li>{{ t('Submit — jurnal akan di-post lewat') }} <code>JournalPostingService</code> {{ t('(validasi period open otomatis).') }}</li>
                                 </ol>
                             </div>
                         </div>
@@ -667,16 +669,16 @@ const uploadLoans = () => {
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
                         <AppDatePicker
                             v-model="aggregateForm.transaction_date"
-                            label="Tanggal Jurnal"
+                            :label="t('Tanggal Jurnal')"
                             required
                         />
                         <div class="space-y-1.5">
-                            <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Keterangan</label>
+                            <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Keterangan') }}</label>
                             <AppInput
                                 v-model="aggregateForm.description"
-                                label="Keterangan"
+                                :label="t('Keterangan')"
                                 hide-label
-                                placeholder="Opsional"
+                                :placeholder="t('Opsional')"
                             />
                         </div>
                     </div>
@@ -685,10 +687,10 @@ const uploadLoans = () => {
                         <table class="min-w-full divide-y divide-outline-variant">
                             <thead class="bg-surface-container-low">
                                 <tr>
-                                    <th class="px-3 py-3 text-left text-xs font-semibold text-on-surface w-1/3">Akun</th>
-                                    <th class="px-3 py-3 text-right text-xs font-semibold text-on-surface">Debit</th>
-                                    <th class="px-3 py-3 text-right text-xs font-semibold text-on-surface">Kredit</th>
-                                    <th class="px-3 py-3 text-left text-xs font-semibold text-on-surface">Keterangan Baris</th>
+                                    <th class="px-3 py-3 text-left text-xs font-semibold text-on-surface w-1/3">{{ t('Akun') }}</th>
+                                    <th class="px-3 py-3 text-right text-xs font-semibold text-on-surface">{{ t('Debit') }}</th>
+                                    <th class="px-3 py-3 text-right text-xs font-semibold text-on-surface">{{ t('Kredit') }}</th>
+                                    <th class="px-3 py-3 text-left text-xs font-semibold text-on-surface">{{ t('Keterangan Baris') }}</th>
                                     <th class="px-3 py-3"></th>
                                 </tr>
                             </thead>
@@ -698,7 +700,7 @@ const uploadLoans = () => {
                                         <SmartSelect
                                             :model-value="line.account_row_id ? Number(line.account_row_id) : null"
                                             :options="aggregateAccountOptions()"
-                                            placeholder="Pilih akun..."
+                                            :placeholder="t('Pilih akun...')"
                                             @update:model-value="(val) => pickAccountForAggregateLine(idx, val)"
                                         />
                                     </td>
@@ -725,9 +727,9 @@ const uploadLoans = () => {
                                     <td class="px-3 py-2">
                                         <AppInput
                                             v-model="line.description"
-                                            label="Keterangan baris"
+                                            :label="t('Keterangan baris')"
                                             hide-label
-                                            placeholder="Opsional"
+                                            :placeholder="t('Opsional')"
                                         />
                                     </td>
                                     <td class="px-3 py-2 text-center">
@@ -735,7 +737,7 @@ const uploadLoans = () => {
                                             name="delete"
                                             size="sm"
                                             tone="danger"
-                                            tooltip="Hapus baris"
+                                            :tooltip="t('Hapus baris')"
                                             :disabled="aggregateForm.lines.length <= 2"
                                             @click="removeAggregateLine(idx)"
                                         />
@@ -744,12 +746,12 @@ const uploadLoans = () => {
                             </tbody>
                             <tfoot class="bg-surface-container font-bold text-xs">
                                 <tr>
-                                    <td class="px-3 py-3 text-right text-primary">TOTAL:</td>
+                                    <td class="px-3 py-3 text-right text-primary">{{ t('TOTAL:') }}</td>
                                     <td class="px-3 py-3 text-right text-secondary font-mono">Rp {{ formatMoney(aggregateTotalDebit) }}</td>
                                     <td class="px-3 py-3 text-right text-secondary font-mono">Rp {{ formatMoney(aggregateTotalCredit) }}</td>
                                     <td colspan="2" class="px-3 py-3 text-right">
                                         <AppBadge :tone="aggregateIsBalanced ? 'success' : 'warning'">
-                                            Selisih: Rp {{ formatMoney(Math.abs(aggregateTotalDebit - aggregateTotalCredit)) }}
+                                            {{ t('Selisih:') }} Rp {{ formatMoney(Math.abs(aggregateTotalDebit - aggregateTotalCredit)) }}
                                         </AppBadge>
                                     </td>
                                 </tr>
@@ -759,15 +761,15 @@ const uploadLoans = () => {
 
                     <div class="flex justify-between items-center pt-6">
                         <AppButton type="button" variant="secondary" size="compact" @click="addAggregateLine">
-                            + Tambah Baris
+                            + {{ t('Tambah Baris') }}
                         </AppButton>
                         <AppButton
                             variant="primary"
                             @click="submitAggregateJournal"
                             :disabled="!aggregateIsValid || aggregateForm.processing"
                         >
-                            <span v-if="aggregateForm.processing">Memproses...</span>
-                            <span v-else>📤 Posting Jurnal Agregat</span>
+                            <span v-if="aggregateForm.processing">{{ t('Memproses...') }}</span>
+                            <span v-else>📤 {{ t('Posting Jurnal Agregat') }}</span>
                         </AppButton>
                     </div>
                 </AppCard>

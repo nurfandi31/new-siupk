@@ -40,7 +40,7 @@ const availableInstallments = computed(() => props.installmentOptions.filter((i)
 // per loan, jadi tidak perlu SmartSelect dropdown — cukup cek substring match
 // terhadap subject_label / borrower_member_row_id).
 const memberSearch = ref('');
-const memberSearchPlaceholder = 'Ketik nama/NIK/ID anggota untuk konfirmasi';
+const memberSearchPlaceholder = 'Cari anggota...';
 const memberVerified = computed(() => {
     const q = memberSearch.value.trim().toLocaleLowerCase();
     if (!q) return false;

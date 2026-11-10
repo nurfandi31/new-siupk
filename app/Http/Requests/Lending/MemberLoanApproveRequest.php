@@ -32,6 +32,7 @@ final class MemberLoanApproveRequest extends FormRequest
         return [
             'approved_at' => ['required', 'date', 'before_or_equal:today'],
             'planned_disbursed_at' => ['required', 'date', 'after_or_equal:approved_at'],
+            'allocation_amount' => ['nullable', 'numeric', 'min:1'],
             'allocation_notes' => ['nullable', 'string', 'max:500'],
 
             // Snapshot parameter verifikasi -> wajib ada (jika tidak dikirim
@@ -63,6 +64,7 @@ final class MemberLoanApproveRequest extends FormRequest
         return [
             'approved_at' => 'tanggal penetapan',
             'planned_disbursed_at' => 'rencana tanggal pencairan',
+            'allocation_amount' => 'nominal alokasi',
             'allocation_notes' => 'catatan alokasi',
             'term_months' => 'jangka waktu',
             'service_rate_total' => 'prosentase jasa',

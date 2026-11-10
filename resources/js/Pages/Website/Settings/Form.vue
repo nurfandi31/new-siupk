@@ -68,14 +68,14 @@ function submit() {
                             v-model="form.hero_tagline"
                             label="Tagline"
                             icon="campaign"
-                            placeholder="Contoh: Melayani desa dengan transparan"
+                            placeholder="Masukkan tagline"
                             :error="form.errors.hero_tagline"
                         />
                         <AppTextarea
                             v-model="form.hero_description"
                             label="Deskripsi Hero"
                             icon="notes"
-                            placeholder="Kalimat pengantar yang tampil di bawah nama lembaga"
+                            placeholder="Masukkan deskripsi"
                             :error="form.errors.hero_description"
                         />
 
@@ -105,7 +105,7 @@ function submit() {
                             v-model="form.about_short"
                             label="Ringkasan Profil"
                             icon="info"
-                            placeholder="Paragraf singkat tentang lembaga"
+                            placeholder="Masukkan ringkasan"
                             :error="form.errors.about_short"
                         />
                     </div>
@@ -119,7 +119,7 @@ function submit() {
                             label="Facebook"
                             icon="public"
                             type="url"
-                            placeholder="https://facebook.com/nama-lembaga"
+                            placeholder="https://facebook.com/"
                             :error="form.errors.facebook_url"
                         />
                         <AppInput
@@ -127,7 +127,7 @@ function submit() {
                             label="Instagram"
                             icon="photo_camera"
                             type="url"
-                            placeholder="https://instagram.com/nama-lembaga"
+                            placeholder="https://instagram.com/"
                             :error="form.errors.instagram_url"
                         />
                         <AppInput
@@ -135,7 +135,7 @@ function submit() {
                             label="YouTube"
                             icon="smart_display"
                             type="url"
-                            placeholder="https://youtube.com/@nama-lembaga"
+                            placeholder="https://youtube.com/@"
                             :error="form.errors.youtube_url"
                         />
                     </div>
@@ -148,7 +148,7 @@ function submit() {
                             v-model="form.contact_phone"
                             label="Telepon Kontak"
                             icon="call"
-                            placeholder="Contoh: 0812-3456-7890"
+                            placeholder="08xx-xxxx-xxxx"
                             :error="form.errors.contact_phone"
                         />
                         <AppInput
@@ -156,21 +156,21 @@ function submit() {
                             label="Email Kontak"
                             icon="mail"
                             type="email"
-                            placeholder="contoh@desa.test"
+                            placeholder="Masukkan email"
                             :error="form.errors.contact_email"
                         />
                         <AppTextarea
                             v-model="form.contact_address"
                             label="Alamat Kontak"
                             icon="place"
-                            placeholder="Alamat kantor yang tampil di halaman kontak"
+                            placeholder="Masukkan alamat"
                             :error="form.errors.contact_address"
                         />
                         <AppInput
                             v-model="form.footer_note"
                             label="Catatan Footer"
                             icon="copyright"
-                            placeholder="Teks singkat di bagian bawah situs"
+                            placeholder="Masukkan catatan"
                             :error="form.errors.footer_note"
                         />
                     </div>

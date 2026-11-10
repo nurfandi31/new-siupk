@@ -197,7 +197,7 @@ function saveNotes() {
                         v-model="pctForm.notes"
                         label="Catatan proses / kebijakan alokasi"
                         :error="pctForm.errors.notes"
-                        placeholder="Misal: Persentase sesuai keputusan RAT, catatan tentang proses…"
+                        placeholder="Masukkan catatan"
                     />
                     <div class="flex justify-end">
                         <AppButton type="submit" icon="save" :loading="pctForm.processing">Simpan catatan</AppButton>

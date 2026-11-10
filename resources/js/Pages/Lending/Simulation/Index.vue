@@ -647,7 +647,7 @@ function formatNumber(value) {
                                 <AppInput
                                     v-model="form.borrower_name"
                                     label="Nama Peminjam / Kelompok"
-                                    placeholder="cth: Kelompok Mawar 01 / Ibu Siti"
+                                    placeholder="Masukkan nama"
                                     icon="person"
                                 />
 

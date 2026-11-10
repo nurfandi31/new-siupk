@@ -126,6 +126,58 @@ final class LoanPortfolioReportTest extends TestCase
             ->assertHeader('content-type', 'application/pdf');
     }
 
+    public function test_lpp_individu_desa_page_and_pdf_render(): void
+    {
+        $this->seedActiveLoanWithOverdue();
+
+        $this->actingAs($this->user)
+            ->get('/lending/reports/lpp-desa-individu?year=2026&month=7')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Lending/Reports/LppDesa')
+                ->where('report_scope', 'member')
+                ->where('filters.scope', 'member')
+            );
+
+        $this->actingAs($this->user)
+            ->get('/lending/reports/lpp-desa-individu/pdf?year=2026&month=7')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_kolek_kelompok_page_and_pdf_render(): void
+    {
+        $this->seedActiveLoanWithOverdue();
+
+        $this->actingAs($this->user)
+            ->get('/lending/reports/kolek-kelompok?year=2026&month=7')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Lending/Reports/KolekKelompok')
+                ->has('products', 1)
+            );
+
+        $this->actingAs($this->user)
+            ->get('/lending/reports/kolek-kelompok/pdf?year=2026&month=7')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_kolek_individu_page_and_pdf_render(): void
+    {
+        $this->seedActiveLoanWithOverdue();
+
+        $this->actingAs($this->user)
+            ->get('/lending/reports/kolek-individu?year=2026&month=7')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Lending/Reports/KolekIndividu'));
+
+        $this->actingAs($this->user)
+            ->get('/lending/reports/kolek-individu/pdf?year=2026&month=7')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
     public function test_portfolio_scope_member_filter_excludes_group_loans(): void
     {
         $groupLoan = $this->seedActiveLoanWithOverdue();

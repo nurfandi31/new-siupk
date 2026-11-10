@@ -49,7 +49,7 @@ function submit() {
                         label="Username, Email, atau No. WhatsApp"
                         icon="person"
                         autocomplete="username"
-                        placeholder="Contoh: 081234567890"
+                        placeholder="08xxxxxxxxxx"
                         required
                         autofocus
                         :error="form.errors.identifier"
