@@ -29,8 +29,14 @@
         $province = $id['province_name'] ?? '';
         $periodLabel = strtoupper($period_label ?? ($period['period_label'] ?? ''));
         $dateFormatted = $date_formatted ?? '';
+        $logoUrl = $id['logo_url'] ?? null;
     @endphp
 
+    @if (! empty($logoUrl))
+        <div class="center" style="margin-bottom: 6px;">
+            <img src="{{ $logoUrl }}" width="50" alt="Logo">
+        </div>
+    @endif
     <h1>PROFIL LEMBAGA</h1>
     <p class="center" style="margin-bottom: 4px;">
         <strong>{{ $legalName }}</strong>

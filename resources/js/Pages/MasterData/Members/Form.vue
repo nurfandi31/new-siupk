@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -9,8 +9,11 @@ import AppRadioGroup from '../../../Components/AppRadioGroup.vue';
 import AppSwitch from '../../../Components/AppSwitch.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
 import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import { useCan } from '../../../composables/useCan';
 
 const props = defineProps({ member: { type: Object, default: null }, villages: { type: Array, required: true } });
+const page = usePage();
+const { can } = useCan();
 const path = '/master-data/members';
 const today = localIsoDate();
 const defaultBirthDate = (() => {
@@ -20,6 +23,8 @@ const defaultBirthDate = (() => {
 })();
 const resolvedMemberId = ref(props.member?.row_id || null);
 const editing = computed(() => Boolean(resolvedMemberId.value));
+const savingsEnabled = computed(() => Boolean(page.props.modules?.simpanan));
+const canManageSavings = computed(() => can('simpanan.manage'));
 const lookupLoading = ref(false);
 const lookupError = ref('');
 const memberFound = ref(false);
@@ -115,9 +120,20 @@ function submit() {
     <Head :title="editing ? 'Edit Anggota' : 'Tambah Anggota'" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
-            <header class="mb-6">
-                <h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit Anggota' : 'Tambah Anggota' }}</h1>
-                <p class="mt-1 text-on-surface-variant">{{ editing ? 'Perbarui identitas dan data pendukung anggota.' : 'Lengkapi identitas dan data pendukung anggota.' }}</p>
+            <header class="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit Anggota' : 'Tambah Anggota' }}</h1>
+                    <p class="mt-1 text-on-surface-variant">{{ editing ? 'Perbarui identitas dan data pendukung anggota.' : 'Lengkapi identitas dan data pendukung anggota.' }}</p>
+                </div>
+                <Link
+                    v-if="editing && savingsEnabled && canManageSavings"
+                    :href="`/simpanan/create?member=${resolvedMemberId}`"
+                    class="contents"
+                >
+                    <AppButton variant="secondary" icon="savings" size="compact">
+                        Buka Rekening Simpanan
+                    </AppButton>
+                </Link>
             </header>
 
             <AppCard>

@@ -1,5 +1,6 @@
 @php
     use App\Utils\Tanggal;
+    use App\Models\RencanaAngsuran;
 
     $rowspan = 19;
     if ($nia->real_i_count > 16) {
@@ -23,7 +24,10 @@
         html {
             /* margin-left: 90px; */
             /* margin-right: 0px; */
-            margin-bottom: 100px;
+            /* Di SIUPK ini hanya memberi ruang scroll browser. DomPDF
+               menghitungnya sebagai tinggi dokumen sehingga kartu pecah
+               ke halaman kedua. */
+            margin-bottom: 0;
         }
 
         ul,
@@ -41,7 +45,7 @@
 
         table tr th,
         table tr td {
-            padding: 2px 4px;
+            padding: 1px 4px;
         }
 
         table tr th {
@@ -76,9 +80,9 @@
 
 <body onload="window.print()">
     <main style="position: relative; font-size: 12px;">
-        <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 11px;">
+        <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 11px; table-layout: fixed;">
             <tr>
-                <td rowspan="7" align="center" width="400">
+                <td rowspan="7" align="center" width="360">
                     <div style="font-size: 14px; font-weight: bold;">
                         {{ $kec->nama_lembaga_sort }}
                     </div>
@@ -89,18 +93,16 @@
                         Telp. {{ $kec->telpon_kec }}
                     </div>
                     <div style="margin-top: 8px;">
-                        @if ($barcode !== '')
-                            <img width="150" src="{{ $barcode }}" alt="{{ $nia->anggota->nik }}">
-                        @endif
+                        <img width="150" src="{{ $barcode }}" alt="{{ $nia->anggota->nik }}">
                     </div>
                     <div style="font-size: 14px;">{{ $nia->anggota->nik }}</div>
                 </td>
-                <td width="150">Jenis Pinjaman</td>
+                <td width="135">Jenis Pinjaman</td>
                 <td width="5" align="center">:</td>
-                <td width="200">{{ $nia->jpp->nama_jpp }}</td>
-                <td width="150">Loan Id.</td>
+                <td width="180">{{ $nia->jpp->nama_jpp }}</td>
+                <td width="135">Loan Id.</td>
                 <td width="5" align="center">:</td>
-                <td width="200">{{ $nia->id }}</td>
+                <td width="180">{{ $nia->id }}</td>
             </tr>
             <tr>
                 <td>Nama Peminjam</td>
@@ -150,12 +152,12 @@
                 <td>{{ $nia->pros_jasa / $nia->jangka . '%' }}</td>
             </tr>
             <tr>
-                <td>&nbsp</td>
-                <td align="center">&nbsp</td>
-                <td>&nbsp</td>
-                <td>&nbsp</td>
-                <td align="center">&nbsp</td>
-                <td>&nbsp</td>
+                <td>&nbsp;</td>
+                <td align="center">&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td align="center">&nbsp;</td>
+                <td>&nbsp;</td>
             </tr>
             <tr>
                 <td colspan="7" class="b t" style="font-weight: bold; font-size: 24px;" align="center">

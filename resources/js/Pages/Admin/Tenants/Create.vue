@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { reactive, ref, watch } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
+import AppCheckbox from '../../../Components/AppCheckbox.vue';
 import AppInput from '../../../Components/AppInput.vue';
 import LocationMapPicker from '../../../Components/LocationMapPicker.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
@@ -19,6 +20,7 @@ const form = useForm({
     map_latitude: null,
     map_longitude: null,
     map_zoom: 13,
+    with_simpanan: false,
 });
 
 const props = defineProps({
@@ -145,6 +147,22 @@ function submit() {
                                 {{ role.name }}
                             </span>
                         </div>
+                    </div>
+
+                    <div class="border-t border-outline-variant pt-5">
+                        <h2 class="font-semibold text-primary">{{ t('Modul Lokasi') }}</h2>
+                        <p class="mt-1 text-xs text-on-surface-variant">
+                            {{ t('Modul opsional hanya membuat tabel untuk lokasi yang membutuhkannya. Modul lain tetap dapat diaktifkan kemudian dari halaman detail tenant.') }}
+                        </p>
+                        <label class="mt-3 flex items-start gap-3 rounded-xl border border-outline-variant bg-surface-container-low p-4">
+                            <AppCheckbox v-model="form.with_simpanan" />
+                            <span class="min-w-0">
+                                <span class="block font-semibold text-on-surface">{{ t('Sertakan modul Simpanan') }}</span>
+                                <span class="block text-xs text-on-surface-variant">
+                                    {{ t('Membuat tabel simp_* khusus tenant ini beserta jenis simpanan default: Pokok, Wajib, Sukarela, dan Berjangka.') }}
+                                </span>
+                            </span>
+                        </label>
                     </div>
 
                     <div class="flex justify-end gap-3">

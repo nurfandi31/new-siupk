@@ -1,6 +1,6 @@
 <script setup>
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppIcon from '../../../Components/AppIcon.vue';
@@ -12,6 +12,10 @@ const props = defineProps({
         type: Object,
         required: true,
         // { levels: [...summary], rows: [...5 rows associative] }
+    },
+    logoUrl: {
+        type: String,
+        default: null,
     },
 });
 
@@ -38,6 +42,66 @@ function submitKolek() {
 }
 
 const tampilkanLevels = computed(() => props.kolek.levels.filter((l) => l.aktif));
+
+// === Logo lembaga (dipakai seluruh kop dokumen & pelaporan) ===
+const logoForm = useForm({ logo: null });
+const logoPreview = ref(props.logoUrl);
+const logoDragOver = ref(false);
+
+watch(
+    () => props.logoUrl,
+    (url) => {
+        if (url) logoPreview.value = url;
+    },
+);
+
+function onLogoChange(event) {
+    setLogoFile(event.target.files?.[0] ?? null);
+}
+
+function onLogoDrop(event) {
+    event.preventDefault();
+    logoDragOver.value = false;
+    setLogoFile(event.dataTransfer?.files?.[0] ?? null);
+}
+
+function setLogoFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    if (logoPreview.value && logoPreview.value.startsWith('blob:')) {
+        URL.revokeObjectURL(logoPreview.value);
+    }
+    logoForm.logo = file;
+    logoPreview.value = URL.createObjectURL(file);
+}
+
+onBeforeUnmount(() => {
+    if (logoPreview.value && logoPreview.value.startsWith('blob:')) {
+        URL.revokeObjectURL(logoPreview.value);
+    }
+});
+
+function submitLogo() {
+    logoForm.post('/settings/sop/logo', {
+        forceFormData: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            logoForm.reset();
+        },
+    });
+}
+
+function destroyLogo() {
+    if (!window.confirm('Hapus logo lembaga? Seluruh kop dokumen dan laporan tidak akan menampilkan logo.')) {
+        return;
+    }
+
+    router.delete('/settings/sop/logo', {
+        preserveScroll: true,
+        onSuccess: () => {
+            logoPreview.value = null;
+        },
+    });
+}
 </script>
 
 <template>
@@ -48,12 +112,65 @@ const tampilkanLevels = computed(() => props.kolek.levels.filter((l) => l.aktif)
             <div class="flex flex-col gap-1">
                 <h1 class="text-2xl font-bold tracking-tight text-primary sm:text-3xl">SOP Lembaga</h1>
                 <p class="text-sm text-on-surface-variant sm:text-base">
-                    Personalisasi aturan operasional standar lembaga: kolektabilitas, sistem simpanan, asuransi, dan redaksi dokumen.
+                    Personalisasi aturan operasional standar lembaga: logo, kolektabilitas, sistem simpanan, asuransi, dan redaksi dokumen.
                 </p>
             </div>
 
             <div class="flex flex-wrap gap-2">
                 <AppButton variant="primary" size="sm" tag="a" href="/settings" icon="arrow_back">Kembali ke Pengaturan</AppButton>
+            </div>
+
+            <!-- Logo lembaga: sumber tunggal untuk kop dokumen & pelaporan -->
+            <div class="overflow-hidden rounded-2xl bg-surface-container-lowest shadow-sm ring-1 ring-outline-variant/40">
+                <div class="border-b border-outline-variant bg-outline-variant/40 px-5 py-3">
+                    <div class="flex items-center gap-2 text-sm font-bold text-primary">
+                        <AppIcon name="image" tone="primary" :container-size="9" />
+                        Logo Lembaga
+                    </div>
+                </div>
+
+                <div class="grid gap-6 p-5 sm:p-7 md:grid-cols-[14rem_1fr] md:items-center">
+                    <div class="flex justify-center">
+                        <div class="relative grid size-56 place-items-center overflow-hidden rounded-3xl border-2 border-dashed border-outline-variant bg-surface-container-lowest shadow-inner">
+                            <img v-if="logoPreview" :src="logoPreview" alt="Logo Lembaga" class="size-full object-contain" />
+                            <div v-else class="text-center">
+                                <AppIcon name="image" class="text-5xl text-on-surface-variant" />
+                                <p class="mt-2 text-xs text-on-surface-variant">Belum ada logo</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form class="space-y-4" @submit.prevent="submitLogo">
+                        <div>
+                            <h3 class="text-base font-bold text-primary">Logo untuk Semua Kop</h3>
+                            <p class="mt-1 text-sm text-on-surface-variant">
+                                Logo ini otomatis dipakai pada kop dokumen pinjaman, kartu angsuran, kuitansi, dan seluruh pelaporan PDF.
+                                Format PNG, JPG, atau WebP. Maks 2 MB.
+                            </p>
+                        </div>
+
+                        <label
+                            class="block cursor-pointer rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container-lowest p-8 text-center transition-all hover:border-primary hover:bg-primary-container/10"
+                            :class="logoDragOver ? 'border-primary bg-primary-container/20 scale-[1.01]' : ''"
+                            @dragover.prevent="logoDragOver = true"
+                            @dragleave="logoDragOver = false"
+                            @drop="onLogoDrop"
+                        >
+                            <input type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" @change="onLogoChange" />
+                            <div class="mx-auto grid size-12 place-items-center rounded-xl bg-primary-container/30 text-primary">
+                                <AppIcon name="cloud_upload" class="text-2xl" />
+                            </div>
+                            <p class="mt-3 text-sm font-bold text-primary">Tarik gambar ke sini atau klik untuk pilih</p>
+                            <p class="mt-1 text-xs text-on-surface-variant">PNG / JPG / WebP &bull; Maks 2 MB</p>
+                        </label>
+                        <p v-if="logoForm.errors.logo" class="text-sm text-error">{{ logoForm.errors.logo }}</p>
+
+                        <div class="flex flex-wrap justify-end gap-2 border-t border-outline-variant pt-4">
+                            <AppButton v-if="logoPreview" type="button" variant="danger" icon="delete" :loading="logoForm.processing" @click="destroyLogo">Hapus Logo</AppButton>
+                            <AppButton type="submit" :loading="logoForm.processing" :disabled="!logoForm.logo || logoForm.processing" icon="upload">Unggah Logo</AppButton>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- Tabs (vertikal sederhana, satu tab dulu: Kolek) -->

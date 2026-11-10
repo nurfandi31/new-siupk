@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Domain\Membership\Models;
 
 use App\Models\Tenant\TenantModel;
+use App\Tenancy\Concerns\HasTenantLocalId;
 use Carbon\CarbonImmutable;
 
 final class OrganizationProfile extends TenantModel
 {
+    use HasTenantLocalId;
+
     protected $table = 'organization_profiles';
 
     protected $fillable = [

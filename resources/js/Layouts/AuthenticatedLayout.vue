@@ -34,6 +34,7 @@ const sidebarCollapsed = ref(false);
 const expanded = ref({});
 const logoutForm = useForm({});
 const isTrainingMode = computed(() => page.props.tenant?.is_training_mode === true);
+const savingsEnabled = computed(() => page.props.modules?.simpanan === true);
 const impersonatedBy = computed(() => page.props.auth?.impersonated_by);
 const impersonatorName = computed(() => page.props.auth?.impersonator_name);
 const leaveForm = useForm({});
@@ -115,6 +116,7 @@ function filterNavItems(items) {
 const visibleSections = computed(() =>
     sections
         .map((section) => {
+            if (section.module === 'simpanan' && !savingsEnabled.value) return null;
             const items = filterNavItems(section.items);
             if (!items.length) return null;
             return { ...section, items };
@@ -336,6 +338,17 @@ const sections = [
         ],
     },
     {
+        label: 'Simpanan',
+        module: 'simpanan',
+        accent: true,
+        items: [
+            { label: 'Rekening Simpanan', icon: 'savings', href: '/simpanan', exclude: ['/simpanan/create', '/simpanan/bunga', '/simpanan/pengaturan'] },
+            { label: 'Buka Rekening', icon: 'add_card', href: '/simpanan/create' },
+            { label: 'Bunga & Pajak', icon: 'percent', href: '/simpanan/bunga' },
+            { label: 'Pengaturan Simpanan', icon: 'tune', href: '/simpanan/pengaturan' },
+        ],
+    },
+    {
         label: 'Keuangan',
         items: [
             {
@@ -552,7 +565,11 @@ const platformNavigation = [{ label: 'Panel Admin', icon: 'admin_panel_settings'
 
 function isActive(item) {
     if (item.children) return item.children.some(isActive);
-    if (!item.href || (item.exclude && currentPath.value.startsWith(item.exclude))) return false;
+    if (!item.href) return false;
+    if (item.exclude) {
+        const excludes = Array.isArray(item.exclude) ? item.exclude : [item.exclude];
+        if (excludes.some((prefix) => currentPath.value.startsWith(prefix))) return false;
+    }
     return item.exact ? currentPath.value === item.href : currentPath.value.startsWith(item.href);
 }
 
@@ -676,7 +693,10 @@ function onParentItemClick(item, event) {
                 :aria-label="t('Navigasi utama')"
             >
                 <section v-for="(section, sIdx) in visibleSections" :key="section.label">
-                    <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">{{ navLabel(section.label) }}</h2>
+                    <h2 class="mb-1 flex items-center gap-2 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">
+                        <span v-if="section.accent" class="size-1.5 shrink-0 rounded-full bg-secondary" aria-hidden="true" />
+                        {{ navLabel(section.label) }}
+                    </h2>
                     <div class="space-y-1">
                         <template v-for="item in section.items" :key="item.key || item.label">
                             <button

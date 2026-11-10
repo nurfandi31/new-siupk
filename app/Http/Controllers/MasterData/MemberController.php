@@ -10,6 +10,8 @@ use App\Domain\Membership\Models\Person;
 use App\Domain\Membership\Services\EntityLoanHistoryService;
 use App\Domain\Membership\Services\MasterDataCsvService;
 use App\Domain\Membership\Services\MemberService;
+use App\Domain\Savings\Services\SavingsModuleManager;
+use App\Domain\Savings\Services\SavingsService;
 use App\Http\Requests\MasterData\MemberRequest;
 use App\Models\Tenant\OrganizationUnit;
 use Illuminate\Http\JsonResponse;
@@ -23,6 +25,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class MemberController
 {
+    public function __construct(
+        private readonly SavingsModuleManager $savingsModules,
+        private readonly SavingsService $savings,
+    ) {}
+
     public function index(Request $request): Response
     {
         $search = trim((string) $request->query('search', ''));
@@ -98,6 +105,7 @@ final class MemberController
         $loans = $loanHistory->forMember((int) $member->row_id);
         $activeLoans = collect($loans)->whereIn('status', ['active', 'disbursed'])->count();
         $outstanding = collect($loans)->sum(fn (array $l): float => (float) ($l['principal_remaining'] ?? 0));
+        $savingsEnabled = $this->savingsModules->isEnabled((int) $member->tenant_id);
 
         return Inertia::render('MasterData/Members/Show', [
             'member' => [
@@ -122,6 +130,12 @@ final class MemberController
                 'loan_count' => count($loans),
                 'active_loan_count' => $activeLoans,
                 'principal_remaining' => round((float) $outstanding, 2),
+            ],
+            'savings' => [
+                'enabled' => $savingsEnabled,
+                'accounts' => $savingsEnabled
+                    ? $this->savings->memberAccounts((int) $member->row_id)
+                    : [],
             ],
         ]);
     }

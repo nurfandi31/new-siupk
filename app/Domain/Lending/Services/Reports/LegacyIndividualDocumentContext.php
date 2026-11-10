@@ -6,6 +6,7 @@ namespace App\Domain\Lending\Services\Reports;
 
 use App\Domain\Lending\Models\InstallmentSystem;
 use App\Domain\Lending\Models\Loan;
+use App\Domain\Lending\Models\LoanBeneficiary;
 use App\Domain\Lending\Models\LoanInstallment;
 use App\Domain\Lending\Models\LoanPayment;
 use App\Domain\Lending\Services\MemberLoanScheduleCalculator;
@@ -189,6 +190,7 @@ final class LegacyIndividualDocumentContext
 
         $collateralJson = $this->collateralJson($loan->collateral, (string) ($person?->full_name ?? ''));
         $amount = (float) ($allocatedAmount > 0 ? $allocatedAmount : $loan->principal_amount);
+        $productIdentity = $this->legacyProductIdentity($loan->product);
 
         $pinkel = (object) [
             'id' => (int) $loan->id,
@@ -211,11 +213,7 @@ final class LegacyIndividualDocumentContext
             'sa_jasa' => $systemJasa->id,
             'sis_pokok' => $systemPokok,
             'sis_jasa' => $systemJasa,
-            'jpp' => (object) [
-                'kode' => (string) ($loan->product?->code ?? ''),
-                'nama_jpp' => (string) ($loan->product?->name ?? 'Pinjaman'),
-                'deskripsi_jpp' => (string) ($loan->product?->description ?? ''),
-            ],
+            'jpp' => (object) $productIdentity,
             'jasa' => (object) [
                 'nama_jj' => $this->interestKindLabel((string) ($loan->installment_method ?? 'flat')),
             ],
@@ -257,6 +255,7 @@ final class LegacyIndividualDocumentContext
         $nomorUsaha = trim((string) ($profile?->registration_number ?? '')) !== ''
             ? 'SK Kemenkumham RI No.'.$profile->registration_number
             : '';
+        $emailLembaga = (string) ($profile?->email ?? '');
         $infoLembaga = (string) ($profile?->address ?? '').', Telp.'.(string) ($profile?->phone ?? '');
         $kab = (object) [
             'id' => 0,
@@ -276,7 +275,7 @@ final class LegacyIndividualDocumentContext
             'sebutan_kec' => 'Kecamatan',
             'alamat_kec' => (string) ($profile?->address ?? ''),
             'telpon_kec' => (string) ($profile?->phone ?? ''),
-            'email_kec' => (string) ($profile?->email ?? ''),
+            'email_kec' => $emailLembaga,
             'nomor_bh' => (string) ($profile?->registration_number ?? ''),
             'redaksi_spk' => $this->replaceTokens((string) ($profile?->spk_template_individual ?: $profile?->spk_template ?: ''), $tokens),
             'batas_angsuran' => (int) ($profile?->disbursement_cutoff_day ?? 0),
@@ -321,14 +320,17 @@ final class LegacyIndividualDocumentContext
             'status_legacy' => $statusLegacy,
             'logo' => basename((string) ($profile?->logo_path ?? '')),
             'logo_src' => $this->fileDataUri((string) ($profile?->logo_path ?? ''), 'public'),
-            'logo_kab_src' => '',
+            // Di SIUPK asli kolom ini memakai logo kabupaten. Next hanya
+            // menyimpan satu logo lembaga (SOP), jadi gunakan sumber yang sama
+            // agar kop rekomendasi kredit/verifikator tidak kosong.
+            'logo_kab_src' => $this->fileDataUri((string) ($profile?->logo_path ?? ''), 'public'),
             'nama_kab' => ucwords(strtolower($kabupatenName)),
             'nama_kabupaten' => $kabupatenTitle,
             'nama_kecamatan' => $namaKecamatan,
             'nama_lembaga' => $namaLembaga,
             'nomor_usaha' => $nomorUsaha,
             'info' => $infoLembaga,
-            'email' => (string) ($profile?->email ?? ''),
+            'email' => $emailLembaga,
             'spk_no' => (string) ($loan->spk_no ?? ''),
             'tgl_kondisi' => now()->toDateString(),
             'barcode' => Code128Barcode::pngDataUri((string) $loan->id),
@@ -356,6 +358,614 @@ final class LegacyIndividualDocumentContext
         ];
 
         return array_merge($common, $this->documentSpecific($documentKey, $memberObject, $village, $naming, $loan));
+    }
+
+    /**
+     * Object graph untuk dokumen pinjaman kelompok. Template sumber:
+     * `siupk/resources/views/perguliran/dokumen/*`.
+     *
+     * @param  array<string, string>  $tokens
+     * @return array<string, mixed>
+     */
+    public function buildGroup(Loan $loan, string $documentKey, string $signatureHtml = '', array $tokens = []): array
+    {
+        $loan->loadMissing([
+            'product',
+            'borrower.group.businessType',
+            'borrower.group.activityType',
+            'borrower.group.level',
+            'borrower.group.functionType',
+            'borrower.group.village.villageNaming',
+            'borrower.group.village.parent',
+            'borrower.group.village.parent.parent',
+            'borrower.group.village.parent.parent.parent',
+            'borrower.group.activeOfficers.member.person',
+            'beneficiaries.member.person',
+            'beneficiaries.member.address',
+            'beneficiaries.member.business',
+            'beneficiaries.member.village.villageNaming',
+            'beneficiaries.member.village.parent',
+            'beneficiaries.member.guarantor.person',
+            'installments',
+            'payments.allocations',
+            'statusHistories',
+        ]);
+
+        $profile = OrganizationProfile::query()->first();
+        $rounding = (string) ($profile?->installment_rounding ?? '5000');
+        $keuangan = new Keuangan($rounding === '' ? '5000' : $rounding);
+
+        $group = $loan->borrower?->group;
+        $village = $group?->village;
+        $naming = $village?->villageNaming;
+        $groupOfficers = $group?->activeOfficers?->keyBy('position') ?? collect();
+        $chairName = (string) ($groupOfficers->get('chair')?->member?->person?->full_name ?? '');
+        $secretaryName = (string) ($groupOfficers->get('secretary')?->member?->person?->full_name ?? '');
+        $treasurerName = (string) ($groupOfficers->get('treasurer')?->member?->person?->full_name ?? '');
+
+        $histories = $loan->statusHistories;
+        $draftHistory = $histories->firstWhere('to_status', 'draft');
+        $verifiedHistory = $histories->firstWhere('to_status', 'verified');
+        $waitingHistory = $histories->firstWhere('to_status', 'waiting');
+        $activeHistory = $histories->firstWhere('to_status', 'active');
+
+        $proposalAmount = (float) ($draftHistory?->principal_amount ?: $loan->principal_amount);
+        $verifiedAmount = (float) ($verifiedHistory?->principal_amount ?: $proposalAmount);
+        $allocatedAmount = (float) ($waitingHistory?->principal_amount ?: ($activeHistory?->principal_amount ?: $proposalAmount));
+
+        $proposedAt = $loan->proposed_at?->toDateString() ?? now()->toDateString();
+        $verifiedAt = $loan->verified_at?->toDateString() ?? $proposedAt;
+        $approvedAt = $loan->approved_at?->toDateString() ?? $proposedAt;
+        $plannedAt = $loan->funded_at?->toDateString() ?? $proposedAt;
+        $disbursedAt = $loan->disbursed_at?->toDateString() ?? $plannedAt;
+        $completedAt = $loan->completed_at?->toDateString() ?? $proposedAt;
+
+        $statusLegacy = $this->legacyStatus((string) $loan->status);
+        $effective = $this->effectiveScheduleValues(
+            loan: $loan,
+            status: $statusLegacy,
+            verifiedHistory: $verifiedHistory,
+            waitingHistory: $waitingHistory,
+            activeHistory: $activeHistory,
+            proposalAmount: $proposalAmount,
+            verifiedAmount: $verifiedAmount,
+            allocatedAmount: $allocatedAmount,
+        );
+        $systemPokok = $effective['system_pokok'];
+        $systemJasa = $effective['system_jasa'];
+
+        $rencana = $this->scheduleRows($loan, $effective);
+        $realRows = $this->paymentRows($loan, $rencana);
+        $latestPayment = $realRows->last();
+        $lastReal = $latestPayment ?? $this->emptyRealRow($loan, $rencana);
+        $dueRow = $this->dueRow($rencana);
+
+        $groupObject = $this->legacyGroupObject($group, $village, $naming, $chairName, $secretaryName, $treasurerName);
+        // SIUPK menyimpan kepala desa pada master desa. Next juga menyediakan
+        // fallback pada profil lembaga untuk data lama yang belum dilengkapi.
+        $groupObject->d->kades = (string) ($groupObject->d->kades ?: ($profile?->kepala_desa_name ?? ''));
+        $groupObject->d->nip = (string) ($groupObject->d->nip ?: ($profile?->kepala_desa_nip ?? ''));
+        $collateralJson = $this->collateralJson($loan->collateral, (string) ($group?->name ?? ''));
+        $amount = (float) ($allocatedAmount > 0 ? $allocatedAmount : $loan->principal_amount);
+        $productIdentity = $this->legacyProductIdentity($loan->product);
+
+        $pinkel = (object) [
+            'id' => (int) $loan->id,
+            'nia' => 0,
+            'jenis_pinjaman' => 'K',
+            'jenis_jasa' => $this->legacyInterestKind((string) ($loan->installment_method ?? 'flat')),
+            'proposal' => $proposalAmount,
+            'verifikasi' => $verifiedAmount,
+            'alokasi' => $amount,
+            'tgl_proposal' => $proposedAt,
+            'tgl_verifikasi' => $verifiedAt,
+            'tgl_tunggu' => $approvedAt,
+            'tgl_dana' => $approvedAt,
+            'tgl_cair' => $disbursedAt,
+            'tgl_lunas' => $completedAt,
+            'jangka' => $effective['term'],
+            'pros_jasa' => $effective['service_rate'],
+            'sistem_angsuran' => $systemPokok->id,
+            'sa_jasa' => $systemJasa->id,
+            'sis_pokok' => $systemPokok,
+            'sis_jasa' => $systemJasa,
+            'jpp' => (object) $productIdentity,
+            'jasa' => (object) [
+                'nama_jj' => $this->interestKindLabel((string) ($loan->installment_method ?? 'flat')),
+            ],
+            'spk_no' => (string) ($loan->spk_no ?? ''),
+            'wt_cair' => $this->disbursementSlot($loan),
+            'jaminan' => $collateralJson,
+            'nama_barang' => (string) ($loan->product?->name ?? ''),
+            'kelompok' => $groupObject,
+            'rencana' => $rencana,
+            'rencana_count' => $rencana->count(),
+            'target' => $rencana->first() ?? (object) [
+                'angsuran_ke' => 0,
+                'jatuh_tempo' => $disbursedAt,
+                'wajib_pokok' => 0.0,
+                'wajib_jasa' => 0.0,
+                'target_pokok' => 0.0,
+                'target_jasa' => 0.0,
+            ],
+            'real' => $realRows,
+            'real_count' => $realRows->count(),
+            'pinjaman_anggota' => collect(),
+            'pinjaman_anggota_count' => 0,
+            'status' => $statusLegacy,
+            'lu' => $loan->updated_at?->toDateString() ?? $proposedAt,
+            'catatan_verifikasi' => (string) ($loan->verification_notes ?? ''),
+            'user' => null,
+            'pinkel' => null,
+            'iteration' => 0,
+        ];
+
+        $beneficiaries = collect();
+        $beneficiarySchedules = [];
+        foreach ($loan->beneficiaries->sortBy('row_id') as $beneficiary) {
+            $member = $beneficiary->member;
+            $person = $member?->person;
+            $memberVillage = $member?->village ?? $village;
+            $memberNaming = $memberVillage?->villageNaming ?? $naming;
+            $memberObject = $this->memberObject(
+                member: $member,
+                person: $person,
+                village: $memberVillage,
+                naming: $memberNaming,
+                address: $member?->address,
+                guarantor: $member?->guarantor?->person,
+                business: $member?->business,
+                guarantorRelation: (string) ($member?->guarantor?->relationship_type ?? ''),
+                group: $group,
+                chairName: $chairName,
+                secretaryName: $secretaryName,
+                treasurerName: $treasurerName,
+            );
+            if ($memberObject->keluarga === null) {
+                $memberObject->keluarga = (object) ['kekeluargaan' => ''];
+            }
+
+            $beneficiaryProposal = (float) ($beneficiary->proposed_amount ?: $beneficiary->allocated_amount ?: 0);
+            $beneficiaryVerified = (float) ($beneficiary->verified_amount ?: $beneficiaryProposal);
+            $beneficiaryAllocated = (float) ($beneficiary->allocated_amount ?: $beneficiaryProposal);
+
+            $beneficiaryObject = $this->groupBeneficiaryObject(
+                beneficiary: $beneficiary,
+                member: $memberObject,
+                allocated: $beneficiaryAllocated,
+                proposal: $beneficiaryProposal,
+                verified: $beneficiaryVerified,
+                effective: $effective,
+                disbursedAt: $disbursedAt,
+                collateralJson: $collateralJson,
+                status: $statusLegacy,
+            );
+            $beneficiaryObject->pinkel = $pinkel;
+            $beneficiaryObject->jpp = $pinkel->jpp;
+            $beneficiaryObject->jasa = $pinkel->jasa;
+            $beneficiaryObject->sis_pokok = $systemPokok;
+            $beneficiaryObject->sis_jasa = $systemJasa;
+            $beneficiaryObject->kelompok = $groupObject;
+            $beneficiaryObject->wt_cair = $pinkel->wt_cair;
+            $beneficiaryObject->spk_no = $pinkel->spk_no;
+            $beneficiaryObject->tgl_proposal = $pinkel->tgl_proposal;
+            $beneficiaryObject->tgl_verifikasi = $pinkel->tgl_verifikasi;
+            $beneficiaryObject->tgl_tunggu = $pinkel->tgl_tunggu;
+            $beneficiaryObject->tgl_dana = $pinkel->tgl_dana;
+            $beneficiaryObject->tgl_lunas = $pinkel->tgl_lunas;
+            $memberObject->pinjaman = $beneficiaryObject;
+            $beneficiaries->push($beneficiaryObject);
+
+            $beneficiaryPrincipal = match ($statusLegacy) {
+                'P' => $beneficiaryProposal,
+                'V' => $beneficiaryVerified,
+                default => $beneficiaryAllocated,
+            };
+            $beneficiarySchedules[(int) $beneficiary->row_id] = $this->groupScheduleRows(
+                $loan,
+                $beneficiaryPrincipal,
+                $effective,
+                $disbursedAt,
+            );
+        }
+
+        $pinkel->pinjaman_anggota = $beneficiaries;
+        $pinkel->pinjaman_anggota_count = $beneficiaries->count();
+        if ($documentKey === 'kartu_angsuran_anggota' && $rencana->isNotEmpty()) {
+            // Legacy `PinjamanKelompok::target()` memakai jatuh_tempo DESC,
+            // sedangkan `kartuAngsuran()` mengunci target ke angsuran ke-1.
+            $pinkel->target = $rencana->last();
+        }
+
+        $dir = $this->officerObject((string) ($profile?->manager_name ?? ''), (string) ($profile?->manager_nik ?? ''), (string) ($profile?->manager_address ?? $profile?->address ?? ''), (string) ($profile?->manager_title ?? 'Direktur'));
+        $bend = $this->officerObject((string) ($profile?->treasurer_name ?? ''), (string) ($profile?->treasurer_nik ?? ''), (string) ($profile?->address ?? ''), (string) ($profile?->treasurer_title ?? 'Bendahara'));
+        $bp = $this->officerObject((string) ($profile?->secretary_name ?? ''), (string) ($profile?->secretary_nik ?? ''), (string) ($profile?->address ?? ''), (string) ($profile?->secretary_title ?? 'Sekretaris'));
+        $verifier = $this->officerObject(
+            (string) ($profile?->verifier_name ?: $profile?->manager_name ?: ''),
+            '',
+            '',
+            (string) ($profile?->verifier_title ?: $profile?->manager_title ?: 'Verifikator'),
+        );
+        $pinkel->user = $verifier;
+
+        $district = $village?->parent;
+        $regency = $district?->parent;
+        $kabupatenName = trim((string) ($profile?->regency_name ?: $regency?->name ?: ''));
+        if ($kabupatenName === '') {
+            $kabupatenName = trim((string) preg_replace('/^Pengadilan\s+Negeri\s+/i', '', (string) ($profile?->court_of_jurisdiction ?? '')));
+        }
+        $kabupatenTitle = $kabupatenName === ''
+            ? ''
+            : (Keuangan::startWith($kabupatenName, 'KOTA') || Keuangan::startWith($kabupatenName, 'KAB')
+                ? ucwords(strtolower($kabupatenName))
+                : 'Kabupaten '.ucwords(strtolower($kabupatenName)));
+        $districtName = trim((string) ($profile?->district_name ?: preg_replace('/^Kecamatan\s+/i', '', (string) ($district?->name ?? ''))));
+        $namaKecamatan = trim('Kecamatan '.$districtName.' '.$kabupatenTitle);
+        $namaLembaga = (string) ($profile?->short_name ?: $profile?->legal_name ?: config('app.name'));
+        $nomorUsaha = trim((string) ($profile?->registration_number ?? '')) !== ''
+            ? 'SK Kemenkumham RI No.'.$profile->registration_number
+            : '';
+        $emailLembaga = (string) ($profile?->email ?? '');
+        $infoLembaga = (string) ($profile?->address ?? '').', Telp.'.(string) ($profile?->phone ?? '');
+        $provinceName = trim((string) ($profile?->province_name ?: $regency?->parent?->name ?: ''));
+
+        $kab = (object) [
+            'id' => 0,
+            'nama_kab' => $kabupatenName,
+            'nama_kabupaten' => $kabupatenName,
+            'wilayah' => (object) ['nama' => $provinceName],
+        ];
+
+        $kec = (object) [
+            'id' => 0,
+            'logo' => basename((string) ($profile?->logo_path ?? '')),
+            'logo_src' => $this->fileDataUri((string) ($profile?->logo_path ?? ''), 'public'),
+            'nama_lembaga_sort' => $namaLembaga,
+            'nama_lembaga' => $namaLembaga,
+            'nama_lembaga_long' => (string) ($profile?->legal_name ?: $namaLembaga),
+            'nama_kecamatan' => $namaKecamatan,
+            'nama_kabupaten' => $kabupatenTitle,
+            'nama_kec' => $districtName,
+            'sebutan_kec' => 'Kecamatan',
+            'alamat_kec' => (string) ($profile?->address ?? ''),
+            'telpon_kec' => (string) ($profile?->phone ?? ''),
+            'email_kec' => $emailLembaga,
+            'nomor_bh' => (string) ($profile?->registration_number ?? ''),
+            'redaksi_spk' => $this->replaceTokens((string) ($profile?->spk_template ?: ''), $tokens),
+            'batas_angsuran' => (int) ($profile?->disbursement_cutoff_day ?? 0),
+            'pembulatan' => (string) ($profile?->installment_rounding ?? '5000'),
+            'def_jangka' => (int) ($loan->product?->default_term_months ?? 12),
+            'def_jasa' => (float) ($loan->product?->default_interest_rate ?? 0),
+            'sebutan_level_1' => (string) ($profile?->manager_title ?: $profile?->institution_level_1 ?: 'Direktur'),
+            'sebutan_level_2' => (string) ($profile?->secretary_title ?: $profile?->institution_level_2 ?: 'Sekretaris'),
+            'sebutan_level_3' => (string) ($profile?->treasurer_title ?: $profile?->institution_level_3 ?: 'Bendahara'),
+            'sebutan_level_4' => (string) ($profile?->verifier_title ?: 'Verifikator'),
+            'kabupaten' => $kab,
+            'iptw' => 0,
+            'besar_premi' => 0,
+            'nama_asuransi_p' => 'ASURANSI',
+            'pengaturan_asuransi' => '1',
+            'usia_mak' => 60,
+        ];
+
+        $stage = $this->stageForGroup($documentKey);
+        $judul = $this->labelForGroup($documentKey).' ('.(string) ($group?->name ?? '-').' - Loan ID. '.$loan->id.')';
+        $barcode = (string) preg_replace('#^data:image/[^;]+;base64,#', '', Code128Barcode::pngDataUri((string) $loan->id));
+
+        $topRencana = $documentKey === 'kartu_angsuran_anggota'
+            ? $beneficiarySchedules
+            : $rencana;
+
+        return [
+            'pinkel' => $pinkel,
+            'kelompok' => $groupObject,
+            'kec' => $kec,
+            'kab' => $kab,
+            'dir' => $dir,
+            'bend' => $bend,
+            'bp' => $bp,
+            'verif' => $verifier,
+            'verifikator' => collect([$verifier]),
+            'user' => collect([$verifier]),
+            'keuangan' => $keuangan,
+            'ttd' => $signatureHtml,
+            'rencana' => $topRencana,
+            'pinjaman' => $beneficiaries,
+            'real' => $latestPayment ?? $lastReal,
+            'ra' => $dueRow,
+            'transaksi' => collect(),
+            'catatan' => $this->bimbinganNotes($loan),
+            'data' => [
+                'Cover/ Sampul',
+                'Daftar isi',
+                'Rekomendasi Kepala Desa',
+                'Daftar Kelayakan Pemanfaat',
+                'Surat Permohonan Kredit (Mengetahui Kades)',
+                'Profil Kelompok',
+                'Susunan pengurus',
+                'Daftar Anggota Kelompok',
+                'Daftar Usulan Pinjaman Anggota',
+                'Surat Pernyataan Tanggung Renteng',
+                'FC KTP Peminjam/KK dan Suami (Ahli Waris)',
+                'FC KK (Kartu Keluarga)',
+                'Surat Pernyataan Ahli Waris/Suami',
+                'Rencana Angsuran Kredit ke Kelompok',
+                'Rencana Angsuran Kredit ke UPK',
+                'Cash Flow',
+                'Aturan Sanksi',
+                'Rencana Kegiatan Kelompok (RKK)',
+                'Rencana Usaha Anggota (RUA)',
+                'BA Musy. Kelompok & Daftar hadir',
+            ],
+            'type' => 'pdf',
+            'report' => $documentKey === 'surat_kuasa' ? 'suratKuasa' : $documentKey,
+            'judul' => $judul,
+            'kategori_dokumen' => $stage === 'disbursement' ? 'pencairan' : $stage,
+            'status_legacy' => $statusLegacy,
+            'statusDokumen' => $statusLegacy,
+            'logo' => basename((string) ($profile?->logo_path ?? '')),
+            'logo_src' => $this->fileDataUri((string) ($profile?->logo_path ?? ''), 'public'),
+            'logo_kab_src' => $this->fileDataUri((string) ($profile?->logo_path ?? ''), 'public'),
+            'nama_kab' => ucwords(strtolower($kabupatenName)),
+            'nama_kabupaten' => $kabupatenTitle,
+            'kabupaten' => $kabupatenTitle,
+            'nama_kecamatan' => $namaKecamatan,
+            'nama_lembaga' => $namaLembaga,
+            'nomor_usaha' => $nomorUsaha,
+            'info' => $infoLembaga,
+            'email' => $emailLembaga,
+            'spk_no' => (string) ($loan->spk_no ?? ''),
+            'tgl_kondisi' => now()->toDateString(),
+            'barcode' => $barcode,
+            'laporan' => 'Kartu Angsuran '.(string) ($group?->name ?? '').' Loan ID. '.$loan->id,
+            'idtp' => null,
+            'nia' => null,
+            'alokasi' => $amount,
+            'verifikasi' => $verifiedAmount,
+            'alokasi_pinjaman' => $amount,
+            'tanggal' => $statusLegacy === 'P' ? 'Tanggal Proposal' : ($statusLegacy === 'V' ? 'Tanggal Verifikasi' : ($statusLegacy === 'W' ? 'Tanggal Tunggu' : 'Tanggal Cair')),
+            'tgl' => $statusLegacy === 'P' ? $proposedAt : ($statusLegacy === 'V' ? $verifiedAt : ($statusLegacy === 'W' ? $plannedAt : $disbursedAt)),
+            'jangka' => $effective['term'],
+            'sa_pokok' => $systemPokok->id,
+            'sa_jasa' => $systemJasa->id,
+            'sum_pokok' => (float) $lastReal->sum_pokok,
+            'sum_jasa' => (float) $lastReal->sum_jasa,
+            'saldo_pokok' => (float) $lastReal->saldo_pokok,
+            'saldo_jasa' => (float) $lastReal->saldo_jasa,
+            'real_pokok' => (float) $lastReal->realisasi_pokok,
+            'real_jasa' => (float) $lastReal->realisasi_jasa,
+            'target_pokok' => (float) $dueRow->target_pokok,
+            'target_jasa' => (float) $dueRow->target_jasa,
+            'tunggakan_pokok' => (float) $lastReal->tunggakan_pokok,
+            'tunggakan_jasa' => (float) $lastReal->tunggakan_jasa,
+            'wajib_angsur' => (float) ($rencana->first()->wajib_pokok ?? 0) + (float) ($rencana->first()->wajib_jasa ?? 0),
+            'jumlah_angsuran' => (float) $this->maxInstallmentAmount($rencana),
+        ];
+    }
+
+    /**
+     * @param  array{term: int, service_rate: float, principal: float, date: ?CarbonImmutable, principal_frequency: string, interest_frequency: string, principal_grace: int, interest_grace: int, system_pokok: object, system_jasa: object}  $effective
+     * @return Collection<int, object>
+     */
+    /**
+     * Next belum memiliki tabel catatan bimbingan tersendiri. Gunakan catatan
+     * verifikasi sebagai isi awal agar dokumen tetap terisi (bukan halaman kosong),
+     * dengan fallback eksplisit bila belum ada catatan.
+     *
+     * @return list<array{tanggal: string, catatan: string}>
+     */
+    private function bimbinganNotes(Loan $loan): array
+    {
+        $note = trim((string) ($loan->verification_notes ?? ''));
+        if ($note === '') {
+            $note = 'Belum ada catatan bimbingan yang tercatat.';
+        }
+
+        return [[
+            'tanggal' => $loan->verified_at?->toDateString() ?? now()->toDateString(),
+            'catatan' => nl2br(e($note), false),
+        ]];
+    }
+
+    private function groupScheduleRows(Loan $loan, float $principal, array $effective, string $disbursedAt): Collection
+    {
+        if ($principal <= 0 || $effective['term'] <= 0) {
+            return collect();
+        }
+
+        $preview = $this->scheduleCalculator->preview(
+            loan: $loan,
+            term: $effective['term'],
+            principal: $principal,
+            principalSystem: $effective['principal_frequency'],
+            interestSystem: $effective['interest_frequency'],
+            serviceRateTotal: $effective['service_rate'],
+            interestMethod: (string) ($loan->installment_method ?? 'flat'),
+            disbursementDate: CarbonImmutable::parse($disbursedAt),
+            principalGraceMonths: $effective['principal_grace'],
+            interestGraceMonths: $effective['interest_grace'],
+        );
+
+        return collect($preview)->map(static fn (array $row): object => (object) [
+            'id' => 0,
+            'angsuran_ke' => (int) $row['angsuran_ke'],
+            'jatuh_tempo' => (string) $row['jatuh_tempo'],
+            'wajib_pokok' => round((float) $row['wajib_pokok'], 2),
+            'wajib_jasa' => round((float) $row['wajib_jasa'], 2),
+            'pokok' => round((float) $row['wajib_pokok'], 2),
+            'jasa' => round((float) $row['wajib_jasa'], 2),
+            'target_pokok' => round((float) $row['target_pokok'], 2),
+            'target_jasa' => round((float) $row['target_jasa'], 2),
+            'status' => 'pending',
+        ])->values();
+    }
+
+    private function groupBeneficiaryObject(
+        LoanBeneficiary $beneficiary,
+        object $member,
+        float $allocated,
+        float $proposal,
+        float $verified,
+        array $effective,
+        string $disbursedAt,
+        ?string $collateralJson,
+        string $status,
+    ): object {
+        return (object) [
+            'id' => (int) $beneficiary->row_id,
+            'id_pinkel' => (int) $beneficiary->loan_row_id,
+            'nia' => (string) ($member->nia ?? ''),
+            'anggota' => $member,
+            'alokasi' => $allocated,
+            'proposal' => $proposal,
+            'verifikasi' => $verified,
+            'pros_jasa' => $effective['service_rate'],
+            'jangka' => $effective['term'],
+            'tgl_cair' => $disbursedAt,
+            'jaminan' => $collateralJson,
+            'catatan_verifikasi' => '',
+            'kom_pokok' => '{}',
+            'kom_jasa' => '{}',
+            'status' => $status,
+            'pinkel' => null,
+        ];
+    }
+
+    /**
+     * SIUPK legacy memisahkan kode produk (`nama_jpp`/`nama_spp`) dari
+     * deskripsi panjangnya. Product Next menyimpan keduanya dalam satu nama,
+     * mis. "SPP (Simpan Pinjam Khusus Perempuan)".
+     *
+     * @return array{kode: string, nama_jpp: string, nama_spp: string, deskripsi_jpp: string}
+     */
+    private function legacyProductIdentity(mixed $product): array
+    {
+        $name = trim((string) ($product?->name ?? ''));
+        $code = strtoupper(trim((string) ($product?->code ?? '')));
+        $description = trim((string) ($product?->description ?? ''));
+
+        if ($description === '' && preg_match('/\((.+)\)/', $name, $matches) === 1) {
+            $description = trim($matches[1]);
+        }
+
+        $short = $code !== '' ? $code : trim((string) preg_replace('/\s*\(.*$/', '', $name));
+        if ($short === '') {
+            $short = $name !== '' ? $name : 'Pinjaman';
+        }
+
+        return [
+            'kode' => $code,
+            'nama_jpp' => $short,
+            'nama_spp' => $short,
+            'deskripsi_jpp' => $description,
+        ];
+    }
+
+    private function legacyGroupObject(
+        ?Group $group,
+        ?OrganizationUnit $village,
+        ?VillageNaming $naming,
+        string $chairName,
+        string $secretaryName,
+        string $treasurerName,
+    ): object {
+        $villageSchedule = trim((string) ($village?->installment_schedule ?? ''));
+        $villageDay = ctype_digit($villageSchedule) ? (int) $villageSchedule : 0;
+        $villageObject = (object) [
+            'id' => (int) ($village?->id ?? 0),
+            'kode' => (string) ($village?->code ?? ''),
+            'kd_desa' => (string) ($village?->code ?? ''),
+            'nama_desa' => (string) ($village?->name ?? ''),
+            'desa' => (string) ($village?->name ?? ''),
+            'alamat_desa' => (string) ($village?->address ?? ''),
+            'kades' => (string) ($village?->village_head_name ?? ''),
+            'nip' => (string) ($village?->village_head_nip ?? ''),
+            'jadwal_angsuran_desa' => $villageDay,
+            'sebutan_desa' => (object) [
+                'sebutan_desa' => (string) ($naming?->village_name ?: 'Desa'),
+                'sebutan_kades' => (string) ($naming?->village_head_name ?: 'Kepala Desa'),
+            ],
+        ];
+
+        return (object) [
+            'id' => (int) ($group?->id ?? 0),
+            'kd_kelompok' => (string) ($group?->code ?? ''),
+            'nama_kelompok' => (string) ($group?->name ?? ''),
+            'alamat' => (string) ($group?->address ?? ''),
+            'alamat_kelompok' => (string) ($group?->address ?? ''),
+            'alamat_anggota' => (string) ($group?->address ?? ''),
+            'telpon' => (string) ($group?->phone ?? ''),
+            'tgl_berdiri' => $group?->established_at?->toDateString() ?? '',
+            'ketua' => $chairName,
+            'sekretaris' => $secretaryName,
+            'bendahara' => $treasurerName,
+            'd' => $villageObject,
+            'tk' => (object) ['nama_tk' => (string) ($group?->level?->name ?? '')],
+            'fk' => (object) ['nama_fgs' => (string) ($group?->functionType?->name ?? '')],
+            'usaha' => (object) [
+                'nama_ju' => (string) ($group?->businessType?->name ?? ''),
+                'nama_usaha' => (string) ($group?->businessType?->name ?? ''),
+            ],
+            'kegiatan' => (object) ['nama_jk' => (string) ($group?->activityType?->name ?? '')],
+        ];
+    }
+
+    private function stageForGroup(string $documentKey): string
+    {
+        return match ($documentKey) {
+            'cover_proposal', 'pengajuan_kredit', 'profil_kelompok', 'susunan_pengurus',
+            'daftar_pemanfaat', 'pernyataan_tanggung_renteng', 'check', 'anggota', 'ktp',
+            'catatan_bimbingan', 'rekomendasi_kredit', 'ba_musyawarah', 'form_verifikasi',
+            'form_verifikasi_anggota', 'daftar_hadir_verifikasi', 'rencana_angsuran',
+            'pernyataan_peminjam' => 'proposal',
+            'surat_verifikasi' => 'verification',
+            default => 'disbursement',
+        };
+    }
+
+    private function labelForGroup(string $key): string
+    {
+        return match ($key) {
+            'cover_proposal' => 'Cover Proposal',
+            'pengajuan_kredit' => 'Surat Pengajuan Kredit',
+            'profil_kelompok' => 'Profil Kelompok',
+            'susunan_pengurus' => 'Susunan Pengurus',
+            'daftar_pemanfaat' => 'Daftar Pemanfaat',
+            'pernyataan_tanggung_renteng' => 'Pernyataan Tanggung Renteng',
+            'check' => 'Check List',
+            'anggota' => 'Daftar Anggota Kelompok',
+            'ktp' => 'FC KTP Pemanfaat & Penjamin',
+            'catatan_bimbingan' => 'Catatan Bimbingan',
+            'rekomendasi_kredit' => 'Surat Rekomendasi Kredit',
+            'ba_musyawarah' => 'BA Musyawarah Kelompok',
+            'surat_verifikasi' => 'Surat Undangan Verifikasi',
+            'surat_kelayakan' => 'Surat Kelayakan',
+            'form_verifikasi' => 'Form Verifikasi',
+            'form_verifikasi_anggota' => 'Form Verifikasi Anggota',
+            'daftar_hadir_verifikasi' => 'Daftar Hadir Verifikasi',
+            'cover_pencairan' => 'Cover Pencairan',
+            'spk' => 'Surat Perjanjian Kredit',
+            'spk_anggota' => 'SPK Anggota',
+            'kartu_angsuran' => 'Kartu Angsuran',
+            'berita_acara_pencairan' => 'Berita Acara Pencairan',
+            'ba_pendanaan' => 'BA Rapat Penetapan Pendanaan',
+            'rencana_angsuran' => 'Rencana Angsuran',
+            'kartu_angsuran_anggota' => 'Kartu Angsuran Anggota',
+            'tanda_terima' => 'Tanda Terima',
+            'pemberitahuan_desa' => 'Pemberitahuan Ke Desa',
+            'peserta_asuransi' => 'Peserta Asuransi',
+            'kuitansi_pencairan' => 'Kuitansi',
+            'kuitansi_anggota' => 'Kuitansi Anggota',
+            'tagihan' => 'Surat Tagihan',
+            'surat_ahli_waris' => 'Surat Ahli Waris',
+            'surat_kuasa' => 'Surat Kuasa',
+            'tanggung_renteng_kematian' => 'Pernyataan TR Kematian',
+            'iptw' => 'Penerima IPTW',
+            'rekening_koran' => 'Rekening Koran',
+            'pernyataan_peminjam' => 'Surat Pernyataan Peminjam',
+            'daftar_hadir_pencairan' => 'Daftar Hadir Pencairan',
+            default => ucwords(str_replace('_', ' ', $key)),
+        };
     }
 
     /**

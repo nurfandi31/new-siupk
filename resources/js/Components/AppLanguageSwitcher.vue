@@ -14,6 +14,12 @@ const props = defineProps({
         default: 'surface',
         validator: (value) => ['surface', 'light', 'dark'].includes(value),
     },
+    // A filled, high-contrast circle for public/landing headers where the
+    // switcher sits next to a call-to-action button.
+    accent: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const { locale, locales, setLocale, t } = useI18n();
@@ -23,6 +29,10 @@ const root = ref(null);
 const current = computed(() => locales.find((item) => item.code === locale.value) || locales[0]);
 
 const triggerClass = computed(() => {
+    if (props.accent) {
+        return 'bg-gradient-to-br from-primary to-secondary text-on-primary shadow-md shadow-primary/25 ring-1 ring-white/25 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/35';
+    }
+
     if (props.tone === 'light') {
         return 'bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-emerald-700';
     }
@@ -74,7 +84,7 @@ onBeforeUnmount(() => {
             :aria-expanded="open"
             @click="open = !open"
         >
-            <AppIcon name="translate" class="text-xl leading-none" />
+            <AppIcon :name="accent ? 'language' : 'translate'" class="text-xl leading-none" />
         </button>
 
         <Transition

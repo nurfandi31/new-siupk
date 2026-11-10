@@ -27,6 +27,7 @@ final class StoreTenantRequest extends FormRequest
             'map_latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'map_longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'map_zoom' => ['nullable', 'integer', 'between:3,19'],
+            'with_simpanan' => ['nullable', 'boolean'],
         ];
     }
 

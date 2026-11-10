@@ -11,7 +11,6 @@ use App\Domain\Lending\Models\LoanProduct;
 use App\Domain\Lending\Services\LoanService;
 use App\Domain\Lending\Services\Reports\LoanCardService;
 use App\Domain\Lending\Services\Reports\LoanDocumentService;
-use App\Domain\Lending\Services\Reports\MemberLoanCardService;
 use App\Domain\Membership\Models\Group;
 use App\Domain\Membership\Models\Member;
 use App\Domain\Membership\Models\OrganizationProfile;
@@ -1346,24 +1345,27 @@ final class LoanController
         return to_route('lending.member-loans.index')->with('success', 'Proposal pinjaman individu berhasil dihapus.');
     }
 
-    public function individualCard(Loan $loan, MemberLoanCardService $cards, ReportPdf $pdf): HttpResponse|StreamedResponse
+    public function individualCard(Loan $loan, LoanDocumentService $documents, ReportPdf $pdf): HttpResponse|StreamedResponse
     {
         if ($loan->legacy_source !== 'member_loan') {
             abort(404);
         }
 
-        $loan->load(['installments']);
         try {
-            $data = $cards->build($loan);
+            $meta = $documents->resolve('kartu_angsuran_individu');
+            $payload = $documents->payload($loan, 'kartu_angsuran_individu');
         } catch (DomainException $e) {
             abort(422, $e->getMessage());
         }
 
+        // Tombol "Kartu Angsuran" harus memakai cetakan legacy yang sama
+        // dengan menu Cetak Dokumen, bukan layout ringkasan Next.
         return $pdf->stream(
-            'reports.pdf.loan_card_member',
-            $data,
+            $meta['view'],
+            $payload,
             'kartu-angsuran-individu-'.$loan->id.'.pdf',
-            'landscape',
+            (string) ($meta['orientation'] ?? 'landscape'),
+            $meta['paper'] ?? 'a4',
         );
     }
 

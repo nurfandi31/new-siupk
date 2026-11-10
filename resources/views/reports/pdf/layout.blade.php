@@ -1,4 +1,5 @@
 @php
+    $identity = $identity ?? [];
     $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? config('app.name'));
     $district = $identity['district_name'] ?? '';
     $regency = $identity['regency_name'] ?? '';
@@ -6,7 +7,6 @@
     $registration = $identity['registration_number'] ?? '';
     $address = $identity['address'] ?? '';
     $phone = $identity['phone'] ?? '';
-    $email = $identity['email'] ?? '';
     $logoUrl = $identity['logo_url'] ?? null;
 
     $infoLine = $address;

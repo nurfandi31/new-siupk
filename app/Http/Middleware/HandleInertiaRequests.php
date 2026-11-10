@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use App\Domain\Access\Services\PermissionChecker;
 use App\Domain\Membership\Models\OrganizationProfile;
+use App\Domain\Savings\Services\SavingsModuleManager;
 use App\Services\OfflineAccessService;
 use App\Tenancy\TenantContext;
 use Illuminate\Http\Request;
@@ -91,6 +92,7 @@ final class HandleInertiaRequests extends Middleware
             'logoPath' => $this->resolveLogoPath(),
             'assistant' => $this->resolveAssistant($request),
             'tenant' => $this->resolveTenantInfo(),
+            'modules' => $this->resolveModules(),
             'offline_access' => $offlineAccessData,
             'desktop' => [
                 'is_desktop' => (bool) config('desktop.enabled', false),
@@ -185,6 +187,30 @@ final class HandleInertiaRequests extends Middleware
             return asset('storage/'.ltrim($path, '/'));
         } catch (Throwable) {
             return null;
+        }
+    }
+
+    /**
+     * Modul opsional yang aktif untuk tenant saat ini. Dipakai sidebar dan
+     * halaman agar menu simpanan hanya muncul di lokasi yang mengaktifkannya.
+     *
+     * @return array<string, bool>
+     */
+    private function resolveModules(): array
+    {
+        try {
+            $context = app(TenantContext::class);
+
+            if (! $context->isInitialized()) {
+                return ['simpanan' => false];
+            }
+
+            return [
+                'simpanan' => app(SavingsModuleManager::class)
+                    ->isEnabled($context->id()),
+            ];
+        } catch (Throwable) {
+            return ['simpanan' => false];
         }
     }
 

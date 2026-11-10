@@ -2,12 +2,17 @@
 import { nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import AppIcon from './AppIcon.vue';
 import { parseMarkdownTree } from '../composables/useMarkdown';
+import { useToast } from '../composables/useToast';
 import ArtifactCard from './AssistantComponents/ArtifactCard.vue';
 import ArtifactModal from './AssistantComponents/ArtifactModal.vue';
 import ActionButton from './AssistantComponents/ActionButton.vue';
 import PollCard from './AssistantComponents/PollCard.vue';
 
 const FALLBACK_NAME = 'Ariel';
+const FRIENDLY_ERROR = 'Terjadi kendala saat menghubungi asisten. Silakan coba lagi.';
+const FRIENDLY_UNAVAILABLE = 'Asisten AI belum aktif atau sedang tidak tersedia. Silakan hubungi administrator.';
+
+const toast = useToast();
 
 // Global singleton survives module reloads (Vite HMR + Inertia page swaps).
 // Vite dev mode may re-evaluate this module on every navigation, so module-level
@@ -34,6 +39,11 @@ if (!window.__assistantState__) {
     delete window.__assistantState__.sessionToken;
     delete window.__assistantState__.endpoint;
     delete window.__assistantState__.expiresAt;
+
+    // Drop stale raw HTML error dumps (old versions stored the whole 404 page).
+    if (typeof window.__assistantState__.error === 'string' && /<[a-z!/]/i.test(window.__assistantState__.error)) {
+        window.__assistantState__.error = null;
+    }
 }
 const shared = window.__assistantState__;
 
@@ -42,6 +52,7 @@ const listEl = ref(null);
 const inputEl = ref(null);
 const fileInputEl = ref(null);
 const attachedImages = ref([]);
+const serviceAvailable = ref(true);
 
 const open = ref(shared.open);
 const loading = ref(shared.loading);
@@ -76,6 +87,52 @@ watch(() => shared.conversationId, (v) => (conversationId = v));
 
 function csrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+}
+
+/**
+ * Never surface raw server responses in the chat. Laravel error pages (HTML)
+ * and debug stack traces are stripped down to readable text.
+ */
+function sanitizeText(raw) {
+    if (typeof raw !== 'string') return '';
+    return raw
+        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function friendlyHttpError(status) {
+    if (status === 401 || status === 403) {
+        return 'Sesi Anda berakhir atau Anda tidak memiliki akses ke asisten AI. Muat ulang halaman lalu coba lagi.';
+    }
+    if (status === 404) return FRIENDLY_UNAVAILABLE;
+    if (status === 419) return 'Sesi keamanan kedaluwarsa. Muat ulang halaman lalu coba lagi.';
+    if (status === 429) return 'Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.';
+    if (status >= 500) return 'Server asisten AI sedang bermasalah. Silakan coba lagi nanti.';
+    return FRIENDLY_ERROR;
+}
+
+async function describeHttpError(response) {
+    // Prefer a structured JSON message; never fall back to the raw HTML body.
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+        try {
+            const data = await response.json();
+            const msg = sanitizeText(data?.message || data?.error || '');
+            if (msg) return msg;
+        } catch {
+            // ignore malformed JSON
+        }
+    }
+    return friendlyHttpError(response.status);
+}
+
+function notifyError(message) {
+    const safe = sanitizeText(message) || FRIENDLY_ERROR;
+    error.value = safe;
+    toast.error({ title: 'Asisten AI', message: safe }, { duration: 6000 });
 }
 
 async function markCurrentConversationRead() {
@@ -144,7 +201,15 @@ function ensureSession() {
             credentials: 'same-origin',
             headers: { Accept: 'application/json' },
         })
-            .then((res) => (res.ok ? res.json() : null))
+            .then(async (res) => {
+                if (!res.ok) {
+                    serviceAvailable.value = false;
+                    error.value = friendlyHttpError(res.status);
+                    return null;
+                }
+                serviceAvailable.value = true;
+                return res.json();
+            })
             .then((data) => {
                 if (data?.persona) {
                     persona.value = {
@@ -154,7 +219,10 @@ function ensureSession() {
                     };
                 }
             })
-            .catch(() => {})
+            .catch(() => {
+                serviceAvailable.value = false;
+                error.value = FRIENDLY_UNAVAILABLE;
+            })
             .finally(() => {
                 personaPromise = null;
             });
@@ -204,8 +272,7 @@ function parseSseChunk(buffer, onEvent) {
 
 async function readSse(response, onEvent) {
     if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || `HTTP ${response.status}`);
+        throw new Error(await describeHttpError(response));
     }
     const reader = response.body?.getReader();
     if (!reader) throw new Error('Stream tidak tersedia.');
@@ -290,9 +357,11 @@ function handleEvent(event, data, assistantMsg) {
     }
     if (event === 'error') {
         typing.value = false;
-        const msg = data?.message || 'Terjadi kesalahan asisten.';
-        error.value = msg;
-        pushMessage({ role: 'error', content: msg });
+        const raw = sanitizeText(data?.message || '');
+        const technical = /exception|stack|trace|sql|vendor[\\/]|\.php\b|syntax|undefined/i.test(raw);
+        const friendly = raw && raw.length <= 160 && !technical ? raw : FRIENDLY_ERROR;
+        error.value = friendly;
+        toast.error({ title: 'Asisten AI', message: friendly }, { duration: 6000 });
         return;
     }
     if (event === 'result') {
@@ -317,7 +386,7 @@ function processFiles(files) {
     );
     for (const file of validFiles) {
         if (file.size > 15 * 1024 * 1024) {
-            error.value = 'Ukuran berkas maksimal 15MB.';
+            toast.warning({ title: 'Lampiran', message: 'Ukuran berkas maksimal 15MB.' });
             continue;
         }
         const isPdf = file.type === 'application/pdf';
@@ -436,6 +505,17 @@ function blocksFor(msg) {
 
 async function sendContent(content, attachments = []) {
     if ((!content && !attachments.length) || sending.value) return;
+
+    // Probe the backend first so a dead endpoint produces one friendly
+    // notification instead of echoing the user's message into a broken turn.
+    sending.value = true;
+    await ensureSession();
+    if (!serviceAvailable.value) {
+        sending.value = false;
+        notifyError(error.value || FRIENDLY_UNAVAILABLE);
+        return;
+    }
+
     error.value = null;
     pendingConfirmation.value = null;
     pushMessage({
@@ -449,7 +529,6 @@ async function sendContent(content, attachments = []) {
     typingLabel.value = 'Sedang mengetik';
     scrollBottom();
     try {
-        await ensureSession();
         const payload = {
             conversation_id: conversationId,
             message: content || 'Berikut lampiran gambar untuk dianalisis.',
@@ -475,8 +554,7 @@ async function sendContent(content, attachments = []) {
             });
         }
     } catch (e) {
-        error.value = e?.message || 'Gagal mengirim pesan.';
-        pushMessage({ role: 'error', content: error.value });
+        notifyError(e?.message);
     } finally {
         typing.value = false;
         typingLabel.value = 'Sedang mengetik';
@@ -515,8 +593,7 @@ async function decideConfirmation(decision) {
             });
         }
     } catch (e) {
-        error.value = e?.message || 'Gagal konfirmasi.';
-        pushMessage({ role: 'error', content: error.value });
+        notifyError(e?.message || 'Gagal konfirmasi aksi.');
     } finally {
         typing.value = false;
         typingLabel.value = 'Sedang mengetik';
@@ -574,7 +651,24 @@ onBeforeUnmount(() => {
                 </div>
 
                 <p v-if="loading && !messages.length" class="shrink-0 p-4 text-sm text-on-surface-variant">Menghubungkan…</p>
-                <p v-else-if="error && !messages.length" class="shrink-0 p-4 text-sm text-error">{{ error }}</p>
+
+                <div
+                    v-if="error"
+                    class="mx-4 mt-3 flex shrink-0 items-start gap-2 rounded-xl bg-error-container/60 px-3 py-2 text-xs text-on-error-container ring-1 ring-error/20"
+                    role="status"
+                    aria-live="polite"
+                >
+                    <AppIcon name="info" class="mt-px shrink-0 text-base" />
+                    <p class="min-w-0 flex-1 leading-relaxed">{{ error }}</p>
+                    <button
+                        type="button"
+                        class="shrink-0 rounded p-0.5 transition-colors hover:bg-black/5"
+                        aria-label="Tutup notifikasi"
+                        @click="error = null"
+                    >
+                        <AppIcon name="close" class="text-sm" />
+                    </button>
+                </div>
 
                 <div ref="listEl" class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto bg-surface p-4">
                     <TransitionGroup name="assistant-msg" tag="div" class="flex flex-col gap-3">

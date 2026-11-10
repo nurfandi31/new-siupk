@@ -1,12 +1,24 @@
 <script setup>
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import AppButton from './AppButton.vue';
 import AppIcon from './AppIcon.vue';
 import AppInput from './AppInput.vue';
 import { useI18n } from '../i18n';
+
+// Leaflet menebak URL ikon dari lokasi CSS. Saat di-bundle Vite, tebakan itu
+// gagal dan pin tampil sebagai gambar rusak. Daftarkan aset secara eksplisit.
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: markerIcon2x,
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+});
 
 const { t } = useI18n();
 
@@ -24,14 +36,24 @@ const emit = defineEmits(['update:latitude', 'update:longitude', 'update:zoom'])
 const mapContainer = ref(null);
 let map = null;
 let marker = null;
-
-const hasCoordinate = () => props.latitude !== null && props.longitude !== null &&
-    props.latitude !== '' && props.longitude !== '';
+let resizeObserver = null;
 
 function toNumber(value) {
     if (value === null || value === '' || value === undefined) return null;
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
+}
+
+const hasCoordinate = () => toNumber(props.latitude) !== null && toNumber(props.longitude) !== null;
+
+function setMarkerDraggable(enabled) {
+    if (!marker) return;
+    marker.options.draggable = enabled;
+    // Leaflet exposes draggable toggling through the marker drag handler;
+    // Marker.setDraggable() does not exist in Leaflet 1.x.
+    if (marker.dragging) {
+        enabled ? marker.dragging.enable() : marker.dragging.disable();
+    }
 }
 
 function initMap() {
@@ -52,18 +74,21 @@ function initMap() {
         doubleClickZoom: !props.disabled,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        subdomains: 'abcd',
     }).addTo(map);
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
     L.control.attribution({ position: 'bottomleft', prefix: false })
-        .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OSM</a> &copy; <a href="https://carto.com/" target="_blank" rel="noopener">CARTO</a>')
+        .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>')
         .addTo(map);
 
     if (savedLat !== null && savedLng !== null) {
         setMarker(savedLat, savedLng);
+    } else {
+        // Tanpa koordinat tersimpan, peta memakai zoom wilayah. Samakan
+        // nilai input zoom agar tidak menampilkan angka yang berbeda.
+        emit('update:zoom', Number(map.getZoom()));
     }
 
     map.on('click', (event) => {
@@ -90,8 +115,14 @@ function setMarker(latitude, longitude) {
         });
     } else {
         marker.setLatLng(latLng);
-        marker.setDraggable(!props.disabled);
+        setMarkerDraggable(!props.disabled);
     }
+}
+
+function removeMarker() {
+    if (!map || !marker) return;
+    map.removeLayer(marker);
+    marker = null;
 }
 
 function updatePosition(latitude, longitude) {
@@ -113,10 +144,7 @@ function resetToRegency() {
     emit('update:latitude', null);
     emit('update:longitude', null);
     emit('update:zoom', null);
-    if (marker) {
-        map.removeLayer(marker);
-        marker = null;
-    }
+    removeMarker();
     map.setView(
         [toNumber(props.regencyCenter?.lat) ?? -7.5, toNumber(props.regencyCenter?.lng) ?? 109.5],
         toNumber(props.regencyCenter?.zoom) || 11,
@@ -129,9 +157,18 @@ function invalidateSize() {
 
 onMounted(() => {
     initMap();
+
+    // Peta berada di dalam kartu responsif; pastikan ukuran ikut berubah
+    // saat kontainer melebar/menyempit agar tile tetap tampil penuh.
+    if (typeof ResizeObserver !== 'undefined' && mapContainer.value) {
+        resizeObserver = new ResizeObserver(() => invalidateSize());
+        resizeObserver.observe(mapContainer.value);
+    }
 });
 
 onBeforeUnmount(() => {
+    resizeObserver?.disconnect();
+    resizeObserver = null;
     map?.remove();
     map = null;
     marker = null;
@@ -140,8 +177,27 @@ onBeforeUnmount(() => {
 watch(() => [props.latitude, props.longitude], ([latitude, longitude]) => {
     const lat = toNumber(latitude);
     const lng = toNumber(longitude);
-    if (lat === null || lng === null) return;
+    if (lat === null || lng === null) {
+        removeMarker();
+        return;
+    }
     setMarker(lat, lng);
+
+    // Input koordinat manual (mis. hasil salin dari Google Maps) harus
+    // langsung menyinkronkan peta, bukan hanya memindahkan pin di luar layar.
+    if (map && !map.getBounds().contains([lat, lng])) {
+        map.panTo([lat, lng]);
+    }
+});
+
+watch(() => props.zoom, (value) => {
+    if (!map) return;
+    const zoom = toNumber(value);
+    if (zoom === null) return;
+    const clamped = Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), zoom));
+    if (map.getZoom() !== clamped) {
+        map.setZoom(clamped, { animate: false });
+    }
 });
 
 watch(() => props.regencyCenter, (newCenter) => {
@@ -150,10 +206,11 @@ watch(() => props.regencyCenter, (newCenter) => {
     const lng = toNumber(newCenter?.lng) ?? 109.5;
     const zoom = toNumber(newCenter?.zoom) || 11;
     map.setView([lat, lng], zoom);
+    emit('update:zoom', zoom);
 }, { deep: true });
 
 watch(() => props.disabled, () => {
-    if (marker) marker.setDraggable(!props.disabled);
+    setMarkerDraggable(!props.disabled);
 });
 
 defineExpose({ invalidateSize });

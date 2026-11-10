@@ -6,6 +6,7 @@ use App\Http\Middleware\BlockOfflineMutations;
 use App\Http\Middleware\EnsurePermission;
 use App\Http\Middleware\EnsureProvinceSupervisor;
 use App\Http\Middleware\EnsureRegencySupervisor;
+use App\Http\Middleware\EnsureSavingsModule;
 use App\Http\Middleware\EnsureSubscriptionActive;
 use App\Http\Middleware\EnsureSuperadmin;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -80,6 +81,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'province' => EnsureProvinceSupervisor::class,
             'province.user' => EnsureProvinceSupervisor::class,
             'subscription.active' => EnsureSubscriptionActive::class,
+            'savings.enabled' => EnsureSavingsModule::class,
             'permission' => EnsurePermission::class,
             'orchestrator.signature' => VerifyOrchestratorSignature::class,
             'assistant.signature' => VerifyOrchestratorSignature::class,

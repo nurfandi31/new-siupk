@@ -26,8 +26,11 @@ use App\Models\User;
 use App\Tenancy\Middleware\ResolveTenant;
 use App\Tenancy\Services\TenantLoanProductProvisioner;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Smalot\PdfParser\Parser;
 use Tests\Concerns\BuildsTenantTestDatabase;
 use Tests\TestCase;
 
@@ -246,36 +249,107 @@ final class LoanDocumentTest extends TestCase
     {
         $service = app(LoanDocumentService::class);
 
-        // draft → hanya proposal (10 dokumen: 7 iter-1/2 + anggota, ktp, catatan_bimbingan)
+        // draft → hanya proposal (17 dokumen, termasuk tambahan Next)
         $draftLoan = $this->seedLoan('draft');
         $draftDocs = $service->availableDocuments($draftLoan);
-        self::assertCount(10, $draftDocs);
+        self::assertCount(17, $draftDocs);
         foreach ($draftDocs as $doc) {
             self::assertSame('proposal', $doc['stage']);
         }
 
-        // verified → proposal + verification (10 + 7 = 17)
+        // verified → proposal + verification (17 + 1 = 18)
         $verifiedLoan = $this->seedLoan('verified');
         $verifiedDocs = $service->availableDocuments($verifiedLoan);
-        self::assertCount(17, $verifiedDocs);
+        self::assertCount(18, $verifiedDocs);
         $verifiedStages = array_unique(array_column($verifiedDocs, 'stage'));
         self::assertContains('proposal', $verifiedStages);
         self::assertContains('verification', $verifiedStages);
 
-        // waiting → + disbursement (10 + 7 + 19 = 36, semua)
+        // waiting → proposal + verification + disbursement (17 + 1 + 23 = 41)
         $waitingLoan = $this->seedLoan('waiting');
         $waitingDocs = $service->availableDocuments($waitingLoan);
-        self::assertCount(36, $waitingDocs);
+        self::assertCount(41, $waitingDocs);
 
-        // active → semua 36
+        // active → semua 41
         $activeLoan = $this->seedLoan('active');
         $activeDocs = $service->availableDocuments($activeLoan);
-        self::assertCount(36, $activeDocs);
+        self::assertCount(41, $activeDocs);
 
         // rescheduled → tidak ada (karena tidak masuk dalam STAGE_ALLOWED_STATUS)
         $rescheduledLoan = $this->seedLoan('rescheduled');
         $rescheduledDocs = $service->availableDocuments($rescheduledLoan);
         self::assertCount(0, $rescheduledDocs);
+    }
+
+    public function test_group_document_registry_matches_legacy_menu_order_and_labels(): void
+    {
+        $service = app(LoanDocumentService::class);
+        $docs = $service->availableDocuments($this->seedLoan('waiting'));
+
+        $byStage = static function (string $stage) use ($docs): array {
+            return array_values(array_map(
+                static fn (array $doc): array => ['key' => $doc['key'], 'label' => $doc['label']],
+                array_filter($docs, static fn (array $doc): bool => $doc['stage'] === $stage),
+            ));
+        };
+
+        // 16 entri menu proposal SIUPK + catatan bimbingan (Next-only).
+        self::assertSame([
+            ['key' => 'cover_proposal', 'label' => 'Cover'],
+            ['key' => 'check', 'label' => 'Check List'],
+            ['key' => 'pengajuan_kredit', 'label' => 'Surat Permohonan Pinjaman'],
+            ['key' => 'rekomendasi_kredit', 'label' => 'Surat Rekomendasi Kredit'],
+            ['key' => 'profil_kelompok', 'label' => 'Profil Kelompok'],
+            ['key' => 'susunan_pengurus', 'label' => 'Susunan Pengurus'],
+            ['key' => 'anggota', 'label' => 'Daftar Anggota Kelompok'],
+            ['key' => 'daftar_pemanfaat', 'label' => 'Daftar Pemanfaat'],
+            ['key' => 'pernyataan_tanggung_renteng', 'label' => 'Pernyataan Tanggung Renteng'],
+            ['key' => 'ktp', 'label' => 'FC KTP Pemanfaat & Penjamin'],
+            ['key' => 'pernyataan_peminjam', 'label' => 'Surat Pernyataan Peminjam'],
+            ['key' => 'ba_musyawarah', 'label' => 'BA Musyawarah Kelompok'],
+            ['key' => 'form_verifikasi', 'label' => 'Form Verifikasi'],
+            ['key' => 'daftar_hadir_verifikasi', 'label' => 'Daftar Hadir Verifikasi'],
+            ['key' => 'rencana_angsuran', 'label' => 'Rencana Angsuran'],
+            ['key' => 'form_verifikasi_anggota', 'label' => 'Form Verifikasi Anggota'],
+            ['key' => 'catatan_bimbingan', 'label' => 'Catatan Bimbingan Kelompok'],
+        ], $byStage('proposal'));
+
+        // 21 entri menu pencairan SIUPK + ba_pendanaan/rekening koran (Next-only).
+        self::assertSame([
+            ['key' => 'cover_pencairan', 'label' => 'Cover'],
+            ['key' => 'spk', 'label' => 'Surat Perjanjian Kredit'],
+            ['key' => 'spk_anggota', 'label' => 'SPK Anggota'],
+            ['key' => 'surat_kelayakan', 'label' => 'Surat Kelayakan'],
+            ['key' => 'surat_kuasa', 'label' => 'Surat Kuasa'],
+            ['key' => 'berita_acara_pencairan', 'label' => 'Berita Acara Pencairan'],
+            ['key' => 'daftar_hadir_pencairan', 'label' => 'Daftar Hadir Pencairan'],
+            ['key' => 'tanda_terima', 'label' => 'Tanda Terima'],
+            ['key' => 'kartu_angsuran', 'label' => 'Kartu Angsuran'],
+            ['key' => 'kartu_angsuran_anggota', 'label' => 'Kartu Angsuran Anggota'],
+            ['key' => 'rencana_angsuran_pencairan', 'label' => 'Rencana Angsuran'],
+            ['key' => 'pemberitahuan_desa', 'label' => 'Pemberitahuan Ke Desa'],
+            ['key' => 'iptw', 'label' => 'Penerima IPTW'],
+            ['key' => 'peserta_asuransi', 'label' => 'Peserta Asuransi'],
+            ['key' => 'tanggung_renteng_kematian', 'label' => 'Tanggung Renteng Kematian'],
+            ['key' => 'pernyataan_tanggung_renteng_pencairan', 'label' => 'Pernyataan Tanggung Renteng'],
+            ['key' => 'kuitansi_pencairan', 'label' => 'Kuitansi'],
+            ['key' => 'kuitansi_anggota', 'label' => 'Kuitansi Anggota'],
+            ['key' => 'tagihan', 'label' => 'Surat Tagihan'],
+            ['key' => 'surat_ahli_waris', 'label' => 'Surat Ahli Waris'],
+            ['key' => 'form_verifikasi_pencairan', 'label' => 'Form Verifikasi'],
+            ['key' => 'ba_pendanaan', 'label' => 'BA Rapat Penetapan Pendanaan'],
+            ['key' => 'rekening_koran', 'label' => 'Rekening Koran Pinjaman'],
+        ], $byStage('disbursement'));
+
+        self::assertSame([
+            ['key' => 'surat_verifikasi', 'label' => 'Surat Undangan Verifikasi'],
+        ], $byStage('verification'));
+
+        // Duplikasi view legacy di menu proposal/pencairan tetap dipertahankan.
+        $views = array_count_values(array_column($docs, 'view'));
+        self::assertSame(2, $views['legacy.perguliran.dokumen.form_verifikasi'] ?? 0);
+        self::assertSame(2, $views['legacy.perguliran.dokumen.rencana_angsuran'] ?? 0);
+        self::assertSame(2, $views['legacy.perguliran.dokumen.tanggung_renteng'] ?? 0);
     }
 
     public function test_payload_contains_blade_render_shape(): void
@@ -295,7 +369,7 @@ final class LoanDocumentTest extends TestCase
         self::assertArrayHasKey('signature', $payload);
 
         self::assertSame('pengajuan_kredit', $payload['document']['key']);
-        self::assertSame('Surat Pengajuan Kredit', $payload['document']['label']);
+        self::assertSame('Surat Permohonan Pinjaman', $payload['document']['label']);
         self::assertArrayHasKey('{nama_kelompok}', $payload['tokens']);
         self::assertSame('KLP-001', $payload['group']['code']);
     }
@@ -512,6 +586,34 @@ final class LoanDocumentTest extends TestCase
             $response->assertOk();
             $response->assertHeader('content-type', 'application/pdf');
         }
+    }
+
+    /**
+     * Tombol Kartu Angsuran di detail pinjaman individu harus memakai
+     * cetakan legacy, bukan layout ringkasan Next.
+     */
+    public function test_individual_card_button_returns_legacy_pdf(): void
+    {
+        $loan = $this->seedMemberLoan('active');
+        $this->seedMemberInstallments($loan);
+
+        $response = $this->actingAs($this->user)
+            ->get("/lending/member-loans/{$loan->row_id}/card");
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        self::assertStringStartsWith('%PDF', (string) $response->getContent());
+
+        $pdf = (new Parser)->parseContent((string) $response->getContent());
+        self::assertCount(1, $pdf->getPages(), 'Kartu angsuran harus tercetak dalam satu lembar.');
+
+        $payload = app(LoanDocumentService::class)->payload($loan, 'kartu_angsuran_individu');
+        $html = view($payload['document']['view'], $payload)->render();
+        self::assertStringContainsString('KARTU ANGSURAN', $html);
+        self::assertStringContainsString('REALISASI PEMBAYARAN ANGSURAN', $html);
+        self::assertStringContainsString('Dokumen ini merupakan bagian tak terpisahkan dari SPK Nomor', $html);
+        self::assertStringNotContainsString('KARTU ANGSURAN · PINJAMAN INDIVIDU', $html);
+        self::assertStringNotContainsString('RINGKASAN ANGSURAN', $html);
     }
 
     /**
@@ -1125,10 +1227,145 @@ final class LoanDocumentTest extends TestCase
         ]);
     }
 
+    private function seedGroupInstallments(Loan $loan, bool $withPayment = true): void
+    {
+        // 5jt / 12 bulan / 18% flat → pokok 416.666,67 + jasa 75.000 per bulan.
+        $principal = 416666.67;
+        $interest = 75000.00;
+
+        LoanInstallment::query()->create([
+            'loan_row_id' => $loan->row_id,
+            'installment_number' => 0,
+            'due_date' => '2026-02-25',
+            'principal_due' => 0,
+            'interest_due' => 0,
+            'status' => 'pending',
+        ]);
+
+        $rows = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $paid = $withPayment && $i === 1;
+            $rows[] = LoanInstallment::query()->create([
+                'loan_row_id' => $loan->row_id,
+                'installment_number' => $i,
+                'due_date' => date('Y-m-d', strtotime('2026-03-25 +'.($i - 1).' months')),
+                'principal_due' => $principal,
+                'interest_due' => $interest,
+                'principal_paid' => $paid ? $principal : 0,
+                'interest_paid' => $paid ? $interest : 0,
+                'status' => $paid ? 'paid' : 'pending',
+                'paid_at' => $paid ? '2026-03-25 10:00:00' : null,
+            ]);
+        }
+
+        if (! $withPayment) {
+            return;
+        }
+
+        $payment = LoanPayment::query()->create([
+            'loan_row_id' => $loan->row_id,
+            'paid_at' => '2026-03-25 10:00:00',
+            'amount' => $principal + $interest,
+            'payment_method' => 'cash',
+        ]);
+
+        LoanPaymentAllocation::query()->create([
+            'payment_row_id' => $payment->row_id,
+            'installment_row_id' => $rows[0]->row_id,
+            'component' => 'principal',
+            'amount' => $principal,
+        ]);
+        LoanPaymentAllocation::query()->create([
+            'payment_row_id' => $payment->row_id,
+            'installment_row_id' => $rows[0]->row_id,
+            'component' => 'interest',
+            'amount' => $interest,
+        ]);
+    }
+
     /**
      * Render HTML 9 blade alias kelompok dan cek paritas konten pacuan — string
      * kunci muncul dan placeholder kosong sudah terisi semua.
      */
+    public function test_all_group_documents_render_for_every_status(): void
+    {
+        $service = app(LoanDocumentService::class);
+
+        foreach (['draft', 'verified', 'waiting', 'active', 'completed'] as $status) {
+            $loan = $this->seedLoan($status);
+            if (in_array($status, ['active', 'completed'], true)) {
+                $this->seedGroupInstallments($loan);
+            }
+
+            foreach ($service->availableDocuments($loan) as $document) {
+                $payload = $service->payload($loan, $document['key']);
+                $html = view($payload['document']['view'], $payload)->render();
+
+                self::assertNotSame('', trim($html), "Dokumen {$document['key']} ({$status}) kosong.");
+                foreach ([
+                    'Undefined variable',
+                    'Undefined array key',
+                    'Attempt to read property',
+                    'Trying to get property',
+                    'htmlspecialchars(): Argument',
+                    'Array to string conversion',
+                ] as $error) {
+                    self::assertStringNotContainsString($error, $html, "Dokumen {$document['key']} ({$status}) mengandung {$error}.");
+                }
+            }
+        }
+    }
+
+    public function test_all_group_documents_stream_pdf_for_every_status(): void
+    {
+        $service = app(LoanDocumentService::class);
+        $statuses = [
+            'draft' => 17,
+            'verified' => 18,
+            'waiting' => 41,
+            'approved' => 41,
+            'active' => 41,
+            'disbursed' => 41,
+            'completed' => 41,
+            'written_off' => 0,
+        ];
+
+        $generated = [];
+
+        foreach ($statuses as $status => $expectedCount) {
+            $loan = $this->seedLoan($status);
+            if (in_array($status, ['active', 'disbursed', 'completed'], true)) {
+                $this->seedGroupInstallments($loan);
+            }
+
+            $documents = $service->availableDocuments($loan);
+            self::assertCount($expectedCount, $documents, "Jumlah dokumen kelompok status {$status} tidak sesuai.");
+
+            foreach ($documents as $document) {
+                $response = $this->actingAs($this->user)
+                    ->get("/lending/loans/{$loan->row_id}/documents/{$document['key']}");
+
+                $response->assertOk();
+                $response->assertHeader('content-type', 'application/pdf');
+
+                $content = $response->getContent();
+                self::assertIsString($content, "PDF {$document['key']} ({$status}) tidak menghasilkan body.");
+                self::assertStringStartsWith('%PDF-', $content, "PDF {$document['key']} ({$status}) bukan PDF valid.");
+                $minimumSize = str_starts_with($document['view'], 'legacy.') ? 1000 : 400;
+                self::assertGreaterThan($minimumSize, strlen($content), "PDF {$document['key']} ({$status}) terlalu kecil/blank.");
+
+                if (in_array($document['key'], ['kartu_angsuran', 'kartu_angsuran_anggota'], true)) {
+                    $pdf = (new Parser)->parseContent($content);
+                    self::assertCount(1, $pdf->getPages(), "Kartu angsuran kelompok {$document['key']} ({$status}) harus satu lembar.");
+                }
+
+                $generated[$status][$document['key']] = strlen($content);
+            }
+        }
+
+        self::assertSame(240, array_sum(array_map('count', $generated)));
+    }
+
     public function test_alias_documents_html_content_parity_with_pacuan(): void
     {
         // Seed data profil kelompok + klasifikasi
@@ -1159,6 +1396,8 @@ final class LoanDocumentTest extends TestCase
         ]);
 
         $loan = $this->seedLoan('active');
+        $loan->forceFill(['disbursement_slot' => '10:00_Kantor Koperasi Maju Bersama'])->save();
+        $loan->refresh();
         $loan->load('beneficiaries.member.person', 'beneficiaries.member.address', 'beneficiaries.member.village');
         $service = app(LoanDocumentService::class);
 
@@ -1168,9 +1407,9 @@ final class LoanDocumentTest extends TestCase
         self::assertStringContainsString('selanjutnya disebut', $html);
         self::assertStringContainsString('Direktur Utama', $html);
         self::assertStringContainsString('3201234567899999', $html); // manager NIK
-        self::assertStringContainsString('Jl. Manager No. 1', $html); // manager address
-        self::assertStringContainsString('Pengadilan Negeri Bandung', $html);
-        self::assertStringContainsString('lima juta', $html); // ucapkan alokasi 5.000.000 (lowercase)
+        self::assertStringContainsString('Jl. Raya No. 1, Kota Test', $html); // alamat lembaga (legacy `kec.alamat_kec`)
+        self::assertMatchesRegularExpression('/Pengadilan\s+Negeri\s+Bandung/', $html);
+        self::assertStringContainsString('Lima Juta', $html); // ucapkan alokasi 5.000.000 (legacy ucwords)
         self::assertStringNotContainsString("{{ '' }}", $html);
 
         // Kuitansi Pencairan — "Telah Diterima Dari" + ucapkan + 3 kolom TTD
@@ -1178,7 +1417,7 @@ final class LoanDocumentTest extends TestCase
         $html = view($payload['document']['view'], $payload)->render();
         self::assertStringContainsString('Telah Diterima Dari', $html);
         self::assertStringContainsString('Uang Sebanyak', $html);
-        self::assertStringContainsString('rupiah', $html);
+        self::assertStringContainsString('Rupiah', $html);
         self::assertStringContainsString('Setuju Dibayarkan', $html);
         self::assertStringContainsString('Dikeluarkan Oleh', $html);
         self::assertStringContainsString('Diterima Oleh', $html);
@@ -1209,9 +1448,9 @@ final class LoanDocumentTest extends TestCase
         // Kartu Angsuran per Anggota — telpon + Lembaga + suffix bulan + catatan
         $payload = $service->payload($loan, 'kartu_angsuran_anggota');
         $html = view($payload['document']['view'], $payload)->render();
-        self::assertStringContainsString('022-1234567', $html); // telpon kelompok
-        self::assertStringContainsString('bulan', $html); // suffix
-        self::assertStringContainsString('Koperasi Maju Bersama', $html); // identitas catatan
+        self::assertStringContainsString('081234567890', $html); // telpon pemanfaat (legacy memakai anggota.hp)
+        self::assertStringContainsString('Bulan', $html); // suffix
+        self::assertStringContainsString('KMB', $html); // identitas catatan (nama lembaga sort)
         self::assertStringContainsString('Budi Santoso', $html); // TTD nama
         self::assertStringNotContainsString("{{ '' }}", $html);
 
@@ -1236,8 +1475,156 @@ final class LoanDocumentTest extends TestCase
         self::assertStringContainsString('Desa', $html); // kolom desa
         self::assertStringContainsString('Bulan', $html); // jangka
         self::assertStringContainsString('Bandung', $html); // birth place
-        self::assertStringContainsString('15 Mei 1985', $html); // birth date label
+        self::assertStringContainsString('1985-05-15', $html); // legacy menampilkan tanggal lahir mentah
         self::assertStringNotContainsString("{{ '' }}", $html);
+    }
+
+    public function test_group_documents_embed_sop_logo_as_data_uri(): void
+    {
+        Storage::fake('public');
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=');
+        Storage::disk('public')->put('organization-logos/logo.png', $png);
+        DB::connection('tenant')->table('organization_profiles')->where('id', 1)->update([
+            'logo_path' => 'organization-logos/logo.png',
+        ]);
+
+        $loan = $this->seedLoan('active');
+        $service = app(LoanDocumentService::class);
+
+        foreach (['cover_proposal', 'cover_pencairan', 'spk', 'berita_acara_pencairan', 'rencana_angsuran'] as $key) {
+            $payload = $service->payload($loan, $key);
+            $html = view($payload['document']['view'], $payload)->render();
+
+            self::assertStringContainsString('data:image/png;base64,', $html, "Logo SOP tidak tampil pada {$key}.");
+            self::assertStringNotContainsString('src=""', $html, "Logo kosong pada {$key}.");
+        }
+    }
+
+    public function test_group_documents_render_legacy_content_without_missing_fields(): void
+    {
+        $this->createGroupClassifications();
+        DB::connection('tenant')->table('people')->where('row_id', 1)->update([
+            'birth_place' => 'Bandung',
+            'birth_date' => '1985-05-15',
+            'gender' => 'L',
+            'phone' => '081234567890',
+            'family_card_number' => '3201234567890009',
+        ]);
+        MemberAddress::query()->create([
+            'member_row_id' => $this->memberId,
+            'type' => 'home',
+            'address' => 'Dusun Krajan RT 02 RW 03',
+            'is_primary' => true,
+        ]);
+        DB::connection('tenant')->table('groups')->where('row_id', $this->group->row_id)->update([
+            'business_type_row_id' => 1,
+            'activity_type_row_id' => 1,
+            'group_level_row_id' => 1,
+            'group_function_row_id' => 1,
+            'established_at' => '2020-01-01',
+            'phone' => '08123456789',
+        ]);
+        DB::connection('tenant')->table('organization_profiles')->where('id', 1)->update([
+            'district_name' => 'Sentosa',
+            'regency_name' => 'Test',
+            'registration_number' => 'AHU-123',
+            'manager_nik' => '3201234567899999',
+            'manager_name' => 'Drs. H. Sudirman',
+            'manager_title' => 'Direktur Utama',
+            'manager_position' => 'Direktur Utama',
+            'manager_address' => 'Jl. Manager No. 1',
+            'verifier_name' => 'Rina Verifikator',
+            'verifier_title' => 'Verifikator',
+            'kepala_desa_name' => 'H. Ahmad',
+            'kepala_desa_nip' => '196801011990031001',
+            'court_of_jurisdiction' => 'Pengadilan Negeri Bandung',
+        ]);
+
+        $loan = $this->seedLoan('active');
+        $loan->forceFill([
+            'spk_no' => 'SPK/KLP/001/2026',
+            'disbursement_slot' => '10:00_Kantor Koperasi Maju Bersama',
+            'verification_notes' => 'Catatan verifikasi kelompok.',
+            'collateral' => ['type' => 'kelompok', 'description' => 'Tanggung renteng kelompok'],
+        ])->save();
+        $loan->refresh();
+        $this->seedGroupInstallments($loan);
+
+        $service = app(LoanDocumentService::class);
+        $documents = $service->availableDocuments($loan);
+        self::assertCount(41, $documents);
+
+        $expected = [
+            'cover_proposal' => ['PINJAMAN KELOMPOK SPP', 'Kelompok Tani Maju'],
+            'check' => ['CHECK LIST', 'KELENGKAPAN PROPOSAL SPP'],
+            'pengajuan_kredit' => ['KELOMPOK PINJAMAN SPP', 'Kelompok Tani Maju'],
+            'rekomendasi_kredit' => ['REKOMENDASI', 'Kelompok Tani Maju'],
+            'profil_kelompok' => ['PROFIL KELOMPOK SPP', 'Simpan Pinjam Khusus Perempuan', 'Pertanian'],
+            'susunan_pengurus' => ['SUSUNAN PENGURUS', 'Budi Santoso', 'Siti Aminah', 'Ahmad Fauzi'],
+            'anggota' => ['DAFTAR ANGGOTA', 'Budi Santoso', 'Dusun Krajan RT 02 RW 03'],
+            'daftar_pemanfaat' => ['DAFTAR PENERIMA', 'Budi Santoso', '5,000,000'],
+            'pernyataan_tanggung_renteng' => ['TANGGUNG RENTENG', 'Budi Santoso'],
+            'ktp' => ['FC KTP PEMANFAAT', 'Kelompok Tani Maju'],
+            'pernyataan_peminjam' => ['SURAT PERNYATAAN', 'Budi Santoso'],
+            'ba_musyawarah' => ['BERITA ACARA PERTEMUAN', 'Simpan Pinjam Khusus Perempuan'],
+            'form_verifikasi' => ['FORM VERIFIKASI OLEH VERIFIKATOR', 'Budi Santoso'],
+            'daftar_hadir_verifikasi' => ['DAFTAR HADIR VERIFIKASI SPP', 'Budi Santoso'],
+            'rencana_angsuran' => ['RENCANA ANGSURAN', 'Kelompok Tani Maju'],
+            'form_verifikasi_anggota' => ['Budi Santoso'],
+            'catatan_bimbingan' => ['CATATAN BIMBINGAN KELOMPOK', 'Kelompok Tani Maju', 'Catatan verifikasi'],
+            'surat_verifikasi' => ['Pemberitahuan dan Undangan Verifikasi', 'JADWAL VERIFIKASI'],
+            'cover_pencairan' => ['PINJAMAN KELOMPOK SPP', 'Kelompok Tani Maju'],
+            'spk' => ['SURAT PERJANJIAN KREDIT', 'Lima Juta'],
+            'spk_anggota' => ['SURAT PERJANJIAN KREDIT', 'Budi Santoso', '5,000,000'],
+            'surat_kelayakan' => ['KELAYAKAN', 'Kelompok Tani Maju'],
+            'surat_kuasa' => ['SURAT KUASA', 'Budi Santoso'],
+            'berita_acara_pencairan' => ['BERITA ACARA PENCAIRAN', 'Kantor Koperasi Maju Bersama'],
+            'daftar_hadir_pencairan' => ['DAFTAR HADIR PENCAIRAN SPP', 'Budi Santoso'],
+            'tanda_terima' => ['TANDA TERIMA', '5,000,000'],
+            'kartu_angsuran' => ['KARTU ANGSURAN', 'Kelompok Tani Maju', '75,000'],
+            'kartu_angsuran_anggota' => ['KARTU ANGSURAN', 'Budi Santoso', '75,000'],
+            'rencana_angsuran_pencairan' => ['RENCANA ANGSURAN', 'Kelompok Tani Maju'],
+            'pemberitahuan_desa' => ['Pemberitahuan', 'Budi Santoso'],
+            'iptw' => ['DAFTAR PENERIMA IPTW', 'Budi Santoso'],
+            'peserta_asuransi' => ['DAFTAR PESERTA', 'Budi Santoso'],
+            'tanggung_renteng_kematian' => ['TANGGUNG RENTENG', 'Budi Santoso'],
+            'pernyataan_tanggung_renteng_pencairan' => ['TANGGUNG RENTENG', 'Budi Santoso'],
+            'kuitansi_pencairan' => ['Telah Diterima Dari', 'Rupiah'],
+            'kuitansi_anggota' => ['Budi Santoso', 'Rupiah'],
+            'tagihan' => ['TAGIHAN', 'Budi Santoso'],
+            'surat_ahli_waris' => ['AHLI WARIS', 'Budi Santoso'],
+            'form_verifikasi_pencairan' => ['FORM VERIFIKASI OLEH VERIFIKATOR', 'Budi Santoso'],
+            'ba_pendanaan' => ['BERITA ACARA', 'RAPAT PENETAPAN PENDANAAN'],
+            'rekening_koran' => ['REKENING KORAN', 'Kelompok Tani Maju'],
+        ];
+
+        foreach ($documents as $document) {
+            $payload = $service->payload($loan, $document['key']);
+            $html = view($payload['document']['view'], $payload)->render();
+
+            self::assertNotSame('', trim($html), "Dokumen {$document['key']} kosong.");
+            foreach ([
+                'Undefined variable',
+                'Undefined array key',
+                'Attempt to read property',
+                'Trying to get property',
+                'htmlspecialchars(): Argument',
+                'Array to string conversion',
+                '[object Object]',
+            ] as $error) {
+                self::assertStringNotContainsString($error, $html, "Dokumen {$document['key']} mengandung {$error}.");
+            }
+            self::assertStringNotContainsString('@foreach', $html, "Blade {$document['key']} belum dirender.");
+            self::assertStringNotContainsString('@if', $html, "Blade {$document['key']} belum dirender.");
+
+            foreach ($expected[$document['key']] ?? [] as $needle) {
+                self::assertStringContainsStringIgnoringCase($needle, $html, "Dokumen {$document['key']} tidak memuat '{$needle}'.");
+            }
+
+            if (str_starts_with($document['view'], 'legacy.') && $document['key'] !== 'surat_kuasa') {
+                self::assertStringContainsStringIgnoringCase('KMB', $html, "Kop {$document['key']} tidak memuat nama lembaga.");
+            }
+        }
     }
 
     private function createGroupClassifications(): void
@@ -1417,5 +1804,45 @@ final class LoanDocumentTest extends TestCase
         self::assertEqualsWithDelta(2_000_000.01, (float) $payload['real']->tunggakan_pokok, 0.01);
         self::assertEqualsWithDelta(360_000.0, (float) $payload['real']->tunggakan_jasa, 0.01);
         self::assertEqualsWithDelta(6_666_666.66, (float) $payload['real']->saldo_pokok, 0.01);
+    }
+
+    public function test_individual_recommendation_header_uses_same_sop_logo_as_other_documents(): void
+    {
+        Storage::fake('public');
+
+        $path = UploadedFile::fake()
+            ->image('logo.png', 20, 20)
+            ->storeAs('tenants/1', 'logo.png', 'public');
+
+        OrganizationProfile::query()->firstOrFail()->update(['logo_path' => $path]);
+
+        $loan = $this->seedMemberLoan('active');
+        $payload = app(LoanDocumentService::class)->payload($loan, 'rekomendasi_kredit_individu');
+
+        self::assertNotSame('', (string) $payload['logo_src']);
+        self::assertSame($payload['logo_src'], $payload['logo_kab_src']);
+
+        $html = view($payload['document']['view'], $payload)->render();
+        self::assertStringContainsString('data:image/png;base64,', $html);
+        self::assertStringContainsString('alt="Logo Kabupaten"', $html);
+    }
+
+    public function test_individual_document_letterhead_uses_complete_sop_identity_text(): void
+    {
+        OrganizationProfile::query()->firstOrFail()->update([
+            'registration_number' => 'AHU-123',
+            'district_name' => 'Sentosa',
+            'regency_name' => 'Test',
+            'website' => 'https://kmb.test',
+        ]);
+
+        $loan = $this->seedMemberLoan('active');
+        $payload = app(LoanDocumentService::class)->payload($loan, 'surat_pemberitahuan');
+        $html = view($payload['document']['view'], $payload)->render();
+
+        self::assertStringContainsString('KMB', $html);
+        self::assertStringContainsString('KECAMATAN SENTOSA KABUPATEN TEST', $html);
+        self::assertStringContainsString('SK Kemenkumham RI No.AHU-123', $html);
+        self::assertStringContainsString('Jl. Raya No. 1, Kota Test, Telp.08123456789', $html);
     }
 }

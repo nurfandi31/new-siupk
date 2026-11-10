@@ -54,6 +54,7 @@ final class LoanDocumentController
             $payload,
             $meta['key'].'-pinjaman-'.$loan->id.'.pdf',
             $meta['orientation'],
+            $meta['paper'] ?? 'a4',
         );
     }
 }

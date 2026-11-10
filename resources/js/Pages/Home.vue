@@ -469,7 +469,7 @@ onUnmounted(() => {
                         </a>
                     </nav>
 
-                    <AppLanguageSwitcher />
+                    <AppLanguageSwitcher accent />
 
                     <!-- Login Button (Desktop) — pinned to far right -->
                     <Link href="/login" class="hidden md:inline-flex">

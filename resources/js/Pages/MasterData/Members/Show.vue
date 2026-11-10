@@ -14,6 +14,7 @@ const props = defineProps({
     member: { type: Object, required: true },
     loans: { type: Array, default: () => [] },
     summary: { type: Object, required: true },
+    savings: { type: Object, default: () => ({ enabled: false, accounts: [] }) },
 });
 
 const { can } = useCan();
@@ -24,6 +25,7 @@ const identityPhotoForm = useForm({
 });
 
 const canManage = computed(() => can('members.manage'));
+const canManageSavings = computed(() => can('simpanan.manage'));
 const initials = computed(() => {
     const source = (props.member.name || '').trim();
     if (!source) return '?';
@@ -227,6 +229,53 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                     </div>
                 </AppCard>
             </div>
+
+            <!-- Savings accounts (only when the optional module is enabled) -->
+            <AppCard v-if="savings.enabled">
+                <header class="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                    <div>
+                        <h2 class="text-base font-bold text-primary">Simpanan</h2>
+                        <p class="text-xs text-on-surface-variant">Rekening simpanan yang dimiliki anggota ini.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <AppBadge tone="primary-soft">{{ savings.accounts.length }} rekening</AppBadge>
+                        <Link v-if="canManageSavings" :href="`/simpanan/create?member=${member.row_id}`" class="contents">
+                            <AppButton variant="primary" icon="add" size="compact">
+                                Buka Rekening
+                            </AppButton>
+                        </Link>
+                    </div>
+                </header>
+
+                <div v-if="savings.accounts.length" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    <Link
+                        v-for="account in savings.accounts"
+                        :key="account.row_id"
+                        :href="account.href"
+                        class="group rounded-xl border border-outline-variant bg-surface-container-lowest p-4 transition hover:border-primary hover:bg-surface-container-low"
+                    >
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <p class="truncate font-mono text-sm font-bold text-primary">{{ account.account_number }}</p>
+                                <p class="mt-0.5 truncate text-xs text-on-surface-variant">{{ account.product_name }}</p>
+                            </div>
+                            <AppBadge :tone="account.status === 'active' ? 'success-soft' : 'neutral'">
+                                {{ account.status_label }}
+                            </AppBadge>
+                        </div>
+                        <p class="mt-3 text-lg font-bold tabular-nums text-primary">Rp {{ formatMoney(account.balance) }}</p>
+                        <div class="mt-2 flex items-center justify-between gap-2 text-[11px] text-on-surface-variant">
+                            <span>{{ account.form_type_label }}</span>
+                            <span>{{ account.opened_at ? formatDate(account.opened_at) : '—' }}</span>
+                        </div>
+                    </Link>
+                </div>
+                <div v-else class="flex flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant px-4 py-8 text-center text-on-surface-variant">
+                    <AppIcon name="savings" class="text-3xl" />
+                    <p class="text-sm font-medium">Belum ada rekening simpanan.</p>
+                    <p v-if="canManageSavings" class="text-xs">Gunakan tombol Buka Rekening untuk menambahkan simpanan anggota ini.</p>
+                </div>
+            </AppCard>
 
             <!-- Two-column main content -->
             <div class="grid gap-4 lg:grid-cols-5 lg:gap-6">

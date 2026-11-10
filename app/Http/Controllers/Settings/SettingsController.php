@@ -109,7 +109,7 @@ final class SettingsController
         $data = $request->validated();
         $tenantId = $context->id();
 
-        DB::connection('tenant')->table('organization_profiles')->updateOrInsert(
+        OrganizationProfile::query()->updateOrCreate(
             ['tenant_id' => $tenantId],
             [
                 'legal_name' => $data['legal_name'],
@@ -124,8 +124,6 @@ final class SettingsController
                 'operational_start_date' => isset($data['operational_start_date'])
                     ? CarbonImmutable::parse($data['operational_start_date'])->toDateString()
                     : null,
-                'updated_at' => now(),
-                'created_at' => now(),
             ]
         );
 
@@ -180,14 +178,12 @@ final class SettingsController
 
         $path = $file->storeAs("tenants/{$tenantId}", 'logo.'.$extension, 'public');
 
-        DB::connection('tenant')->table('organization_profiles')->updateOrInsert(
+        OrganizationProfile::query()->updateOrCreate(
             ['tenant_id' => $tenantId],
             [
                 'legal_name' => $profile->legal_name ?? '',
                 'timezone' => $profile->timezone ?? 'Asia/Jakarta',
                 'logo_path' => $path,
-                'updated_at' => now(),
-                'created_at' => $profile->created_at ?? now(),
             ]
         );
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Domain\Access\Services\PermissionChecker;
+use App\Domain\Savings\Services\SavingsModuleManager;
 use App\Models\Platform\DatabaseShard;
 use App\Models\Platform\Tenant;
 use App\Models\Platform\TenantPlacement;
@@ -37,6 +38,7 @@ final readonly class TenantRegistrationService
         private TenantLoginAccountProvisioner $loginAccounts,
         private TenantContext $context,
         private TenantWorkbench $workbench,
+        private SavingsModuleManager $savingsModules,
     ) {}
 
     public function register(array $data): Tenant
@@ -79,6 +81,12 @@ final readonly class TenantRegistrationService
             // One login account per role: the tenant is ready to use without
             // manually entering a first user when it is registered.
             $this->loginAccounts->ensureDefaults($tenant);
+
+            // Modul simpanan opsional: tabel dibuat hanya jika lokasi memilih
+            // untuk memakai simpanan saat pendaftaran.
+            if ((bool) ($data['with_simpanan'] ?? false)) {
+                $this->savingsModules->enable((int) $tenant->row_id);
+            }
 
             $tenant->forceFill(['status' => 'active', 'provisioned_at' => now()])->save();
             $this->registry->sync($tenant);

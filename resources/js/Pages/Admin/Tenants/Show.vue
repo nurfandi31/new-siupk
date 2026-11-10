@@ -1,23 +1,27 @@
 <script setup>
 import { computed } from 'vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
+import AppConfirmDialog from '../../../Components/AppConfirmDialog.vue';
 import AppIcon from '../../../Components/AppIcon.vue';
 import AppIconButton from '../../../Components/AppIconButton.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
+import { useConfirm } from '../../../composables/useConfirm';
 import { useI18n } from '../../../i18n';
 
 const { t } = useI18n();
+const { confirm } = useConfirm();
 
 const props = defineProps({
     tenant: { type: Object, required: true },
     users: { type: Array, default: () => [] },
     invoices: { type: Array, default: () => [] },
     plans: { type: Array, default: () => [] },
+    modules: { type: Object, default: null },
 });
 
 const subForm = useForm({
@@ -31,6 +35,80 @@ const suspendForm = useForm({});
 const activateForm = useForm({});
 const repairForm = useForm({});
 const invoiceForm = useForm({});
+
+const savings = computed(() => props.modules);
+const savingsTables = computed(() => {
+    if (!savings.value) return [];
+
+    const labels = savings.value.table_labels ?? {};
+    const counts = savings.value.row_counts ?? {};
+
+    return Object.entries(savings.value.tables ?? {}).map(([key, table]) => ({
+        key,
+        label: labels[key] ?? key,
+        table,
+        count: counts[key],
+    }));
+});
+
+const savingsHasTables = computed(() => {
+    if (!savings.value?.tables_exist) return false;
+
+    return Object.values(savings.value.tables_exist).some(Boolean);
+});
+
+async function enableSavings() {
+    const ok = await confirm({
+        title: t('Aktifkan Modul Simpanan?'),
+        message: t('Tabel simpanan khusus lokasi ini akan dibuat beserta jenis simpanan default (Pokok, Wajib, Sukarela, Berjangka).'),
+        confirmLabel: t('Aktifkan'),
+        variant: 'primary',
+        icon: 'savings',
+    });
+    if (!ok) return;
+
+    router.post(`/admin/tenants/${props.tenant.row_id}/modules/simpanan/enable`, {}, { preserveScroll: true });
+}
+
+async function deactivateSavings() {
+    const ok = await confirm({
+        title: t('Nonaktifkan Modul Simpanan?'),
+        message: t('Menu simpanan disembunyikan untuk lokasi ini, tetapi tabel dan seluruh data tetap tersimpan.'),
+        confirmLabel: t('Nonaktifkan'),
+        variant: 'danger',
+        icon: 'visibility_off',
+    });
+    if (!ok) return;
+
+    router.post(`/admin/tenants/${props.tenant.row_id}/modules/simpanan/deactivate`, {}, { preserveScroll: true });
+}
+
+async function disableSavings() {
+    if (savings.value?.has_data) {
+        await confirm({
+            title: t('Tabel Tidak Dapat Dihapus'),
+            message: t('Tabel simpanan masih berisi data. Kosongkan data terlebih dahulu, atau cukup nonaktifkan modul tanpa menghapus tabel.'),
+            confirmLabel: t('Mengerti'),
+            cancelLabel: '',
+            variant: 'warning',
+            icon: 'warning',
+        });
+
+        return;
+    }
+
+    const ok = await confirm({
+        title: t('Hapus Tabel Simpanan?'),
+        message: t('Seluruh tabel simp_* lokasi ini akan dihapus permanen. Tindakan ini hanya dapat dilakukan saat semua tabel kosong.'),
+        confirmLabel: t('Hapus Tabel'),
+        variant: 'danger',
+        icon: 'delete_forever',
+    });
+    if (!ok) return;
+
+    router.post(`/admin/tenants/${props.tenant.row_id}/modules/simpanan/disable`, {}, { preserveScroll: true });
+}
+
 
 const impersonating = ref(false);
 const impersonatingDomain = ref(null);
@@ -191,6 +269,83 @@ async function autoLogin(domain = null, userId = null) {
                         <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="receipt_long" @click="$inertia.visit(`/admin/invoices/create?tenant_id=${tenant.row_id}`)">{{ t('Buat Invoice') }}</AppButton>
                         <AppButton v-if="tenant.status === 'active'" class="min-w-0 flex-1 sm:min-w-[150px]" variant="danger" :loading="suspendForm.processing" @click="suspend">{{ t('Suspend') }}</AppButton>
                     </div>
+                </div>
+            </AppCard>
+
+            <!-- Modul Simpanan -->
+            <AppCard :padded="false" class="overflow-hidden border border-outline-variant">
+                <div class="flex flex-col gap-3 bg-gradient-to-r from-secondary-container/60 via-surface-container-low to-surface p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-start gap-3">
+                        <span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-surface text-secondary shadow-sm">
+                            <AppIcon name="savings" class="text-2xl" />
+                        </span>
+                        <div class="min-w-0">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h2 class="font-bold text-primary">{{ t('Modul Simpanan') }}</h2>
+                                <AppBadge v-if="savings" :tone="savings.is_enabled ? 'success-soft' : 'neutral'">
+                                    {{ savings.is_enabled ? t('Aktif') : t('Nonaktif') }}
+                                </AppBadge>
+                                <AppBadge v-else tone="error-soft">{{ t('Tidak terbaca') }}</AppBadge>
+                            </div>
+                            <p class="mt-1 text-sm text-on-surface-variant">
+                                {{ t('Tabel simpanan dibuat khusus per lokasi (prefix simp_) agar lokasi tanpa simpanan tidak memakai penyimpanan ekstra.') }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <AppButton
+                            v-if="!savings || !savings.is_enabled"
+                            variant="primary"
+                            icon="add_circle"
+                            @click="enableSavings"
+                        >
+                            {{ savings?.flag_enabled ? t('Perbaiki Tabel') : savingsHasTables ? t('Aktifkan Kembali') : t('Aktifkan Modul') }}
+                        </AppButton>
+                        <template v-else>
+                            <AppButton variant="secondary" icon="visibility_off" @click="deactivateSavings">
+                                {{ t('Nonaktifkan') }}
+                            </AppButton>
+                            <AppButton
+                                variant="danger"
+                                icon="delete_forever"
+                                :disabled="savings.has_data"
+                                :title="savings.has_data ? t('Tabel masih berisi data') : t('Hapus tabel')"
+                                @click="disableSavings"
+                            >
+                                {{ t('Hapus Tabel') }}
+                            </AppButton>
+                        </template>
+                    </div>
+                </div>
+
+                <div v-if="savings" class="grid gap-px bg-outline-variant sm:grid-cols-2 lg:grid-cols-4">
+                    <div v-for="row in savingsTables" :key="row.key" class="bg-surface p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">{{ t(row.label) }}</p>
+                        <p class="mt-1 truncate font-mono text-xs text-primary">{{ row.table }}</p>
+                        <div class="mt-2 flex items-center gap-2">
+                            <AppBadge :tone="row.count > 0 ? 'success-soft' : 'neutral'">
+                                {{ row.count === null ? t('belum dibuat') : row.count + ' ' + t('baris') }}
+                            </AppBadge>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="savings?.missing_tables?.length && (savings?.flag_enabled || savingsHasTables)" class="flex items-start gap-2 border-t border-outline-variant bg-error/10 px-5 py-3 text-xs text-on-surface-variant">
+                    <AppIcon name="error" class="mt-0.5 text-error" />
+                    <p>
+                        {{ t('Sebagian tabel simpanan belum dibuat:') }}
+                        <span class="font-mono">{{ savings.missing_tables.join(', ') }}</span>.
+                        {{ t('Klik Perbaiki Tabel untuk membuat ulang tabel yang hilang tanpa menghapus data yang tersisa.') }}
+                    </p>
+                </div>
+                <div v-else-if="savings?.has_data" class="flex items-start gap-2 border-t border-outline-variant bg-warning/10 px-5 py-3 text-xs text-on-surface-variant">
+                    <AppIcon name="warning" class="mt-0.5 text-warning" />
+                    <p>
+                        {{ t('Tabel simpanan berisi data sehingga tidak dapat dihapus. Nonaktifkan modul bila lokasi berhenti memakai simpanan tanpa kehilangan data.') }}
+                    </p>
+                </div>
+                <div v-else-if="!savings" class="border-t border-outline-variant px-5 py-3 text-xs text-on-surface-variant">
+                    {{ t('Status modul belum dapat dibaca. Pastikan shard lokasi ini aktif dan sudah dimigrasikan.') }}
                 </div>
             </AppCard>
 
@@ -382,5 +537,7 @@ async function autoLogin(domain = null, userId = null) {
                 </AppCard>
             </div>
         </div>
+
+        <AppConfirmDialog />
     </AdminLayout>
 </template>

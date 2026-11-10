@@ -42,7 +42,7 @@ const tabs = [
 const tabMeta = {
     identity: { icon: 'badge', tone: 'primary', title: 'Identitas Lembaga', subtitle: 'Profil hukum dan kontak lembaga. Data ini muncul pada laporan dan dokumen resmi.', gradient: 'from-primary/10 to-primary/0' },
     'lending-system': { icon: 'tune', tone: 'secondary', title: 'Sistem Pinjaman', subtitle: 'Default jasa, jangka, dan metode pembulatan angsuran per produk pinjaman.', gradient: 'from-secondary/10 to-secondary/0' },
-    logo: { icon: 'image', tone: 'tertiary', title: 'Logo Lembaga', subtitle: 'Logo akan tampil di sidebar aplikasi. Format: PNG, JPG, atau WebP. Maks 2 MB.', gradient: 'from-tertiary/10 to-tertiary/0' },
+    logo: { icon: 'image', tone: 'tertiary', title: 'Logo Lembaga', subtitle: 'Logo tampil di sidebar, kop dokumen, dan seluruh pelaporan PDF. Sumber yang sama dengan halaman SOP Lembaga. Format: PNG, JPG, atau WebP. Maks 2 MB.', gradient: 'from-tertiary/10 to-tertiary/0' },
     offline: { icon: 'cloud_off', tone: 'info', title: 'Akses Offline', subtitle: 'Aktifkan agar satu pengguna terpilih tetap dapat menginput, mengedit, dan menghapus data saat offline.', gradient: 'from-info/10 to-info/0' },
     signatures: { icon: 'draw', tone: 'primary', title: 'Tanda Tangan', subtitle: 'Blok penandatangan per jenis laporan. Disimpan per lembaga.', gradient: 'from-primary/10 to-primary/0' },
 };

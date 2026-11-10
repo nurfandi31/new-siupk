@@ -17,8 +17,8 @@ use App\Domain\Regulatory\Controllers\Ojk\LoansReceivedController;
 use App\Domain\Regulatory\Controllers\Ojk\PaidGroupLoansController;
 use App\Domain\Regulatory\Controllers\Ojk\PaidIndividuLoansController;
 use App\Domain\Regulatory\Controllers\Ojk\ProfileController as OjkProfileController;
-use App\Domain\Regulatory\Controllers\Ojk\SavingsController;
-use App\Domain\Regulatory\Controllers\Ojk\SavingsInterestController;
+use App\Domain\Regulatory\Controllers\Ojk\SavingsController as OjkSavingsReportController;
+use App\Domain\Regulatory\Controllers\Ojk\SavingsInterestController as OjkSavingsInterestReportController;
 use App\Domain\Regulatory\Controllers\Ojk\SavingsReceivablesController;
 use App\Domain\Supervisor\Controllers\NoteController as SupervisorNoteController;
 use App\Http\Controllers\Access\TenantRoleManagementController;
@@ -46,6 +46,7 @@ use App\Http\Controllers\Admin\ShardController;
 use App\Http\Controllers\Admin\TenantController as AdminTenantController;
 use App\Http\Controllers\Admin\TenantDataPurifierController;
 use App\Http\Controllers\Admin\TenantImpersonationController as AdminTenantImpersonationController;
+use App\Http\Controllers\Admin\TenantSavingsModuleController;
 use App\Http\Controllers\Admin\TenantUserController as AdminTenantUserController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Assets\AssetController;
@@ -88,6 +89,10 @@ use App\Http\Controllers\PublicSite\PublicSiteController;
 use App\Http\Controllers\Regency\RegencyDashboardController;
 use App\Http\Controllers\Regency\RegencyReportController;
 use App\Http\Controllers\RegionalCodeController;
+use App\Http\Controllers\Savings\SavingsController;
+use App\Http\Controllers\Savings\SavingsInterestController;
+use App\Http\Controllers\Savings\SavingsPrintController;
+use App\Http\Controllers\Savings\SavingsSettingController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Settings\SettingsController;
 use App\Http\Controllers\Settings\SopController as SettingsSopController;
@@ -241,6 +246,13 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->name('admin.')->grou
     Route::post('/tenants/{tenant}/impersonate', [AdminTenantImpersonationController::class, 'impersonate'])->name('tenants.impersonate');
     Route::post('/tenants/{tenant}/repair', [AdminTenantController::class, 'repair'])->name('tenants.repair');
     Route::post('/tenants/{tenant}/subscription', [AdminTenantController::class, 'assignSubscription'])->name('tenants.subscription');
+
+    Route::prefix('/tenants/{tenant}/modules/simpanan')->name('tenants.savings.')->group(function (): void {
+        Route::get('/', [TenantSavingsModuleController::class, 'status'])->name('status');
+        Route::post('/enable', [TenantSavingsModuleController::class, 'enable'])->name('enable');
+        Route::post('/deactivate', [TenantSavingsModuleController::class, 'deactivate'])->name('deactivate');
+        Route::post('/disable', [TenantSavingsModuleController::class, 'disable'])->name('disable');
+    });
 
     Route::get('/tenants/{tenant}/users', [AdminTenantUserController::class, 'index'])->name('tenants.users.index');
     Route::get('/tenants/{tenant}/users/create', [AdminTenantUserController::class, 'create'])->name('tenants.users.create');
@@ -498,6 +510,78 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::put('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
     });
 
+    // Simpanan (modul opsional — hanya tersedia jika diaktifkan pusat tenant)
+    Route::prefix('simpanan')
+        ->name('savings.')
+        ->middleware('savings.enabled')
+        ->group(function (): void {
+            Route::get('/', [SavingsController::class, 'index'])
+                ->middleware('permission:simpanan.view')->name('index');
+            Route::get('/create', [SavingsController::class, 'create'])
+                ->middleware('permission:simpanan.manage')->name('create');
+            Route::get('/anggota/options', [SavingsController::class, 'memberOptions'])
+                ->middleware('permission:simpanan.manage')->name('members.options');
+            Route::post('/', [SavingsController::class, 'store'])
+                ->middleware('permission:simpanan.manage')->name('store');
+
+            Route::get('/bunga', [SavingsInterestController::class, 'index'])
+                ->middleware('permission:simpanan.manage')->name('interest.index');
+            Route::get('/bunga/preview', [SavingsInterestController::class, 'preview'])
+                ->middleware('permission:simpanan.manage')->name('interest.preview');
+            Route::post('/bunga', [SavingsInterestController::class, 'store'])
+                ->middleware('permission:simpanan.manage')->name('interest.store');
+            Route::delete('/bunga/{run}', [SavingsInterestController::class, 'destroy'])
+                ->whereNumber('run')
+                ->middleware('permission:simpanan.manage')->name('interest.destroy');
+
+            Route::get('/pengaturan', [SavingsSettingController::class, 'index'])
+                ->middleware('permission:simpanan.manage')->name('settings.index');
+            Route::put('/pengaturan', [SavingsSettingController::class, 'update'])
+                ->middleware('permission:simpanan.manage')->name('settings.update');
+            Route::post('/pengaturan/jenis', [SavingsSettingController::class, 'storeProduct'])
+                ->middleware('permission:simpanan.manage')->name('products.store');
+            Route::put('/pengaturan/jenis/{product}', [SavingsSettingController::class, 'updateProduct'])
+                ->whereNumber('product')
+                ->middleware('permission:simpanan.manage')->name('products.update');
+            Route::delete('/pengaturan/jenis/{product}', [SavingsSettingController::class, 'destroyProduct'])
+                ->whereNumber('product')
+                ->middleware('permission:simpanan.manage')->name('products.destroy');
+
+            Route::get('/{account}/cetak/kop', [SavingsPrintController::class, 'kop'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.view')->name('print.kop');
+            Route::get('/{account}/cetak/formulir', [SavingsPrintController::class, 'formulir'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.view')->name('print.formulir');
+            Route::get('/{account}/cetak/koran', [SavingsPrintController::class, 'koran'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.view')->name('print.koran');
+            Route::get('/{account}/cetak/buku/{transaction}', [SavingsPrintController::class, 'buku'])
+                ->whereNumber('account')
+                ->whereNumber('transaction')
+                ->middleware('permission:simpanan.view')->name('print.buku');
+            Route::get('/{account}/cetak/kwitansi/{transaction}', [SavingsPrintController::class, 'kwitansi'])
+                ->whereNumber('account')
+                ->whereNumber('transaction')
+                ->middleware('permission:simpanan.view')->name('print.kwitansi');
+
+            Route::get('/{account}', [SavingsController::class, 'show'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.view')->name('show');
+            Route::put('/{account}', [SavingsController::class, 'update'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.manage')->name('update');
+            Route::post('/{account}/transaksi', [SavingsController::class, 'storeTransaction'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.manage')->name('transactions.store');
+            Route::post('/{account}/tutup', [SavingsController::class, 'close'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.manage')->name('close');
+            Route::delete('/{account}', [SavingsController::class, 'destroy'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.manage')->name('destroy');
+        });
+
     // Lending
     Route::get('/lending/proposals', [LoanController::class, 'index'])->name('lending.proposals.index');
     Route::get('/lending/proposals/create', [LoanController::class, 'create'])->name('lending.proposals.create');
@@ -680,8 +764,8 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::get('savings-receivables/pdf', [SavingsReceivablesController::class, 'pdf'])->name('savings-receivables.pdf');
 
         // Daftar Bunga Simpanan
-        Route::get('interest', [SavingsInterestController::class, 'index'])->name('interest');
-        Route::get('interest/pdf', [SavingsInterestController::class, 'pdf'])->name('interest.pdf');
+        Route::get('interest', [OjkSavingsInterestReportController::class, 'index'])->name('interest');
+        Route::get('interest/pdf', [OjkSavingsInterestReportController::class, 'pdf'])->name('interest.pdf');
 
         // Kolektibilitas OJK v1 (KBP)
         Route::get('collectibility', [CollectibilityController::class, 'index'])->name('collectibility');
@@ -893,6 +977,8 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::get('/sop', [SettingsSopController::class, 'index'])->name('sop.index');
         Route::put('/sop/kolek', [SettingsSopController::class, 'updateKolek'])->name('sop.kolek.update');
         Route::get('/sop/kolek/levels.json', [SettingsSopController::class, 'kolekLevels'])->name('sop.kolek.levels');
+        Route::post('/sop/logo', [SettingsSopController::class, 'updateLogo'])->name('sop.logo.update');
+        Route::delete('/sop/logo', [SettingsSopController::class, 'destroyLogo'])->name('sop.logo.destroy');
 
         // Multi-Instance WhatsApp Gateway
         Route::get('/whatsapp', [WhatsappSettingController::class, 'index'])->name('whatsapp.hub');
@@ -964,8 +1050,8 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::get('paid-individu/pdf', [PaidIndividuLoansController::class, 'pdf'])->name('paid-individu.pdf');
 
         // DRT — Daftar Rincian Tabungan
-        Route::get('savings', [SavingsController::class, 'index'])->name('savings');
-        Route::get('savings/pdf', [SavingsController::class, 'pdf'])->name('savings.pdf');
+        Route::get('savings', [OjkSavingsReportController::class, 'index'])->name('savings');
+        Route::get('savings/pdf', [OjkSavingsReportController::class, 'pdf'])->name('savings.pdf');
 
         // Penilaian Tingkat Kesehatan LKM (POJK 19 / POJK 41)
         Route::get('health', [HealthController::class, 'index'])->name('health');

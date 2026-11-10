@@ -439,7 +439,7 @@ onUnmounted(() => {
                         </a>
                     </nav>
 
-                        <AppLanguageSwitcher tone="light" />
+                        <AppLanguageSwitcher tone="light" accent />
 
                     <Link
                         href="/login"

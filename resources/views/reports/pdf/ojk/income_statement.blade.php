@@ -4,6 +4,7 @@
     $periodLabel = strtoupper($period['period_label'] ?? '');
     $headerLalu = $header_lalu ?? 'Bulan Lalu';
     $headerSekarang = $header_sekarang ?? 'Bulan Ini';
+    $logoUrl = $id['logo_url'] ?? null;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -26,6 +27,11 @@
     </style>
 </head>
 <body>
+    @if (! empty($logoUrl))
+        <div style="text-align: center; margin-bottom: 4px;">
+            <img src="{{ $logoUrl }}" width="50" alt="Logo">
+        </div>
+    @endif
     <table border="0" cellspacing="0" cellpadding="0" style="font-size: 11px;">
         <tr>
             <td colspan="5" align="center">

@@ -5,6 +5,7 @@
     $district = $profile?->district_name ?? '';
     $address = $profile?->address ?? '';
     $phone = $profile?->phone ?? '';
+    $logoUrl = $logo_url ?? $profile?->logo_url;
 
     $group = $loan->borrower?->group;
     $groupName = strtoupper($group?->name ?? '-');
@@ -48,6 +49,9 @@
 </head>
 <body>
     <div class="kop">
+        @if (! empty($logoUrl))
+            <img src="{{ $logoUrl }}" width="70" alt="Logo" style="margin-bottom: 6px;">
+        @endif
         <h1>{{ $legalName }} {{ $district ? '· ' . strtoupper($district) : '' }}</h1>
         <p>{{ $address }}</p>
         @if ($phone)

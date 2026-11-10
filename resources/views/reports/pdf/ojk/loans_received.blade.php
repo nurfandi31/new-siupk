@@ -2,6 +2,7 @@
     $id = $identity;
     $legalName = strtoupper($id['legal_name'] ?? '');
     $periodLabel = strtoupper($period_label ?? '');
+    $logoUrl = $id['logo_url'] ?? null;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -28,6 +29,11 @@
     </style>
 </head>
 <body>
+    @if (! empty($logoUrl))
+        <div style="text-align: center; margin-bottom: 4px;">
+            <img src="{{ $logoUrl }}" width="50" alt="Logo">
+        </div>
+    @endif
     <table border="0" cellspacing="0" cellpadding="0">
         <tr>
             <td colspan="11" class="center">

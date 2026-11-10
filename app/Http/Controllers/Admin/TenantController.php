@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domain\Savings\Services\SavingsModuleManager;
 use App\Http\Requests\Admin\UpdateTenantRequest;
 use App\Http\Requests\StoreTenantRequest;
 use App\Models\Platform\Plan;
@@ -15,6 +16,7 @@ use App\Services\Billing\SubscriptionService;
 use App\Services\TenantRegistrationService;
 use App\Tenancy\Services\PublicSiteResolver;
 use App\Tenancy\Services\TenantRegistrySynchronizer;
+use App\Tenancy\Services\TenantWorkbench;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -23,6 +25,11 @@ use Inertia\Response;
 
 final class TenantController
 {
+    public function __construct(
+        private readonly TenantWorkbench $workbench,
+        private readonly SavingsModuleManager $savingsModules,
+    ) {}
+
     public function index(Request $request): Response
     {
         $search = trim((string) $request->query('search', ''));
@@ -109,7 +116,7 @@ final class TenantController
     public function show(Tenant $tenant): Response
     {
         $tenant->load([
-            'placement.shard:row_id,code,name,database_name',
+            'placement.shard:row_id,code,name,driver,host,port,database_name,credential_reference',
             'activeSubscription.plan',
             'subscriptions' => fn ($q) => $q->with('plan:row_id,code,name')->latest('row_id')->limit(5),
         ]);
@@ -145,6 +152,8 @@ final class TenantController
         $domains = $metadata['domains'] ?? ($metadata['domain'] ?? []);
         $domains = is_array($domains) ? $domains : (trim((string) $domains) !== '' ? [$domains] : []);
 
+        $modules = $this->savingsModuleStatus($tenant);
+
         return Inertia::render('Admin/Tenants/Show', [
             'tenant' => [
                 'row_id' => $tenant->row_id,
@@ -175,6 +184,7 @@ final class TenantController
             'users' => $users,
             'invoices' => $invoices,
             'plans' => Plan::query()->where('is_active', true)->orderBy('name')->get(['row_id', 'code', 'name', 'price_amount', 'billing_period', 'currency']),
+            'modules' => $modules,
         ]);
     }
 
@@ -325,6 +335,23 @@ final class TenantController
         );
 
         return back()->with('success', 'Langganan ditetapkan.');
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function savingsModuleStatus(Tenant $tenant): ?array
+    {
+        try {
+            return $this->workbench->run(
+                $tenant,
+                fn (Tenant $model): array => $this->savingsModules->status((int) $model->row_id),
+            );
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return null;
+        }
     }
 
     private function perPage(mixed $value): int

@@ -40,6 +40,7 @@ use App\Http\Requests\Settings\OfflineAccessRequest;
 use App\Http\Requests\Settings\OrchestratorRequest;
 use App\Http\Requests\Settings\SignatureImageUploadRequest;
 use App\Http\Requests\Settings\SignaturesRequest;
+use App\Http\Requests\Settings\SopLogoUploadRequest;
 use App\Http\Requests\Settings\WhatsappInstanceRequest;
 use App\Http\Requests\Settings\WhatsappRequest;
 use App\Http\Requests\Website\SitePageRequest;
@@ -82,6 +83,9 @@ return [
         'loans.reschedule',
         'loans.reschedule_director',
         'loans.complete_director',
+        // Simpanan (modul opsional)
+        'simpanan.view',
+        'simpanan.manage',
         // SOP Lembaga (kolektabilitas, dll)
         'sop.view',
         'sop.manage',
@@ -154,6 +158,8 @@ return [
                 'settings.manage',
                 'sop.view',
                 'sop.manage',
+                'simpanan.view',
+                'simpanan.manage',
             ],
         ],
         'verifikator' => [
@@ -171,6 +177,7 @@ return [
                 'reports.view',
                 'assistant.use',
                 'settings.manage',
+                'simpanan.view',
             ],
         ],
         'viewer' => [
@@ -191,6 +198,7 @@ return [
                 'billing.view',
                 'assistant.use',
                 'settings.manage',
+                'simpanan.view',
             ],
         ],
         'regency_supervisor' => [
@@ -285,6 +293,10 @@ return [
         '/master-data/groups' => 'groups.view',
         '/master-data/institutions/create' => 'institutions.manage',
         '/master-data/institutions' => 'institutions.view',
+        '/simpanan/create' => 'simpanan.manage',
+        '/simpanan/bunga' => 'simpanan.manage',
+        '/simpanan/pengaturan' => 'simpanan.manage',
+        '/simpanan' => 'simpanan.view',
         '/lending/loans/create' => 'loans.propose',
         '/lending/loans' => 'loans.view',
         '/lending/member-loans/create' => 'loans.propose',
@@ -355,6 +367,7 @@ return [
         SignaturesRequest::class => 'settings.manage',
         SignatureImageUploadRequest::class => 'settings.manage',
         KolekRequest::class => 'sop.manage',
+        SopLogoUploadRequest::class => 'sop.manage',
         AssetRequest::class => 'assets.manage',
         VillageRequest::class => 'villages.manage',
         OtherInstitutionRequest::class => 'institutions.manage',

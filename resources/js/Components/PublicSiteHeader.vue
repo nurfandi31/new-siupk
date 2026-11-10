@@ -93,7 +93,7 @@ onBeforeUnmount(() => {
                     <AppIcon name="mail" class="text-base sm:text-lg" />
                     <span class="hidden sm:inline">{{ t('Kontak') }}</span>
                 </Link>
-                <AppLanguageSwitcher />
+                <AppLanguageSwitcher accent />
                 <Link
                     href="/login"
                     class="inline-flex min-h-9 min-w-9 items-center justify-center gap-1.5 rounded-full bg-primary px-2.5 text-[12px] font-semibold text-on-primary shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-deep sm:min-h-10 sm:gap-1.5 sm:px-3 sm:text-sm md:gap-2 md:px-4"
