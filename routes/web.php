@@ -565,9 +565,15 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
                 ->whereNumber('transaction')
                 ->middleware('permission:simpanan.view')->name('print.kwitansi');
 
+            Route::get('/formulir-kosong', [SavingsPrintController::class, 'formulirBlank'])
+                ->middleware('permission:simpanan.manage')->name('print.formulir.blank');
+
             Route::get('/{account}', [SavingsController::class, 'show'])
                 ->whereNumber('account')
                 ->middleware('permission:simpanan.view')->name('show');
+            Route::post('/{account}/hitung-ulang', [SavingsController::class, 'recalculate'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.manage')->name('recalculate');
             Route::put('/{account}', [SavingsController::class, 'update'])
                 ->whereNumber('account')
                 ->middleware('permission:simpanan.manage')->name('update');

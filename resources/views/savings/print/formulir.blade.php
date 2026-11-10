@@ -24,16 +24,17 @@
     $gender = $member['gender'] ?? '';
     $birth = trim(($member['birth_place'] ?? '').', '.($member['birth_date'] ?? ''), ', ');
     $isInstitution = (int) ($account['authority_type'] ?? 1) === 2;
+    $jenisRekening = (string) ($account['product']['name'] ?? '');
 @endphp
 
 <table width="97%" border="0" align="center" cellpadding="3" cellspacing="0">
     <tr>
         <td height="20" colspan="2" width="65%" class="bottom">
-            <span class="style9">{{ $organization['legal_name'] }}</span>
+            <span class="style9">&nbsp;</span>
         </td>
         <td height="20" colspan="2" class="bottom">
-            <div align="right" class="style9">CIF : {{ $account['row_id'] }}</div>
-            <div align="right" class="style9">No Rekening : {{ $account['account_number'] }}</div>
+            <div align="right" class="style9">CIF : </div>
+            <div align="right" class="style9">No Rekening : </div>
         </td>
         <td height="20" colspan="2" class="bottom" width="15%">
             <div align="left" class="style9 bottom">&nbsp;</div>
@@ -61,8 +62,8 @@
         <td width="25%" class="align-justify style9">Nama Alias</td>
         <td colspan="3" width="40%" class="style27 bottom">:&nbsp;</td>
         <td class="style27">
-            &nbsp; &nbsp; [{{ $gender === 'L' ? 'X' : ' ' }}] Laki Laki
-            &nbsp; &nbsp; [{{ $gender === 'P' ? 'X' : ' ' }}] Perempuan
+            &nbsp; &nbsp; [{{ $gender === 'L' ? '✓' : ' ' }}] Laki Laki
+            &nbsp; &nbsp; [{{ $gender === 'P' ? '✓' : ' ' }}] Perempuan
         </td>
     </tr>
     <tr>
@@ -103,12 +104,12 @@
     <tr>
         <td class="align-justify style9"><div align="right">10.</div></td>
         <td class="align-justify style9">Pekerjaan</td>
-        <td colspan="4" class="style27 bottom">:&nbsp;</td>
+        <td colspan="4" class="style27 bottom">: {{ $member['occupation'] ?? '' }}</td>
     </tr>
     <tr>
         <td class="align-justify style9"><div align="right">11.</div></td>
         <td class="align-justify style9">Alamat Pekerjaan</td>
-        <td colspan="4" class="style27 bottom">:&nbsp;</td>
+        <td colspan="4" class="style27 bottom">: {{ $member['address'] ?? '' }}</td>
     </tr>
     <tr>
         <td class="align-justify style9"><div align="right">12.</div></td>
@@ -132,14 +133,18 @@
     <tr>
         <td class="align-justify style9"><div align="right">15.</div></td>
         <td class="align-justify style9">Jenis Rekening</td>
-        <td colspan="4" class="style27 bottom">: {{ $account['product']['name'] }}</td>
+        <td colspan="4" class="style27 bottom">:
+            &nbsp; &nbsp; [{{ $jenisRekening === 'Simantera' ? '✓' : ' ' }}] Simantera
+            &nbsp; &nbsp; [{{ $jenisRekening === 'Simantera Qurban' ? '✓' : ' ' }}] Simantera Qurban
+            &nbsp; &nbsp; [{{ $jenisRekening === 'Simantera Hari raya' ? '✓' : ' ' }}] Simantera Hari raya
+        </td>
     </tr>
     <tr>
         <td class="align-justify style9"><div align="right">16.</div></td>
         <td class="align-justify style9">Status Permohonan</td>
         <td colspan="4" class="style27">
-            : &nbsp; &nbsp; [{{ $isInstitution ? ' ' : 'X' }}] Pribadi
-            &nbsp; &nbsp; [{{ $isInstitution ? 'X' : ' ' }}] Kuasa
+            : &nbsp; &nbsp; [{{ $isInstitution ? ' ' : '✓' }}] Pribadi
+            &nbsp; &nbsp; [{{ $isInstitution ? '✓' : ' ' }}] Kuasa
         </td>
     </tr>
     <tr>

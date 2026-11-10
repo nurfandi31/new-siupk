@@ -20,6 +20,13 @@
     </style>
 </head>
 <body onload="window.print()">
+@php
+    $address = trim((string) ($account['member']['address'] ?? ''));
+    $village = trim((string) ($account['member']['village'] ?? ''));
+    $fullAddress = $village !== '' && ! str_contains($address, $village)
+        ? trim($address.' '.$village)
+        : $address;
+@endphp
 <table width="100%" border="0" align="center" cellpadding="3" cellspacing="0" style="margin-top:10px;">
     <tr>
         <td class="style9">&nbsp;<br>&nbsp;<br></td>
@@ -40,7 +47,7 @@
     </tr>
     <tr>
         <td class="style9">Alamat</td>
-        <td colspan="2" class="style9">: {{ $account['member']['address'] }}</td>
+        <td colspan="2" class="style9">: {{ $fullAddress }}</td>
     </tr>
     <tr>
         <td class="style9">Telpon</td>

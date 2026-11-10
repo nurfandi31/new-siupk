@@ -37,7 +37,7 @@ const txOpen = ref(false);
 const editOpen = ref(false);
 
 const year = ref(props.filters.year ?? now.getFullYear());
-const month = ref(props.filters.month ?? 0);
+const month = ref(props.filters.month ?? now.getMonth() + 1);
 
 const monthOptions = [
     { value: 0, label: t('Sepanjang tahun') },
@@ -84,6 +84,16 @@ const isActive = computed(() => props.account.status === 'active');
 const canManage = computed(() => can('simpanan.manage'));
 const hasTransactions = computed(() => props.account.stats.transaction_count > 0);
 const minimumWithdrawal = computed(() => Number(props.account.product.minimum_balance || 0));
+
+const showOpeningRow = computed(() => Number(props.statement?.year ?? 0) > 0);
+
+const openingLabel = computed(() => {
+    if (!props.statement || !showOpeningRow.value) return '';
+
+    return Number(props.statement.month) > 0
+        ? `${t('Saldo Sebelum')} ${props.statement.period_label}`
+        : `${t('Saldo Sebelum')} ${props.statement.year}`;
+});
 
 const methodLabel = computed(() => {
     if (Number(props.settings.interest_method) === 1) return t('Saldo terakhir');
@@ -136,7 +146,7 @@ function submitEdit() {
 function applyFilter() {
     router.get(`/simpanan/${props.account.row_id}`, {
         year: year.value,
-        month: month.value || undefined,
+        month: month.value,
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -146,7 +156,7 @@ function applyFilter() {
 
 function resetFilter() {
     year.value = now.getFullYear();
-    month.value = 0;
+    month.value = now.getMonth() + 1;
     applyFilter();
 }
 
@@ -156,11 +166,24 @@ function printDoc(path) {
 
 function printKoran() {
     const params = new URLSearchParams({
-        year: String(year.value || now.getFullYear()),
-        month: String(month.value || 0),
+        year: String(year.value),
+        month: String(month.value),
     });
 
     printDoc(`/simpanan/${props.account.row_id}/cetak/koran?${params.toString()}`);
+}
+
+async function recalculate() {
+    const ok = await confirm({
+        title: t('Hitung Ulang Saldo?'),
+        message: t('Saldo berjalan seluruh mutasi rekening akan dihitung ulang secara kronologis, sama seperti menu Generate pada SIUPK.'),
+        confirmLabel: t('Hitung Ulang'),
+        variant: 'primary',
+        icon: 'refresh',
+    });
+    if (!ok) return;
+
+    router.post(`/simpanan/${props.account.row_id}/hitung-ulang`, {}, { preserveScroll: true });
 }
 
 async function closeAccount() {
@@ -232,6 +255,7 @@ function typeTone(type) {
                         <AppButton variant="ghost" icon="add_card">{{ t('Rekening Baru') }}</AppButton>
                     </Link>
                     <AppButton v-if="canManage" variant="secondary" icon="edit" @click="openEdit">{{ t('Edit') }}</AppButton>
+                    <AppButton v-if="canManage" variant="ghost" icon="refresh" @click="recalculate">{{ t('Hitung Ulang') }}</AppButton>
                     <AppButton v-if="canManage && isActive" variant="primary" icon="add" @click="openTransaction('setoran')">
                         {{ t('Setoran') }}
                     </AppButton>
@@ -319,8 +343,8 @@ function typeTone(type) {
                                 <tr>
                                     <th class="px-3 py-3 text-left font-semibold">No</th>
                                     <th class="px-3 py-3 text-left font-semibold">{{ t('Tanggal') }}</th>
-                                    <th class="px-3 py-3 text-center font-semibold">{{ t('Kode') }}</th>
                                     <th class="px-3 py-3 text-left font-semibold">{{ t('Keterangan') }}</th>
+                                    <th class="px-3 py-3 text-center font-semibold">KD.TRX</th>
                                     <th class="px-3 py-3 text-right font-semibold">{{ t('Debit') }}</th>
                                     <th class="px-3 py-3 text-right font-semibold">{{ t('Kredit') }}</th>
                                     <th class="px-3 py-3 text-right font-semibold">{{ t('Saldo') }}</th>
@@ -329,20 +353,26 @@ function typeTone(type) {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-outline-variant/60">
+                                <tr v-if="showOpeningRow" class="bg-surface-container-low/50">
+                                    <td colspan="6" class="px-3 py-3 text-center font-semibold text-on-surface">{{ openingLabel }}</td>
+                                    <td class="whitespace-nowrap px-3 py-3 text-right font-bold text-on-surface">{{ money(statement.opening_balance) }}</td>
+                                    <td colspan="2" class="px-3 py-3 text-right text-xs text-on-surface-variant">&nbsp;</td>
+                                </tr>
                                 <tr v-for="(row, index) in transactions.data" :key="row.row_id" class="transition hover:bg-surface-container-low/60">
                                     <td class="whitespace-nowrap px-3 py-3 text-on-surface-variant">
                                         {{ (transactions.from || 1) + index }}
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-3 text-on-surface-variant">{{ row.transaction_date }}</td>
-                                    <td class="px-3 py-3 text-center">
-                                        <span class="rounded-lg bg-surface-container-low px-2 py-1 font-mono text-xs font-bold text-primary">{{ row.code }}</span>
-                                    </td>
                                     <td class="min-w-[220px] px-3 py-3">
                                         <div class="flex flex-col">
                                             <AppBadge :tone="typeTone(row.type)">{{ row.type_label }}</AppBadge>
-                                            <span class="mt-1 text-xs text-on-surface-variant">{{ row.description || '—' }}</span>
+                                            <span class="mt-1 text-xs text-on-surface-variant">
+                                                <span class="font-mono font-semibold">{{ row.code }}</span>
+                                                | {{ row.description || '—' }}
+                                            </span>
                                         </div>
                                     </td>
+                                    <td class="px-3 py-3 text-center font-mono text-xs font-semibold text-primary">{{ row.row_id }}</td>
                                     <td class="whitespace-nowrap px-3 py-3 text-right font-semibold text-tertiary">
                                         {{ row.direction === 'out' ? money(row.amount) : '—' }}
                                     </td>
@@ -362,6 +392,13 @@ function typeTone(type) {
                                     <td colspan="9" class="px-4 py-10 text-center text-on-surface-variant">
                                         {{ t('Belum ada mutasi pada periode ini.') }}
                                     </td>
+                                </tr>
+                                <tr class="border-t-2 border-outline-variant bg-surface-container-low/40">
+                                    <td colspan="6" class="px-3 py-3 text-center font-bold text-on-surface">{{ t('Total Saldo') }}</td>
+                                    <td class="whitespace-nowrap px-3 py-3 text-right font-black text-on-surface">
+                                        {{ money(statement?.closing_balance ?? account.balance) }}
+                                    </td>
+                                    <td colspan="2" class="px-3 py-3 text-right text-xs text-on-surface-variant">&nbsp;</td>
                                 </tr>
                             </tbody>
                         </table>

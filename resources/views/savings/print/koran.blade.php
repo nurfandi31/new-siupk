@@ -22,13 +22,13 @@
 <body onload="window.print()">
 @php
     $member = $account['member'];
-    $isProgram = (int) ($account['product']['form_type'] ?? 1) === 3;
+    $isProgram = (string) ($account['product']['code'] ?? '') === '3';
 @endphp
 <table width="97%" border="0" align="center" cellpadding="3" cellspacing="0">
     <tr>
         <td height="20" colspan="2" class="bottom">
             <div class="style9 text-align-left">
-                {{ $organization['legal_name'] }}<br>
+                {{ $organization['legal_name'] }}@if($organization['district_name']) Kecamatan {{ $organization['district_name'] }}@endif<br>
                 {{ $organization['address'] }}
                 @if($organization['phone']) <span>&#9742; {{ $organization['phone'] }}</span> @endif
             </div>
@@ -86,24 +86,32 @@
         <th width="10%" class="align-center">SALDO</th>
         <th width="2%" class="align-center">P</th>
     </tr>
+    @if (! ($statement['all_time'] ?? false))
     <tr>
         <th colspan="3">&nbsp;</th>
         <th colspan="3" class="text-left">
-            <strong>Saldo Sebelum {{ $statement['period_label'] }}</strong>
+            <strong>
+                @if ($statement['month'] > 0)
+                    Saldo Sebelum {{ $statement['period_label'] }}
+                @else
+                    Saldo Sebelum {{ $statement['year'] }}
+                @endif
+            </strong>
         </th>
         <th class="style9 align-right">{{ number_format($statement['opening_balance'], 2, '.', ',') }}</th>
         <th colspan="2">&nbsp;</th>
     </tr>
+    @endif
     @forelse($statement['transactions'] as $index => $trx)
         <tr>
             <td width="4%" height="30" class="style9">{{ $index + 1 }}</td>
             <td width="15%" class="style9 align-center">{{ $trx['transaction_date'] }}</td>
             <td width="6%" class="style9 align-center">{{ $trx['row_id'] }}</td>
-            <td width="35%" class="style9">{{ $trx['code'] }} | {{ $trx['description'] }}</td>
+            <td width="35%" class="style9">{{ $trx['description'] }}</td>
             <td width="10%" class="style9 align-right">{{ $trx['direction'] === 'out' ? number_format($trx['amount'], 2, '.', ',') : '0,00' }}</td>
             <td width="10%" class="style9 align-right">{{ $trx['direction'] === 'in' ? number_format($trx['amount'], 2, '.', ',') : '0,00' }}</td>
             <td width="10%" class="style9 align-right">{{ number_format($trx['balance_after'], 2, '.', ',') }}</td>
-            <td width="2%" class="style9 align-center">{{ $trx['created_by'] }}</td>
+            <td width="2%" class="style9 align-center">{{ $trx['created_by_id'] }}</td>
         </tr>
     @empty
         <tr>

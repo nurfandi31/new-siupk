@@ -128,10 +128,14 @@ final class SavingsController
     {
         $model = $this->savings->findAccount($account);
         $year = (int) $request->query('year', now()->year);
-        $month = (int) $request->query('month', 0);
+        $month = (int) $request->query('month', now()->month);
+
+        if ($year !== 0 && ($year < 2000 || $year > 2100)) {
+            $year = (int) now()->year;
+        }
 
         if ($month < 0 || $month > 12) {
-            $month = 0;
+            $month = (int) now()->month;
         }
 
         return Inertia::render('Savings/Show', [
@@ -142,10 +146,22 @@ final class SavingsController
                 $year > 0 ? $year : null,
                 $month > 0 ? $month : null,
             ),
-            'statement' => $year > 0 ? $this->savings->statement($model, $year, $month) : null,
+            'statement' => $this->savings->statement($model, $year, $month),
             'filters' => ['year' => $year, 'month' => $month],
             'settings' => $this->modules->settings(),
         ]);
+    }
+
+    public function recalculate(int $account): RedirectResponse
+    {
+        $model = $this->savings->findAccount($account);
+        $balance = $this->savings->recalculateAccount((int) $model->row_id);
+
+        return back()->with(
+            'success',
+            "Saldo rekening {$model->account_number} berhasil dihitung ulang (Rp "
+            .number_format((float) $balance, 0, ',', '.').').',
+        );
     }
 
     public function update(UpdateSavingsAccountRequest $request, int $account): RedirectResponse

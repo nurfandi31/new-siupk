@@ -139,9 +139,13 @@ function submit() {
     form.post('/simpanan', { preserveScroll: true });
 }
 
+function printBlankForm() {
+    window.open('/simpanan/formulir-kosong', '_blank', 'noopener');
+}
+
 onMounted(() => {
     searchMembers('');
-    if (props.products.length === 1) {
+    if (!form.product_row_id && props.products.length > 0) {
         form.product_row_id = props.products[0].row_id;
         applyProductDefaults(props.products[0].row_id);
     }
@@ -162,9 +166,14 @@ onMounted(() => {
                         {{ t('Pilih anggota dan jenis simpanan. Nomor rekening dibuat otomatis dengan format SIUPK.') }}
                     </p>
                 </div>
-                <Link href="/simpanan">
-                    <AppButton variant="ghost" icon="arrow_back">{{ t('Kembali') }}</AppButton>
-                </Link>
+                <div class="flex flex-wrap items-center gap-2">
+                    <AppButton variant="secondary" icon="print" @click="printBlankForm">
+                        {{ t('Formulir Kosong') }}
+                    </AppButton>
+                    <Link href="/simpanan">
+                        <AppButton variant="ghost" icon="arrow_back">{{ t('Kembali') }}</AppButton>
+                    </Link>
+                </div>
             </header>
 
             <form class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]" @submit.prevent="submit">

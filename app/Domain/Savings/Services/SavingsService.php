@@ -130,7 +130,7 @@ final class SavingsService
      */
     public function accountRow(SavingsAccount $account): array
     {
-        $account->loadMissing(['member.person', 'member.address', 'product']);
+        $account->loadMissing(['member.person', 'member.address', 'member.village', 'member.business', 'product']);
 
         return [
             'row_id' => (int) $account->row_id,
@@ -160,6 +160,8 @@ final class SavingsService
                 'birth_place' => $account->member?->person?->birth_place,
                 'birth_date' => $account->member?->person?->birth_date?->toDateString(),
                 'address' => $account->member?->address?->address,
+                'village' => $account->member?->village?->name,
+                'occupation' => $account->member?->business?->name,
             ],
             'product' => [
                 'row_id' => (int) $account->product_row_id,
@@ -478,8 +480,9 @@ final class SavingsService
             ->where('account_row_id', $account->row_id)
             ->when($year !== null && $year > 0, fn ($query) => $query->whereYear('transaction_date', $year))
             ->when($month !== null && $month > 0, fn ($query) => $query->whereMonth('transaction_date', $month))
-            ->orderByDesc('transaction_date')
-            ->orderByDesc('row_id')
+            // SIUPK menampilkan buku simpanan dari mutasi paling awal.
+            ->orderBy('transaction_date')
+            ->orderBy('row_id')
             ->paginate($perPage)
             ->withQueryString()
             ->through(fn (SavingsTransaction $transaction): array => $this->transactionRow($transaction));
@@ -505,7 +508,8 @@ final class SavingsService
             'balance_after' => (float) $transaction->balance_after,
             'reference' => $transaction->reference,
             'description' => $transaction->description,
-            'created_by' => $user?->initials ?: $user?->name,
+            'created_by' => $user?->initials ?: $user?->username ?: $user?->name,
+            'created_by_id' => (int) ($transaction->created_by_user_id ?? 0),
             'created_at' => $transaction->created_at?->toDateTimeString(),
         ];
     }
@@ -517,43 +521,56 @@ final class SavingsService
      */
     public function statement(SavingsAccount $account, int $year, int $month = 0): array
     {
-        if ($year <= 0) {
-            $year = (int) now()->year;
-        }
-
-        $start = $month > 0
-            ? CarbonImmutable::create($year, $month, 1)->startOfMonth()
-            : CarbonImmutable::create($year, 1, 1)->startOfMonth();
-        $end = $month > 0 ? $start->endOfMonth() : $start->endOfYear();
-
-        $opening = $this->openingBalance((int) $account->row_id, $start);
-
-        $transactions = SavingsTransaction::query()
-            ->where('account_row_id', $account->row_id)
-            ->whereDate('transaction_date', '>=', $start->toDateString())
-            ->whereDate('transaction_date', '<=', $end->toDateString())
-            ->orderBy('transaction_date')
-            ->orderBy('row_id')
-            ->get();
-
-        $last = $transactions->last();
-        $closing = $last !== null ? $this->money($last->balance_after) : $opening;
-
         $months = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
             5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
             9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
         ];
 
+        $month = max(0, min(12, $month));
+        $allTime = $year <= 0;
+
+        if ($allTime) {
+            // SIUPK mengizinkan pilihan "Semua Tahun" (tahun = 0). Pada mode
+            // ini saldo sebelum periode adalah nol karena seluruh riwayat
+            // rekening ikut ditampilkan.
+            $start = null;
+            $end = null;
+            $opening = '0.00';
+            $periodLabel = $month > 0
+                ? $months[$month].' (Semua Tahun)'
+                : 'Semua Tahun';
+        } else {
+            $start = $month > 0
+                ? CarbonImmutable::create($year, $month, 1)->startOfMonth()
+                : CarbonImmutable::create($year, 1, 1)->startOfMonth();
+            $end = $month > 0 ? $start->endOfMonth() : $start->endOfYear();
+            $opening = $this->openingBalance((int) $account->row_id, $start);
+            $periodLabel = $month > 0
+                ? $months[$month].' '.$year
+                : 'Sepanjang Tahun '.$year;
+        }
+
+        $transactions = SavingsTransaction::query()
+            ->where('account_row_id', $account->row_id)
+            ->when($month > 0, fn ($query) => $query->whereMonth('transaction_date', $month))
+            ->when($start !== null, fn ($query) => $query->whereDate('transaction_date', '>=', $start->toDateString()))
+            ->when($end !== null, fn ($query) => $query->whereDate('transaction_date', '<=', $end->toDateString()))
+            ->orderBy('transaction_date')
+            ->orderBy('row_id')
+            ->get();
+
+        $last = $transactions->last();
+        $closing = $last !== null ? $this->money($last->balance_after) : $this->money($opening);
+
         return [
             'account' => $this->accountRow($account),
             'year' => $year,
             'month' => $month,
-            'period_label' => $month > 0
-                ? $months[$month].' '.$year
-                : 'Sepanjang Tahun '.$year,
-            'starts_at' => $start->toDateString(),
-            'ends_at' => $end->toDateString(),
+            'all_time' => $allTime,
+            'period_label' => $periodLabel,
+            'starts_at' => $start?->toDateString(),
+            'ends_at' => $end?->toDateString(),
             'opening_balance' => (float) $opening,
             'closing_balance' => (float) $closing,
             'transactions' => $transactions

@@ -52,18 +52,54 @@ final class SavingsPrintController
         ]);
     }
 
+    /**
+     * Formulir kosong, sama seperti tombol "Form Simpanan" pada SIUPK.
+     * Dipakai petugas untuk mengisi formulir pembukaan rekening di atas kertas.
+     */
+    public function formulirBlank(): Response
+    {
+        return response()->view('savings.print.formulir', [
+            'title' => 'Formulir Simpanan',
+            'account' => [
+                'row_id' => null,
+                'account_number' => '',
+                'opened_at' => null,
+                'authority_type' => 1,
+                'institution_name' => null,
+                'institution_position' => null,
+                'guardian_name' => null,
+                'relationship' => null,
+                'notes' => null,
+                'member' => [
+                    'name' => '',
+                    'nik' => '',
+                    'address' => '',
+                    'phone' => '',
+                    'gender' => '',
+                    'birth_place' => '',
+                    'birth_date' => '',
+                    'occupation' => '',
+                ],
+                'product' => ['name' => ''],
+            ],
+            'organization' => $this->organization(),
+            'pencetak' => (string) (auth()->user()?->name ?? ''),
+            'penerima' => (string) (auth()->user()?->name ?? ''),
+        ]);
+    }
+
     public function koran(Request $request, int $account): Response
     {
         $model = $this->savings->findAccount($account);
         $year = (int) $request->query('year', now()->year);
-        $month = (int) $request->query('month', 0);
+        $month = (int) $request->query('month', now()->month);
 
-        if ($year < 2000 || $year > 2100) {
+        if ($year !== 0 && ($year < 2000 || $year > 2100)) {
             $year = (int) now()->year;
         }
 
         if ($month < 0 || $month > 12) {
-            $month = 0;
+            $month = (int) now()->month;
         }
 
         $statement = $this->savings->statement($model, $year, $month);
@@ -129,15 +165,15 @@ final class SavingsPrintController
         $profile = OrganizationProfile::query()->first();
 
         return [
-            'legal_name' => $profile?->legal_name ?? 'KOPERASI LEMBAGA KEUANGAN MIKRO',
-            'short_name' => $profile?->short_name,
-            'address' => $profile?->address,
-            'district_name' => $profile?->district_name,
-            'regency_name' => $profile?->regency_name,
-            'phone' => $profile?->phone,
-            'email' => $profile?->email,
-            'website' => $profile?->website,
-            'logo_path' => $profile?->logo_path,
+            'legal_name' => $profile?->legal_name ?: 'KOPERASI LEMBAGA KEUANGAN MIKRO',
+            'short_name' => $profile?->short_name ?: null,
+            'address' => $profile?->address ?: null,
+            'district_name' => $profile?->district_name ?: null,
+            'regency_name' => $profile?->regency_name ?: null,
+            'phone' => $profile?->phone ?: null,
+            'email' => $profile?->email ?: null,
+            'website' => $profile?->website ?: null,
+            'logo_path' => $profile?->logo_path ?: null,
         ];
     }
 
@@ -146,8 +182,8 @@ final class SavingsPrintController
         $current = auth()->user();
         $creator = $transactionUserId > 0 ? User::query()->find($transactionUserId) : null;
 
-        $currentLabel = (string) ($current?->initials ?: $current?->name ?: '');
-        $creatorLabel = (string) ($creator?->initials ?: $creator?->name ?: '');
+        $currentLabel = (string) ($current?->initials ?: $current?->username ?: $current?->name ?: '');
+        $creatorLabel = (string) ($creator?->initials ?: $creator?->username ?: $creator?->name ?: '');
 
         if ($creator === null || $creator->row_id === $current?->row_id) {
             return $currentLabel;
