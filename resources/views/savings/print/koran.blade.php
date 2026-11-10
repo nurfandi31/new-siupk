@@ -86,7 +86,11 @@
         <th width="10%" class="align-center">SALDO</th>
         <th width="2%" class="align-center">P</th>
     </tr>
-    @if (! ($statement['all_time'] ?? false))
+    @if (($statement['all_time'] ?? false) && ($statement['month'] ?? 0) > 0)
+    <tr>
+        <th colspan="9" class="text-center"><strong>mohon untuk memilih tahun juga</strong></th>
+    </tr>
+    @elseif (! ($statement['all_time'] ?? false))
     <tr>
         <th colspan="3">&nbsp;</th>
         <th colspan="3" class="text-left">
@@ -108,8 +112,8 @@
             <td width="15%" class="style9 align-center">{{ $trx['transaction_date'] }}</td>
             <td width="6%" class="style9 align-center">{{ $trx['row_id'] }}</td>
             <td width="35%" class="style9">{{ $trx['description'] }}</td>
-            <td width="10%" class="style9 align-right">{{ $trx['direction'] === 'out' ? number_format($trx['amount'], 2, '.', ',') : '0,00' }}</td>
-            <td width="10%" class="style9 align-right">{{ $trx['direction'] === 'in' ? number_format($trx['amount'], 2, '.', ',') : '0,00' }}</td>
+            <td width="10%" class="style9 align-right">{{ $trx['direction'] === 'out' ? number_format($trx['amount'], 2, '.', ',') : '0.00' }}</td>
+            <td width="10%" class="style9 align-right">{{ $trx['direction'] === 'in' ? number_format($trx['amount'], 2, '.', ',') : '0.00' }}</td>
             <td width="10%" class="style9 align-right">{{ number_format($trx['balance_after'], 2, '.', ',') }}</td>
             <td width="2%" class="style9 align-center">{{ $trx['created_by_id'] }}</td>
         </tr>
