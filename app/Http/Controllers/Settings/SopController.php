@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Settings;
 
+use App\Domain\Access\Services\PermissionChecker;
 use App\Domain\Lending\Services\CollectibilityConfigService;
 use App\Domain\Membership\Models\OrganizationProfile;
+use App\Domain\Savings\Services\SavingsModuleManager;
 use App\Http\Requests\Settings\KolekRequest;
 use App\Http\Requests\Settings\SopLogoUploadRequest;
 use App\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -19,8 +22,8 @@ use Inertia\Response;
 /**
  * Halaman khusus "SOP Lembaga" seperti `/pengaturan/sop` di SIUPK original.
  *
- * Untuk saat ini konsentrasi pada kolektabilitas. Modul-modul SOP lain
- * (simpanan, asuransi, dll) akan ditambahkan pada fase berikutnya.
+ * Kolektabilitas dikelola langsung di halaman ini; pengaturan simpanan
+ * terpusat di Pengaturan > Sistem Simpanan agar tidak ada dua sumber data.
  */
 final class SopController
 {
@@ -29,9 +32,15 @@ final class SopController
         private readonly TenantContext $context,
     ) {}
 
-    public function index(): Response
-    {
+    public function index(
+        Request $request,
+        SavingsModuleManager $savingsModules,
+        PermissionChecker $permissions,
+    ): Response {
         $profile = OrganizationProfile::query()->first();
+
+        $savingsEnabled = $savingsModules->isEnabled($this->context->id())
+            && $permissions->allows($request->user(), 'simpanan.manage');
 
         return Inertia::render('Settings/Sop/Index', [
             'kolek' => [
@@ -39,6 +48,7 @@ final class SopController
                 'rows' => $this->config->all(),
             ],
             'logoUrl' => $profile?->logo_url,
+            'savingsEnabled' => $savingsEnabled,
         ]);
     }
 

@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Settings;
 
+use App\Domain\Access\Services\PermissionChecker;
 use App\Domain\Documents\Services\SignatureImageService;
 use App\Domain\Documents\Services\SignatureTemplateService;
 use App\Domain\Lending\Services\LoanService;
 use App\Domain\Membership\Models\OrganizationProfile;
+use App\Domain\Savings\Models\SavingsProduct;
+use App\Domain\Savings\Services\SavingsModuleManager;
+use App\Domain\Savings\Services\SavingsProductService;
 use App\Http\Requests\Settings\IdentityRequest;
 use App\Http\Requests\Settings\LendingSystemRequest;
 use App\Http\Requests\Settings\LogoUploadRequest;
@@ -29,16 +33,21 @@ use Inertia\Inertia;
 use Inertia\Response;
 use InvalidArgumentException;
 use RuntimeException;
+use Throwable;
 
 final class SettingsController
 {
     public function index(
+        Request $request,
         TenantContext $context,
         TenantSettingService $settings,
         WhatsappGatewayService $gateway,
         SignatureTemplateService $signatures,
         SignatureImageService $images,
         OfflineAccessService $offlineAccess,
+        SavingsModuleManager $savingsModules,
+        SavingsProductService $savingsProducts,
+        PermissionChecker $permissions,
     ): Response {
         $profile = OrganizationProfile::query()->first() ?? new OrganizationProfile([
             'legal_name' => '',
@@ -101,7 +110,48 @@ final class SettingsController
                 'templates' => $templates,
                 'reportTypes' => $signatures->reportTypes(),
             ],
+            'savings' => $this->savingsPayload($request, $context, $savingsModules, $savingsProducts, $permissions),
         ]);
+    }
+
+    /**
+     * Payload pengaturan simpanan untuk tab "Sistem Simpanan".
+     *
+     * Tab hanya ditampilkan bila modul aktif dan pengguna berwenang mengelola
+     * simpanan. Dengan begitu halaman Pengaturan tetap aman untuk tenant yang
+     * tidak memakai modul opsional ini.
+     *
+     * @return array<string, mixed>
+     */
+    private function savingsPayload(
+        Request $request,
+        TenantContext $context,
+        SavingsModuleManager $modules,
+        SavingsProductService $products,
+        PermissionChecker $permissions,
+    ): array {
+        try {
+            if (! $modules->isEnabled($context->id())
+                || ! $permissions->allows($request->user(), 'simpanan.manage')) {
+                return ['enabled' => false];
+            }
+
+            return [
+                'enabled' => true,
+                'settings' => $modules->settings(),
+                'products' => $products->list(),
+                'module' => $modules->status(),
+                'methods' => [
+                    ['value' => 1, 'label' => 'Saldo terakhir'],
+                    ['value' => 2, 'label' => 'Saldo terendah'],
+                    ['value' => 3, 'label' => 'Saldo rata-rata'],
+                ],
+                'categories' => SavingsProduct::CATEGORIES,
+                'formTypes' => SavingsProduct::FORM_TYPES,
+            ];
+        } catch (Throwable) {
+            return ['enabled' => false];
+        }
     }
 
     public function updateIdentity(IdentityRequest $request, TenantContext $context): RedirectResponse

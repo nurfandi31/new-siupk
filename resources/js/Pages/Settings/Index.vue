@@ -15,6 +15,7 @@ import AppRichEditor from '../../Components/AppRichEditor.vue';
 import AppModal from '../../Components/AppModal.vue';
 import SignaturePad from '../../Components/SignaturePad.vue';
 import AppTabs from '../../Components/AppTabs.vue';
+import SavingsSettingsPanel from '../../Components/Savings/SettingsPanel.vue';
 import AuthenticatedLayout from '../../Layouts/TenantAdminLayout.vue';
 
 const props = defineProps({
@@ -25,23 +26,36 @@ const props = defineProps({
     signatures: { type: Object, required: true },
     signatureImages: { type: Object, default: () => ({}) },
     offline: { type: Object, default: () => ({ is_enabled: false, user_id: null, users: [] }) },
+    savings: { type: Object, default: () => ({ enabled: false }) },
 });
 
 const page = usePage();
 const route = computed(() => page.url);
 const flash = computed(() => page.props.flash?.success);
 
-const tabs = [
-    { key: 'identity', label: 'Identitas Lembaga', icon: 'badge', description: 'Profil & kontak' },
-    { key: 'lending-system', label: 'Sistem Pinjaman', icon: 'tune', description: 'Default produk' },
-    { key: 'logo', label: 'Logo Lembaga', icon: 'image', description: 'Branding' },
-    { key: 'offline', label: 'Akses Offline', icon: 'cloud_off', description: 'Sinkronisasi' },
-    { key: 'signatures', label: 'Tanda Tangan', icon: 'draw', description: 'Template laporan' },
-];
+const tabs = computed(() => {
+    const items = [
+        { key: 'identity', label: 'Identitas Lembaga', icon: 'badge', description: 'Profil & kontak' },
+        { key: 'lending-system', label: 'Sistem Pinjaman', icon: 'tune', description: 'Default produk' },
+    ];
+
+    if (props.savings?.enabled) {
+        items.push({ key: 'savings', label: 'Sistem Simpanan', icon: 'savings', description: 'Bunga & jenis' });
+    }
+
+    items.push(
+        { key: 'logo', label: 'Logo Lembaga', icon: 'image', description: 'Branding' },
+        { key: 'offline', label: 'Akses Offline', icon: 'cloud_off', description: 'Sinkronisasi' },
+        { key: 'signatures', label: 'Tanda Tangan', icon: 'draw', description: 'Template laporan' },
+    );
+
+    return items;
+});
 
 const tabMeta = {
     identity: { icon: 'badge', tone: 'primary', title: 'Identitas Lembaga', subtitle: 'Profil hukum dan kontak lembaga. Data ini muncul pada laporan dan dokumen resmi.', gradient: 'from-primary/10 to-primary/0' },
     'lending-system': { icon: 'tune', tone: 'secondary', title: 'Sistem Pinjaman', subtitle: 'Default jasa, jangka, dan metode pembulatan angsuran per produk pinjaman.', gradient: 'from-secondary/10 to-secondary/0' },
+    savings: { icon: 'savings', tone: 'tertiary', title: 'Sistem Simpanan', subtitle: 'SOP bunga, pajak, biaya, metode saldo, dan jenis simpanan. Pengaturan ini dipakai seluruh rekening simpanan di lokasi ini.', gradient: 'from-tertiary/10 to-tertiary/0' },
     logo: { icon: 'image', tone: 'tertiary', title: 'Logo Lembaga', subtitle: 'Logo tampil di sidebar, kop dokumen, dan seluruh pelaporan PDF. Sumber yang sama dengan halaman SOP Lembaga. Format: PNG, JPG, atau WebP. Maks 2 MB.', gradient: 'from-tertiary/10 to-tertiary/0' },
     offline: { icon: 'cloud_off', tone: 'info', title: 'Akses Offline', subtitle: 'Aktifkan agar satu pengguna terpilih tetap dapat menginput, mengedit, dan menghapus data saat offline.', gradient: 'from-info/10 to-info/0' },
     signatures: { icon: 'draw', tone: 'primary', title: 'Tanda Tangan', subtitle: 'Blok penandatangan per jenis laporan. Disimpan per lembaga.', gradient: 'from-primary/10 to-primary/0' },
@@ -52,7 +66,7 @@ const activeTab = ref(getInitialTab());
 function getInitialTab() {
     const url = new URL(window.location.href);
     const tab = url.searchParams.get('tab');
-    if (tab && tabs.some((t) => t.key === tab)) return tab;
+    if (tab && tabs.value.some((t) => t.key === tab)) return tab;
     return flash.value?.tab ?? 'identity';
 }
 
@@ -63,7 +77,7 @@ function go(tab) {
 watch(() => route.value, () => {
     const url = new URL(window.location.href);
     const tab = url.searchParams.get('tab');
-    if (tab && tabs.some((t) => t.key === tab)) activeTab.value = tab;
+    if (tab && tabs.value.some((t) => t.key === tab)) activeTab.value = tab;
 });
 
 // === Identity form ===
@@ -308,7 +322,7 @@ function applySignatureStarter() {
             <div class="flex flex-col gap-1">
                 <h1 class="text-2xl font-bold tracking-tight text-primary sm:text-3xl">Pengaturan</h1>
                 <p class="text-sm text-on-surface-variant sm:text-base">
-                    Kelola identitas lembaga, sistem pinjaman, logo, dan preferensi aplikasi Anda di satu tempat.
+                    Kelola identitas lembaga, sistem pinjaman, sistem simpanan, logo, dan preferensi aplikasi Anda di satu tempat.
                 </p>
             </div>
 
@@ -401,6 +415,33 @@ function applySignatureStarter() {
                                 <AppButton type="button" size="compact" variant="outline" :loading="syncLoading" :disabled="syncLoading" icon="sync" @click="syncRounding">Sinkronkan</AppButton>
                                 <AppButton type="button" size="compact" :loading="lendingForm.processing" :disabled="lendingForm.processing" icon="save" @click="submitLending">Simpan</AppButton>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Savings System -->
+                    <div v-else-if="activeTab === 'savings'" class="space-y-6">
+                        <div class="flex items-center gap-3">
+                            <AppIcon :name="tabMeta.savings.icon" :tone="tabMeta.savings.tone" :container-size="11" />
+                            <div>
+                                <h2 class="text-xl font-bold text-primary">{{ tabMeta.savings.title }}</h2>
+                                <p class="text-sm text-on-surface-variant">{{ tabMeta.savings.subtitle }}</p>
+                            </div>
+                        </div>
+
+                        <SavingsSettingsPanel
+                            v-if="props.savings?.enabled"
+                            :settings="props.savings.settings"
+                            :products="props.savings.products"
+                            :module="props.savings.module"
+                            :methods="props.savings.methods"
+                            :categories="props.savings.categories"
+                            :form-types="props.savings.formTypes"
+                        />
+
+                        <div v-else class="rounded-2xl border border-dashed border-outline-variant bg-surface-container-low p-12 text-center">
+                            <AppIcon name="savings" class="text-5xl text-on-surface-variant" />
+                            <p class="mt-3 text-sm font-bold text-primary">Modul simpanan belum aktif</p>
+                            <p class="mt-1 text-xs text-on-surface-variant">Aktifkan modul simpanan dari pusat tenant untuk mengatur bunga, pajak, biaya, dan jenis simpanan.</p>
                         </div>
                     </div>
 

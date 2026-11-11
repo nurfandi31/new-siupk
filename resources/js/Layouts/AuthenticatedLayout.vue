@@ -342,10 +342,9 @@ const sections = [
         module: 'simpanan',
         accent: true,
         items: [
-            { label: 'Rekening Simpanan', icon: 'savings', href: '/simpanan', exclude: ['/simpanan/create', '/simpanan/bunga', '/simpanan/pengaturan'] },
+            { label: 'Rekening Simpanan', icon: 'savings', href: '/simpanan', exclude: ['/simpanan/create', '/simpanan/bunga'] },
             { label: 'Buka Rekening', icon: 'add_card', href: '/simpanan/create' },
             { label: 'Bunga & Pajak', icon: 'percent', href: '/simpanan/bunga' },
-            { label: 'Pengaturan Simpanan', icon: 'tune', href: '/simpanan/pengaturan' },
         ],
     },
     {
