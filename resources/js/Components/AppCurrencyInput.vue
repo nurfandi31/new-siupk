@@ -15,6 +15,7 @@ const props = defineProps({
     hint: { type: String, default: null },
     placeholder: { type: String, default: null },
     readonly: { type: Boolean, default: false },
+    showStepper: { type: Boolean, default: true },
     hideLabel: { type: Boolean, default: false },
     tooltip: { type: String, default: null },
     min: { type: Number, default: null },
@@ -209,8 +210,8 @@ watch(model, () => {
                 ].filter(Boolean).join(' ') || undefined"
                 :readonly="readonly"
                 :placeholder="readonly ? undefined : (placeholder ?? defaultPlaceholder('currency', label))"
-                class="h-11 w-full min-w-0 rounded-xl border bg-surface-container-lowest px-3.5 pl-11 text-sm text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant"
-                :class="[error ? 'border-error' : 'border-outline-variant', !readonly && 'pr-16']"
+                class="h-11 w-full min-w-0 rounded-xl border bg-surface-container-lowest px-3.5 text-sm text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant"
+                :class="[error ? 'border-error' : 'border-outline-variant', icon && 'pl-11', !readonly && showStepper && 'pr-16']"
                 v-bind="$attrs"
                 @input="onInput"
                 @focus="onFocus"
@@ -218,7 +219,7 @@ watch(model, () => {
                 @keydown.up.prevent="adjust(step)"
                 @keydown.down.prevent="adjust(-step)"
             >
-            <div class="absolute right-1.5 top-1/2 flex h-9 -translate-y-1/2 items-center gap-1">
+            <div v-if="showStepper && !readonly" class="absolute right-1.5 top-1/2 flex h-9 -translate-y-1/2 items-center gap-1">
                 <button v-if="!readonly" type="button" tabindex="-1" class="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-low focus:bg-surface-container-low focus:outline-none" aria-label="Kurangi nilai" @click="adjust(-step)">
                     <AppIcon name="remove" class="text-base" />
                 </button>

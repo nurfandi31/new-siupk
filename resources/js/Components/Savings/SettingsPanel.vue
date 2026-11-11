@@ -176,7 +176,7 @@ async function deleteProduct(product) {
                     step="0.001"
                     min="0"
                     max="100"
-                    :label="t('Bunga default (%/bulan)')"
+                    :label="t('Bunga / bulan (%)')"
                     :error="settingsForm.errors.interest_rate"
                 />
                 <AppInput
@@ -193,7 +193,7 @@ async function deleteProduct(product) {
                     :label="t('Metode bunga')"
                     :options="methodOptions"
                     :error="settingsForm.errors.interest_method"
-                    :hint="t('1 saldo terakhir · 2 terendah · 3 rata-rata')"
+                    :hint="t('1 terakhir · 2 terendah · 3 rata-rata')"
                 />
                 <AppInput
                     v-model="settingsForm.interest_day"
@@ -206,32 +206,42 @@ async function deleteProduct(product) {
                 />
                 <AppCurrencyInput
                     v-model="settingsForm.minimum_balance"
+                    :icon="null"
+                    :show-stepper="false"
                     :label="t('Min. saldo bunga')"
                     :error="settingsForm.errors.minimum_balance"
-                    :hint="t('Di bawah ini tidak dapat bunga.')"
+                    :hint="t('Di bawah ini tanpa bunga.')"
                 />
                 <AppCurrencyInput
                     v-model="settingsForm.minimum_taxable_interest"
+                    :icon="null"
+                    :show-stepper="false"
                     :label="t('Min. bunga kena pajak')"
                     :error="settingsForm.errors.minimum_taxable_interest"
-                    :hint="t('Di bawah ini tidak dipotong pajak.')"
+                    :hint="t('Di bawah ini tanpa pajak.')"
                 />
                 <AppCurrencyInput
                     v-model="settingsForm.admin_fee"
+                    :icon="null"
+                    :show-stepper="false"
                     :label="t('Biaya admin / bulan')"
                     :error="settingsForm.errors.admin_fee"
                 />
                 <AppCurrencyInput
                     v-model="settingsForm.opening_fee"
+                    :icon="null"
+                    :show-stepper="false"
                     :label="t('Biaya buka buku')"
                     :error="settingsForm.errors.opening_fee"
                     :hint="t('Dipotong dari setoran awal.')"
                 />
                 <AppCurrencyInput
                     v-model="settingsForm.minimum_withdrawal_balance"
+                    :icon="null"
+                    :show-stepper="false"
                     :label="t('Min. sisa penarikan')"
                     :error="settingsForm.errors.minimum_withdrawal_balance"
-                    :hint="t('Sisa saldo minimum setelah penarikan.')"
+                    :hint="t('Sisa saldo minimum.')"
                 />
             </div>
 
@@ -341,9 +351,11 @@ async function deleteProduct(product) {
                 <AppInput v-model="productForm.sort_order" type="number" min="0" :label="t('Urutan')" :error="productForm.errors.sort_order" />
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
-                <AppCurrencyInput v-model="productForm.admin_fee" :label="t('Admin / Bulan')" :error="productForm.errors.admin_fee" />
+                <AppCurrencyInput v-model="productForm.admin_fee" :icon="null" :show-stepper="false" :label="t('Admin / Bulan')" :error="productForm.errors.admin_fee" />
                 <AppCurrencyInput
                     v-model="productForm.opening_fee"
+                    :icon="null"
+                    :show-stepper="false"
                     :label="t('Biaya Buka Buku')"
                     :error="productForm.errors.opening_fee"
                     :hint="t('Dipotong dari setoran awal.')"
@@ -351,6 +363,8 @@ async function deleteProduct(product) {
             </div>
             <AppCurrencyInput
                 v-model="productForm.minimum_balance"
+                :icon="null"
+                :show-stepper="false"
                 :label="t('Saldo Minimal Penarikan')"
                 :error="productForm.errors.minimum_balance"
                 :hint="t('Saldo setelah penarikan tidak boleh kurang dari nilai ini (saldo_minimal).')"
