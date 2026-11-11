@@ -1,11 +1,12 @@
 <script setup>
-import { nextTick, onBeforeUnmount, ref, useId, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue';
 import AppIcon from './AppIcon.vue';
 
 const model = defineModel({ type: Boolean, default: false });
 const props = defineProps({
     title: { type: String, required: true },
     closeable: { type: Boolean, default: true },
+    centered: { type: Boolean, default: false },
     size: {
         type: String,
         default: 'md',
@@ -43,6 +44,9 @@ const wrapperAlignClass = {
     full: 'items-center justify-center',
     fullscreen: 'items-stretch justify-stretch',
 };
+const alignmentClass = computed(() =>
+    props.centered ? 'items-center justify-center' : (wrapperAlignClass[props.size] ?? wrapperAlignClass.md),
+);
 // Backdrop overlay — fullscreen mode polos tanpa overlay/blur karena panel sudah
 // menutupi seluruh viewport. Mode lain memakai overlay semi-transparan + blur.
 const backdropClass = {
@@ -105,7 +109,7 @@ onBeforeUnmount(() => {
 <template>
     <Teleport to="body">
         <Transition name="modal">
-            <div v-if="model" :class="['fixed inset-0 z-50 flex flex-col overflow-hidden', backdropClass[size] ?? backdropClass.md, wrapperAlignClass[size] ?? wrapperAlignClass.md, containerClass[size] ?? containerClass.md]" @click.self="close">
+            <div v-if="model" :class="['fixed inset-0 z-50 flex flex-col overflow-hidden', backdropClass[size] ?? backdropClass.md, alignmentClass, containerClass[size] ?? containerClass.md]" @click.self="close">
                 <section ref="panel" role="dialog" aria-modal="true" :aria-labelledby="titleId" tabindex="-1" :class="['flex w-full flex-col bg-surface-container-lowest shadow-2xl focus:outline-none', sizeClass[size] ?? sizeClass.md, panelSizeClass[size] ?? panelSizeClass.md]" @keydown="onKeydown">
                     <header class="flex shrink-0 items-center justify-between gap-4 inset-divider px-5 py-4 sm:px-6">
                         <h2 :id="titleId" class="text-lg font-bold text-primary">{{ title }}</h2>

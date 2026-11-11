@@ -177,7 +177,6 @@ async function deleteProduct(product) {
                             min="0"
                             max="100"
                             :label="t('Bunga Default (% / bulan)')"
-                            icon="percent"
                             :error="settingsForm.errors.interest_rate"
                         />
                         <AppInput
@@ -187,7 +186,6 @@ async function deleteProduct(product) {
                             min="0"
                             max="100"
                             :label="t('Pajak Bunga (%)')"
-                            icon="receipt_long"
                             :error="settingsForm.errors.tax_rate"
                         />
                     </div>
@@ -196,34 +194,29 @@ async function deleteProduct(product) {
                         <AppCurrencyInput
                             v-model="settingsForm.admin_fee"
                             :label="t('Biaya Admin Default / Bulan')"
-                            icon="payments"
                             :error="settingsForm.errors.admin_fee"
                         />
                         <AppCurrencyInput
                             v-model="settingsForm.opening_fee"
                             :label="t('Biaya Buka Buku Default')"
-                            icon="receipt"
                             :error="settingsForm.errors.opening_fee"
                             :hint="t('Dipotong dari setoran awal sebagai mutasi tersendiri.')"
                         />
                         <AppCurrencyInput
                             v-model="settingsForm.minimum_balance"
                             :label="t('Minimum Saldo Bunga (min_bunga)')"
-                            icon="account_balance_wallet"
                             :error="settingsForm.errors.minimum_balance"
                             :hint="t('Saldo di bawah nilai ini tidak mendapat bunga.')"
                         />
                         <AppCurrencyInput
                             v-model="settingsForm.minimum_taxable_interest"
                             :label="t('Minimum Bunga Kena Pajak')"
-                            icon="gavel"
                             :error="settingsForm.errors.minimum_taxable_interest"
                             :hint="t('Bunga di bawah nilai ini tidak dipotong pajak.')"
                         />
                         <AppCurrencyInput
                             v-model="settingsForm.minimum_withdrawal_balance"
                             :label="t('Saldo Minimal Penarikan Default')"
-                            icon="savings"
                             :error="settingsForm.errors.minimum_withdrawal_balance"
                             :hint="t('Dipakai saat membuat jenis simpanan baru.')"
                         />
@@ -233,7 +226,6 @@ async function deleteProduct(product) {
                             min="-28"
                             max="28"
                             :label="t('Tanggal Bunga (tgl_bunga)')"
-                            icon="calendar_month"
                             :error="settingsForm.errors.interest_day"
                             :hint="t('0 = tanggal 1. Negatif dihitung dari akhir bulan, mis. -1 = akhir bulan.')"
                         />
@@ -413,7 +405,7 @@ async function deleteProduct(product) {
         </aside>
     </div>
 
-    <AppModal v-model="productOpen" :title="editingProduct ? t('Edit Jenis Simpanan') : t('Tambah Jenis Simpanan')" size="md">
+    <AppModal v-model="productOpen" :title="editingProduct ? t('Edit Jenis Simpanan') : t('Tambah Jenis Simpanan')" size="md" centered>
         <form class="space-y-4" @submit.prevent="submitProduct">
             <div class="grid gap-4 sm:grid-cols-2">
                 <AppInput
