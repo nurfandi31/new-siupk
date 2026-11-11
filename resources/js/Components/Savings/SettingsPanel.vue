@@ -252,21 +252,29 @@ async function deleteProduct(product) {
                 <p class="mt-1 text-xs text-on-surface-variant">{{ t('Tambahkan minimal satu jenis simpanan.') }}</p>
             </div>
 
-            <div v-else class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                <article
+            <div v-else class="min-w-0 divide-y divide-outline-variant/60 rounded-xl border border-outline-variant bg-surface-container-lowest">
+                <div
                     v-for="product in products"
                     :key="product.row_id"
-                    class="flex min-w-0 flex-col gap-2.5 rounded-xl border border-outline-variant bg-surface-container-lowest p-3.5 transition hover:border-primary-container hover:shadow-sm"
+                    class="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 transition hover:bg-surface-container-low/60"
                 >
-                    <div class="flex items-start gap-2">
-                        <div class="min-w-0 flex-1">
-                            <p class="truncate text-sm font-semibold text-on-surface">{{ product.name }}</p>
-                            <div class="mt-1 flex flex-wrap items-center gap-1">
-                                <code class="rounded bg-surface-container px-1.5 py-0.5 font-mono text-[11px] text-on-surface-variant">{{ product.code }}</code>
-                                <AppBadge tone="primary-soft">{{ product.category_label }}</AppBadge>
-                                <AppBadge v-if="!product.is_active" tone="neutral">{{ t('Nonaktif') }}</AppBadge>
-                            </div>
+                    <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                        <code class="rounded bg-surface-container px-1.5 py-0.5 font-mono text-[11px] text-on-surface-variant">{{ product.code }}</code>
+                        <p class="whitespace-nowrap text-sm font-semibold text-on-surface">{{ product.name }}</p>
+                        <AppBadge tone="primary-soft">{{ product.category_label }}</AppBadge>
+                        <span class="whitespace-nowrap text-[11px] text-on-surface-variant">{{ product.form_type_label }}</span>
+                        <AppBadge v-if="!product.is_active" tone="neutral">{{ t('Nonaktif') }}</AppBadge>
+                    </div>
+
+                    <div class="ml-auto flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-on-surface-variant">
+                            <span class="whitespace-nowrap">{{ t('Bunga') }} <strong class="font-semibold text-on-surface">{{ product.interest_rate }}%</strong></span>
+                            <span class="whitespace-nowrap">{{ t('Pajak') }} <strong class="font-semibold text-on-surface">{{ product.tax_rate }}%</strong></span>
+                            <span class="whitespace-nowrap">{{ t('Admin') }} <strong class="font-semibold text-on-surface">{{ money(product.admin_fee) }}</strong></span>
+                            <span class="whitespace-nowrap">{{ t('Min') }} <strong class="font-semibold text-on-surface">{{ money(product.minimum_balance) }}</strong></span>
+                            <span class="whitespace-nowrap"><strong class="font-semibold text-on-surface">{{ product.accounts_count }}</strong> {{ t('rekening') }}</span>
                         </div>
+
                         <div class="flex shrink-0 gap-0.5">
                             <AppIconButton
                                 name="edit"
@@ -284,19 +292,7 @@ async function deleteProduct(product) {
                             />
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-on-surface-variant">
-                        <span>{{ t('Bunga') }} <strong class="font-semibold text-on-surface">{{ product.interest_rate }}%</strong></span>
-                        <span>{{ t('Pajak') }} <strong class="font-semibold text-on-surface">{{ product.tax_rate }}%</strong></span>
-                        <span>{{ t('Admin') }} <strong class="font-semibold text-on-surface">{{ money(product.admin_fee) }}</strong></span>
-                        <span>{{ t('Min') }} <strong class="font-semibold text-on-surface">{{ money(product.minimum_balance) }}</strong></span>
-                    </div>
-
-                    <div class="flex items-center justify-between gap-2 border-t border-outline-variant/60 pt-2 text-[11px] text-on-surface-variant">
-                        <span class="truncate">{{ product.form_type_label }}</span>
-                        <span class="shrink-0">{{ product.accounts_count }} {{ t('rekening') }}</span>
-                    </div>
-                </article>
+                </div>
             </div>
         </section>
     </div>
