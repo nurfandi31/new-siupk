@@ -25,6 +25,7 @@
     $birth = trim(($member['birth_place'] ?? '').', '.($member['birth_date'] ?? ''), ', ');
     $isInstitution = (int) ($account['authority_type'] ?? 1) === 2;
     $jenisRekening = (string) ($account['product']['name'] ?? '');
+    $mark = ($pdf ?? false) ? 'X' : '✓';
 @endphp
 
 <table width="97%" border="0" align="center" cellpadding="3" cellspacing="0">
@@ -62,8 +63,8 @@
         <td width="25%" class="align-justify style9">Nama Alias</td>
         <td colspan="3" width="40%" class="style27 bottom">:&nbsp;</td>
         <td class="style27">
-            &nbsp; &nbsp; [{{ $gender === 'L' ? '✓' : ' ' }}] Laki Laki
-            &nbsp; &nbsp; [{{ $gender === 'P' ? '✓' : ' ' }}] Perempuan
+            &nbsp; &nbsp; [{{ $gender === 'L' ? $mark : ' ' }}] Laki Laki
+            &nbsp; &nbsp; [{{ $gender === 'P' ? $mark : ' ' }}] Perempuan
         </td>
     </tr>
     <tr>
@@ -134,17 +135,17 @@
         <td class="align-justify style9"><div align="right">15.</div></td>
         <td class="align-justify style9">Jenis Rekening</td>
         <td colspan="4" class="style27 bottom">:
-            &nbsp; &nbsp; [{{ $jenisRekening === 'Simantera' ? '✓' : ' ' }}] Simantera
-            &nbsp; &nbsp; [{{ $jenisRekening === 'Simantera Qurban' ? '✓' : ' ' }}] Simantera Qurban
-            &nbsp; &nbsp; [{{ $jenisRekening === 'Simantera Hari raya' ? '✓' : ' ' }}] Simantera Hari raya
+            &nbsp; &nbsp; [{{ $jenisRekening === 'Simantera' ? $mark : ' ' }}] Simantera
+            &nbsp; &nbsp; [{{ $jenisRekening === 'Simantera Qurban' ? $mark : ' ' }}] Simantera Qurban
+            &nbsp; &nbsp; [{{ $jenisRekening === 'Simantera Hari raya' ? $mark : ' ' }}] Simantera Hari raya
         </td>
     </tr>
     <tr>
         <td class="align-justify style9"><div align="right">16.</div></td>
         <td class="align-justify style9">Status Permohonan</td>
         <td colspan="4" class="style27">
-            : &nbsp; &nbsp; [{{ $isInstitution ? ' ' : '✓' }}] Pribadi
-            &nbsp; &nbsp; [{{ $isInstitution ? '✓' : ' ' }}] Kuasa
+            : &nbsp; &nbsp; [{{ $isInstitution ? ' ' : $mark }}] Pribadi
+            &nbsp; &nbsp; [{{ $isInstitution ? $mark : ' ' }}] Kuasa
         </td>
     </tr>
     <tr>

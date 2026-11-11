@@ -550,12 +550,30 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
             Route::get('/{account}/cetak/kop', [SavingsPrintController::class, 'kop'])
                 ->whereNumber('account')
                 ->middleware('permission:simpanan.view')->name('print.kop');
+            Route::get('/{account}/cetak/kop/pdf', [SavingsPrintController::class, 'kopPdf'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.view')->name('print.kop.pdf');
+            Route::get('/{account}/cetak/kop/excel', [SavingsPrintController::class, 'kopExcel'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.view')->name('print.kop.excel');
             Route::get('/{account}/cetak/formulir', [SavingsPrintController::class, 'formulir'])
                 ->whereNumber('account')
                 ->middleware('permission:simpanan.view')->name('print.formulir');
+            Route::get('/{account}/cetak/formulir/pdf', [SavingsPrintController::class, 'formulirPdf'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.view')->name('print.formulir.pdf');
+            Route::get('/{account}/cetak/formulir/excel', [SavingsPrintController::class, 'formulirExcel'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.view')->name('print.formulir.excel');
             Route::get('/{account}/cetak/koran', [SavingsPrintController::class, 'koran'])
                 ->whereNumber('account')
                 ->middleware('permission:simpanan.view')->name('print.koran');
+            Route::get('/{account}/cetak/koran/pdf', [SavingsPrintController::class, 'koranPdf'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.view')->name('print.koran.pdf');
+            Route::get('/{account}/cetak/koran/excel', [SavingsPrintController::class, 'koranExcel'])
+                ->whereNumber('account')
+                ->middleware('permission:simpanan.view')->name('print.koran.excel');
             Route::get('/{account}/cetak/buku/{transaction}', [SavingsPrintController::class, 'buku'])
                 ->whereNumber('account')
                 ->whereNumber('transaction')

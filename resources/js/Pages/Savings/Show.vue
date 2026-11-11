@@ -80,11 +80,11 @@ const periodLabel = computed(() => {
 });
 
 const documentItems = computed(() => {
-    const params = new URLSearchParams({
+    const reportParams = new URLSearchParams({
         year: String(year.value),
         month: String(month.value),
-        preview: '1',
     });
+    const reportQuery = reportParams.toString();
 
     return [
         {
@@ -93,6 +93,8 @@ const documentItems = computed(() => {
             description: t('Sampul buku simpanan anggota'),
             icon: 'id_card',
             url: `/simpanan/${props.account.row_id}/cetak/kop?preview=1`,
+            pdfUrl: `/simpanan/${props.account.row_id}/cetak/kop/pdf`,
+            excelUrl: `/simpanan/${props.account.row_id}/cetak/kop/excel`,
         },
         {
             key: 'formulir',
@@ -100,13 +102,17 @@ const documentItems = computed(() => {
             description: t('Formulir data anggota dan rekening'),
             icon: 'description',
             url: `/simpanan/${props.account.row_id}/cetak/formulir?preview=1`,
+            pdfUrl: `/simpanan/${props.account.row_id}/cetak/formulir/pdf`,
+            excelUrl: `/simpanan/${props.account.row_id}/cetak/formulir/excel`,
         },
         {
             key: 'koran',
             label: t('Rekening Koran'),
             description: periodLabel.value,
             icon: 'receipt_long',
-            url: `/simpanan/${props.account.row_id}/cetak/koran?${params.toString()}`,
+            url: `/simpanan/${props.account.row_id}/cetak/koran?${reportQuery}&preview=1`,
+            pdfUrl: `/simpanan/${props.account.row_id}/cetak/koran/pdf?${reportQuery}`,
+            excelUrl: `/simpanan/${props.account.row_id}/cetak/koran/excel?${reportQuery}`,
         },
     ];
 });
@@ -223,10 +229,6 @@ function openDocument(key = 'kop') {
     documentModalOpen.value = true;
 }
 
-function openActiveInNewTab() {
-    window.open(activeDocument.value.url, '_blank', 'noopener');
-}
-
 function printActiveDocument() {
     const frame = documentFrame.value;
 
@@ -310,35 +312,29 @@ function typeTone(type) {
                 </div>
             </header>
 
-            <div class="flex flex-col gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 xl:flex-row xl:items-center xl:justify-between">
-                <div v-if="canManage" class="grid grid-cols-2 gap-2 xl:flex xl:flex-wrap">
-                    <AppButton v-if="isActive" size="compact" icon="add" class="w-full justify-center xl:w-auto" @click="openTransaction('setoran')">
+            <div class="flex flex-col gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 md:flex-row md:items-center md:justify-between">
+                <div v-if="canManage" class="grid grid-cols-2 gap-2 md:flex md:flex-wrap">
+                    <AppButton v-if="isActive" size="compact" icon="add" icon-class="!hidden xl:!inline" class="w-full justify-center md:w-auto" @click="openTransaction('setoran')">
                         {{ t('Setoran') }}
                     </AppButton>
-                    <AppButton v-if="isActive" variant="secondary" size="compact" icon="remove" class="w-full justify-center xl:w-auto" @click="openTransaction('penarikan')">
+                    <AppButton v-if="isActive" variant="secondary" size="compact" icon="remove" icon-class="!hidden xl:!inline" class="w-full justify-center md:w-auto" @click="openTransaction('penarikan')">
                         {{ t('Penarikan') }}
                     </AppButton>
-                    <AppButton variant="secondary" size="compact" icon="edit" class="w-full justify-center xl:w-auto" @click="openEdit">
+                    <AppButton variant="secondary" size="compact" icon="edit" icon-class="!hidden xl:!inline" class="w-full justify-center md:w-auto" @click="openEdit">
                         {{ t('Edit') }}
                     </AppButton>
-                    <AppButton variant="ghost" size="compact" icon="refresh" class="w-full justify-center xl:w-auto" @click="recalculate">
+                    <AppButton variant="ghost" size="compact" icon="refresh" icon-class="!hidden xl:!inline" class="w-full justify-center md:w-auto" @click="recalculate">
                         {{ t('Hitung Ulang') }}
                     </AppButton>
                 </div>
-                <div class="grid grid-cols-2 gap-2 xl:flex xl:flex-wrap xl:items-center xl:ml-auto">
-                    <Link v-if="canManage" :href="`/simpanan/create?member=${account.member.row_id}`" class="col-span-2 block xl:col-span-1">
-                        <AppButton variant="secondary" size="compact" icon="add_card" class="w-full justify-center xl:w-auto">
+                <div class="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:items-center md:ml-auto">
+                    <Link v-if="canManage" :href="`/simpanan/create?member=${account.member.row_id}`" class="col-span-2 block md:col-span-1">
+                        <AppButton variant="secondary" size="compact" icon="add_card" icon-class="!hidden xl:!inline" class="w-full justify-center md:w-auto">
                             {{ t('Rekening Baru') }}
                         </AppButton>
                     </Link>
-                    <AppButton variant="secondary" size="compact" icon="id_card" class="w-full justify-center xl:w-auto" @click="openDocument('kop')">
-                        {{ t('KOP') }}
-                    </AppButton>
-                    <AppButton variant="secondary" size="compact" icon="description" class="w-full justify-center xl:w-auto" @click="openDocument('formulir')">
-                        {{ t('Formulir') }}
-                    </AppButton>
-                    <AppButton variant="secondary" size="compact" icon="receipt_long" class="col-span-2 w-full justify-center xl:col-span-1 xl:w-auto" @click="openDocument('koran')">
-                        {{ t('Rekening Koran') }}
+                    <AppButton variant="secondary" size="compact" icon="print" icon-class="!hidden xl:!inline" class="col-span-2 w-full justify-center md:col-span-1 md:w-auto" @click="openDocument()">
+                        {{ t('Cetak Dokumen') }}
                     </AppButton>
                 </div>
             </div>
@@ -741,7 +737,7 @@ function typeTone(type) {
             </template>
         </AppModal>
 
-        <AppModal v-model="documentModalOpen" :title="`${t('Dokumen Simpanan')} - ${account.account_number}`" size="fullscreen">
+        <AppModal v-model="documentModalOpen" :title="`${t('Cetak Dokumen')} - ${account.account_number}`" size="fullscreen">
             <div class="-m-5 flex h-[calc(100vh-8rem)] flex-col sm:-m-6 md:grid md:grid-cols-[300px_minmax(0,1fr)]">
                 <aside class="flex shrink-0 gap-2 overflow-x-auto border-b border-outline-variant p-3 md:flex-col md:overflow-y-auto md:border-b-0 md:border-r">
                     <div class="hidden px-1 md:block">
@@ -771,8 +767,44 @@ function typeTone(type) {
                             <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">{{ activeDocument.description }}</p>
                         </div>
                         <div class="flex shrink-0 items-center gap-1.5">
-                            <AppIconButton name="open_in_new" size="sm" :tooltip="t('Buka di tab baru')" :aria-label="t('Buka di tab baru')" @click="openActiveInNewTab" />
-                            <AppIconButton name="print" size="sm" :tooltip="t('Cetak')" :aria-label="t('Cetak')" @click="printActiveDocument" />
+                            <a
+                                :href="activeDocument.url"
+                                target="_blank"
+                                rel="noopener"
+                                class="hidden h-9 items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary sm:inline-flex"
+                                :title="t('Buka di tab baru')"
+                                :aria-label="t('Buka di tab baru')"
+                            >
+                                <AppIcon name="open_in_new" class="text-base" />
+                            </a>
+                            <a
+                                :href="activeDocument.pdfUrl"
+                                class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-outline-variant bg-surface px-2.5 text-xs font-bold text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary"
+                                :title="t('Unduh PDF')"
+                                :aria-label="t('Unduh PDF')"
+                            >
+                                <AppIcon name="picture_as_pdf" class="text-base" />
+                                <span class="hidden sm:inline">PDF</span>
+                            </a>
+                            <a
+                                :href="activeDocument.excelUrl"
+                                class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-outline-variant bg-surface px-2.5 text-xs font-bold text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary"
+                                :title="t('Unduh Excel')"
+                                :aria-label="t('Unduh Excel')"
+                            >
+                                <AppIcon name="table_view" class="text-base" />
+                                <span class="hidden sm:inline">Excel</span>
+                            </a>
+                            <button
+                                type="button"
+                                class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-outline-variant bg-surface px-2.5 text-xs font-bold text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary"
+                                :title="t('Cetak')"
+                                :aria-label="t('Cetak')"
+                                @click="printActiveDocument"
+                            >
+                                <AppIcon name="print" class="text-base" />
+                                <span class="hidden sm:inline">{{ t('Cetak') }}</span>
+                            </button>
                         </div>
                     </div>
                     <div class="relative min-h-0 flex-1">
