@@ -99,7 +99,7 @@ async function voidRun(run) {
 <template>
     <Head :title="t('Bunga & Pajak Simpanan')" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-7xl space-y-4">
             <header class="flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
                 <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
@@ -127,27 +127,27 @@ async function voidRun(run) {
                 </div>
             </header>
 
-            <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <AppCard class="border border-outline-variant">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">{{ t('Total Bunga') }}</p>
-                    <p class="mt-1 text-2xl font-black text-secondary">{{ money(preview.totals.gross_interest) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">{{ preview.account_count }} {{ t('rekening dihitung') }}</p>
-                </AppCard>
-                <AppCard class="border border-outline-variant">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">{{ t('Pajak Bunga') }}</p>
-                    <p class="mt-1 text-2xl font-black text-tertiary">{{ money(preview.totals.tax_total) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">{{ t('Tarif') }} {{ preview.settings.tax_rate }}%</p>
-                </AppCard>
-                <AppCard class="border border-outline-variant">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">{{ t('Biaya Admin') }}</p>
-                    <p class="mt-1 text-2xl font-black text-on-surface">{{ money(preview.totals.admin_total) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">{{ t('Ditagih setiap periode') }}</p>
-                </AppCard>
-                <AppCard class="border border-outline-variant bg-gradient-to-br from-secondary-container/60 to-surface-container-low">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">{{ t('Bunga Neto') }}</p>
-                    <p class="mt-1 text-2xl font-black text-on-surface">{{ money(preview.totals.net_total) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">{{ preview.period.label }}</p>
-                </AppCard>
+            <section class="grid grid-cols-2 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest lg:grid-cols-4">
+                <div class="p-4">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">{{ t('Total Bunga') }}</p>
+                    <p class="mt-1 text-xl font-black text-secondary">{{ money(preview.totals.gross_interest) }}</p>
+                    <p class="mt-0.5 text-[11px] text-on-surface-variant">{{ preview.account_count }} {{ t('rekening dihitung') }}</p>
+                </div>
+                <div class="border-l border-outline-variant p-4">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">{{ t('Pajak Bunga') }}</p>
+                    <p class="mt-1 text-xl font-black text-tertiary">{{ money(preview.totals.tax_total) }}</p>
+                    <p class="mt-0.5 text-[11px] text-on-surface-variant">{{ t('Tarif') }} {{ preview.settings.tax_rate }}%</p>
+                </div>
+                <div class="border-t border-outline-variant p-4 lg:border-l lg:border-t-0">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">{{ t('Biaya Admin') }}</p>
+                    <p class="mt-1 text-xl font-black text-on-surface">{{ money(preview.totals.admin_total) }}</p>
+                    <p class="mt-0.5 text-[11px] text-on-surface-variant">{{ t('Ditagih setiap periode') }}</p>
+                </div>
+                <div class="border-l border-t border-outline-variant bg-gradient-to-br from-secondary-container/60 to-surface-container-low p-4 lg:border-t-0">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">{{ t('Bunga Neto') }}</p>
+                    <p class="mt-1 text-xl font-black text-on-surface">{{ money(preview.totals.net_total) }}</p>
+                    <p class="mt-0.5 text-[11px] text-on-surface-variant">{{ preview.period.label }}</p>
+                </div>
             </section>
 
             <AppCard v-if="hasExistingRun" class="border border-secondary/40 bg-secondary-container/30">
@@ -264,7 +264,7 @@ async function voidRun(run) {
                 </div>
 
                 <div class="flex flex-col gap-3 border-t border-outline-variant p-4 sm:flex-row sm:items-end sm:justify-between">
-                    <div class="max-w-2xl text-sm text-on-surface-variant">
+                    <div class="min-w-0 flex-1 text-sm text-on-surface-variant">
                         <p class="font-semibold text-on-surface">{{ t('Catatan metode') }}: {{ preview.period.method_label }}</p>
                         <p>
                             {{ t('Bunga dihitung dari dasar saldo × tarif per bulan. Pajak dikenakan bila bunga mencapai minimum pajak.') }}
@@ -296,7 +296,15 @@ async function voidRun(run) {
                     </div>
                 </template>
 
-                <div class="overflow-x-auto">
+                <div v-if="runs.data.length === 0" class="flex items-center gap-3 px-4 py-6">
+                    <AppIcon name="history" tone="primary" :container-size="10" />
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-on-surface">{{ t('Belum ada riwayat proses bunga') }}</p>
+                        <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Riwayat muncul setelah bunga periode pertama diposting.') }}</p>
+                    </div>
+                </div>
+
+                <div v-else class="overflow-x-auto">
                     <table class="w-full min-w-[920px] divide-y divide-outline-variant text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
@@ -329,11 +337,6 @@ async function voidRun(run) {
                                 <td class="px-4 py-3 text-right font-semibold text-on-surface">{{ money(run.net_total) }}</td>
                                 <td class="px-4 py-3 text-right">
                                     <AppButton variant="ghost" size="compact" icon="undo" @click="voidRun(run)">{{ t('Batalkan') }}</AppButton>
-                                </td>
-                            </tr>
-                            <tr v-if="runs.data.length === 0">
-                                <td colspan="9" class="px-4 py-10 text-center text-on-surface-variant">
-                                    {{ t('Belum ada proses bunga yang diposting.') }}
                                 </td>
                             </tr>
                         </tbody>
