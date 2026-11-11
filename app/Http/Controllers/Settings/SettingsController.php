@@ -140,7 +140,6 @@ final class SettingsController
                 'enabled' => true,
                 'settings' => $modules->settings(),
                 'products' => $products->list(),
-                'module' => $modules->status(),
                 'methods' => [
                     ['value' => 1, 'label' => 'Saldo terakhir'],
                     ['value' => 2, 'label' => 'Saldo terendah'],

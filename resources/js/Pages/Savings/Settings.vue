@@ -11,7 +11,6 @@ const { t } = useI18n();
 const props = defineProps({
     settings: { type: Object, required: true },
     products: { type: Array, default: () => [] },
-    module: { type: Object, default: () => ({}) },
     methods: { type: Array, default: () => [] },
     categories: { type: Object, default: () => ({}) },
     formTypes: { type: Object, default: () => ({}) },
@@ -40,7 +39,6 @@ const props = defineProps({
             <SavingsSettingsPanel
                 :settings="props.settings"
                 :products="props.products"
-                :module="props.module"
                 :methods="props.methods"
                 :categories="props.categories"
                 :form-types="props.formTypes"

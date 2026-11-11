@@ -432,7 +432,6 @@ function applySignatureStarter() {
                             v-if="props.savings?.enabled"
                             :settings="props.savings.settings"
                             :products="props.savings.products"
-                            :module="props.savings.module"
                             :methods="props.savings.methods"
                             :categories="props.savings.categories"
                             :form-types="props.savings.formTypes"

@@ -33,7 +33,6 @@ final class SavingsSettingController
         return Inertia::render('Savings/Settings', [
             'settings' => $this->modules->settings(),
             'products' => $this->products->list(),
-            'module' => $this->modules->status(),
             'methods' => [
                 ['value' => 1, 'label' => 'Saldo terakhir'],
                 ['value' => 2, 'label' => 'Saldo terendah'],

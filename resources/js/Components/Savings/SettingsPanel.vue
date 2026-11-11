@@ -23,7 +23,6 @@ const { confirm } = useConfirm();
 const props = defineProps({
     settings: { type: Object, required: true },
     products: { type: Array, default: () => [] },
-    module: { type: Object, default: () => ({}) },
     methods: { type: Array, default: () => [] },
     categories: { type: Object, default: () => ({}) },
     formTypes: { type: Object, default: () => ({}) },
@@ -71,18 +70,6 @@ const formTypeOptions = computed(() =>
 const methodOptions = computed(() =>
     props.methods.map((method) => ({ value: method.value, label: t(method.label) })),
 );
-
-const tableRows = computed(() => {
-    const labels = props.module.table_labels ?? {};
-    const counts = props.module.row_counts ?? {};
-
-    return Object.entries(props.module.tables ?? {}).map(([key, table]) => ({
-        key,
-        label: labels[key] ?? key,
-        table,
-        count: counts[key],
-    }));
-});
 
 function saveSettings() {
     settingsForm.put('/simpanan/pengaturan', { preserveScroll: true });
@@ -158,8 +145,7 @@ async function deleteProduct(product) {
 </script>
 
 <template>
-    <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div class="min-w-0 space-y-6">
+    <div class="min-w-0 space-y-6">
             <AppCard>
                 <template #header>
                     <div class="flex items-center gap-2">
@@ -334,75 +320,6 @@ async function deleteProduct(product) {
                     </table>
                 </div>
             </AppCard>
-        </div>
-
-        <aside class="min-w-0 space-y-4">
-            <AppCard class="border border-outline-variant bg-gradient-to-br from-secondary-container/50 to-surface-container-low">
-                <div class="flex items-center gap-3">
-                    <span class="grid size-10 place-items-center rounded-2xl bg-surface/80 text-secondary">
-                        <AppIcon name="database" />
-                    </span>
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-on-surface-variant">{{ t('Tabel Modul') }}</p>
-                        <p class="font-semibold text-on-surface">{{ t('Khusus lokasi ini') }}</p>
-                    </div>
-                </div>
-                <div class="mt-4 space-y-2 text-sm">
-                    <div v-for="row in tableRows" :key="row.key" class="flex items-start justify-between gap-3">
-                        <div class="min-w-0">
-                            <p class="font-medium text-on-surface">{{ t(row.label) }}</p>
-                            <p class="truncate font-mono text-[11px] text-on-surface-variant">{{ row.table }}</p>
-                        </div>
-                        <AppBadge :tone="row.count > 0 ? 'success-soft' : 'neutral'">{{ row.count ?? 0 }}</AppBadge>
-                    </div>
-                </div>
-                <p class="mt-4 rounded-xl bg-surface/70 p-3 text-xs text-on-surface-variant">
-                    {{ t('Tabel berawalan') }} <span class="font-mono font-semibold">simp_</span>
-                    {{ t('dibuat khusus untuk modul ini dan tidak dipakai lokasi lain.') }}
-                </p>
-            </AppCard>
-
-            <AppCard>
-                <template #header>
-                    <div class="flex items-center gap-2">
-                        <AppIcon name="info" tone="primary" />
-                        <span class="font-semibold text-on-surface">{{ t('Informasi') }}</span>
-                    </div>
-                </template>
-                <dl class="space-y-2 text-sm">
-                    <div class="flex justify-between gap-3">
-                        <dt class="text-on-surface-variant">{{ t('Status modul') }}</dt>
-                        <dd>
-                            <AppBadge :tone="module.is_enabled ? 'success-soft' : 'neutral'">
-                                {{ module.is_enabled ? t('Aktif') : t('Nonaktif') }}
-                            </AppBadge>
-                        </dd>
-                    </div>
-                    <div class="flex justify-between gap-3">
-                        <dt class="text-on-surface-variant">{{ t('Diaktifkan') }}</dt>
-                        <dd class="text-right font-medium text-on-surface">{{ module.enabled_at || '—' }}</dd>
-                    </div>
-                    <div class="flex justify-between gap-3">
-                        <dt class="text-on-surface-variant">{{ t('Total baris') }}</dt>
-                        <dd class="font-medium text-on-surface">{{ module.total_rows ?? 0 }}</dd>
-                    </div>
-                </dl>
-                <p class="mt-3 text-xs text-on-surface-variant">
-                    {{ t('Penghapusan modul hanya dapat dilakukan dari pusat tenant dan ditolak bila tabel masih berisi data.') }}
-                </p>
-            </AppCard>
-
-            <AppCard class="border border-outline-variant bg-surface-container-low/60">
-                <p class="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Pemetaan SOP SIUPK') }}</p>
-                <ul class="mt-2 space-y-1 text-xs text-on-surface-variant">
-                    <li>• Bunga &amp; pajak adalah persen per bulan.</li>
-                    <li>• Biaya buka buku dipotong dari setoran awal.</li>
-                    <li>• Bunga memakai metode saldo sesuai hitung_bunga.</li>
-                    <li>• Admin ditagih setiap periode meski bunga nol.</li>
-                    <li>• Penarikan dibatasi saldo minimal jenis simpanan.</li>
-                </ul>
-            </AppCard>
-        </aside>
     </div>
 
     <AppModal v-model="productOpen" :title="editingProduct ? t('Edit Jenis Simpanan') : t('Tambah Jenis Simpanan')" size="md" centered>
