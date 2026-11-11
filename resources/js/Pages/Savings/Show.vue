@@ -228,41 +228,30 @@ function typeTone(type) {
     <Head :title="`Rekening ${account.account_number}`" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-5">
-            <header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div class="flex min-w-0 items-start gap-3">
-                    <Link
-                        href="/simpanan"
-                        class="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface-variant transition hover:border-primary/30 hover:text-primary"
-                        :aria-label="t('Kembali')"
-                    >
-                        <AppIcon name="arrow_back" class="text-lg" />
-                    </Link>
-                    <div class="min-w-0">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <h1 class="font-mono text-xl font-bold tracking-tight text-primary sm:text-2xl">{{ account.account_number }}</h1>
-                            <AppBadge :tone="isActive ? 'success-soft' : 'neutral'">
-                                {{ isActive ? t('Aktif') : t('Ditutup') }}
-                            </AppBadge>
-                            <AppBadge tone="primary-soft">{{ account.product.form_type_label }}</AppBadge>
-                        </div>
-                        <p class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-on-surface-variant">
-                            <span class="font-medium text-on-surface">{{ account.member.name }}</span>
-                            <span class="text-outline">·</span>
-                            <span>{{ account.member.member_number || '—' }}</span>
-                            <span class="text-outline">·</span>
-                            <span>{{ account.product.name }}</span>
-                        </p>
-                    </div>
-                </div>
+            <header class="flex min-w-0 items-start gap-3">
                 <Link
-                    v-if="canManage"
-                    :href="`/simpanan/create?member=${account.member.row_id}`"
-                    class="block shrink-0"
+                    href="/simpanan"
+                    class="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface-variant transition hover:border-primary/30 hover:text-primary"
+                    :aria-label="t('Kembali')"
                 >
-                    <AppButton variant="secondary" size="compact" icon="add_card" class="w-full justify-center sm:w-auto">
-                        {{ t('Rekening Baru') }}
-                    </AppButton>
+                    <AppIcon name="arrow_back" class="text-lg" />
                 </Link>
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h1 class="font-mono text-xl font-bold tracking-tight text-primary sm:text-2xl">{{ account.account_number }}</h1>
+                        <AppBadge :tone="isActive ? 'success-soft' : 'neutral'">
+                            {{ isActive ? t('Aktif') : t('Ditutup') }}
+                        </AppBadge>
+                        <AppBadge tone="primary-soft">{{ account.product.form_type_label }}</AppBadge>
+                    </div>
+                    <p class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-on-surface-variant">
+                        <span class="font-medium text-on-surface">{{ account.member.name }}</span>
+                        <span class="text-outline">·</span>
+                        <span>{{ account.member.member_number || '—' }}</span>
+                        <span class="text-outline">·</span>
+                        <span>{{ account.product.name }}</span>
+                    </p>
+                </div>
             </header>
 
             <div class="flex flex-col gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 xl:flex-row xl:items-center xl:justify-between">
@@ -281,7 +270,11 @@ function typeTone(type) {
                     </AppButton>
                 </div>
                 <div class="grid grid-cols-2 gap-2 xl:flex xl:flex-wrap xl:items-center xl:ml-auto">
-                    <span class="hidden px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-on-surface-variant xl:inline">{{ t('Dokumen') }}</span>
+                    <Link v-if="canManage" :href="`/simpanan/create?member=${account.member.row_id}`" class="col-span-2 block xl:col-span-1">
+                        <AppButton variant="secondary" size="compact" icon="add_card" class="w-full justify-center xl:w-auto">
+                            {{ t('Rekening Baru') }}
+                        </AppButton>
+                    </Link>
                     <AppButton variant="secondary" size="compact" icon="id_card" class="w-full justify-center xl:w-auto" @click="printDoc(`/simpanan/${account.row_id}/cetak/kop`)">
                         {{ t('KOP') }}
                     </AppButton>
@@ -358,19 +351,19 @@ function typeTone(type) {
                         </template>
 
                         <div class="space-y-2 border-b border-outline-variant p-3">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <span class="hidden px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-on-surface-variant sm:inline">{{ t('Periode') }}</span>
-                                <div class="w-28">
+                            <div class="flex items-center gap-1 sm:gap-2">
+                                <span class="hidden shrink-0 px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-on-surface-variant sm:inline">{{ t('Periode') }}</span>
+                                <div class="min-w-0 flex-1 sm:w-28 sm:flex-none">
                                     <SmartSelect v-model="year" :label="t('Tahun')" hide-label size="compact" :options="yearOptions" />
                                 </div>
-                                <div class="w-36">
+                                <div class="min-w-0 flex-1 sm:w-36 sm:flex-none">
                                     <SmartSelect v-model="month" :label="t('Bulan')" hide-label size="compact" :options="monthOptions" />
                                 </div>
-                                <AppButton variant="secondary" size="compact" icon="filter_alt" @click="applyFilter">
-                                    {{ t('Tampilkan') }}
+                                <AppButton variant="secondary" size="compact" icon="filter_alt" class="shrink-0 !px-2 sm:!px-3" :aria-label="t('Tampilkan')" :title="t('Tampilkan')" @click="applyFilter">
+                                    <span class="hidden sm:inline">{{ t('Tampilkan') }}</span>
                                 </AppButton>
-                                <AppButton variant="ghost" size="compact" icon="restart_alt" @click="resetFilter">
-                                    {{ t('Reset') }}
+                                <AppButton variant="ghost" size="compact" icon="restart_alt" class="shrink-0 !px-2 sm:!px-3" :aria-label="t('Reset')" :title="t('Reset')" @click="resetFilter">
+                                    <span class="hidden sm:inline">{{ t('Reset') }}</span>
                                 </AppButton>
                             </div>
                             <div v-if="statement" class="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-surface-container-low px-3 py-2 text-xs sm:text-sm">
