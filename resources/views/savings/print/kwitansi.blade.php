@@ -7,7 +7,7 @@
         .style9 { font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #000000; }
     </style>
 </head>
-<body onload="window.print()">
+<body @if (! request()->boolean('preview')) onload="window.print()" @endif>
 <br><br><br>
 <table width="97%" border="0" align="center" cellpadding="5" cellspacing="0">
     <tr>

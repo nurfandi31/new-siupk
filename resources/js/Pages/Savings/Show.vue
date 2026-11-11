@@ -37,6 +37,9 @@ const now = new Date();
 
 const txOpen = ref(false);
 const editOpen = ref(false);
+const documentModalOpen = ref(false);
+const activeDocumentKey = ref('kop');
+const documentFrame = ref(null);
 
 const year = ref(props.filters.year ?? now.getFullYear());
 const month = ref(props.filters.month ?? now.getMonth() + 1);
@@ -65,6 +68,50 @@ const yearOptions = [
         return { value, label: String(value) };
     }),
 ];
+
+const periodLabel = computed(() => {
+    if (Number(year.value) === 0) return t('Semua tahun');
+
+    if (Number(month.value) === 0) return String(year.value);
+
+    const selectedMonth = monthOptions.find((option) => Number(option.value) === Number(month.value));
+
+    return `${selectedMonth?.label ?? ''} ${year.value}`.trim();
+});
+
+const documentItems = computed(() => {
+    const params = new URLSearchParams({
+        year: String(year.value),
+        month: String(month.value),
+        preview: '1',
+    });
+
+    return [
+        {
+            key: 'kop',
+            label: t('KOP Buku Simpanan'),
+            description: t('Sampul buku simpanan anggota'),
+            icon: 'id_card',
+            url: `/simpanan/${props.account.row_id}/cetak/kop?preview=1`,
+        },
+        {
+            key: 'formulir',
+            label: t('Formulir Pembukaan Rekening'),
+            description: t('Formulir data anggota dan rekening'),
+            icon: 'description',
+            url: `/simpanan/${props.account.row_id}/cetak/formulir?preview=1`,
+        },
+        {
+            key: 'koran',
+            label: t('Rekening Koran'),
+            description: periodLabel.value,
+            icon: 'receipt_long',
+            url: `/simpanan/${props.account.row_id}/cetak/koran?${params.toString()}`,
+        },
+    ];
+});
+
+const activeDocument = computed(() => documentItems.value.find((doc) => doc.key === activeDocumentKey.value) ?? documentItems.value[0]);
 
 const txForm = useForm({
     type: 'setoran',
@@ -171,13 +218,22 @@ function printDoc(path) {
     window.open(path, '_blank', 'noopener');
 }
 
-function printKoran() {
-    const params = new URLSearchParams({
-        year: String(year.value),
-        month: String(month.value),
-    });
+function openDocument(key = 'kop') {
+    activeDocumentKey.value = key;
+    documentModalOpen.value = true;
+}
 
-    printDoc(`/simpanan/${props.account.row_id}/cetak/koran?${params.toString()}`);
+function openActiveInNewTab() {
+    window.open(activeDocument.value.url, '_blank', 'noopener');
+}
+
+function printActiveDocument() {
+    const frame = documentFrame.value;
+
+    if (!frame?.contentWindow) return;
+
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
 }
 
 async function recalculate() {
@@ -275,13 +331,13 @@ function typeTone(type) {
                             {{ t('Rekening Baru') }}
                         </AppButton>
                     </Link>
-                    <AppButton variant="secondary" size="compact" icon="id_card" class="w-full justify-center xl:w-auto" @click="printDoc(`/simpanan/${account.row_id}/cetak/kop`)">
+                    <AppButton variant="secondary" size="compact" icon="id_card" class="w-full justify-center xl:w-auto" @click="openDocument('kop')">
                         {{ t('KOP') }}
                     </AppButton>
-                    <AppButton variant="secondary" size="compact" icon="description" class="w-full justify-center xl:w-auto" @click="printDoc(`/simpanan/${account.row_id}/cetak/formulir`)">
+                    <AppButton variant="secondary" size="compact" icon="description" class="w-full justify-center xl:w-auto" @click="openDocument('formulir')">
                         {{ t('Formulir') }}
                     </AppButton>
-                    <AppButton variant="secondary" size="compact" icon="receipt_long" class="col-span-2 w-full justify-center xl:col-span-1 xl:w-auto" @click="printKoran">
+                    <AppButton variant="secondary" size="compact" icon="receipt_long" class="col-span-2 w-full justify-center xl:col-span-1 xl:w-auto" @click="openDocument('koran')">
                         {{ t('Rekening Koran') }}
                     </AppButton>
                 </div>
@@ -682,6 +738,56 @@ function typeTone(type) {
             <template #footer>
                 <AppButton variant="secondary" @click="editOpen = false">{{ t('Batal') }}</AppButton>
                 <AppButton :loading="editForm.processing" icon="save" @click="submitEdit">{{ t('Simpan Perubahan') }}</AppButton>
+            </template>
+        </AppModal>
+
+        <AppModal v-model="documentModalOpen" :title="`${t('Dokumen Simpanan')} - ${account.account_number}`" size="fullscreen">
+            <div class="-m-5 flex h-[calc(100vh-8rem)] flex-col sm:-m-6 md:grid md:grid-cols-[300px_minmax(0,1fr)]">
+                <aside class="flex shrink-0 gap-2 overflow-x-auto border-b border-outline-variant p-3 md:flex-col md:overflow-y-auto md:border-b-0 md:border-r">
+                    <div class="hidden px-1 md:block">
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Daftar Dokumen') }}</p>
+                        <p class="mt-1 text-[11px] text-on-surface-variant">{{ t('Pilih dokumen untuk melihat pratinjau.') }}</p>
+                    </div>
+                    <button
+                        v-for="doc in documentItems"
+                        :key="doc.key"
+                        type="button"
+                        class="group flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition md:w-full"
+                        :class="activeDocument.key === doc.key ? 'bg-primary-container/30 text-primary' : 'hover:bg-surface-container-low'"
+                        @click="activeDocumentKey = doc.key"
+                    >
+                        <AppIcon :name="doc.icon" class="shrink-0 text-base" :class="activeDocument.key === doc.key ? 'text-primary' : 'text-on-surface-variant group-hover:text-primary'" />
+                        <span class="min-w-0">
+                            <span class="block truncate text-xs font-semibold">{{ doc.label }}</span>
+                            <span class="hidden truncate text-[10px] text-on-surface-variant md:block">{{ doc.description }}</span>
+                        </span>
+                        <AppIcon name="chevron_right" class="ml-auto hidden shrink-0 text-base text-on-surface-variant md:block" />
+                    </button>
+                </aside>
+                <div class="flex min-h-0 flex-1 flex-col bg-surface-container-lowest">
+                    <div class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-variant bg-surface px-4 py-3">
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-bold text-on-surface">{{ activeDocument.label }}</p>
+                            <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">{{ activeDocument.description }}</p>
+                        </div>
+                        <div class="flex shrink-0 items-center gap-1.5">
+                            <AppIconButton name="open_in_new" size="sm" :tooltip="t('Buka di tab baru')" :aria-label="t('Buka di tab baru')" @click="openActiveInNewTab" />
+                            <AppIconButton name="print" size="sm" :tooltip="t('Cetak')" :aria-label="t('Cetak')" @click="printActiveDocument" />
+                        </div>
+                    </div>
+                    <div class="relative min-h-0 flex-1">
+                        <iframe
+                            ref="documentFrame"
+                            :key="activeDocument.url"
+                            :src="activeDocument.url"
+                            class="h-full w-full border-0 bg-white"
+                            :title="activeDocument.label"
+                        ></iframe>
+                    </div>
+                </div>
+            </div>
+            <template #footer>
+                <AppButton variant="secondary" @click="documentModalOpen = false">{{ t('Tutup') }}</AppButton>
             </template>
         </AppModal>
 

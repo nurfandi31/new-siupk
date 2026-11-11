@@ -19,7 +19,7 @@
         .align-right { text-align: right; }
     </style>
 </head>
-<body onload="window.print()">
+<body @if (! request()->boolean('preview')) onload="window.print()" @endif>
 @php
     $address = trim((string) ($account['member']['address'] ?? ''));
     $village = trim((string) ($account['member']['village'] ?? ''));

@@ -9,7 +9,7 @@
         .align-center { text-align: center; }
     </style>
 </head>
-<body onload="window.print()">
+<body @if (! request()->boolean('preview')) onload="window.print()" @endif>
 @php
     // SIUPK memakai offset baris tetap agar hasil cetak pas pada buku simpanan.
     $i = max(0, (int) $transactionCount - 1);

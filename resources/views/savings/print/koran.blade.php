@@ -19,7 +19,7 @@
         .align-left { text-align: left; padding-left: 5px; padding-right: 5px; }
     </style>
 </head>
-<body onload="window.print()">
+<body @if (! request()->boolean('preview')) onload="window.print()" @endif>
 @php
     $member = $account['member'];
     $isProgram = (string) ($account['product']['code'] ?? '') === '3';

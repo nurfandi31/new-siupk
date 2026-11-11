@@ -18,7 +18,7 @@
         .align-right { text-align: right; }
     </style>
 </head>
-<body onload="window.print()">
+<body @if (! request()->boolean('preview')) onload="window.print()" @endif>
 @php
     $member = $account['member'];
     $gender = $member['gender'] ?? '';
