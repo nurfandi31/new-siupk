@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../../Components/AppButton.vue';
@@ -48,18 +50,18 @@ const selectedWeek = ref(String(props.filters.week));
 const selectedProduct = ref(props.filters.product || 'all');
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -72,11 +74,11 @@ const yearOptions = computed(() => {
 });
 
 const weekOptions = [
-    { value: '1', label: 'Minggu ke-1 (tgl 1–7)' },
-    { value: '2', label: 'Minggu ke-2 (tgl 8–14)' },
-    { value: '3', label: 'Minggu ke-3 (tgl 15–21)' },
-    { value: '4', label: 'Minggu ke-4 (tgl 22–28)' },
-    { value: '5', label: 'Minggu ke-5 (tgl 29–akhir bulan)' },
+    { value: '1', label: t('Minggu ke-1 (tgl 1–7)') },
+    { value: '2', label: t('Minggu ke-2 (tgl 8–14)') },
+    { value: '3', label: t('Minggu ke-3 (tgl 15–21)') },
+    { value: '4', label: t('Minggu ke-4 (tgl 22–28)') },
+    { value: '5', label: t('Minggu ke-5 (tgl 29–akhir bulan)') },
 ];
 
 const money = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
@@ -112,13 +114,13 @@ function pct(alokasi: number, saldo: number): number {
 </script>
 
 <template>
-    <Head title="Kolek Mingguan Kelompok" />
+    <Head :title="t('Kolek Mingguan Kelompok')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan Lending — Mingguan</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Kolektibilitas Mingguan — Kelompok (Rekap Desa)</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Lending — Mingguan') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Kolektibilitas Mingguan — Kelompok (Rekap Desa)') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         {{ period_label }}<span v-if="period_subtitle"> ({{ period_subtitle }})</span> — {{ identity.legal_name }}
                     </p>
@@ -127,7 +129,7 @@ function pct(alokasi: number, saldo: number): number {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -136,19 +138,19 @@ function pct(alokasi: number, saldo: number): number {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Minggu ke-</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Minggu ke-') }}</label>
                         <SmartSelect v-model="selectedWeek" :options="weekOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Produk</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Produk') }}</label>
                         <SmartSelect v-model="selectedProduct" :options="[{ value: 'all', label: 'Semua Produk' }]" hide-label disabled />
                     </div>
                 </div>
@@ -157,11 +159,11 @@ function pct(alokasi: number, saldo: number): number {
             <AppCard class="p-4 bg-surface-container-low">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div class="text-sm">
-                        <span class="font-bold text-primary">Periode Mingguan Aktif:</span>
+                        <span class="font-bold text-primary">{{ t('Periode Mingguan Aktif:') }}</span>
                         <span class="text-on-surface">Minggu ke-{{ week }} • {{ week_start }} s.d. {{ week_end }}</span>
                     </div>
                     <div class="text-xs text-on-surface-variant">
-                        Subjek: <span class="font-semibold text-primary">Kelompok (Rekap Desa)</span>
+                        Subjek: <span class="font-semibold text-primary">{{ t('Kelompok (Rekap Desa)') }}</span>
                     </div>
                 </div>
             </AppCard>
@@ -177,21 +179,21 @@ function pct(alokasi: number, saldo: number): number {
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                             <tr class="border-b border-outline-variant/30 text-center">
-                                <th rowspan="2" class="p-3 text-left">Desa</th>
-                                <th rowspan="2" class="p-3 text-right">Alokasi</th>
-                                <th rowspan="2" class="p-3 text-right">Saldo Pokok</th>
-                                <th rowspan="2" class="p-3">Ratio %</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Tunggakan</th>
-                                <th class="p-3 border-l border-outline-variant/20">Lancar</th>
-                                <th class="p-3">Diragukan</th>
-                                <th class="p-3">Macet</th>
+                                <th rowspan="2" class="p-3 text-left">{{ t('Desa') }}</th>
+                                <th rowspan="2" class="p-3 text-right">{{ t('Alokasi') }}</th>
+                                <th rowspan="2" class="p-3 text-right">{{ t('Saldo Pokok') }}</th>
+                                <th rowspan="2" class="p-3">{{ t('Ratio %') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Tunggakan') }}</th>
+                                <th class="p-3 border-l border-outline-variant/20">{{ t('Lancar') }}</th>
+                                <th class="p-3">{{ t('Diragukan') }}</th>
+                                <th class="p-3">{{ t('Macet') }}</th>
                             </tr>
                             <tr class="border-b border-outline-variant/30 text-center text-[11px] text-on-surface-variant">
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
                                 <th class="p-2 border-l border-outline-variant/20 text-right">1-3 Bln</th>
                                 <th class="p-2 text-right">4-5 Bln</th>
-                                <th class="p-2 text-right">6+ Bln</th>
+                                <th class="p-2 text-right">{{ t('6+ Bln') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/20">
@@ -225,7 +227,7 @@ function pct(alokasi: number, saldo: number): number {
             </div>
 
             <AppCard v-if="products.length === 0" class="p-8 text-center">
-                <p class="text-sm text-on-surface-variant">Tidak ada pinjaman kelompok aktif pada periode ini.</p>
+                <p class="text-sm text-on-surface-variant">{{ t('Tidak ada pinjaman kelompok aktif pada periode ini.') }}</p>
             </AppCard>
         </div>
     </AuthenticatedLayout>

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -18,9 +20,9 @@ const { confirm: confirmAction } = useConfirm();
 
 async function confirmDelete(row) {
     if (!await confirmAction({
-        title: 'Hapus Proposal',
+        title: t('Hapus Proposal'),
         message: `Hapus proposal ${row.loan_number || '#' + row.row_id}? Data akan dihapus permanen.`,
-        confirmText: 'Hapus',
+        confirmText: t('Hapus'),
         variant: 'danger',
     })) return;
     router.delete(`/lending/loans/${row.row_id}`, { preserveScroll: true });
@@ -41,11 +43,11 @@ const props = defineProps({
 });
 
 const tabs = [
-    { key: 'proposal', label: 'Proposal', icon: 'inventory_2' },
-    { key: 'verifikasi', label: 'Verifikasi', icon: 'task_alt' },
-    { key: 'waiting', label: 'Waiting', icon: 'hourglass_top' },
-    { key: 'aktif', label: 'Aktif', icon: 'payments' },
-    { key: 'lunas', label: 'Lunas', icon: 'verified' },
+    { key: 'proposal', label: t('Proposal'), icon: 'inventory_2' },
+    { key: 'verifikasi', label: t('Verifikasi'), icon: 'task_alt' },
+    { key: 'waiting', label: t('Waiting'), icon: 'hourglass_top' },
+    { key: 'aktif', label: t('Aktif'), icon: 'payments' },
+    { key: 'lunas', label: t('Lunas'), icon: 'verified' },
 ];
 
 const pdfModalOpen = ref(false);
@@ -56,13 +58,13 @@ const pdfForm = ref({
 });
 
 const pdfTabOptions = [
-    { value: 'all_active', label: 'Pinjaman Terkini' },
-    { value: 'proposal', label: 'Proposal' },
-    { value: 'verifikasi', label: 'Verifikasi' },
-    { value: 'waiting', label: 'Waiting' },
-    { value: 'aktif', label: 'Aktif' },
-    { value: 'lunas', label: 'Lunas' },
-    { value: 'all', label: 'Semua' },
+    { value: 'all_active', label: t('Pinjaman Terkini') },
+    { value: 'proposal', label: t('Proposal') },
+    { value: 'verifikasi', label: t('Verifikasi') },
+    { value: 'waiting', label: t('Waiting') },
+    { value: 'aktif', label: t('Aktif') },
+    { value: 'lunas', label: t('Lunas') },
+    { value: 'all', label: t('Semua') },
 ];
 
 function openPdfModal() {
@@ -93,39 +95,39 @@ function refreshBoard() {
 const moneyFormatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
 function formatNumber(value) { if (value === null || value === undefined || value === '') return '—'; return moneyFormatter.format(Number(value)); }
 function formatServiceRate(value) { return `${Number(value ?? 0).toFixed(2)}%`; }
-function formatDate(value) { if (!value) return '—'; const d = new Date(value); return Number.isNaN(d.getTime()) ? '—' : new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(d); }
+function formatDate(value) { if (!value) return '—'; const d = new Date(value); return Number.isNaN(d.getTime()) ? '—' : new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' }).format(d); }
 
 const emptyMessages = {
-    proposal: { title: 'Belum ada proposal', description: '' },
-    verifikasi: { title: 'Belum ada verifikasi', description: '' },
-    waiting: { title: 'Belum ada waiting', description: '' },
-    aktif: { title: 'Belum ada pinjaman aktif', description: '' },
-    lunas: { title: 'Belum ada pinjaman lunas', description: '' },
+    proposal: { title: t('Belum ada proposal'), description: '' },
+    verifikasi: { title: t('Belum ada verifikasi'), description: '' },
+    waiting: { title: t('Belum ada waiting'), description: '' },
+    aktif: { title: t('Belum ada pinjaman aktif'), description: '' },
+    lunas: { title: t('Belum ada pinjaman lunas'), description: '' },
 };
 </script>
 
 <template>
-    <Head title="Pinjaman" />
+    <Head :title="t('Pinjaman')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6 pb-12">
             <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div class="min-w-0 flex-1">
-                    <nav class="flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant" aria-label="Breadcrumb">
-                        <span class="font-semibold text-on-surface">Pinjaman</span>
+                    <nav class="flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant" :aria-label="t('Breadcrumb')">
+                        <span class="font-semibold text-on-surface">{{ t('Pinjaman') }}</span>
                     </nav>
                     <h1 class="mt-1.5 text-xl font-extrabold tracking-tight text-on-surface sm:text-2xl lg:text-[26px]">
-                        Pinjaman
+                        {{ t('Pinjaman') }}
                     </h1>
                     <p class="mt-1 max-w-3xl text-sm text-on-surface-variant">
-                        Kelola proposal, verifikasi, dan pencairan pinjaman kelompok.
+                        {{ t('Kelola proposal, verifikasi, dan pencairan pinjaman kelompok.') }}
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <AppButton variant="secondary" :icon="view === 'kanban' ? 'table_chart' : 'view_kanban'" @click="switchView(view === 'kanban' ? 'table' : 'kanban')">
                         {{ view === 'kanban' ? 'Tabel' : 'Kanban' }}
                     </AppButton>
-                    <AppButton variant="secondary" icon="print" @click="openPdfModal">Cetak PDF</AppButton>
-                    <Link v-if="can('loans.propose')" href="/lending/loans/create"><AppButton icon="add">Ajukan</AppButton></Link>
+                    <AppButton variant="secondary" icon="print" @click="openPdfModal">{{ t('Cetak PDF') }}</AppButton>
+                    <Link v-if="can('loans.propose')" href="/lending/loans/create"><AppButton icon="add">{{ t('Ajukan') }}</AppButton></Link>
                 </div>
             </header>
 
@@ -135,7 +137,7 @@ const emptyMessages = {
                     :items="tabs"
                     variant="underline"
                     align="end"
-                    aria-label="Status Pinjaman"
+                    :aria-label="t('Status Pinjaman')"
                     @update:model-value="switchTab($event)"
                 />
             </div>
@@ -162,7 +164,7 @@ const emptyMessages = {
                     :direction="direction"
                     :row-href="`/lending/loans/{row_id}`"
                     search-label="Cari"
-                    search-placeholder="Cari pinjaman..."
+                    :search-placeholder="t('Cari pinjaman...')"
                     :empty-title="emptyMessages[tab]?.title || 'Belum ada data'"
                     :empty-description="emptyMessages[tab]?.description || ''"
                 >
@@ -174,8 +176,8 @@ const emptyMessages = {
                                 variant="ghost"
                                 size="compact"
                                 icon="delete_outline"
-                                aria-label="Hapus proposal"
-                                title="Hapus"
+                                :aria-label="t('Hapus proposal')"
+                                :title="t('Hapus')"
                                 @click="confirmDelete(row)"
                             />
                         </div>
@@ -184,7 +186,7 @@ const emptyMessages = {
                     <template #cell-group_name="{ row }">
                         <div class="min-w-[180px]">
                             <p class="font-bold text-on-surface">{{ row.group_name }}</p>
-                            <p v-if="row.leader_name" class="text-xs text-on-surface-variant">Ketua: {{ row.leader_name }}</p>
+                            <p v-if="row.leader_name" class="text-xs text-on-surface-variant">{{ t('Ketua:') }} {{ row.leader_name }}</p>
                             <p v-if="row.loan_number" class="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary/80">
                                 ID {{ row.loan_number }}
                             </p>
@@ -242,22 +244,22 @@ const emptyMessages = {
             </AppCard>
         </div>
 
-        <AppModal v-model="pdfModalOpen" title="Cetak PDF" size="md">
+        <AppModal v-model="pdfModalOpen" :title="t('Cetak PDF')" size="md">
             <div class="space-y-4">
                 <SmartSelect
                     v-model="pdfForm.tab"
-                    label="Status"
+                    :label="t('Status')"
                     :options="pdfTabOptions"
                     required
                 />
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <AppDatePicker v-model="pdfForm.start_date" label="Dari" clearable />
-                    <AppDatePicker v-model="pdfForm.end_date" label="Sampai" clearable />
+                    <AppDatePicker v-model="pdfForm.start_date" :label="t('Dari')" clearable />
+                    <AppDatePicker v-model="pdfForm.end_date" :label="t('Sampai')" clearable />
                 </div>
             </div>
             <template #footer>
-                <AppButton variant="secondary" @click="pdfModalOpen = false">Batal</AppButton>
-                <AppButton variant="primary" icon="picture_as_pdf" @click="submitPdfPrint">Cetak</AppButton>
+                <AppButton variant="secondary" @click="pdfModalOpen = false">{{ t('Batal') }}</AppButton>
+                <AppButton variant="primary" icon="picture_as_pdf" @click="submitPdfPrint">{{ t('Cetak') }}</AppButton>
             </template>
         </AppModal>
     </AuthenticatedLayout>

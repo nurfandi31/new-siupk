@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -139,7 +141,7 @@ function formatCompact(v) {
                 </span>
             </li>
             <li v-if="!slices.length" class="text-center text-xs text-on-surface-variant">
-                Belum ada data untuk ditampilkan.
+                {{ t('Belum ada data untuk ditampilkan.') }}
             </li>
         </ul>
     </div>

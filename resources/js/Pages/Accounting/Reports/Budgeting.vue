@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -78,10 +80,10 @@ const props = defineProps<{
 }>();
 
 const QUARTERS: Array<{ key: string; label: string }> = [
-    { key: 'q1', label: 'Q1 (Jan–Mar)' },
-    { key: 'q2', label: 'Q2 (Apr–Jun)' },
-    { key: 'q3', label: 'Q3 (Jul–Sep)' },
-    { key: 'q4', label: 'Q4 (Okt–Des)' },
+    { key: 'q1', label: t('Q1 (Jan–Mar)') },
+    { key: 'q2', label: t('Q2 (Apr–Jun)') },
+    { key: 'q3', label: t('Q3 (Jul–Sep)') },
+    { key: 'q4', label: t('Q4 (Okt–Des)') },
     { key: 'ytd', label: 'YTD' },
 ];
 
@@ -101,7 +103,7 @@ const money = new Intl.NumberFormat('id-ID', {
 });
 
 const categoryOptions = computed(() => [
-    { value: 'all', label: 'Semua Akun' },
+    { value: 'all', label: t('Semua Akun') },
     ...props.categories.filter((c) => c.value !== 'all'),
 ]);
 
@@ -190,39 +192,39 @@ watch(
 </script>
 
 <template>
-    <Head title="E-Budgeting per Triwulan" />
+    <Head :title="t('E-Budgeting per Triwulan')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Pelaporan
+                        {{ t('Pelaporan') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">E-Budgeting per Triwulan</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('E-Budgeting per Triwulan') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         {{ period.range_label }} · Rencana Anggaran vs Realisasi
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <AppBadge v-if="budget" :tone="statusTone(budget.status)">
-                        Anggaran: {{ budget.status === 'approved' ? 'Disetujui' : 'Draft' }}
+                        {{ t('Anggaran:') }} {{ budget.status === 'approved' ? 'Disetujui' : 'Draft' }}
                     </AppBadge>
-                    <AppBadge v-else tone="warning-soft">Belum ada anggaran</AppBadge>
+                    <AppBadge v-else tone="warning-soft">{{ t('Belum ada anggaran') }}</AppBadge>
                 </div>
             </div>
 
             <AppCard v-if="error" class="border border-error/30 bg-error-container/40 p-4">
                 <p class="text-sm text-error">
-                    <span class="font-bold">Gagal membangun laporan:</span> {{ error }}
+                    <span class="font-bold">{{ t('Gagal membangun laporan:') }}</span> {{ error }}
                 </p>
             </AppCard>
 
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 gap-3 lg:grid-cols-4">
-                    <AppDatePicker v-model="selectedYear" label="Tahun" mode="year" required />
+                    <AppDatePicker v-model="selectedYear" :label="t('Tahun')" mode="year" required />
                     <AppSelect
                         v-model="selectedCategory"
-                        label="Kategori Akun"
+                        :label="t('Kategori Akun')"
                         :options="categoryOptions"
                     />
                     <div class="flex items-end">
@@ -231,7 +233,7 @@ watch(
                             class="inline-flex h-11 w-full items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-on-primary hover:bg-primary/90"
                             @click="apply"
                         >
-                            Tampilkan
+                            {{ t('Tampilkan') }}
                         </button>
                     </div>
                     <div class="flex items-end gap-2">
@@ -247,14 +249,14 @@ watch(
                             :href="excelHref()"
                             class="inline-flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border border-outline-variant px-3 text-sm font-semibold text-primary hover:bg-surface-container-low"
                         >
-                            Excel
+                            {{ t('Excel') }}
                         </a>
                     </div>
                 </div>
 
                 <div class="mt-4 flex flex-wrap items-center gap-1 border-t border-outline-variant/40 pt-4 text-sm">
                     <span class="mr-2 text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                        Periode:
+                        {{ t('Periode:') }}
                     </span>
                     <button
                         v-for="q in QUARTERS"
@@ -282,7 +284,7 @@ watch(
                         {{ fmt(props.totals.revenue.budget_quarter) }}
                     </p>
                     <p class="text-xs text-on-surface-variant">
-                        Pendapatan + Beban
+                        {{ t('Pendapatan + Beban') }}
                     </p>
                 </AppCard>
                 <AppCard class="p-4">
@@ -293,12 +295,12 @@ watch(
                         {{ fmt(props.totals.expense.realized_quarter - props.totals.revenue.realized_quarter) }}
                     </p>
                     <p class="text-xs text-on-surface-variant">
-                        Selisih Pendapatan − Beban
+                        {{ t('Selisih Pendapatan − Beban') }}
                     </p>
                 </AppCard>
                 <AppCard class="p-4">
                     <p class="text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                        Surplus / (Defisit) Anggaran
+                        {{ t('Surplus / (Defisit) Anggaran') }}
                     </p>
                     <p
                         class="mt-2 text-xl font-bold"
@@ -312,7 +314,7 @@ watch(
                 </AppCard>
                 <AppCard class="p-4">
                     <p class="text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                        % Realisasi YTD
+                        {{ t('% Realisasi YTD') }}
                     </p>
                     <p
                         class="mt-2 text-xl font-bold"
@@ -321,7 +323,7 @@ watch(
                         {{ fmtPct(props.totals.net.realized_pct_ytd) }}
                     </p>
                     <p class="text-xs text-on-surface-variant">
-                        Surplus/(Defisit) realized vs budget
+                        {{ t('Surplus/(Defisit) realized vs budget') }}
                     </p>
                 </AppCard>
             </div>
@@ -329,15 +331,15 @@ watch(
             <AppCard class="overflow-hidden p-0">
                 <div class="border-b border-outline-variant/40 bg-surface-container-low px-4 py-3">
                     <h2 class="text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-                        Rincian Akun
+                        {{ t('Rincian Akun') }}
                     </h2>
                 </div>
 
                 <div v-if="!hasData" class="p-6">
                     <AppEmptyState
                         icon="calculate"
-                        title="Belum ada data anggaran"
-                        description="Belum ada akun pendapatan/beban untuk filter ini, atau rencana anggaran untuk periode terkait belum diinput."
+                        :title="t('Belum ada data anggaran')"
+                        :description="t('Belum ada akun pendapatan/beban untuk filter ini, atau rencana anggaran untuk periode terkait belum diinput.')"
                     />
                 </div>
 
@@ -345,29 +347,29 @@ watch(
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-lowest text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left w-12" rowspan="2">No</th>
-                                <th class="px-3 py-2 text-left w-24" rowspan="2">Kode</th>
-                                <th class="px-3 py-2 text-left" rowspan="2">Nama Akun</th>
+                                <th class="px-3 py-2 text-left w-12" rowspan="2">{{ t('No') }}</th>
+                                <th class="px-3 py-2 text-left w-24" rowspan="2">{{ t('Kode') }}</th>
+                                <th class="px-3 py-2 text-left" rowspan="2">{{ t('Nama Akun') }}</th>
                                 <th class="px-3 py-2 text-right" colspan="4">
-                                    {{ isYtd ? 'S.d. Triwulan Berjalan' : quarterLabel }}
+                                    {{ isYtd ? t('S.d. Triwulan Berjalan') : quarterLabel }}
                                 </th>
-                                <th class="px-3 py-2 text-right" colspan="4">Year-to-Date</th>
+                                <th class="px-3 py-2 text-right" colspan="4">{{ t('Year-to-Date') }}</th>
                             </tr>
                             <tr>
-                                <th class="px-3 py-2 text-right">Anggaran</th>
-                                <th class="px-3 py-2 text-right">Realisasi</th>
-                                <th class="px-3 py-2 text-right">Selisih</th>
+                                <th class="px-3 py-2 text-right">{{ t('Anggaran') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Realisasi') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Selisih') }}</th>
                                 <th class="px-3 py-2 text-right">%</th>
-                                <th class="px-3 py-2 text-right">Anggaran</th>
-                                <th class="px-3 py-2 text-right">Realisasi</th>
-                                <th class="px-3 py-2 text-right">Selisih</th>
+                                <th class="px-3 py-2 text-right">{{ t('Anggaran') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Realisasi') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Selisih') }}</th>
                                 <th class="px-3 py-2 text-right">%</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="revenueRows.length > 0">
                                 <td :colspan="11" class="bg-surface-container px-3 py-1.5 text-xs font-bold uppercase tracking-wide">
-                                    Pendapatan
+                                    {{ t('Pendapatan') }}
                                 </td>
                             </tr>
                             <tr
@@ -402,7 +404,7 @@ watch(
                                 </td>
                             </tr>
                             <tr v-if="revenueRows.length > 0" class="bg-surface-container-low font-semibold">
-                                <td :colspan="3" class="px-3 py-1.5">Total Pendapatan</td>
+                                <td :colspan="3" class="px-3 py-1.5">{{ t('Total Pendapatan') }}</td>
                                 <td class="px-3 py-1.5 text-right tabular-nums">{{ fmt(props.totals.revenue.budget_quarter) }}</td>
                                 <td class="px-3 py-1.5 text-right tabular-nums">{{ fmt(props.totals.revenue.realized_quarter) }}</td>
                                 <td
@@ -432,7 +434,7 @@ watch(
 
                             <tr v-if="expenseRows.length > 0">
                                 <td :colspan="11" class="bg-surface-container px-3 py-1.5 text-xs font-bold uppercase tracking-wide">
-                                    Beban
+                                    {{ t('Beban') }}
                                 </td>
                             </tr>
                             <tr
@@ -467,7 +469,7 @@ watch(
                                 </td>
                             </tr>
                             <tr v-if="expenseRows.length > 0" class="bg-surface-container-low font-semibold">
-                                <td :colspan="3" class="px-3 py-1.5">Total Beban</td>
+                                <td :colspan="3" class="px-3 py-1.5">{{ t('Total Beban') }}</td>
                                 <td class="px-3 py-1.5 text-right tabular-nums">{{ fmt(props.totals.expense.budget_quarter) }}</td>
                                 <td class="px-3 py-1.5 text-right tabular-nums">{{ fmt(props.totals.expense.realized_quarter) }}</td>
                                 <td

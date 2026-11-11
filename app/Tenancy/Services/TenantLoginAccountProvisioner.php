@@ -28,7 +28,7 @@ final readonly class TenantLoginAccountProvisioner
     /**
      * Create missing accounts and re-attach roles for existing ones.
      *
-     * @return list<array{role: string, role_name: string, username: string, email: string, created: bool}>
+     * @return list<array{role: string, role_name: string, username: string, email: string, created: bool, initial_password: ?string}>
      */
     public function ensureDefaults(Tenant $tenant): array
     {
@@ -41,7 +41,8 @@ final readonly class TenantLoginAccountProvisioner
             return [];
         }
 
-        $password = (string) config('tenancy.seed_users.password', 'password');
+        $configuredPassword = trim((string) config('tenancy.seed_users.password', ''));
+        $password = $configuredPassword !== '' ? $configuredPassword : Str::password(16);
         $accounts = [];
 
         foreach ($roles as $roleCode => $definition) {
@@ -90,6 +91,7 @@ final readonly class TenantLoginAccountProvisioner
                 'username' => $username,
                 'email' => $email,
                 'created' => $created,
+                'initial_password' => $created ? $password : null,
             ];
         }
 

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, reactive, ref, watch } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -122,14 +124,14 @@ const orgName = computed(() => props.identity.short_name || props.identity.legal
 </script>
 
 <template>
-    <Head title="Taksiran Pajak" />
+    <Head :title="t('Taksiran Pajak')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header class="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Taksiran Pajak</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Taksiran Pajak') }}</h1>
                     <p class="mt-1 text-on-surface-variant">
-                        Hitung PPh dari mutasi jurnal posted. Pilih akun pendapatan yang masuk basis pajak.
+                        {{ t('Hitung PPh dari mutasi jurnal posted. Pilih akun pendapatan yang masuk basis pajak.') }}
                     </p>
                 </div>
                 <AppBadge tone="neutral">{{ period_label }}</AppBadge>
@@ -141,45 +143,45 @@ const orgName = computed(() => props.identity.short_name || props.identity.legal
 
             <div class="grid gap-4 lg:grid-cols-3">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Lembaga</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Lembaga') }}</p>
                     <p class="mt-2 text-lg font-bold text-primary">{{ orgName }}</p>
-                    <p class="mt-1 text-sm text-on-surface-variant">NPWP: {{ identity.tax_number || 'Belum diisi (Pengaturan)' }}</p>
+                    <p class="mt-1 text-sm text-on-surface-variant">NPWP: {{ identity.tax_number || t('Belum diisi (Pengaturan)') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">PPh Final {{ rates.final }}%</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(live.pph_final) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">Dari total pendapatan terpilih</p>
+                    <p class="mt-1 text-xs text-on-surface-variant">{{ t('Dari total pendapatan terpilih') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">PPh Badan {{ rates.corporate }}%</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(live.pph_corporate) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">Dari laba (min. 0)</p>
+                    <p class="mt-1 text-xs text-on-surface-variant">{{ t('Dari laba (min. 0)') }}</p>
                 </AppCard>
             </div>
 
             <AppCard>
                 <div class="grid gap-4 md:grid-cols-2">
-                    <AppDatePicker v-model="selectedYear" mode="year" label="Tahun Pajak" />
+                    <AppDatePicker v-model="selectedYear" mode="year" :label="t('Tahun Pajak')" />
                     <SmartSelect
                         v-model="selectedMonth"
                         :options="monthOptions"
-                        label="Masa Pajak"
-                        placeholder="Pilih masa"
+                        :label="t('Masa Pajak')"
+                        :placeholder="t('Pilih masa')"
                     />
                 </div>
             </AppCard>
 
             <div class="grid gap-4 md:grid-cols-3">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pendapatan terpilih</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pendapatan terpilih') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(live.revenue) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Beban (non-pajak)</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Beban (non-pajak)') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(live.expense) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Laba sebelum pajak</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Laba sebelum pajak') }}</p>
                     <p class="mt-2 text-2xl font-bold" :class="live.profit >= 0 ? 'text-primary' : 'text-error'">
                         {{ formatMoney(live.profit) }}
                     </p>
@@ -189,17 +191,17 @@ const orgName = computed(() => props.identity.short_name || props.identity.legal
             <AppCard :padded="false">
                 <div class="flex flex-col gap-3 border-b border-outline-variant px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 class="text-lg font-bold text-primary">Akun Pendapatan</h2>
-                        <p class="text-sm text-on-surface-variant">Centang akun yang masuk perhitungan PPh.</p>
+                        <h2 class="text-lg font-bold text-primary">{{ t('Akun Pendapatan') }}</h2>
+                        <p class="text-sm text-on-surface-variant">{{ t('Centang akun yang masuk perhitungan PPh.') }}</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <AppButton variant="secondary" size="compact" @click="selectAllNonZero">Pilih non-nol</AppButton>
-                        <AppButton variant="ghost" size="compact" @click="clearSelection">Kosongkan</AppButton>
+                        <AppButton variant="secondary" size="compact" @click="selectAllNonZero">{{ t('Pilih non-nol') }}</AppButton>
+                        <AppButton variant="ghost" size="compact" @click="clearSelection">{{ t('Kosongkan') }}</AppButton>
                     </div>
                 </div>
 
                 <div v-if="revenue_accounts.length === 0" class="px-6 py-8 text-sm text-on-surface-variant">
-                    Belum ada akun pendapatan postable.
+                    {{ t('Belum ada akun pendapatan postable.') }}
                 </div>
 
                 <div v-else class="divide-y divide-outline-variant">
@@ -210,7 +212,7 @@ const orgName = computed(() => props.identity.short_name || props.identity.legal
                     >
                         <div>
                             <p class="font-semibold text-primary">{{ account.code }} · {{ account.name }}</p>
-                            <p class="text-xs text-on-surface-variant">Mutasi periode ini</p>
+                            <p class="text-xs text-on-surface-variant">{{ t('Mutasi periode ini') }}</p>
                         </div>
                         <p class="text-right font-semibold text-primary md:text-left">{{ formatMoney(account.amount) }}</p>
                         <div class="md:justify-self-end">

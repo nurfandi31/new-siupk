@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppBadge from '../../Components/AppBadge.vue';
@@ -28,14 +30,14 @@ const donutSlices = computed(() => {
         0,
     );
     return [
-        { key: 'collected', label: 'Pembayaran Masuk', value: collected },
-        { key: 'outstanding', label: 'Sisa Tagihan', value: Math.max(disbursed - collected, 0) },
+        { key: 'collected', label: t('Pembayaran Masuk'), value: collected },
+        { key: 'outstanding', label: t('Sisa Tagihan'), value: Math.max(disbursed - collected, 0) },
     ];
 });
 </script>
 
 <template>
-    <Head title="Admin Dashboard - siupk Next" />
+    <Head :title="t('Admin Dashboard - siupk Next')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <!-- Hero Header -->
@@ -46,21 +48,21 @@ const donutSlices = computed(() => {
                 <div class="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                     <div class="min-w-0">
                         <h1 class="text-2xl font-extrabold tracking-tight text-on-surface sm:text-3xl">
-                            Dashboard Bisnis &amp; Platform
+                            {{ t('Dashboard Bisnis & Platform') }}
                         </h1>
                         <p class="mt-1.5 max-w-xl text-sm text-on-surface-variant">
-                            Ringkasan operasional SaaS hari ini.
+                            {{ t('Ringkasan operasional SaaS hari ini.') }}
                         </p>
                     </div>
                     <div class="flex shrink-0 flex-row items-center gap-2">
                         <Link href="/admin/tenants/create">
-                            <AppButton icon="add">Tambah Tenant</AppButton>
+                            <AppButton icon="add">{{ t('Tambah Tenant') }}</AppButton>
                         </Link>
                         <Link href="/admin/revenue">
-                            <AppButton variant="secondary" icon="monitoring">Monitor Pendapatan</AppButton>
+                            <AppButton variant="secondary" icon="monitoring">{{ t('Monitor Pendapatan') }}</AppButton>
                         </Link>
                         <Link href="/admin/invoices/create">
-                            <AppButton variant="secondary" icon="receipt_long">Terbitkan Tagihan</AppButton>
+                            <AppButton variant="secondary" icon="receipt_long">{{ t('Terbitkan Tagihan') }}</AppButton>
                         </Link>
                     </div>
                 </div>
@@ -70,7 +72,7 @@ const donutSlices = computed(() => {
             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <AppCard class="admin-kpi">
                     <div class="flex items-start justify-between gap-3">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pendapatan Bulan Ini</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pendapatan Bulan Ini') }}</p>
                         <AppIcon name="payments" tone="secondary" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-3 text-2xl font-extrabold text-secondary">{{ money(kpis.revenue_this_month) }}</p>
@@ -78,24 +80,24 @@ const donutSlices = computed(() => {
                         <AppBadge v-if="kpis.revenue_last_month > 0" :tone="kpis.revenue_growth >= 0 ? 'success' : 'error'">
                             {{ kpis.revenue_growth >= 0 ? '+' : '' }}{{ kpis.revenue_growth }}% MoM
                         </AppBadge>
-                        <span class="text-on-surface-variant">Tagihan: <strong class="text-on-surface">{{ money(kpis.invoiced_this_month) }}</strong></span>
+                        <span class="text-on-surface-variant">{{ t('Tagihan:') }} <strong class="text-on-surface">{{ money(kpis.invoiced_this_month) }}</strong></span>
                     </div>
                 </AppCard>
 
                 <AppCard class="admin-kpi">
                     <div class="flex items-start justify-between gap-3">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pendapatan YTD</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pendapatan YTD') }}</p>
                         <AppIcon name="account_balance" tone="primary" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-3 text-2xl font-extrabold text-primary">{{ money(kpis.revenue_ytd) }}</p>
                     <p class="mt-2 text-xs text-on-surface-variant">
-                        Ditagihkan: <strong class="text-on-surface">{{ money(kpis.invoiced_ytd) }}</strong>
+                        {{ t('Ditagihkan:') }} <strong class="text-on-surface">{{ money(kpis.invoiced_ytd) }}</strong>
                     </p>
                 </AppCard>
 
                 <AppCard class="admin-kpi">
                     <div class="flex items-start justify-between gap-3">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Piutang</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Piutang') }}</p>
                         <AppIcon name="pending_actions" tone="warning" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-3 text-2xl font-extrabold" :class="kpis.total_outstanding > 0 ? 'text-error' : 'text-primary'">
@@ -111,7 +113,7 @@ const donutSlices = computed(() => {
 
                 <AppCard class="admin-kpi">
                     <div class="flex items-start justify-between gap-3">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Tenant</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Tenant') }}</p>
                         <AppIcon name="domain" tone="info" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-3 text-2xl font-extrabold text-primary">
@@ -130,8 +132,8 @@ const donutSlices = computed(() => {
                 <AppCard>
                     <template #header>
                         <div>
-                            <h2 class="font-bold text-primary">Komposisi Tagihan</h2>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">Pembayaran masuk vs sisa tagihan.</p>
+                            <h2 class="font-bold text-primary">{{ t('Komposisi Tagihan') }}</h2>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Pembayaran masuk vs sisa tagihan.') }}</p>
                         </div>
                     </template>
                     <TrendDonutChart
@@ -145,10 +147,10 @@ const donutSlices = computed(() => {
                 <AppCard :padded="false">
                     <div class="flex items-center justify-between gap-3 border-b border-outline-variant px-6 py-4">
                         <div>
-                            <h2 class="font-bold text-primary">Tagihan Terbuka</h2>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">Menunggu &amp; jatuh tempo.</p>
+                            <h2 class="font-bold text-primary">{{ t('Tagihan Terbuka') }}</h2>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Menunggu & jatuh tempo.') }}</p>
                         </div>
-                        <Link href="/admin/invoices" class="text-xs font-bold text-primary hover:underline shrink-0">Lihat Semua →</Link>
+                        <Link href="/admin/invoices" class="text-xs font-bold text-primary hover:underline shrink-0">{{ t('Lihat Semua →') }}</Link>
                     </div>
                     <ul class="divide-y divide-outline-variant/30">
                         <li v-for="invoice in open_invoices" :key="invoice.row_id" class="flex items-center justify-between gap-3 px-6 py-3.5 transition-colors hover:bg-surface-container-low/40">
@@ -157,7 +159,7 @@ const donutSlices = computed(() => {
                                     {{ invoice.number }}
                                 </Link>
                                 <p class="truncate text-xs text-on-surface-variant">
-                                    {{ invoice.tenant?.name || '—' }} · Jatuh tempo: <strong :class="invoice.status === 'overdue' ? 'text-error' : 'text-on-surface'">{{ invoice.due_at || '—' }}</strong>
+                                    {{ invoice.tenant?.name || '—' }} {{ t('· Jatuh tempo:') }} <strong :class="invoice.status === 'overdue' ? 'text-error' : 'text-on-surface'">{{ invoice.due_at || '—' }}</strong>
                                 </p>
                             </div>
                             <div class="shrink-0 text-right">
@@ -169,7 +171,7 @@ const donutSlices = computed(() => {
                         </li>
                         <li v-if="!open_invoices.length" class="px-6 py-10 text-center text-sm text-on-surface-variant">
                             <AppIcon name="check_circle" class="text-3xl text-secondary" />
-                            <p class="mt-2">Tidak ada tagihan terbuka.</p>
+                            <p class="mt-2">{{ t('Tidak ada tagihan terbuka.') }}</p>
                         </li>
                     </ul>
                 </AppCard>
@@ -178,10 +180,10 @@ const donutSlices = computed(() => {
                 <AppCard :padded="false">
                     <div class="flex items-center justify-between gap-3 border-b border-outline-variant px-6 py-4">
                         <div>
-                            <h2 class="font-bold text-primary">Tenant Terbaru</h2>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">Baru terdaftar.</p>
+                            <h2 class="font-bold text-primary">{{ t('Tenant Terbaru') }}</h2>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Baru terdaftar.') }}</p>
                         </div>
-                        <Link href="/admin/tenants" class="text-xs font-bold text-primary hover:underline shrink-0">Semua Tenant →</Link>
+                        <Link href="/admin/tenants" class="text-xs font-bold text-primary hover:underline shrink-0">{{ t('Semua Tenant →') }}</Link>
                     </div>
                     <ul class="divide-y divide-outline-variant/30">
                         <li v-for="tenant in recent_tenants" :key="tenant.row_id" class="flex items-center justify-between gap-3 px-6 py-3.5 transition-colors hover:bg-surface-container-low/40">
@@ -194,7 +196,7 @@ const donutSlices = computed(() => {
                                         {{ tenant.name }}
                                     </Link>
                                     <p class="truncate text-xs text-on-surface-variant">
-                                        {{ tenant.code }} · {{ tenant.active_subscription?.plan?.name || 'Tanpa plan' }}
+                                        {{ tenant.code }} · {{ tenant.active_subscription?.plan?.name || t('Tanpa plan') }}
                                     </p>
                                 </div>
                             </div>
@@ -206,7 +208,7 @@ const donutSlices = computed(() => {
                         </li>
                         <li v-if="!recent_tenants.length" class="px-6 py-10 text-center text-sm text-on-surface-variant">
                             <AppIcon name="domain" class="text-3xl text-primary" />
-                            <p class="mt-2">Belum ada tenant.</p>
+                            <p class="mt-2">{{ t('Belum ada tenant.') }}</p>
                         </li>
                     </ul>
                 </AppCard>

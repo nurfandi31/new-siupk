@@ -13,19 +13,32 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
+/**
+ * Tenant demo hanya dibuat bila SEED_DEMO_TENANT=true.
+ *
+ * Seeder ini tidak pernah menimpa password akun yang sudah ada sehingga data
+ * operasional tidak berubah saat seeding diulang.
+ */
 final class DemoAdminSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! filter_var(env('SEED_DEMO_TENANT', false), FILTER_VALIDATE_BOOL)) {
+            return;
+        }
+
+        $tenantCode = (string) env('SEED_DEMO_TENANT_CODE', 'demo');
+        $domain = (string) env('SEED_DEMO_DOMAIN', 'demo.siupknext.test');
+
         $tenant = Tenant::query()->firstOrCreate(
-            ['code' => 'demo'],
+            ['code' => $tenantCode],
             [
                 'public_id' => (string) Str::ulid(),
-                'name' => 'Demo Tenant SIUPK Next',
-                'district_code' => '320102',
+                'name' => (string) env('SEED_DEMO_TENANT_NAME', 'Demo Tenant'),
+                'district_code' => (string) env('SEED_DEMO_DISTRICT_CODE', '320102'),
                 'status' => 'active',
                 'timezone' => 'Asia/Jakarta',
-                'metadata' => ['domains' => ['demo.siupknext.test']],
+                'metadata' => ['domains' => [$domain]],
                 'provisioned_at' => now(),
             ],
         );
@@ -34,7 +47,7 @@ final class DemoAdminSeeder extends Seeder
             ['code' => 'local'],
             [
                 'public_id' => (string) Str::ulid(),
-                'name' => 'Local Development Shard',
+                'name' => 'Local Shard',
                 'driver' => 'mysql',
                 'host' => (string) config('database.connections.tenant.host', 'mysql'),
                 'port' => (int) config('database.connections.tenant.port', 3306),
@@ -54,19 +67,28 @@ final class DemoAdminSeeder extends Seeder
             ],
         );
 
-        $user = User::query()->updateOrCreate(
-            ['username' => 'admin'],
-            [
-                'public_id' => User::query()->where('username', 'admin')->value('public_id') ?: (string) Str::ulid(),
-                'tenant_id' => $tenant->row_id,
-                'name' => 'Administrator Demo',
-                'email' => 'admin@demo.siupknext.test',
-                'phone' => '+6280000000001',
-                'password' => Hash::make('password'),
-                'status' => 'active',
-                'is_superadmin' => false,
-            ],
-        );
+        $username = (string) env('SEED_DEMO_USERNAME', 'demo.admin');
+        $existing = User::query()->where('username', $username)->first();
+
+        if ($existing !== null) {
+            $this->command?->info("Akun demo '{$username}' sudah ada; password tidak diubah.");
+
+            return;
+        }
+
+        $password = (string) (env('SEED_DEMO_PASSWORD') ?: Str::password(20));
+
+        $user = User::query()->create([
+            'public_id' => (string) Str::ulid(),
+            'tenant_id' => $tenant->row_id,
+            'name' => (string) env('SEED_DEMO_NAME', 'Administrator Demo'),
+            'username' => $username,
+            'email' => (string) env('SEED_DEMO_EMAIL', 'admin@'.$domain),
+            'phone' => env('SEED_DEMO_PHONE'),
+            'password' => Hash::make($password),
+            'status' => 'active',
+            'is_superadmin' => false,
+        ]);
 
         TenantMembership::query()->firstOrCreate(
             ['user_id' => $user->row_id],
@@ -78,9 +100,10 @@ final class DemoAdminSeeder extends Seeder
         );
 
         $this->command?->info(sprintf(
-            'User admin di tenant demo siap: username=admin password=password (tenant_id=%s, shard=%s)',
-            (string) $tenant->row_id,
-            (string) $shard->code,
+            'Akun demo %s dibuat untuk tenant %s. Password awal: %s',
+            $username,
+            $tenantCode,
+            $password,
         ));
     }
 }

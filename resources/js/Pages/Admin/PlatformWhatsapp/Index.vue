@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { useConfirm } from '../../../composables/useConfirm';
 import { useToast } from '../../../composables/useToast';
 import { Head, useForm } from '@inertiajs/vue3';
@@ -173,9 +175,9 @@ function closeQr() {
 
 async function deleteSession(instance) {
     const confirmed = await confirmAction({
-        title: 'Hapus Session Gateway',
+        title: t('Hapus Session Gateway'),
         message: `Hapus session WhatsApp "${instance.name}" dari gateway platform?`,
-        confirmLabel: 'Hapus Session',
+        confirmLabel: t('Hapus Session'),
         variant: 'danger',
         icon: 'delete',
     });
@@ -194,9 +196,9 @@ async function deleteSession(instance) {
 
 async function destroyInstance(instance) {
     const confirmed = await confirmAction({
-        title: 'Hapus Instance',
+        title: t('Hapus Instance'),
         message: `Session "${instance.name}" akan dihapus dari gateway dan data instance platform akan dihapus.`,
-        confirmLabel: 'Hapus',
+        confirmLabel: t('Hapus'),
         variant: 'danger',
         icon: 'delete',
     });
@@ -207,9 +209,9 @@ async function destroyInstance(instance) {
 
 async function setDefault(instance) {
     const confirmed = await confirmAction({
-        title: 'Set Instance Default',
+        title: t('Set Instance Default'),
         message: `Jadikan "${instance.name}" sebagai instance OTP WhatsApp platform?`,
-        confirmLabel: 'Jadikan Default',
+        confirmLabel: t('Jadikan Default'),
     });
     if (!confirmed) return;
 
@@ -245,16 +247,16 @@ onBeforeUnmount(stopPolling);
 </script>
 
 <template>
-    <Head title="WhatsApp Platform" />
+    <Head :title="t('WhatsApp Platform')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <AppPageHeader
-                title="WhatsApp Platform"
-                subtitle="Kelola nomor WhatsApp platform untuk OTP lupa password dan pengiriman system-level."
+                :title="t('WhatsApp Platform')"
+                :subtitle="t('Kelola nomor WhatsApp platform untuk OTP lupa password dan pengiriman system-level.')"
             >
                 <template #actions>
                     <AppBadge :tone="props.configured ? 'success' : 'warning'">
-                        {{ props.configured ? 'Gateway Terkonfigurasi' : 'Gateway Belum Dikonfigurasi' }}
+                        {{ props.configured ? t('Gateway Terkonfigurasi') : t('Gateway Belum Dikonfigurasi') }}
                     </AppBadge>
                 </template>
             </AppPageHeader>
@@ -262,21 +264,21 @@ onBeforeUnmount(stopPolling);
             <div class="grid gap-4 sm:grid-cols-3">
                 <AppCard>
                     <div class="flex items-start justify-between gap-3">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Instance</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Instance') }}</p>
                         <AppIcon name="devices" tone="primary" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-3 text-2xl font-extrabold text-primary">{{ stats.total }}</p>
                 </AppCard>
                 <AppCard>
                     <div class="flex items-start justify-between gap-3">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Instance Aktif</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Instance Aktif') }}</p>
                         <AppIcon name="toggle_on" tone="info" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-3 text-2xl font-extrabold text-primary">{{ stats.active }}</p>
                 </AppCard>
                 <AppCard>
                     <div class="flex items-start justify-between gap-3">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Terhubung</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Terhubung') }}</p>
                         <AppIcon name="link" tone="success" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-3 text-2xl font-extrabold text-secondary">{{ stats.connected }}</p>
@@ -286,21 +288,21 @@ onBeforeUnmount(stopPolling);
             <AppCard bordered>
                 <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 class="text-lg font-bold text-primary">Daftar Instance Platform</h2>
-                        <p class="mt-1 text-sm text-on-surface-variant">Instance ini dipakai OTP lupa password sebelum fallback ke instance tenant.</p>
+                        <h2 class="text-lg font-bold text-primary">{{ t('Daftar Instance Platform') }}</h2>
+                        <p class="mt-1 text-sm text-on-surface-variant">{{ t('Instance ini dipakai OTP lupa password sebelum fallback ke instance tenant.') }}</p>
                     </div>
-                    <AppButton icon="add" :disabled="!props.configured" @click="openCreate">Tambah Instance</AppButton>
+                    <AppButton icon="add" :disabled="!props.configured" @click="openCreate">{{ t('Tambah Instance') }}</AppButton>
                 </div>
 
     <div v-if="props.instances.length" class="overflow-x-auto">
         <table class="w-full min-w-[40rem] text-left text-[11px] sm:min-w-[56rem] sm:text-sm">
                         <thead class="bg-surface-container-low">
                             <tr>
-                                <th class="px-4 py-3 font-bold text-primary">Instance</th>
-                                <th class="px-4 py-3 font-bold text-primary">Nomor</th>
-                                <th class="px-4 py-3 font-bold text-primary">Status</th>
-                                <th class="px-4 py-3 font-bold text-primary">Default</th>
-                                <th class="px-4 py-3 text-right font-bold text-primary">Aksi</th>
+                                <th class="px-4 py-3 font-bold text-primary">{{ t('Instance') }}</th>
+                                <th class="px-4 py-3 font-bold text-primary">{{ t('Nomor') }}</th>
+                                <th class="px-4 py-3 font-bold text-primary">{{ t('Status') }}</th>
+                                <th class="px-4 py-3 font-bold text-primary">{{ t('Default') }}</th>
+                                <th class="px-4 py-3 text-right font-bold text-primary">{{ t('Aksi') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -309,24 +311,24 @@ onBeforeUnmount(stopPolling);
                                     <p class="font-semibold text-primary">{{ instance.name }}</p>
                                     <p class="mt-1 font-mono text-xs text-on-surface-variant">{{ instance.instance_name }}</p>
                                 </td>
-                                <td class="px-4 py-4 text-on-surface-variant">{{ instance.phone || 'Belum tersambung' }}</td>
+                                <td class="px-4 py-4 text-on-surface-variant">{{ instance.phone || t('Belum tersambung') }}</td>
                                 <td class="px-4 py-4">
                                     <AppBadge :tone="statusTone(instance.status)">{{ statusLabel(instance.status) }}</AppBadge>
                                 </td>
                                 <td class="px-4 py-4">
                                     <AppBadge :tone="instance.is_default ? 'primary' : 'neutral'">
-                                        {{ instance.is_default ? 'Default' : 'Cadangan' }}
+                                        {{ instance.is_default ? t('Default') : t('Cadangan') }}
                                     </AppBadge>
                                 </td>
                                 <td class="px-4 py-4">
                                     <div class="flex flex-wrap justify-end gap-2">
-                                        <AppButton size="compact" variant="secondary" icon="qr_code_scanner" :loading="loadingAction === instance.row_id" :disabled="!props.configured" @click="createSession(instance)">Buat QR</AppButton>
-                                        <AppButton size="compact" variant="ghost" icon="visibility" @click="openQr(instance)">Status</AppButton>
-                                        <AppButton size="compact" variant="ghost" icon="delete" @click="deleteSession(instance)">Hapus Sesi</AppButton>
-                                        <AppButton size="compact" variant="ghost" icon="send" :disabled="!props.configured" @click="openTest(instance)">Uji Kirim</AppButton>
-                                        <AppButton size="compact" variant="ghost" icon="star" :disabled="instance.is_default || !instance.is_active" @click="setDefault(instance)">Jadikan Default</AppButton>
-                                        <AppButton size="compact" variant="ghost" icon="edit" @click="openEdit(instance)">Edit</AppButton>
-                                        <AppButton size="compact" variant="danger" icon="delete" @click="destroyInstance(instance)">Hapus</AppButton>
+                                        <AppButton size="compact" variant="secondary" icon="qr_code_scanner" :loading="loadingAction === instance.row_id" :disabled="!props.configured" @click="createSession(instance)">{{ t('Buat QR') }}</AppButton>
+                                        <AppButton size="compact" variant="ghost" icon="visibility" @click="openQr(instance)">{{ t('Status') }}</AppButton>
+                                        <AppButton size="compact" variant="ghost" icon="delete" @click="deleteSession(instance)">{{ t('Hapus Sesi') }}</AppButton>
+                                        <AppButton size="compact" variant="ghost" icon="send" :disabled="!props.configured" @click="openTest(instance)">{{ t('Uji Kirim') }}</AppButton>
+                                        <AppButton size="compact" variant="ghost" icon="star" :disabled="instance.is_default || !instance.is_active" @click="setDefault(instance)">{{ t('Jadikan Default') }}</AppButton>
+                                        <AppButton size="compact" variant="ghost" icon="edit" @click="openEdit(instance)">{{ t('Edit') }}</AppButton>
+                                        <AppButton size="compact" variant="danger" icon="delete" @click="destroyInstance(instance)">{{ t('Hapus') }}</AppButton>
                                     </div>
                                 </td>
                             </tr>
@@ -337,19 +339,19 @@ onBeforeUnmount(stopPolling);
                 <AppEmptyState
                     v-else
                     icon="chat"
-                    title="Belum ada instance WhatsApp platform"
-                    description="Tambahkan instance pertama, lalu buat QR untuk memasangkan nomor WhatsApp platform."
+                    :title="t('Belum ada instance WhatsApp platform')"
+                    :description="t('Tambahkan instance pertama, lalu buat QR untuk memasangkan nomor WhatsApp platform.')"
                 />
             </AppCard>
 
             <AppModal v-model="showFormModal" :title="editingInstance ? 'Edit Instance Platform' : 'Tambah Instance Platform'" size="md">
                 <form class="space-y-4" @submit.prevent="submitInstance">
-                    <AppInput v-model="form.name" label="Nama Instance" required placeholder="Masukkan nama" :error="form.errors.name" />
-                    <AppInput v-model="form.phone" label="Nomor WhatsApp (opsional)" placeholder="08xxxxxxxxxx" :error="form.errors.phone" hint="Boleh diisi setelah nomor tersambung." />
+                    <AppInput v-model="form.name" :label="t('Nama Instance')" required :placeholder="t('Masukkan nama')" :error="form.errors.name" />
+                    <AppInput v-model="form.phone" :label="t('Nomor WhatsApp (opsional)')" placeholder="08xxxxxxxxxx" :error="form.errors.phone" :hint="t('Boleh diisi setelah nomor tersambung.')" />
                 </form>
                 <template #footer>
-                    <AppButton variant="ghost" @click="closeForm">Batal</AppButton>
-                    <AppButton :loading="form.processing" @click="submitInstance">{{ editingInstance ? 'Simpan' : 'Tambah' }}</AppButton>
+                    <AppButton variant="ghost" @click="closeForm">{{ t('Batal') }}</AppButton>
+                    <AppButton :loading="form.processing" @click="submitInstance">{{ editingInstance ? t('Simpan') : t('Tambah') }}</AppButton>
                 </template>
             </AppModal>
 
@@ -357,25 +359,25 @@ onBeforeUnmount(stopPolling);
                 <div class="space-y-4 text-center">
                     <AppBadge :tone="statusTone(qrStatus)">{{ statusLabel(qrStatus) }}</AppBadge>
                     <div v-if="qrCode" class="rounded-xl border border-outline-variant bg-surface-container-low p-4">
-                        <img :src="qrCode" alt="QR Code WhatsApp" class="mx-auto size-64 object-contain" />
-                        <p class="mt-2 animate-pulse text-xs text-on-surface-variant">Scan QR menggunakan WhatsApp di HP Anda.</p>
+                        <img :src="qrCode" :alt="t('QR Code WhatsApp')" class="mx-auto size-64 object-contain" />
+                        <p class="mt-2 animate-pulse text-xs text-on-surface-variant">{{ t('Scan QR menggunakan WhatsApp di HP Anda.') }}</p>
                     </div>
                     <p class="text-sm text-on-surface-variant">{{ qrMessage }}</p>
                 </div>
                 <template #footer>
-                    <AppButton variant="ghost" @click="closeQr">Tutup</AppButton>
-                    <AppButton v-if="qrInstance" variant="secondary" icon="refresh" @click="refreshState(qrInstance)">Periksa Ulang</AppButton>
+                    <AppButton variant="ghost" @click="closeQr">{{ t('Tutup') }}</AppButton>
+                    <AppButton v-if="qrInstance" variant="secondary" icon="refresh" @click="refreshState(qrInstance)">{{ t('Periksa Ulang') }}</AppButton>
                 </template>
             </AppModal>
 
-            <AppModal v-model="showTestModal" title="Uji Kirim WhatsApp Platform" size="sm">
+            <AppModal v-model="showTestModal" :title="t('Uji Kirim WhatsApp Platform')" size="sm">
                 <form class="space-y-4" @submit.prevent="sendTest">
-                    <AppInput v-model="testForm.phone" label="Nomor Tujuan" required placeholder="08xxxxxxxxxx" />
-                    <AppTextarea v-model="testForm.message" label="Pesan (opsional)" :rows="4" placeholder="Tes koneksi" />
+                    <AppInput v-model="testForm.phone" :label="t('Nomor Tujuan')" required placeholder="08xxxxxxxxxx" />
+                    <AppTextarea v-model="testForm.message" :label="t('Pesan (opsional)')" :rows="4" :placeholder="t('Tes koneksi')" />
                 </form>
                 <template #footer>
-                    <AppButton variant="ghost" @click="showTestModal = false">Batal</AppButton>
-                    <AppButton icon="send" :loading="loadingAction === `test-${testInstance?.row_id}`" @click="sendTest">Kirim Tes</AppButton>
+                    <AppButton variant="ghost" @click="showTestModal = false">{{ t('Batal') }}</AppButton>
+                    <AppButton icon="send" :loading="loadingAction === `test-${testInstance?.row_id}`" @click="sendTest">{{ t('Kirim Tes') }}</AppButton>
                 </template>
             </AppModal>
         </div>

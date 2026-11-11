@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -15,12 +17,12 @@ const props = defineProps({
 });
 
 const runColumns = [
-    { key: 'created_at', label: 'Waktu Mulai', sortable: false },
-    { key: 'tenant_name', label: 'Tenant' },
-    { key: 'suffix', label: 'Suffix' },
-    { key: 'mode', label: 'Mode' },
-    { key: 'progress', label: 'Progres Step' },
-    { key: 'status', label: 'Status' },
+    { key: 'created_at', label: t('Waktu Mulai'), sortable: false },
+    { key: 'tenant_name', label: t('Tenant') },
+    { key: 'suffix', label: t('Suffix') },
+    { key: 'mode', label: t('Mode') },
+    { key: 'progress', label: t('Progres Step') },
+    { key: 'status', label: t('Status') },
 ];
 
 function shardStatusTone(status) {
@@ -56,19 +58,19 @@ function driverIcon(driver) {
 </script>
 
 <template>
-    <Head title="Shard & Cutover" />
+    <Head :title="t('Shard & Cutover')" />
     <AdminLayout>
         <div class="mx-auto max-w-6xl space-y-5">
             <AdminPageHeader
-                title="Shard & Cutover"
-                subtitle="Peta infrastruktur database shard dan riwayat cutover data tenant. Hanya-baca — provisioning lewat menu Migrasi Data."
+                :title="t('Shard & Cutover')"
+                :subtitle="t('Peta infrastruktur database shard dan riwayat cutover data tenant. Hanya-baca — provisioning lewat menu Migrasi Data.')"
             />
 
             <!-- Ringkasan KPI -->
             <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <AppCard>
                     <div class="flex items-center justify-between">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Shard</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Shard') }}</p>
                         <AppIcon name="storage" tone="primary" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold text-primary">
@@ -78,30 +80,30 @@ function driverIcon(driver) {
 
                 <AppCard>
                     <div class="flex items-center justify-between">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Tenant Ter-place</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Tenant Ter-place') }}</p>
                         <AppIcon name="domain" tone="secondary" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold text-secondary">{{ summary.total_tenants_placed }}</p>
-                    <p class="mt-0.5 text-xs text-on-surface-variant">Seluruh shard aktif</p>
+                    <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Seluruh shard aktif') }}</p>
                 </AppCard>
 
                 <AppCard>
                     <div class="flex items-center justify-between">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Cutover Selesai</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Cutover Selesai') }}</p>
                         <AppIcon name="check_circle" tone="success" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold text-secondary">{{ summary.runs_completed }}</p>
                     <p v-if="summary.runs_failed > 0" class="mt-0.5 text-xs font-semibold text-error">{{ summary.runs_failed }} run gagal</p>
-                    <p v-else class="mt-0.5 text-xs text-on-surface-variant">Tidak ada run gagal</p>
+                    <p v-else class="mt-0.5 text-xs text-on-surface-variant">{{ t('Tidak ada run gagal') }}</p>
                 </AppCard>
 
                 <AppCard>
                     <div class="flex items-center justify-between">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Skema Tertinggal</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Skema Tertinggal') }}</p>
                         <AppIcon name="sync_problem" :tone="summary.schema_lagging > 0 ? 'warning' : 'neutral'" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold" :class="summary.schema_lagging > 0 ? 'text-warning' : 'text-primary'">{{ summary.schema_lagging }}</p>
-                    <p class="mt-0.5 text-xs text-on-surface-variant">Belum sinkron ke versi target</p>
+                    <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Belum sinkron ke versi target') }}</p>
                 </AppCard>
             </div>
 
@@ -110,7 +112,7 @@ function driverIcon(driver) {
                 <template #header>
                     <div class="flex items-center gap-2">
                         <AppIcon name="database" class="text-primary" />
-                        <h2 class="font-bold text-primary">Database Shard</h2>
+                        <h2 class="font-bold text-primary">{{ t('Database Shard') }}</h2>
                         <span class="rounded-full bg-surface-container-low px-2 py-0.5 text-xs font-bold text-on-surface-variant">{{ shards.length }}</span>
                     </div>
                 </template>
@@ -134,14 +136,14 @@ function driverIcon(driver) {
                             </div>
                             <div class="shrink-0 text-right">
                                 <p class="text-2xl font-extrabold tabular-nums leading-none text-primary">{{ shard.tenants_count }}</p>
-                                <p class="mt-0.5 text-xs text-on-surface-variant">tenant aktif</p>
+                                <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('tenant aktif') }}</p>
                             </div>
                         </div>
 
                         <div class="mt-3 grid gap-3 sm:grid-cols-3">
                             <div>
                                 <div class="flex items-center justify-between text-xs text-on-surface-variant">
-                                    <span>Beban (weight)</span>
+                                    <span>{{ t('Beban (weight)') }}</span>
                                     <span class="tabular-nums font-semibold text-on-surface">{{ shard.current_weight }}<template v-if="shard.maximum_weight"> / {{ shard.maximum_weight }}</template></span>
                                 </div>
                                 <div v-if="weightPercent(shard) !== null" class="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-container-high">
@@ -158,13 +160,13 @@ function driverIcon(driver) {
                                 <div v-else class="mt-1 h-1.5 rounded-full bg-surface-container-high" />
                             </div>
                             <div class="min-w-0">
-                                <p class="text-xs text-on-surface-variant">Versi Skema</p>
+                                <p class="text-xs text-on-surface-variant">{{ t('Versi Skema') }}</p>
                                 <p class="mt-0.5 truncate text-sm font-semibold" :title="shard.schema_version?.current_version" :class="shard.schema_version?.current_version === shard.schema_version?.target_version ? 'text-primary' : 'text-warning'">
                                     {{ shard.schema_version?.current_version ?? '—' }}
                                 </p>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-xs text-on-surface-variant">Target Skema</p>
+                                <p class="text-xs text-on-surface-variant">{{ t('Target Skema') }}</p>
                                 <p class="mt-0.5 truncate text-sm font-semibold text-primary" :title="shard.schema_version?.target_version">
                                     {{ shard.schema_version?.target_version ?? '—' }}
                                 </p>
@@ -179,7 +181,7 @@ function driverIcon(driver) {
                 <template #header>
                     <div class="flex items-center gap-2">
                         <AppIcon name="history" class="text-primary" />
-                        <h2 class="font-bold text-primary">Riwayat Cutover</h2>
+                        <h2 class="font-bold text-primary">{{ t('Riwayat Cutover') }}</h2>
                         <span class="rounded-full bg-surface-container-low px-2 py-0.5 text-xs font-bold text-on-surface-variant">{{ runs.total || 0 }}</span>
                     </div>
                 </template>
@@ -202,7 +204,7 @@ function driverIcon(driver) {
                     </template>
                     <template #cell-mode="{ row }">
                         <AppBadge :tone="row.is_dry_run ? 'neutral' : 'warning'" class="whitespace-nowrap">
-                            {{ row.is_dry_run ? 'Dry-run' : 'Produksi' }}
+                            {{ row.is_dry_run ? t('Dry-run') : t('Produksi') }}
                         </AppBadge>
                     </template>
                     <template #cell-progress="{ row }">

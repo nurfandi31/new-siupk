@@ -92,7 +92,7 @@ final readonly class ResolveTenant
             return;
         }
 
-        if ($request->session()->get('impersonated_by') !== null) {
+        if ($request->hasSession() && $request->session()->get('impersonated_by') !== null) {
             return;
         }
 

@@ -434,9 +434,9 @@ function submitResetTraining() {
                                     {{ money(row.amount) }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-center align-top">
-                                    <AppBadge v-if="row.is_reversal" tone="warning">Reversal</AppBadge>
-                                    <AppBadge v-else-if="row.already_reversed" tone="error">Reversed</AppBadge>
-                                    <AppBadge v-else tone="success">Posted</AppBadge>
+                                    <AppBadge v-if="row.is_reversal" tone="warning">{{ t('Reversal') }}</AppBadge>
+                                    <AppBadge v-else-if="row.already_reversed" tone="error">{{ t('Reversed') }}</AppBadge>
+                                    <AppBadge v-else tone="success">{{ t('Posted') }}</AppBadge>
                                 </td>
                             </tr>
                         </tbody>
@@ -458,7 +458,7 @@ function submitResetTraining() {
                             :disabled="pagination.page <= 1"
                             @click="apply(pagination.page - 1)"
                         >
-                            Prev
+                            {{ t('Prev') }}
                         </AppButton>
                         <AppButton
                             size="compact"
@@ -466,7 +466,7 @@ function submitResetTraining() {
                             :disabled="pagination.page >= pagination.last_page"
                             @click="apply(pagination.page + 1)"
                         >
-                            Next
+                            {{ t('Next') }}
                         </AppButton>
                     </div>
                 </div>
@@ -494,7 +494,7 @@ function submitResetTraining() {
                     </label>
 
                     <div class="flex justify-end gap-2">
-                        <AppButton type="button" variant="secondary" @click="purgeModalOpen = false">Batal</AppButton>
+                        <AppButton type="button" variant="secondary" @click="purgeModalOpen = false">{{ t('Batal') }}</AppButton>
                         <AppButton type="submit" variant="danger" icon="delete_forever" :loading="purgeForm.processing">
                             {{ t('Hapus Permanen :count Transaksi', { count: selectedRowIds.length }) }}
                         </AppButton>
@@ -532,7 +532,7 @@ function submitResetTraining() {
                     </div>
 
                     <div class="flex justify-end gap-2">
-                        <AppButton type="button" variant="secondary" @click="resetModalOpen = false">Batal</AppButton>
+                        <AppButton type="button" variant="secondary" @click="resetModalOpen = false">{{ t('Batal') }}</AppButton>
                         <AppButton
                             type="submit"
                             variant="danger"
@@ -540,7 +540,7 @@ function submitResetTraining() {
                             :disabled="resetConfirmText !== 'RESET'"
                             :loading="resetForm.processing"
                         >
-                            Reset Transaksi Pelatihan
+                            {{ t('Reset Transaksi Pelatihan') }}
                         </AppButton>
                     </div>
                 </form>
@@ -573,7 +573,7 @@ function submitResetTraining() {
                     </div>
 
                     <div class="flex justify-end gap-2">
-                        <AppButton type="button" variant="secondary" @click="endTrainingModalOpen = false">Batal</AppButton>
+                        <AppButton type="button" variant="secondary" @click="endTrainingModalOpen = false">{{ t('Batal') }}</AppButton>
                         <AppButton
                             type="submit"
                             variant="success"

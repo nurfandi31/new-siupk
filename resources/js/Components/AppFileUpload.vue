@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 defineOptions({ inheritAttrs: false });
 
 import { useId } from 'vue';
@@ -42,7 +44,7 @@ function onChange(event) {
         <p v-else-if="hint" :id="`${inputId}-hint`" class="ml-1 text-sm text-on-surface-variant">{{ hint }}</p>
         <p v-else-if="model" class="ml-1 flex items-center gap-2 text-sm text-on-surface-variant">
             {{ model.name }}
-            <button type="button" class="font-semibold text-primary hover:underline" @click="clearFile">Hapus</button>
+            <button type="button" class="font-semibold text-primary hover:underline" @click="clearFile">{{ t('Hapus') }}</button>
         </p>
     </div>
 </template>

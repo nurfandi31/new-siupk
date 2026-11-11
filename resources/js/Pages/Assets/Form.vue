@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppButton from '../../Components/AppButton.vue';
 import AppCard from '../../Components/AppCard.vue';
@@ -35,7 +37,7 @@ const categoryOptions = props.categories.map((c) => ({
     label: c.label,
     months: c.default_useful_life_months,
 }));
-const unitOptions = [{ value: '', label: '— Tanpa unit —' }, ...props.units.map((u) => ({ value: String(u.value), label: u.label }))];
+const unitOptions = [{ value: '', label: t('— Tanpa unit —') }, ...props.units.map((u) => ({ value: String(u.value), label: u.label }))];
 
 function submit() {
     form.transform(() => ({
@@ -50,65 +52,65 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Edit Inventaris" />
+    <Head :title="t('Edit Inventaris')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-3xl space-y-6">
             <header class="flex items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Edit Inventaris</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Edit Inventaris') }}</h1>
                     <p class="mt-1 text-on-surface-variant">
-                        Meta &amp; status register. Pembelian baru lewat Jurnal Umum — ubah di sini tidak membuat jurnal.
+                        {{ t('Meta & status register. Pembelian baru lewat Jurnal Umum — ubah di sini tidak membuat jurnal.') }}
                     </p>
                 </div>
             </header>
 
             <AppCard>
                 <form class="space-y-4" @submit.prevent="submit">
-                    <AppInput v-model="form.name" label="Nama barang" required :error="form.errors.name" />
+                    <AppInput v-model="form.name" :label="t('Nama barang')" required :error="form.errors.name" />
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <AppInput v-model="form.asset_code" label="Kode aset" :error="form.errors.asset_code" hint="Opsional, unik" />
+                        <AppInput v-model="form.asset_code" :label="t('Kode aset')" :error="form.errors.asset_code" :hint="t('Opsional, unik')" />
                         <SmartSelect
                             v-model="form.asset_category_row_id"
-                            label="Kategori"
+                            :label="t('Kategori')"
                             :options="[{ value: '', label: '— Pilih —' }, ...categoryOptions]"
                             :error="form.errors.asset_category_row_id"
                         />
                     </div>
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <AppDatePicker v-model="form.purchased_at" label="Tanggal beli" :error="form.errors.purchased_at" />
+                        <AppDatePicker v-model="form.purchased_at" :label="t('Tanggal beli')" :error="form.errors.purchased_at" />
                         <SmartSelect
                             v-model="form.organization_unit_row_id"
-                            label="Unit / desa"
+                            :label="t('Unit / desa')"
                             :options="unitOptions"
                             :error="form.errors.organization_unit_row_id"
                         />
                     </div>
                     <div class="grid gap-4 sm:grid-cols-3">
-                        <AppInput v-model="form.quantity" label="Jumlah" type="number" :error="form.errors.quantity" />
-                        <AppCurrencyInput v-model="form.unit_cost" label="Harga satuan" :error="form.errors.unit_cost" />
+                        <AppInput v-model="form.quantity" :label="t('Jumlah')" type="number" :error="form.errors.quantity" />
+                        <AppCurrencyInput v-model="form.unit_cost" :label="t('Harga satuan')" :error="form.errors.unit_cost" />
                         <AppInput
                             v-model="form.useful_life_months"
-                            label="Umur ekonomis (bulan)"
+                            :label="t('Umur ekonomis (bulan)')"
                             type="number"
                             hint="0 / kosong = tidak disusutkan"
                             :error="form.errors.useful_life_months"
                         />
                     </div>
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <SmartSelect v-model="form.status" label="Status" :options="status_options" :error="form.errors.status" />
-                        <AppDatePicker v-model="form.validated_at" label="Tgl validasi status" :error="form.errors.validated_at" />
+                        <SmartSelect v-model="form.status" :label="t('Status')" :options="status_options" :error="form.errors.status" />
+                        <AppDatePicker v-model="form.validated_at" :label="t('Tgl validasi status')" :error="form.errors.validated_at" />
                     </div>
                     <AppTextarea
                         v-model="form.status_notes"
-                        label="Catatan perubahan status"
+                        :label="t('Catatan perubahan status')"
                         :error="form.errors.status_notes"
-                        hint="Diisi jika status berubah"
+                        :hint="t('Diisi jika status berubah')"
                     />
                     <div class="flex justify-end gap-2 pt-2">
                         <Link :href="`/accounting/assets/${asset.row_id}`">
-                            <AppButton variant="ghost" type="button">Batal</AppButton>
+                            <AppButton variant="ghost" type="button">{{ t('Batal') }}</AppButton>
                         </Link>
-                        <AppButton type="submit" :loading="form.processing" icon="save">Simpan</AppButton>
+                        <AppButton type="submit" :loading="form.processing" icon="save">{{ t('Simpan') }}</AppButton>
                     </div>
                 </form>
             </AppCard>

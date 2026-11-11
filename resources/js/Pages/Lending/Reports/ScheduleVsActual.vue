@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -70,13 +72,13 @@ const pdfHref = computed(() => {
 </script>
 
 <template>
-    <Head title="Rencana vs Realisasi" />
+    <Head :title="t('Rencana vs Realisasi')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Rencana vs Realisasi</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Rencana vs Realisasi') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         Angsuran jatuh tempo {{ period.period_label }} · due vs paid di jadwal
                     </p>
@@ -88,22 +90,22 @@ const pdfHref = computed(() => {
 
             <AppCard class="p-4">
                 <div class="grid gap-3 sm:grid-cols-2">
-                    <AppDatePicker v-model="selectedYear" mode="year" label="Tahun" />
-                    <SmartSelect v-model="selectedMonth" :options="monthOptions" label="Bulan" />
+                    <AppDatePicker v-model="selectedYear" mode="year" :label="t('Tahun')" />
+                    <SmartSelect v-model="selectedMonth" :options="monthOptions" :label="t('Bulan')" />
                 </div>
             </AppCard>
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Rencana Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Rencana Pokok') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ formatMoney(totals.plan_principal) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Realisasi Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Realisasi Pokok') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ formatMoney(totals.actual_principal) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Gap Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Gap Pokok') }}</p>
                     <p
                         class="mt-2 text-xl font-bold"
                         :class="totals.gap_principal > 0 ? 'text-error' : 'text-primary'"
@@ -112,7 +114,7 @@ const pdfHref = computed(() => {
                     </p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Gap Jasa</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Gap Jasa') }}</p>
                     <p
                         class="mt-2 text-xl font-bold"
                         :class="totals.gap_interest > 0 ? 'text-error' : 'text-primary'"
@@ -128,20 +130,20 @@ const pdfHref = computed(() => {
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
                                 <th class="px-3 py-2 text-left">ID</th>
-                                <th class="px-3 py-2 text-left">Kelompok</th>
-                                <th class="px-3 py-2 text-left">Produk</th>
-                                <th class="px-3 py-2 text-right">Rencana Pokok</th>
-                                <th class="px-3 py-2 text-right">Realisasi Pokok</th>
-                                <th class="px-3 py-2 text-right">Gap Pokok</th>
-                                <th class="px-3 py-2 text-right">Rencana Jasa</th>
-                                <th class="px-3 py-2 text-right">Realisasi Jasa</th>
-                                <th class="px-3 py-2 text-right">Gap Jasa</th>
+                                <th class="px-3 py-2 text-left">{{ t('Kelompok') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Produk') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Rencana Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Realisasi Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Gap Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Rencana Jasa') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Realisasi Jasa') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Gap Jasa') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="rows.length === 0">
                                 <td colspan="9" class="px-3 py-8 text-center text-on-surface-variant">
-                                    Tidak ada angsuran jatuh tempo di bulan ini.
+                                    {{ t('Tidak ada angsuran jatuh tempo di bulan ini.') }}
                                 </td>
                             </tr>
                             <tr

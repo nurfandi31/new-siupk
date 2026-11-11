@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -36,18 +38,18 @@ const selectedYear = ref(String(props.filters.year));
 const selectedMonth = ref(String(props.filters.month));
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -80,15 +82,15 @@ const pdfUrl = computed(() => {
 </script>
 
 <template>
-    <Head title="Cover OJK" />
+    <Head :title="t('Cover OJK')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-5xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Laporan OJK · Sampul
+                        {{ t('Laporan OJK · Sampul') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Cover Laporan OJK</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Cover Laporan OJK') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Halaman sampul untuk periode {{ period_label }}
                     </p>
@@ -97,7 +99,7 @@ const pdfUrl = computed(() => {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -106,11 +108,11 @@ const pdfUrl = computed(() => {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -120,16 +122,16 @@ const pdfUrl = computed(() => {
                 <div class="border-2 border-primary p-8 sm:p-12">
                     <div class="flex flex-col items-center text-center">
                         <div v-if="identity.logo_url" class="mb-6">
-                            <img :src="identity.logo_url" alt="Logo Lembaga" class="h-24 w-24 object-contain" />
+                            <img :src="identity.logo_url" :alt="t('Logo Lembaga')" class="h-24 w-24 object-contain" />
                         </div>
                         <div v-else class="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
                             {{ (identity.short_name ?? identity.legal_name ?? 'L').slice(0, 1).toUpperCase() }}
                         </div>
                         <p class="text-xs font-bold uppercase tracking-[0.3em] text-on-surface-variant">
-                            Otoritas Jasa Keuangan
+                            {{ t('Otoritas Jasa Keuangan') }}
                         </p>
                         <p class="mt-1 text-xs uppercase tracking-widest text-on-surface-variant">
-                            Laporan Pelaporan Keuangan
+                            {{ t('Laporan Pelaporan Keuangan') }}
                         </p>
                         <h2 class="mt-8 text-2xl font-bold uppercase text-primary sm:text-3xl">
                             {{ identity.legal_name }}
@@ -143,7 +145,7 @@ const pdfUrl = computed(() => {
 
                         <div class="mt-12 border-t-2 border-b-2 border-primary py-4">
                             <h3 class="text-xl font-bold uppercase tracking-wider text-primary sm:text-2xl">
-                                Laporan Keuangan
+                                {{ t('Laporan Keuangan') }}
                             </h3>
                             <p class="mt-1 text-base font-semibold text-primary sm:text-lg">
                                 Periode {{ period_label }}
@@ -151,8 +153,7 @@ const pdfUrl = computed(() => {
                         </div>
 
                         <p class="mt-8 max-w-md text-xs text-on-surface-variant">
-                            Disampaikan kepada Otoritas Jasa Keuangan Republik Indonesia
-                            untuk memenuhi ketentuan pelaporan keuangan lembaga.
+                            {{ t('Disampaikan kepada Otoritas Jasa Keuangan Republik Indonesia untuk memenuhi ketentuan pelaporan keuangan lembaga.') }}
                         </p>
                     </div>
                 </div>
@@ -160,19 +161,19 @@ const pdfUrl = computed(() => {
 
             <AppCard class="p-4">
                 <h3 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-                    Identitas Lembaga
+                    {{ t('Identitas Lembaga') }}
                 </h3>
                 <dl class="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">Nama Lembaga</dt>
+                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Nama Lembaga') }}</dt>
                         <dd class="font-semibold text-on-surface">{{ identity.legal_name }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">Nama Singkat</dt>
+                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Nama Singkat') }}</dt>
                         <dd class="font-semibold text-on-surface">{{ identity.short_name ?? '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">No. Registrasi</dt>
+                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('No. Registrasi') }}</dt>
                         <dd class="font-semibold text-on-surface">{{ identity.registration_number || '—' }}</dd>
                     </div>
                     <div>
@@ -180,21 +181,21 @@ const pdfUrl = computed(() => {
                         <dd class="font-semibold text-on-surface">{{ identity.tax_number || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">Alamat</dt>
+                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Alamat') }}</dt>
                         <dd class="font-semibold text-on-surface">{{ identity.address || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">Kecamatan / Kabupaten</dt>
+                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Kecamatan / Kabupaten') }}</dt>
                         <dd class="font-semibold text-on-surface">
                             {{ identity.district_name || '—' }}<span v-if="identity.regency_name"> · {{ identity.regency_name }}</span>
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">Telepon</dt>
+                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Telepon') }}</dt>
                         <dd class="font-semibold text-on-surface">{{ identity.phone || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">Email</dt>
+                        <dt class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Email') }}</dt>
                         <dd class="font-semibold text-on-surface">{{ identity.email || '—' }}</dd>
                     </div>
                 </dl>
@@ -202,7 +203,7 @@ const pdfUrl = computed(() => {
 
             <AppCard class="p-4">
                 <h3 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-                    Susunan Pengurus (Cover)
+                    {{ t('Susunan Pengurus (Cover)') }}
                 </h3>
                 <ul class="space-y-1 text-sm text-on-surface">
                     <li v-if="identity.manager_name">

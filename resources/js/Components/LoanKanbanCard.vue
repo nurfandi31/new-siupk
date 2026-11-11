@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../i18n';
+const { t } = useI18n();
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import AppBadge from './AppBadge.vue';
@@ -42,16 +44,16 @@ const formatDate = (value) => {
     if (!value) return null;
     const d = new Date(value);
     if (Number.isNaN(d.getTime())) return null;
-    return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
+    return new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
 };
 
 const stageDateLabel = computed(() => {
     const map = {
-        proposal: { label: 'Tgl Pengajuan', value: props.loan.proposed_at },
-        verifikasi: { label: 'Tgl Verifikasi', value: props.loan.verified_at },
-        waiting: { label: 'Tgl Pendanaan', value: props.loan.funded_at },
-        aktif: { label: 'Tgl Cair', value: props.loan.disbursed_at },
-        lunas: { label: 'Tgl Lunas', value: props.loan.completed_at },
+        proposal: { label: t('Tgl Pengajuan'), value: props.loan.proposed_at },
+        verifikasi: { label: t('Tgl Verifikasi'), value: props.loan.verified_at },
+        waiting: { label: t('Tgl Pendanaan'), value: props.loan.funded_at },
+        aktif: { label: t('Tgl Cair'), value: props.loan.disbursed_at },
+        lunas: { label: t('Tgl Lunas'), value: props.loan.completed_at },
     };
     return map[props.stage] ?? null;
 });
@@ -102,7 +104,7 @@ const termMonths = computed(() => {
         </header>
 
         <div class="mx-4 mb-3 rounded-lg bg-surface-container-low px-3 py-2.5">
-            <p class="text-[11px] font-medium uppercase tracking-wide text-on-surface-variant/80">Plafon</p>
+            <p class="text-[11px] font-medium uppercase tracking-wide text-on-surface-variant/80">{{ t('Plafon') }}</p>
             <p class="mt-0.5 truncate text-base font-extrabold tabular-nums leading-tight text-on-surface">
                 {{ money(principal) }}
             </p>
@@ -145,7 +147,7 @@ const termMonths = computed(() => {
             <div class="flex flex-wrap items-center justify-end gap-1.5">
                 <slot name="prefix" />
                 <Link :href="`/lending/loans/${loan.row_id}`" data-row-stop>
-                    <AppButton variant="ghost" size="compact" icon="visibility" data-row-stop>Detail</AppButton>
+                    <AppButton variant="ghost" size="compact" icon="visibility" data-row-stop>{{ t('Detail') }}</AppButton>
                 </Link>
                 <AppButton
                     v-for="action in actions"

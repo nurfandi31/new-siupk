@@ -8,9 +8,11 @@ import AppCard from '../../../Components/AppCard.vue';
 import AppIcon from '../../../Components/AppIcon.vue';
 import SmartDataTable from '../../../Components/SmartDataTable.vue';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
+import { useToast } from '../../../composables/useToast';
 import { useI18n } from '../../../i18n';
 
 const { t } = useI18n();
+const toast = useToast();
 
 defineProps({
     tenants: { type: Object, required: true },
@@ -37,13 +39,13 @@ async function autoLogin(tenant) {
         });
         const data = await response.json();
         if (!response.ok || !data.redirect_url) {
-            alert(data.message || t('Gagal membuat sesi auto-login.'));
+            toast.error(data.message || t('Gagal membuat sesi auto-login.'));
             return;
         }
         window.open(data.redirect_url, '_blank');
     } catch (err) {
         console.error(err);
-        alert(t('Terjadi kesalahan saat memulai auto-login.'));
+        toast.error(t('Terjadi kesalahan saat memulai auto-login.'));
     } finally {
         impersonatingId.value = null;
     }

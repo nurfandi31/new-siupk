@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -22,7 +24,7 @@ const selectedTenant = ref(props.selected_tenant_id || '');
 const baseUrl = '/regency/reports/cash-flow';
 
 const tenantOptions = computed(() => [
-    { value: '', label: 'Semua Kecamatan (Gabungan)' },
+    { value: '', label: t('Semua Kecamatan (Gabungan)') },
     ...(props.report.kecamatans || []).map(kec => ({
         value: kec.id,
         label: kec.name,
@@ -47,7 +49,7 @@ watch(selectedTenant, () => {
                 <div>
                     <h1 class="text-2xl font-bold text-primary">Arus Kas Konsolidasi Kabupaten {{ regency_name }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        {{ report.period?.period_label }} · {{ report.is_consolidated ? 'Gabungan Seluruh Kecamatan' : 'Kecamatan Terpilih' }}
+                        {{ report.period?.period_label }} · {{ report.is_consolidated ? t('Gabungan Seluruh Kecamatan') : t('Kecamatan Terpilih') }}
                     </p>
                 </div>
 
@@ -62,7 +64,7 @@ watch(selectedTenant, () => {
                         <SmartSelect
                             v-model="selectedTenant"
                             :options="tenantOptions"
-                            label="Kecamatan"
+                            :label="t('Kecamatan')"
                             value-key="value"
                             label-key="label"
                             hide-label
@@ -74,11 +76,11 @@ watch(selectedTenant, () => {
             <!-- Summary Cards -->
             <div class="grid gap-4 sm:grid-cols-3">
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Saldo Kas Awal</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Saldo Kas Awal') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ money(report.reconciliation?.cash_opening) }}</p>
                 </AppCard>
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Kenaikan / Penurunan Bersih</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Kenaikan / Penurunan Bersih') }}</span>
                     <p
                         class="mt-2 text-2xl font-bold"
                         :class="(report.reconciliation?.net_change || 0) >= 0 ? 'text-primary' : 'text-error'"
@@ -87,7 +89,7 @@ watch(selectedTenant, () => {
                     </p>
                 </AppCard>
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Saldo Kas Akhir</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Saldo Kas Akhir') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ money(report.reconciliation?.cash_closing) }}</p>
                 </AppCard>
             </div>
@@ -98,11 +100,11 @@ watch(selectedTenant, () => {
                     <table class="w-full text-left text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase text-on-surface-variant">
                             <tr>
-                                <th class="px-6 py-3 w-32">Kode</th>
-                                <th class="px-6 py-3">Uraian / Aktivitas</th>
-                                <th class="px-6 py-3 text-right">Kas Masuk (Rp)</th>
-                                <th class="px-6 py-3 text-right">Kas Keluar (Rp)</th>
-                                <th class="px-6 py-3 text-right">Arus Bersih (Rp)</th>
+                                <th class="px-6 py-3 w-32">{{ t('Kode') }}</th>
+                                <th class="px-6 py-3">{{ t('Uraian / Aktivitas') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Kas Masuk (Rp)') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Kas Keluar (Rp)') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Arus Bersih (Rp)') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
@@ -171,17 +173,17 @@ watch(selectedTenant, () => {
                         </tbody>
                         <tfoot class="bg-surface-container-low font-bold">
                             <tr class="border-t border-outline-variant">
-                                <td class="px-6 py-2.5" colspan="4">Saldo Kas Awal Periode</td>
+                                <td class="px-6 py-2.5" colspan="4">{{ t('Saldo Kas Awal Periode') }}</td>
                                 <td class="px-6 py-2.5 text-right font-bold text-primary">{{ money(report.reconciliation?.cash_opening) }}</td>
                             </tr>
                             <tr>
-                                <td class="px-6 py-2.5" colspan="4">Kenaikan (Penurunan) Kas Bersih</td>
+                                <td class="px-6 py-2.5" colspan="4">{{ t('Kenaikan (Penurunan) Kas Bersih') }}</td>
                                 <td class="px-6 py-2.5 text-right font-bold" :class="(report.reconciliation?.net_change || 0) >= 0 ? 'text-primary' : 'text-error'">
                                     {{ money(report.reconciliation?.net_change) }}
                                 </td>
                             </tr>
                             <tr class="bg-primary/10 text-primary text-base">
-                                <td class="px-6 py-3" colspan="4">Saldo Kas Akhir Periode</td>
+                                <td class="px-6 py-3" colspan="4">{{ t('Saldo Kas Akhir Periode') }}</td>
                                 <td class="px-6 py-3 text-right font-black">{{ money(report.reconciliation?.cash_closing) }}</td>
                             </tr>
                         </tfoot>

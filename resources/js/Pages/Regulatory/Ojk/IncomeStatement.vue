@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -64,22 +66,22 @@ const pdfUrl = computed(() => {
 </script>
 
 <template>
-    <Head title="Laba Rugi OJK" />
+    <Head :title="t('Laba Rugi OJK')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Laporan OJK · Laba Rugi
+                        {{ t('Laporan OJK · Laba Rugi') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Laporan Laba Rugi</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Laporan Laba Rugi') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">{{ period.period_label }}</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -99,8 +101,8 @@ const pdfUrl = computed(() => {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left w-12">Huruf</th>
-                                <th class="px-3 py-2 text-left">Rekening</th>
+                                <th class="px-3 py-2 text-left w-12">{{ t('Huruf') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Rekening') }}</th>
                                 <th class="px-3 py-2 text-right">s.d. {{ header_lalu }}</th>
                                 <th class="px-3 py-2 text-right">{{ header_sekarang }}</th>
                                 <th class="px-3 py-2 text-right">s.d. {{ header_sekarang }}</th>
@@ -109,7 +111,7 @@ const pdfUrl = computed(() => {
                         <tbody>
                             <tr v-if="groups.length === 0">
                                 <td colspan="5" class="px-3 py-8 text-center text-on-surface-variant">
-                                    Belum ada pendapatan/beban.
+                                    {{ t('Belum ada pendapatan/beban.') }}
                                 </td>
                             </tr>
                             <template v-for="group in groups" :key="group.code">
@@ -143,35 +145,35 @@ const pdfUrl = computed(() => {
                         <tfoot class="font-semibold">
                             <tr class="border-t-2 border-outline bg-surface-container">
                                 <td class="px-3 py-2 text-center">A</td>
-                                <td class="px-3 py-2">A. Laba (Rugi) Operasional</td>
+                                <td class="px-3 py-2">{{ t('A. Laba (Rugi) Operasional') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.operating.prior) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.operating.current) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.operating.ytd) }}</td>
                             </tr>
                             <tr class="bg-surface-container">
                                 <td class="px-3 py-2 text-center">B</td>
-                                <td class="px-3 py-2">B. Laba (Rugi) Non Operasional</td>
+                                <td class="px-3 py-2">{{ t('B. Laba (Rugi) Non Operasional') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.non_operating.prior) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.non_operating.current) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.non_operating.ytd) }}</td>
                             </tr>
                             <tr class="bg-surface-container">
                                 <td class="px-3 py-2 text-center">C</td>
-                                <td class="px-3 py-2">C. Laba (Rugi) Sebelum Pajak (A+B)</td>
+                                <td class="px-3 py-2">{{ t('C. Laba (Rugi) Sebelum Pajak (A+B)') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.before_tax.prior) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.before_tax.current) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.before_tax.ytd) }}</td>
                             </tr>
                             <tr class="bg-surface-container">
                                 <td class="px-3 py-2 text-center">D</td>
-                                <td class="px-3 py-2">D. Beban Pajak</td>
+                                <td class="px-3 py-2">{{ t('D. Beban Pajak') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.tax.prior) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.tax.current) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.tax.ytd) }}</td>
                             </tr>
                             <tr class="bg-primary/10 text-primary">
                                 <td class="px-3 py-2 text-center">E</td>
-                                <td class="px-3 py-2">E. Laba (Rugi) Bersih (C-D)</td>
+                                <td class="px-3 py-2">{{ t('E. Laba (Rugi) Bersih (C-D)') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.after_tax.prior) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.after_tax.current) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.after_tax.ytd) }}</td>

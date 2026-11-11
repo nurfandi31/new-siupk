@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -37,17 +39,17 @@ function goPage(page) {
 </script>
 
 <template>
-    <Head title="Jurnal Transaksi" />
+    <Head :title="t('Jurnal Transaksi')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Jurnal Transaksi</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Jurnal Transaksi') }}</h1>
                     <p class="text-sm text-on-surface-variant">{{ period.period_label }}</p>
                 </div>
                 <AppBadge :tone="balanced ? 'success' : 'error'">
-                    {{ balanced ? 'Debit = Kredit' : 'Tidak seimbang' }}
+                    {{ balanced ? 'Debit = Kredit' : t('Tidak seimbang') }}
                 </AppBadge>
             </div>
 
@@ -68,18 +70,18 @@ function goPage(page) {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-left text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2">No</th>
-                                <th class="px-3 py-2">Tanggal</th>
-                                <th class="px-3 py-2">No. Jurnal</th>
-                                <th class="px-3 py-2">Kode</th>
-                                <th class="px-3 py-2">Keterangan</th>
-                                <th class="px-3 py-2 text-right">Debit</th>
-                                <th class="px-3 py-2 text-right">Kredit</th>
+                                <th class="px-3 py-2">{{ t('No') }}</th>
+                                <th class="px-3 py-2">{{ t('Tanggal') }}</th>
+                                <th class="px-3 py-2">{{ t('No. Jurnal') }}</th>
+                                <th class="px-3 py-2">{{ t('Kode') }}</th>
+                                <th class="px-3 py-2">{{ t('Keterangan') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Debit') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Kredit') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="rows.length === 0">
-                                <td colspan="7" class="px-3 py-8 text-center text-on-surface-variant">Tidak ada jurnal posted pada periode ini.</td>
+                                <td colspan="7" class="px-3 py-8 text-center text-on-surface-variant">{{ t('Tidak ada jurnal posted pada periode ini.') }}</td>
                             </tr>
                             <tr v-for="row in rows" :key="`${row.entry_row_id}-${row.no}`" class="border-t border-outline-variant/40">
                                 <td class="px-3 py-2 tabular-nums">{{ row.no }}</td>
@@ -96,7 +98,7 @@ function goPage(page) {
                         </tbody>
                         <tfoot>
                             <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                <td colspan="5" class="px-3 py-2">Total periode</td>
+                                <td colspan="5" class="px-3 py-2">{{ t('Total periode') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.debit) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.credit) }}</td>
                             </tr>
@@ -116,7 +118,7 @@ function goPage(page) {
                             :disabled="pagination.page <= 1"
                             @click="goPage(pagination.page - 1)"
                         >
-                            Prev
+                            {{ t('Prev') }}
                         </AppButton>
                         <AppButton
                             type="button"
@@ -127,7 +129,7 @@ function goPage(page) {
                             :disabled="pagination.page >= pagination.last_page"
                             @click="goPage(pagination.page + 1)"
                         >
-                            Next
+                            {{ t('Next') }}
                         </AppButton>
                     </div>
                 </div>

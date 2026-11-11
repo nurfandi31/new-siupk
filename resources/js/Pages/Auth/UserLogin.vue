@@ -1,7 +1,10 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppIcon from '../../Components/AppIcon.vue';
+import AppLanguageSwitcher from '../../Components/AppLanguageSwitcher.vue';
 
 const props = defineProps({
     scope: { type: String, default: 'tenant' },
@@ -54,10 +57,10 @@ function avatarTone(index) {
 }
 
 function statusLabel(user) {
-    if (user.can_login) return 'Aktif';
-    if (user.status !== 'active') return user.status === 'suspended' ? 'Ditangguhkan' : 'Nonaktif';
+    if (user.can_login) return t('Aktif');
+    if (user.status !== 'active') return user.status === 'suspended' ? t('Ditangguhkan') : t('Nonaktif');
 
-    return 'Tanpa keanggotaan';
+    return t('Tanpa keanggotaan');
 }
 
 function statusClass(user) {
@@ -70,7 +73,7 @@ function statusClass(user) {
 function login(user) {
     if (!user.can_login || loggingInId.value !== null) {
         if (!user.can_login) {
-            notice.value = `Akun ${user.name} tidak dapat digunakan untuk login.`;
+            notice.value = t('Akun :name tidak dapat digunakan untuk login.', { name: user.name });
         }
 
         return;
@@ -88,14 +91,14 @@ function login(user) {
             loggingInId.value = null;
         },
         onError: () => {
-            notice.value = 'Gagal melakukan login otomatis. Coba lagi.';
+            notice.value = t('Gagal melakukan login otomatis. Coba lagi.');
         },
     });
 }
 </script>
 
 <template>
-    <Head :title="`Pilih Akun ${isCentral ? 'Pusat' : 'Tenant'} - siupk Next`" />
+    <Head :title="`${isCentral ? t('Pilih Akun Pusat') : t('Pilih Akun Login')} - siupk Next`" />
 
     <main class="min-h-screen bg-surface font-sans text-on-surface">
         <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 sm:py-10">
@@ -106,7 +109,7 @@ function login(user) {
                     </span>
                     <span class="min-w-0 leading-tight">
                         <span class="block truncate text-base font-bold tracking-tight">
-                            siupk <span class="text-secondary">Next</span>
+                            siupk <span class="text-secondary">{{ t('Next') }}</span>
                         </span>
                         <span class="block truncate text-[11px] font-medium uppercase tracking-[0.18em] text-outline">
                             {{ context.name }}
@@ -114,13 +117,16 @@ function login(user) {
                     </span>
                 </Link>
 
-                <Link
-                    :href="route('login')"
-                    class="inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-primary-container/40"
-                >
-                    <AppIcon name="key" class="text-lg" />
-                    Login manual
-                </Link>
+                <div class="flex items-center gap-2">
+                    <AppLanguageSwitcher align="right" tone="surface" />
+                    <Link
+                        :href="route('login')"
+                        class="inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-primary-container/40"
+                    >
+                        <AppIcon name="key" class="text-lg" />
+                        {{ t('Login manual') }}
+                    </Link>
+                </div>
             </header>
 
             <section class="mt-8 space-y-2 sm:mt-12">
@@ -132,29 +138,28 @@ function login(user) {
                     {{ context.label }} &middot; {{ context.code }} &middot; {{ context.host }}
                 </span>
                 <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">
-                    {{ isCentral ? 'Pilih Akun Pusat' : 'Pilih Akun Login' }}
+                    {{ isCentral ? t('Pilih Akun Pusat') : t('Pilih Akun Login') }}
                 </h1>
                 <p class="max-w-2xl text-sm text-on-surface-variant">
-                    Klik dua kali pada kartu pengguna untuk langsung masuk tanpa mengetik password.
+                    {{ t('Klik dua kali pada kartu pengguna untuk langsung masuk tanpa mengetik password.') }}
                     <template v-if="isCentral">
-                        Daftar ini hanya memuat akun platform pusat (superadmin, supervisor provinsi,
-                        supervisor kabupaten), bukan akun tenant lokasi.
+                        {{ t('Daftar ini hanya memuat akun platform pusat (superadmin, supervisor provinsi, supervisor kabupaten), bukan akun tenant lokasi.') }}
                     </template>
                     <template v-else>
-                        Daftar ini hanya memuat pengguna milik tenant
-                        <strong class="font-semibold text-on-surface">{{ context.name }}</strong>, bukan akun pusat.
+                        {{ t('Daftar ini hanya memuat pengguna milik tenant') }}
+                        <strong class="font-semibold text-on-surface">{{ context.name }}</strong>{{ t(', bukan akun pusat.') }}
                     </template>
                 </p>
             </section>
 
             <section class="mt-6 flex flex-wrap items-center gap-3">
                 <label class="relative min-w-0 flex-1 sm:max-w-sm">
-                    <span class="sr-only">Cari pengguna</span>
+                    <span class="sr-only">{{ t('Cari pengguna') }}</span>
                     <AppIcon name="search" class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-outline" />
                     <input
                         v-model="search"
                         type="search"
-                        placeholder="Cari pengguna..."
+                        :placeholder="t('Cari pengguna...')"
                         class="w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-2.5 pl-10 pr-3 text-sm text-on-surface shadow-sm outline-none transition placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/20"
                     >
                 </label>
@@ -162,11 +167,11 @@ function login(user) {
                 <div class="flex items-center gap-2 text-xs font-medium text-on-surface-variant">
                     <span class="inline-flex items-center gap-1.5 rounded-full bg-secondary-container/50 px-3 py-1.5 text-secondary">
                         <span class="size-1.5 rounded-full bg-secondary" />
-                        {{ activeCount }} akun siap dipakai
+                        {{ activeCount }} {{ t('akun siap dipakai') }}
                     </span>
                     <span class="inline-flex items-center gap-1.5 rounded-full bg-surface-container-low px-3 py-1.5">
                         <AppIcon name="group" class="text-sm" />
-                        {{ users.length }} total pengguna
+                        {{ users.length }} {{ t('total pengguna') }}
                     </span>
                 </div>
             </section>
@@ -239,28 +244,28 @@ function login(user) {
                         <div class="flex flex-wrap items-center gap-1.5">
                             <span class="inline-flex items-center gap-1 rounded-lg bg-surface-container-low px-2 py-1 text-[11px] font-semibold text-on-surface-variant">
                                 <AppIcon name="badge" class="text-sm" />
-                                {{ user.role_name || 'Tanpa role' }}
+                                {{ user.role_name || t('Tanpa role') }}
                             </span>
                             <span
                                 v-if="user.is_village_user"
                                 class="inline-flex items-center gap-1 rounded-lg bg-primary-container/40 px-2 py-1 text-[11px] font-semibold text-primary"
                             >
                                 <AppIcon name="location_on" class="text-sm" />
-                                Operator desa
+                                {{ t('Operator desa') }}
                             </span>
                             <span
                                 v-if="user.is_self"
                                 class="inline-flex items-center gap-1 rounded-lg bg-secondary-container/60 px-2 py-1 text-[11px] font-semibold text-secondary"
                             >
                                 <AppIcon name="check_circle" class="text-sm" />
-                                Sesi ini
+                                {{ t('Sesi ini') }}
                             </span>
                         </div>
 
                         <div class="mt-auto flex items-center justify-between gap-2 border-t border-outline-variant/40 pt-3">
                             <span class="inline-flex items-center gap-1.5 text-[11px] text-outline">
                                 <AppIcon name="schedule" class="text-sm" />
-                                {{ user.last_login_at ? `Login terakhir ${user.last_login_at}` : 'Belum pernah login' }}
+                                {{ user.last_login_at ? `${t('Login terakhir')} ${user.last_login_at}` : t('Belum pernah login') }}
                             </span>
 
                             <span
@@ -268,14 +273,14 @@ function login(user) {
                                 class="inline-flex items-center gap-1.5 text-[11px] font-bold text-primary"
                             >
                                 <AppIcon name="progress_activity" class="animate-spin text-sm" />
-                                Masuk...
+                                {{ t('Masuk...') }}
                             </span>
                             <span
                                 v-else-if="user.can_login"
                                 class="inline-flex items-center gap-1 text-[11px] font-bold text-primary opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100"
                             >
                                 <AppIcon name="ads_click" class="text-sm" />
-                                Klik 2x
+                                {{ t('Klik 2x') }}
                             </span>
                         </div>
                     </article>
@@ -288,16 +293,16 @@ function login(user) {
                     <span class="grid size-14 place-items-center rounded-2xl bg-surface-container-low text-outline">
                         <AppIcon name="person_search" class="text-3xl" />
                     </span>
-                    <h2 class="mt-4 text-base font-bold">Tidak ada pengguna yang cocok</h2>
+                    <h2 class="mt-4 text-base font-bold">{{ t('Tidak ada pengguna yang cocok') }}</h2>
                     <p class="mt-1 max-w-sm text-sm text-on-surface-variant">
-                        {{ search ? 'Coba kata kunci lain atau hapus pencarian.' : (isCentral ? 'Belum ada pengguna pusat yang aktif.' : 'Belum ada pengguna aktif pada tenant ini.') }}
+                        {{ search ? t('Coba kata kunci lain atau hapus pencarian.') : (isCentral ? t('Belum ada pengguna pusat yang aktif.') : t('Belum ada pengguna aktif pada tenant ini.')) }}
                     </p>
                 </div>
             </section>
 
             <footer class="mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/40 pt-4 text-[11px] text-outline">
                 <span>&copy; {{ new Date().getFullYear() }} siupk Next &mdash; {{ context.name }}</span>
-                <span>Halaman bantuan demo &mdash; jangan gunakan pada instalasi produksi.</span>
+                <span>{{ t('Halaman bantuan demo — jangan gunakan pada instalasi produksi.') }}</span>
             </footer>
         </div>
     </main>

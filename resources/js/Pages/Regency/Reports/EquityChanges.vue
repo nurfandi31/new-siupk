@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -21,7 +23,7 @@ const selectedTenant = ref(props.selected_tenant_id || '');
 const baseUrl = '/regency/reports/equity-changes';
 
 const tenantOptions = computed(() => [
-    { value: '', label: 'Semua Kecamatan (Gabungan)' },
+    { value: '', label: t('Semua Kecamatan (Gabungan)') },
     ...(props.report.kecamatans || []).map(kec => ({
         value: kec.id,
         label: kec.name,
@@ -45,7 +47,7 @@ watch(selectedTenant, () => {
                 <div>
                     <h1 class="text-2xl font-bold text-primary">Laporan Perubahan Modal Kabupaten {{ regency_name }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        {{ report.period?.period_label }} · {{ report.is_consolidated ? 'Gabungan Seluruh Kecamatan' : 'Kecamatan Terpilih' }}
+                        {{ report.period?.period_label }} · {{ report.is_consolidated ? t('Gabungan Seluruh Kecamatan') : t('Kecamatan Terpilih') }}
                     </p>
                 </div>
 
@@ -60,7 +62,7 @@ watch(selectedTenant, () => {
                         <SmartSelect
                             v-model="selectedTenant"
                             :options="tenantOptions"
-                            label="Kecamatan"
+                            :label="t('Kecamatan')"
                             value-key="value"
                             label-key="label"
                             hide-label
@@ -71,15 +73,15 @@ watch(selectedTenant, () => {
 
             <div class="grid gap-4 sm:grid-cols-3">
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Total Modal / Ekuitas</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Total Modal / Ekuitas') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ money(report.summary?.total_equity) }}</p>
                 </AppCard>
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Jumlah Rekening</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Jumlah Rekening') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ report.rows?.length || 0 }}</p>
                 </AppCard>
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Cakupan</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Cakupan') }}</span>
                     <p class="mt-2 text-lg font-bold text-primary">
                         {{ report.is_consolidated ? 'Konsolidasi' : (report.kecamatans?.[0]?.name || 'Kecamatan') }}
                     </p>
@@ -91,13 +93,13 @@ watch(selectedTenant, () => {
                     <table class="w-full text-left text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase text-on-surface-variant">
                             <tr>
-                                <th class="px-6 py-3 w-16">No</th>
-                                <th class="px-6 py-3 w-40">Kode</th>
-                                <th class="px-6 py-3">Rekening Modal</th>
+                                <th class="px-6 py-3 w-16">{{ t('No') }}</th>
+                                <th class="px-6 py-3 w-40">{{ t('Kode') }}</th>
+                                <th class="px-6 py-3">{{ t('Rekening Modal') }}</th>
                                 <th v-if="report.is_consolidated && report.kecamatans.length > 1" v-for="kec in report.kecamatans" :key="kec.id" class="px-4 py-3 text-right">
                                     {{ kec.name }}
                                 </th>
-                                <th class="px-6 py-3 text-right">Total (Rp)</th>
+                                <th class="px-6 py-3 text-right">{{ t('Total (Rp)') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
@@ -112,7 +114,7 @@ watch(selectedTenant, () => {
                             </tr>
                             <tr v-if="!report.rows?.length">
                                 <td :colspan="report.is_consolidated && report.kecamatans.length > 1 ? report.kecamatans.length + 4 : 4" class="px-6 py-8 text-center text-sm text-on-surface-variant">
-                                    Belum ada rekening modal pada periode ini.
+                                    {{ t('Belum ada rekening modal pada periode ini.') }}
                                 </td>
                             </tr>
                         </tbody>

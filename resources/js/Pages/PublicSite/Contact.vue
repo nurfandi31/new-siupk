@@ -80,16 +80,16 @@ const social = computed(() => props.settings?.social ?? {});
                         <div v-if="email" class="flex gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
                             <span class="material-symbols-rounded text-primary">mail</span>
                             <div>
-                                <p class="text-xs font-bold uppercase tracking-wider text-primary">Email</p>
+                                <p class="text-xs font-bold uppercase tracking-wider text-primary">{{ t('Email') }}</p>
                                 <a :href="`mailto:${email}`" class="mt-1 block text-sm font-semibold text-primary hover:underline">{{ email }}</a>
                             </div>
                         </div>
                     </div>
 
                     <div v-if="social.facebook || social.instagram || social.youtube" class="flex gap-2">
-                        <a v-if="social.facebook" :href="social.facebook" target="_blank" rel="noopener" class="grid size-9 place-items-center rounded-full bg-primary text-on-primary hover:bg-primary/90" aria-label="Facebook">f</a>
-                        <a v-if="social.instagram" :href="social.instagram" target="_blank" rel="noopener" class="grid size-9 place-items-center rounded-full bg-primary text-on-primary hover:bg-primary/90" aria-label="Instagram">◎</a>
-                        <a v-if="social.youtube" :href="social.youtube" target="_blank" rel="noopener" class="grid size-9 place-items-center rounded-full bg-primary text-on-primary hover:bg-primary/90" aria-label="YouTube">▶</a>
+                        <a v-if="social.facebook" :href="social.facebook" target="_blank" rel="noopener" class="grid size-9 place-items-center rounded-full bg-primary text-on-primary hover:bg-primary/90" :aria-label="t('Facebook')">f</a>
+                        <a v-if="social.instagram" :href="social.instagram" target="_blank" rel="noopener" class="grid size-9 place-items-center rounded-full bg-primary text-on-primary hover:bg-primary/90" :aria-label="t('Instagram')">◎</a>
+                        <a v-if="social.youtube" :href="social.youtube" target="_blank" rel="noopener" class="grid size-9 place-items-center rounded-full bg-primary text-on-primary hover:bg-primary/90" :aria-label="t('YouTube')">▶</a>
                     </div>
                 </div>
 
@@ -102,7 +102,7 @@ const social = computed(() => props.settings?.social ?? {});
                         <form class="space-y-4" @submit.prevent="submit">
                             <!-- honeypot: visually hidden, not display:none so bots still fill it -->
                             <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
-                                <label for="website">Website</label>
+                                <label for="website">{{ t('Website') }}</label>
                                 <input id="website" v-model="form.website" type="text" tabindex="-1" autocomplete="off" />
                             </div>
 
@@ -113,8 +113,8 @@ const social = computed(() => props.settings?.social ?? {});
                                     <p v-if="form.errors.name" class="ml-1 text-sm text-error">{{ form.errors.name }}</p>
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Email</label>
-                                    <input v-model="form.email" type="email" maxlength="255" placeholder="nama@email.com" class="h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                                    <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Email') }}</label>
+                                    <input v-model="form.email" type="email" maxlength="255" :placeholder="t('nama@email.com')" class="h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                                     <p v-if="form.errors.email" class="ml-1 text-sm text-error">{{ form.errors.email }}</p>
                                 </div>
                             </div>

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -21,7 +23,7 @@ const props = defineProps({
 const selectedTenant = ref(props.selected_tenant_id || '');
 
 const tenantOptions = computed(() => [
-    { value: '', label: 'Semua Kecamatan (Gabungan)' },
+    { value: '', label: t('Semua Kecamatan (Gabungan)') },
     ...(props.report.kecamatans || []).map(kec => ({
         value: kec.tenant_id,
         label: kec.name,
@@ -44,9 +46,9 @@ watch(selectedTenant, () => {
             <!-- Header & Filter -->
             <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Catatan Atas Laporan Keuangan (CALK)</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Catatan Atas Laporan Keuangan (CALK)') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Kabupaten {{ regency_name }} · {{ report.period?.period_label }} · {{ report.is_consolidated ? 'Gabungan Seluruh Kecamatan' : 'Kecamatan Terpilih' }}
+                        Kabupaten {{ regency_name }} · {{ report.period?.period_label }} · {{ report.is_consolidated ? t('Gabungan Seluruh Kecamatan') : t('Kecamatan Terpilih') }}
                     </p>
                 </div>
             </div>
@@ -60,7 +62,7 @@ watch(selectedTenant, () => {
                     <SmartSelect
                         v-model="selectedTenant"
                         :options="tenantOptions"
-                        label="Kecamatan"
+                        :label="t('Kecamatan')"
                         value-key="value"
                         label-key="label"
                         hide-label
@@ -83,20 +85,20 @@ watch(selectedTenant, () => {
 
             <!-- I. Gambaran Umum & Kebijakan -->
             <AppCard class="p-6">
-                <h2 class="text-base font-bold text-primary">I. Gambaran Umum Wilayah Kabupaten</h2>
+                <h2 class="text-base font-bold text-primary">{{ t('I. Gambaran Umum Wilayah Kabupaten') }}</h2>
                 <div class="mt-3 space-y-2 text-sm text-on-surface leading-relaxed">
                     <p>
                         Laporan keuangan konsolidasi Kabupaten <strong>{{ regency_name }}</strong> mencakup seluruh unit pengelola kegiatan (UPK DBM / BUMDesma) yang berada dalam naungan administrasi kabupaten.
                     </p>
                     <p>
-                        Penggabungan laporan menggunakan basis data shard tunggal yang memastikan standarisasi bagan akun standar (Chart of Accounts), eliminasi transaksi intra-kabupaten, serta kepatuhan pada regulasi pelaporan keuangan dana bergulir masyarakat.
+                        {{ t('Penggabungan laporan menggunakan basis data shard tunggal yang memastikan standarisasi bagan akun standar (Chart of Accounts), eliminasi transaksi intra-kabupaten, serta kepatuhan pada regulasi pelaporan keuangan dana bergulir masyarakat.') }}
                     </p>
                 </div>
             </AppCard>
 
             <!-- II. Kebijakan Akuntansi Standar -->
             <AppCard class="p-6">
-                <h2 class="text-base font-bold text-primary">II. Kebijakan Akuntansi Standar yang Diterapkan</h2>
+                <h2 class="text-base font-bold text-primary">{{ t('II. Kebijakan Akuntansi Standar yang Diterapkan') }}</h2>
                 <div class="mt-3 space-y-3 text-sm text-on-surface">
                     <div class="flex gap-3">
                         <span class="font-bold text-primary">1.</span>
@@ -120,19 +122,19 @@ watch(selectedTenant, () => {
             <!-- III. Rekapitulasi per Kecamatan -->
             <AppCard :padded="false">
                 <div class="border-b border-outline-variant px-6 py-4">
-                    <h2 class="font-bold text-primary">III. Rincian & Partisipasi per Kecamatan</h2>
+                    <h2 class="font-bold text-primary">{{ t('III. Rincian & Partisipasi per Kecamatan') }}</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase text-on-surface-variant">
                             <tr>
-                                <th class="px-6 py-3">Kode</th>
-                                <th class="px-6 py-3">Nama Kecamatan</th>
-                                <th class="px-6 py-3 text-right">Kas & Bank</th>
-                                <th class="px-6 py-3 text-right">Pinjaman Aktif</th>
-                                <th class="px-6 py-3 text-right">Sisa Pokok</th>
-                                <th class="px-6 py-3 text-right">Kelompok</th>
-                                <th class="px-6 py-3 text-right">Anggota</th>
+                                <th class="px-6 py-3">{{ t('Kode') }}</th>
+                                <th class="px-6 py-3">{{ t('Nama Kecamatan') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Kas & Bank') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Pinjaman Aktif') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Sisa Pokok') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Kelompok') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Anggota') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">

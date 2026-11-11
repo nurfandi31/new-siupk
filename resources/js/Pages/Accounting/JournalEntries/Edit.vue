@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { computed, watch } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -141,7 +143,7 @@ function transactionTypeLabel(value) {
     <AuthenticatedLayout>
         <div class="mx-auto max-w-4xl space-y-6">
             <header>
-                <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Koreksi Transaksi</p>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Koreksi Transaksi') }}</p>
                 <h1 class="mt-1 text-2xl font-bold text-primary sm:text-3xl">Koreksi Jurnal #{{ originalEntry.id }}</h1>
                 <p class="mt-1 text-sm text-on-surface-variant">
                     Jurnal lama akan di-<strong>reverse</strong> dan diganti dengan jurnal baru menggunakan data di bawah ini.
@@ -155,20 +157,20 @@ function transactionTypeLabel(value) {
                         <AppIcon name="warning" class="text-2xl" />
                     </div>
                     <div class="flex-1">
-                        <p class="text-base font-bold text-primary">Perhatian</p>
+                        <p class="text-base font-bold text-primary">{{ t('Perhatian') }}</p>
                         <ul class="mt-2 space-y-1 text-sm text-on-surface-variant">
                             <li>
-                                <span class="font-semibold">Tanggal:</span>
+                                <span class="font-semibold">{{ t('Tanggal:') }}</span>
                                 {{ originalEntry.transaction_date }} ·
-                                <span class="font-semibold">Jenis:</span>
+                                <span class="font-semibold">{{ t('Jenis:') }}</span>
                                 {{ transactionTypeLabel(originalEntry.transaction_type) }}
                             </li>
                             <li>
-                                <span class="font-semibold">Nominal:</span>
+                                <span class="font-semibold">{{ t('Nominal:') }}</span>
                                 {{ currency(originalEntry.amount) }}
                             </li>
                             <li v-if="originalEntry.description" class="text-on-surface-variant">
-                                <span class="font-semibold">Keterangan:</span> {{ originalEntry.description }}
+                                <span class="font-semibold">{{ t('Keterangan:') }}</span> {{ originalEntry.description }}
                             </li>
                         </ul>
                         <p class="mt-2 text-sm text-warning">
@@ -187,26 +189,26 @@ function transactionTypeLabel(value) {
                 <template #header>
                     <div class="flex items-center justify-between gap-3">
                         <div>
-                            <h2 class="text-xl font-bold text-primary">Form Koreksi</h2>
-                            <p class="mt-1 text-sm text-on-surface-variant">Lengkapi data jurnal baru di bawah ini.</p>
+                            <h2 class="text-xl font-bold text-primary">{{ t('Form Koreksi') }}</h2>
+                            <p class="mt-1 text-sm text-on-surface-variant">{{ t('Lengkapi data jurnal baru di bawah ini.') }}</p>
                         </div>
-                        <AppBadge tone="warning">Edit</AppBadge>
+                        <AppBadge tone="warning">{{ t('Edit') }}</AppBadge>
                     </div>
                 </template>
 
                 <form class="space-y-5" @submit.prevent="submit">
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <AppDatePicker v-model="form.transaction_date" label="Tanggal Transaksi" required :error="form.errors.transaction_date" />
-                        <SmartSelect v-model="form.transaction_type" :options="props.transactionTypes" label="Jenis Transaksi" placeholder="Pilih jenis transaksi" required :error="form.errors.transaction_type" />
+                        <AppDatePicker v-model="form.transaction_date" :label="t('Tanggal Transaksi')" required :error="form.errors.transaction_date" />
+                        <SmartSelect v-model="form.transaction_type" :options="props.transactionTypes" :label="t('Jenis Transaksi')" :placeholder="t('Pilih jenis transaksi')" required :error="form.errors.transaction_type" />
                     </div>
 
                     <AppTextarea
                         v-if="!isInventory"
                         v-model="form.description"
-                        label="Keterangan / Deskripsi"
+                        :label="t('Keterangan / Deskripsi')"
                         required
                         :error="form.errors.description"
-                        placeholder="Masukkan keterangan"
+                        :placeholder="t('Masukkan keterangan')"
                     />
 
                     <div class="grid gap-4 sm:grid-cols-2">
@@ -214,7 +216,7 @@ function transactionTypeLabel(value) {
                             v-model="form.sumber_dana_row_id"
                             :options="sumberDanaOptions"
                             :label="sumberDanaLabel + ' (Kredit)'"
-                            placeholder="Pilih akun"
+                            :placeholder="t('Pilih akun')"
                             :disabled="!currentType"
                             required
                             :error="form.errors.sumber_dana_row_id"
@@ -223,7 +225,7 @@ function transactionTypeLabel(value) {
                             v-model="form.disimpan_ke_row_id"
                             :options="disimpanKeOptions"
                             :label="disimpanKeLabel + ' (Debit)'"
-                            placeholder="Pilih akun"
+                            :placeholder="t('Pilih akun')"
                             :disabled="!currentType"
                             required
                             :error="form.errors.disimpan_ke_row_id"
@@ -236,15 +238,15 @@ function transactionTypeLabel(value) {
 
                     <template v-if="isInventory">
                         <div class="grid gap-4 sm:grid-cols-3">
-                            <AppInput v-model="form.reference" label="Relasi" :error="form.errors.reference" placeholder="Masukkan referensi" />
-                            <AppInput v-model="form.asset_name" label="Nama Barang" required :error="form.errors.asset_name" placeholder="Masukkan nama" />
-                            <AppInput v-model="form.asset_quantity" label="Jml. Unit" type="number" min="1" required :error="form.errors.asset_quantity" placeholder="1" />
+                            <AppInput v-model="form.reference" :label="t('Relasi')" :error="form.errors.reference" :placeholder="t('Masukkan referensi')" />
+                            <AppInput v-model="form.asset_name" :label="t('Nama Barang')" required :error="form.errors.asset_name" :placeholder="t('Masukkan nama')" />
+                            <AppInput v-model="form.asset_quantity" :label="t('Jml. Unit')" type="number" min="1" required :error="form.errors.asset_quantity" placeholder="1" />
                         </div>
                         <div class="grid gap-4 sm:grid-cols-3">
-                            <AppCurrencyInput v-model="form.asset_unit_cost" label="Harga Satuan" icon="payments" :min="1" required :error="form.errors.asset_unit_cost" placeholder="0" />
+                            <AppCurrencyInput v-model="form.asset_unit_cost" :label="t('Harga Satuan')" icon="payments" :min="1" required :error="form.errors.asset_unit_cost" placeholder="0" />
                             <AppInput
                                 v-model="form.asset_useful_life_months"
-                                label="Umur Eko. (bulan)"
+                                :label="t('Umur Eko. (bulan)')"
                                 type="number"
                                 :min="currentType === 'pembelian_aset_tanah' ? 0 : 1"
                                 required
@@ -252,27 +254,27 @@ function transactionTypeLabel(value) {
                                 :placeholder="currentType === 'pembelian_aset_tanah' ? '0' : '48'"
                                 :hint="currentType === 'pembelian_aset_tanah' ? 'Tanah: 0 = tidak disusutkan' : null"
                             />
-                            <AppCurrencyInput v-model="form.amount" label="Harga Perolehan" icon="payments" :min="1" required readonly :error="form.errors.amount" placeholder="0" hint="Otomatis: unit × harga satuan" />
+                            <AppCurrencyInput v-model="form.amount" :label="t('Harga Perolehan')" icon="payments" :min="1" required readonly :error="form.errors.amount" placeholder="0" :hint="t('Otomatis: unit × harga satuan')" />
                         </div>
                     </template>
 
                     <template v-else>
-                        <AppInput v-model="form.reference" label="Relasi (opsional)" :error="form.errors.reference" placeholder="Masukkan referensi" />
-                        <AppCurrencyInput v-model="form.amount" label="Nominal" icon="payments" :min="1" required :error="form.errors.amount" placeholder="0" />
+                        <AppInput v-model="form.reference" :label="t('Relasi (opsional)')" :error="form.errors.reference" :placeholder="t('Masukkan referensi')" />
+                        <AppCurrencyInput v-model="form.amount" :label="t('Nominal')" icon="payments" :min="1" required :error="form.errors.amount" placeholder="0" />
                     </template>
 
                     <AppTextarea
                         v-model="form.reason"
-                        label="Alasan Koreksi"
-                        placeholder="Masukkan alasan"
+                        :label="t('Alasan Koreksi')"
+                        :placeholder="t('Masukkan alasan')"
                         :error="form.errors.reason"
-                        hint="Wajib diisi. Disimpan di jurnal reversal dan jurnal baru untuk audit trail."
+                        :hint="t('Wajib diisi. Disimpan di jurnal reversal dan jurnal baru untuk audit trail.')"
                     />
 
                     <div class="flex justify-end gap-3 border-t border-outline-variant pt-4">
-                        <AppButton variant="secondary" type="button" @click="cancel">Batal</AppButton>
+                        <AppButton variant="secondary" type="button" @click="cancel">{{ t('Batal') }}</AppButton>
                         <AppButton type="submit" variant="warning" :loading="form.processing" :disabled="form.processing" icon="edit">
-                            Simpan Koreksi
+                            {{ t('Simpan Koreksi') }}
                         </AppButton>
                     </div>
                 </form>

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -18,11 +20,11 @@ const props = defineProps({
 });
 
 const columns = [
-    { key: 'created_at', label: 'Waktu', sortable: false },
-    { key: 'actor_name', label: 'Aktor' },
-    { key: 'action', label: 'Aksi' },
-    { key: 'tenant', label: 'Tenant' },
-    { key: 'description', label: 'Deskripsi' },
+    { key: 'created_at', label: t('Waktu'), sortable: false },
+    { key: 'actor_name', label: t('Aktor') },
+    { key: 'action', label: t('Aksi') },
+    { key: 'tenant', label: t('Tenant') },
+    { key: 'description', label: t('Deskripsi') },
 ];
 
 function label(value) {
@@ -30,7 +32,7 @@ function label(value) {
 }
 
 const actionOptions = [
-    { value: '', label: 'Semua aksi' },
+    { value: '', label: t('Semua aksi') },
     ...props.actions.map((value) => ({ value, label: label(value) })),
 ];
 
@@ -71,12 +73,12 @@ function subjectLink(row) {
 </script>
 
 <template>
-    <Head title="Log Audit" />
+    <Head :title="t('Log Audit')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <AdminPageHeader
-                title="Log Audit Platform"
-                subtitle="Jejak semua aksi sensitif superadmin: perubahan tenant, impersonasi, penagihan, dan penghapusan data."
+                :title="t('Log Audit Platform')"
+                :subtitle="t('Jejak semua aksi sensitif superadmin: perubahan tenant, impersonasi, penagihan, dan penghapusan data.')"
             />
 
             <AppCard :padded="false">
@@ -94,7 +96,7 @@ function subjectLink(row) {
                         <div class="min-w-0 flex-1 sm:min-w-48 sm:flex-initial">
                             <SmartSelect
                                 :model-value="action"
-                                label="Aksi"
+                                :label="t('Aksi')"
                                 hide-label
                                 size="compact"
                                 clearable
@@ -105,7 +107,7 @@ function subjectLink(row) {
                         <div class="min-w-52">
                             <SmartSelect
                                 :model-value="tenant_id ? String(tenant_id) : ''"
-                                label="Tenant"
+                                :label="t('Tenant')"
                                 hide-label
                                 size="compact"
                                 clearable
@@ -122,7 +124,7 @@ function subjectLink(row) {
                     <template #cell-actor_name="{ row }">
                         <span class="font-semibold text-primary">{{ row.actor_name }}</span>
                         <AppBadge v-if="row.actor_type === 'superadmin'" :tone="'primary-soft'" class="ml-1.5">
-                            Superadmin
+                            {{ t('Superadmin') }}
                         </AppBadge>
                     </template>
                     <template #cell-action="{ row }">
@@ -137,7 +139,7 @@ function subjectLink(row) {
                         <p>{{ row.description || '—' }}</p>
                         <p v-if="row.ip_address" class="text-xs text-outline">{{ row.subject_type ? `#${row.subject_id} · ${subjectLink(row) ? '' : row.subject_type.split('\\').pop()} · ` : '' }}IP {{ row.ip_address }}</p>
                         <details v-if="row.properties && Object.keys(row.properties).length" class="mt-0.5 text-xs">
-                            <summary class="cursor-pointer text-primary hover:underline">Detail</summary>
+                            <summary class="cursor-pointer text-primary hover:underline">{{ t('Detail') }}</summary>
                             <pre class="mt-1 max-w-xl overflow-x-auto rounded bg-surface-container-low p-2 text-[11px] leading-relaxed text-on-surface-variant">{{ JSON.stringify(row.properties, null, 2) }}</pre>
                         </details>
                     </template>

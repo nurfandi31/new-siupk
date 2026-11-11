@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -18,12 +20,12 @@ const props = defineProps({
 });
 
 const columns = [
-    { key: 'number', label: 'Nomor', sortable: true },
-    { key: 'tenant', label: 'Tenant' },
-    { key: 'purpose', label: 'Keperluan' },
-    { key: 'amount', label: 'Nominal', sortable: true },
-    { key: 'due_at', label: 'Jatuh tempo', sortable: true },
-    { key: 'status', label: 'Status', sortable: true },
+    { key: 'number', label: t('Nomor'), sortable: true },
+    { key: 'tenant', label: t('Tenant') },
+    { key: 'purpose', label: t('Keperluan') },
+    { key: 'amount', label: t('Nominal'), sortable: true },
+    { key: 'due_at', label: t('Jatuh tempo'), sortable: true },
+    { key: 'status', label: t('Status'), sortable: true },
 ];
 
 const purposeLabels = {
@@ -36,13 +38,13 @@ const purposeLabels = {
 };
 
 const statusOptions = [
-    { value: '', label: 'Semua status' },
-    { value: 'issued', label: 'Issued' },
-    { value: 'partially_paid', label: 'Partial' },
-    { value: 'paid', label: 'Paid' },
-    { value: 'overdue', label: 'Overdue' },
-    { value: 'void', label: 'Void' },
-    { value: 'draft', label: 'Draft' },
+    { value: '', label: t('Semua status') },
+    { value: 'issued', label: t('Issued') },
+    { value: 'partially_paid', label: t('Partial') },
+    { value: 'paid', label: t('Paid') },
+    { value: 'overdue', label: t('Overdue') },
+    { value: 'void', label: t('Void') },
+    { value: 'draft', label: t('Draft') },
 ];
 
 function money(value, currency = 'IDR') {
@@ -68,15 +70,15 @@ function tone(status) {
 </script>
 
 <template>
-    <Head title="Invoice" />
+    <Head :title="t('Invoice')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <AdminPageHeader
-                title="Invoice Platform"
-                subtitle="Tagihan tenant: langganan, setup, support, training, custom, dan keperluan lain."
+                :title="t('Invoice Platform')"
+                :subtitle="t('Tagihan tenant: langganan, setup, support, training, custom, dan keperluan lain.')"
             >
                 <template #actions>
-                    <Link href="/admin/invoices/create"><AppButton icon="add">Buat Invoice</AppButton></Link>
+                    <Link href="/admin/invoices/create"><AppButton icon="add">{{ t('Buat Invoice') }}</AppButton></Link>
                 </template>
             </AdminPageHeader>
 
@@ -96,7 +98,7 @@ function tone(status) {
                 >
                     <template #toolbar>
                         <div class="min-w-0 flex-1 sm:min-w-48 sm:flex-initial">
-                            <SmartSelect :model-value="status" label="Status" hide-label size="compact" :options="statusOptions" @update:model-value="filterStatus" />
+                            <SmartSelect :model-value="status" :label="t('Status')" hide-label size="compact" :options="statusOptions" @update:model-value="filterStatus" />
                         </div>
                     </template>
                     <template #cell-tenant="{ row }">
@@ -113,14 +115,14 @@ function tone(status) {
                     <template #cell-status="{ row }">
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <AppBadge :tone="tone(row.status)">{{ row.status }}</AppBadge>
-                            <span v-if="row.blocks_access" class="rounded bg-error/15 px-1.5 py-0.5 text-[10px] font-bold text-error" title="Tagihan memblokir akses jika belum lunas">
-                                Blokir
+                            <span v-if="row.blocks_access" class="rounded bg-error/15 px-1.5 py-0.5 text-[10px] font-bold text-error" :title="t('Tagihan memblokir akses jika belum lunas')">
+                                {{ t('Blokir') }}
                             </span>
                         </div>
                     </template>
                     <template #actions="{ row }">
                         <div class="flex items-center justify-end gap-1.5">
-                            <Link :href="`/admin/invoices/${row.row_id}`"><AppButton variant="ghost" size="compact" icon="visibility">Detail</AppButton></Link>
+                            <Link :href="`/admin/invoices/${row.row_id}`"><AppButton variant="ghost" size="compact" icon="visibility">{{ t('Detail') }}</AppButton></Link>
                         </div>
                     </template>
                 </SmartDataTable>

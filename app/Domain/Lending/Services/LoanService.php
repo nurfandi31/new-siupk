@@ -22,6 +22,7 @@ use App\Services\TenantSettingService;
 use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 use DomainException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -1274,23 +1275,37 @@ final class LoanService
         int $installmentNumber,
         string $paidAt,
     ): void {
-        // Tentukan angsuran target: jika installment_number dikirim, pilih baris dengan nomor tsb.
-        // Else: pilih baris dengan due_date <= paidAt dan belum lunas (proses payment walk).
-        $query = $loan->installments()->orderBy('installment_number');
+        // Jadwal angsuran dapat tersimpan dalam dua bentuk:
+        //  - combined  : satu baris per angsuran (principal_due + interest_due), atau
+        //  - split     : baris terpisah per `component` (principal / interest).
+        // Karena itu pembayaran harus dialokasikan per kelompok nomor angsuran,
+        // bukan menulis pokok + jasa ke baris pertama yang ditemukan.
+        $query = $loan->installments()->orderBy('installment_number')->orderBy('component');
+
         if ($installmentRowId > 0) {
             $target = $query->clone()->where('row_id', $installmentRowId)->lockForUpdate()->first();
             if (! $target) {
                 return;
             }
-            $this->incrementInstallment($target, $principalPaid, $interestPaid, $penaltyPaid, $paidAt);
+
+            $rows = $query->clone()
+                ->where('installment_number', (int) $target->installment_number)
+                ->lockForUpdate()
+                ->get();
+            $this->applyToInstallmentGroup($rows, $principalPaid, $interestPaid, $penaltyPaid, $paidAt);
         } elseif ($installmentNumber > 0) {
-            $target = $query->clone()->where('installment_number', $installmentNumber)->lockForUpdate()->first();
-            if (! $target) {
+            $rows = $query->clone()
+                ->where('installment_number', $installmentNumber)
+                ->lockForUpdate()
+                ->get();
+            if ($rows->isEmpty()) {
                 return;
             }
-            $this->incrementInstallment($target, $principalPaid, $interestPaid, $penaltyPaid, $paidAt);
+
+            $this->applyToInstallmentGroup($rows, $principalPaid, $interestPaid, $penaltyPaid, $paidAt);
         } else {
-            // Walk: bayar angsuran tertua dulu (mirror siupk).
+            // Walk: bayar angsuran tertua dulu (mirror siupk), tetap per kelompok
+            // nomor angsuran agar baris split tidak saling menimpa.
             $remainingP = $principalPaid;
             $remainingI = $interestPaid;
             $remainingD = $penaltyPaid;
@@ -1298,28 +1313,26 @@ final class LoanService
                 ->whereNotNull('due_date')
                 ->orderBy('due_date')
                 ->orderBy('installment_number')
+                ->orderBy('component')
                 ->lockForUpdate()
                 ->get();
-            foreach ($rows as $row) {
+
+            foreach ($rows->groupBy('installment_number') as $group) {
                 if ($remainingP <= 0 && $remainingI <= 0 && $remainingD <= 0) {
                     break;
                 }
-                $owedP = max(0.0, (float) $row->principal_due - (float) $row->principal_paid);
-                $owedI = max(0.0, (float) $row->interest_due - (float) $row->interest_paid);
-                $owedD = max(0.0, (float) $row->penalty_due - (float) $row->penalty_paid);
 
-                $applyP = min($remainingP, $owedP);
-                $applyI = min($remainingI, $owedI);
-                $applyD = min($remainingD, $owedD);
+                $applied = $this->applyToInstallmentGroup(
+                    $group->values(),
+                    $remainingP,
+                    $remainingI,
+                    $remainingD,
+                    $paidAt,
+                );
 
-                if ($applyP + $applyI + $applyD <= 0) {
-                    continue;
-                }
-
-                $this->incrementInstallment($row, $applyP, $applyI, $applyD, $paidAt);
-                $remainingP -= $applyP;
-                $remainingI -= $applyI;
-                $remainingD -= $applyD;
+                $remainingP = round($remainingP - $applied['principal'], 2);
+                $remainingI = round($remainingI - $applied['interest'], 2);
+                $remainingD = round($remainingD - $applied['penalty'], 2);
             }
         }
 
@@ -1327,36 +1340,190 @@ final class LoanService
         $this->recomputeRunningTotals($loan);
     }
 
+    /**
+     * Alokasikan pembayaran ke satu kelompok angsuran (combined atau split component).
+     *
+     * @param  Collection<int, LoanInstallment>  $rows
+     * @return array{principal: float, interest: float, penalty: float} nominal yang benar-benar diterapkan
+     */
+    private function applyToInstallmentGroup(
+        Collection $rows,
+        float $principalPaid,
+        float $interestPaid,
+        float $penaltyPaid,
+        string $paidAt,
+    ): array {
+        if ($rows->isEmpty()) {
+            return ['principal' => 0.0, 'interest' => 0.0, 'penalty' => 0.0];
+        }
+
+        $isSplit = $rows->contains(
+            fn (LoanInstallment $row): bool => in_array((string) $row->component, ['principal', 'interest', 'penalty'], true),
+        );
+
+        if (! $isSplit) {
+            // Combined row: pokok & jasa berada pada baris yang sama.
+            return $this->incrementInstallment($rows->first(), $principalPaid, $interestPaid, $penaltyPaid, $paidAt);
+        }
+
+        $principalRow = $rows->first(fn (LoanInstallment $row): bool => (string) $row->component === 'principal');
+        $interestRow = $rows->first(fn (LoanInstallment $row): bool => (string) $row->component === 'interest');
+        $penaltyRow = $rows->first(fn (LoanInstallment $row): bool => (string) $row->component === 'penalty');
+
+        $appliedPrincipal = $principalRow !== null
+            ? $this->incrementInstallmentComponent($principalRow, 'principal', $principalPaid, $paidAt)
+            : 0.0;
+        $appliedInterest = $interestRow !== null
+            ? $this->incrementInstallmentComponent($interestRow, 'interest', $interestPaid, $paidAt)
+            : 0.0;
+
+        // Denda tidak punya baris jadwal tersendiri pada jadwal legacy; simpan pada
+        // baris bunga (fallback pokok) seperti perilaku sebelumnya.
+        $penaltyTarget = $penaltyRow ?? $interestRow ?? $principalRow;
+        $appliedPenalty = $penaltyTarget !== null
+            ? $this->incrementInstallmentPenalty($penaltyTarget, $penaltyPaid, $paidAt)
+            : 0.0;
+
+        return [
+            'principal' => $appliedPrincipal,
+            'interest' => $appliedInterest,
+            'penalty' => $appliedPenalty,
+        ];
+    }
+
+    /**
+     * @return array{principal: float, interest: float, penalty: float}
+     */
     private function incrementInstallment(
         LoanInstallment $installment,
         float $principalPaid,
         float $interestPaid,
         float $penaltyPaid,
         string $paidAt,
-    ): void {
-        $newPrincipal = round((float) $installment->principal_paid + $principalPaid, 2);
-        $newInterest = round((float) $installment->interest_paid + $interestPaid, 2);
-        $newPenalty = round((float) $installment->penalty_paid + $penaltyPaid, 2);
+    ): array {
+        $appliedPrincipal = $this->applyAmount(
+            (float) $installment->principal_paid,
+            (float) $installment->principal_due,
+            $principalPaid,
+        );
+        $appliedInterest = $this->applyAmount(
+            (float) $installment->interest_paid,
+            (float) $installment->interest_due,
+            $interestPaid,
+        );
+        $appliedPenalty = $this->applyAmount(
+            (float) $installment->penalty_paid,
+            (float) $installment->penalty_due,
+            $penaltyPaid,
+            capToDue: $penaltyPaid > 0 && (float) $installment->penalty_due > 0,
+        );
 
-        $owedPrincipal = round((float) $installment->principal_due, 2);
-        $owedInterest = round((float) $installment->interest_due, 2);
-
-        // Cap ke nilai due supaya tidak overpay (mirror siupk max sum = alokasi).
-        if ($newPrincipal > $owedPrincipal) {
-            $newPrincipal = $owedPrincipal;
+        if ($appliedPrincipal + $appliedInterest + $appliedPenalty <= 0) {
+            return ['principal' => 0.0, 'interest' => 0.0, 'penalty' => 0.0];
         }
-        if ($newInterest > $owedInterest) {
-            $newInterest = $owedInterest;
-        }
 
-        $nowFullyPaid = $newPrincipal >= $owedPrincipal && $newInterest >= $owedInterest;
+        $newPrincipal = round((float) $installment->principal_paid + $appliedPrincipal, 2);
+        $newInterest = round((float) $installment->interest_paid + $appliedInterest, 2);
+        $newPenalty = round((float) $installment->penalty_paid + $appliedPenalty, 2);
+
+        $fullyPaid = $newPrincipal >= round((float) $installment->principal_due, 2)
+            && $newInterest >= round((float) $installment->interest_due, 2);
 
         $installment->update([
             'principal_paid' => $newPrincipal,
             'interest_paid' => $newInterest,
             'penalty_paid' => $newPenalty,
-            'paid_at' => $nowFullyPaid ? $paidAt : $installment->paid_at,
+            'paid_at' => $fullyPaid ? $paidAt : $installment->paid_at,
+            'status' => $fullyPaid ? 'paid' : 'partial',
         ]);
+
+        return [
+            'principal' => $appliedPrincipal,
+            'interest' => $appliedInterest,
+            'penalty' => $appliedPenalty,
+        ];
+    }
+
+    /**
+     * Update satu baris komponen (jadwal split) tanpa menyentuh komponen lain.
+     */
+    private function incrementInstallmentComponent(
+        LoanInstallment $installment,
+        string $component,
+        float $amount,
+        string $paidAt,
+    ): float {
+        if ($amount <= 0) {
+            return 0.0;
+        }
+
+        $paidField = $component === 'interest' ? 'interest_paid' : 'principal_paid';
+        $dueField = $component === 'interest' ? 'interest_due' : 'principal_due';
+
+        $applied = $this->applyAmount(
+            (float) $installment->{$paidField},
+            (float) $installment->{$dueField},
+            $amount,
+        );
+
+        if ($applied <= 0) {
+            return 0.0;
+        }
+
+        $newPaid = round((float) $installment->{$paidField} + $applied, 2);
+        $fullyPaid = $newPaid >= round((float) $installment->{$dueField}, 2);
+
+        $installment->update([
+            $paidField => $newPaid,
+            'paid_at' => $fullyPaid ? $paidAt : $installment->paid_at,
+            'status' => $fullyPaid ? 'paid' : 'partial',
+        ]);
+
+        return $applied;
+    }
+
+    private function incrementInstallmentPenalty(
+        LoanInstallment $installment,
+        float $amount,
+        string $paidAt,
+    ): float {
+        if ($amount <= 0) {
+            return 0.0;
+        }
+
+        $penaltyDue = round((float) $installment->penalty_due, 2);
+        $applied = $this->applyAmount(
+            (float) $installment->penalty_paid,
+            $penaltyDue,
+            $amount,
+            capToDue: $penaltyDue > 0,
+        );
+
+        if ($applied <= 0) {
+            return 0.0;
+        }
+
+        $installment->update([
+            'penalty_paid' => round((float) $installment->penalty_paid + $applied, 2),
+            'paid_at' => $installment->paid_at ?? $paidAt,
+        ]);
+
+        return $applied;
+    }
+
+    private function applyAmount(float $paid, float $due, float $amount, bool $capToDue = true): float
+    {
+        if ($amount <= 0) {
+            return 0.0;
+        }
+
+        if (! $capToDue) {
+            return round($amount, 2);
+        }
+
+        $remaining = max(0.0, round($due - $paid, 2));
+
+        return round(min($amount, $remaining), 2);
     }
 
     /**

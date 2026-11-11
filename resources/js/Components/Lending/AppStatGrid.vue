@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import AppIcon from '../AppIcon.vue';
 
 defineProps({
@@ -107,7 +109,7 @@ const accentTone = {
                 class="mt-3"
             >
                 <div class="flex items-center justify-between text-[10px] font-semibold uppercase tracking-widest text-on-surface-variant">
-                    <span>{{ stat.progressLabel ?? 'Progress' }}</span>
+                    <span>{{ stat.progressLabel ?? t('Progress') }}</span>
                     <span class="tabular-nums text-on-surface">{{ stat.progress }}%</span>
                 </div>
                 <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-container-high">

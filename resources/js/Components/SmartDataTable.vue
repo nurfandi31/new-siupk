@@ -106,7 +106,7 @@ onBeforeUnmount(() => clearTimeout(timer));
     <div class="space-y-3 px-3 py-3 sm:space-y-4 sm:px-4 sm:py-4">
         <div class="flex flex-col gap-2 inset-divider pb-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:pb-3">
             <div class="flex flex-wrap items-center gap-2"><SmartSelect id="smart-table-per-page" :label="t('Per halaman')" hide-label size="compact" :model-value="Number(perPage)" :options="perPageOptions" :disabled="processing" @update:model-value="changePerPage"/><slot name="toolbar" /></div>
-            <div class="min-w-0 max-w-56 sm:ml-auto"><AppInput v-model="query" :label="t(searchLabel)" hide-label icon="search" size="compact" :placeholder="t(searchPlaceholder)" @input="scheduleSearch"><template v-if="query" #trailing><button type="button" class="rounded-full p-1 text-outline hover:bg-surface-container-low hover:text-primary" :aria-label="t('Hapus pencarian')" @click="resetSearch"><AppIcon name="close" class="text-base" /></button></template></AppInput></div>
+            <div class="min-w-0 w-full sm:ml-auto sm:w-80"><AppInput v-model="query" :label="t(searchLabel)" hide-label icon="search" size="compact" :placeholder="t(searchPlaceholder)" @input="scheduleSearch"><template v-if="query" #trailing><button type="button" class="rounded-full p-1 text-outline hover:bg-surface-container-low hover:text-primary" :aria-label="t('Hapus pencarian')" @click="resetSearch"><AppIcon name="close" class="text-base" /></button></template></AppInput></div>
         </div>
         <div class="relative overflow-x-auto">
             <div v-if="processing" class="absolute inset-0 z-10 flex items-start justify-center bg-surface-container-lowest/60 pt-16 text-sm text-primary">{{ t('Memuat...') }}</div>

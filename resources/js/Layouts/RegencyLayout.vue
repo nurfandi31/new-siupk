@@ -23,12 +23,12 @@ function navLabel(label) {
 }
 
 const navigation = [
-    { label: 'Beranda', icon: 'dashboard', href: '/regency/dashboard', exact: true },
-    { label: 'Neraca', icon: 'account_balance', href: '/regency/reports/balance-sheet' },
-    { label: 'Laba Rugi', icon: 'trending_up', href: '/regency/reports/income-statement' },
-    { label: 'Perubahan Modal', icon: 'balance', href: '/regency/reports/equity-changes' },
-    { label: 'Buku Besar', icon: 'menu_book', href: '/regency/reports/general-ledger' },
-    { label: 'Arus Kas', icon: 'payments', href: '/regency/reports/cash-flow' },
+    { label: t('Beranda'), icon: 'dashboard', href: '/regency/dashboard', exact: true },
+    { label: t('Neraca'), icon: 'account_balance', href: '/regency/reports/balance-sheet' },
+    { label: t('Laba Rugi'), icon: 'trending_up', href: '/regency/reports/income-statement' },
+    { label: t('Perubahan Modal'), icon: 'balance', href: '/regency/reports/equity-changes' },
+    { label: t('Buku Besar'), icon: 'menu_book', href: '/regency/reports/general-ledger' },
+    { label: t('Arus Kas'), icon: 'payments', href: '/regency/reports/cash-flow' },
     { label: 'CALK', icon: 'description', href: '/regency/reports/calk' },
 ];
 

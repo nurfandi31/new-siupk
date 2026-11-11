@@ -257,217 +257,217 @@ function navLabel(label) {
 
 const sections = [
     {
-        label: 'Beranda',
-        items: [{ label: 'Beranda', icon: 'dashboard', href: '/dashboard', exact: true }],
+        label: t('Beranda'),
+        items: [{ label: t('Beranda'), icon: 'dashboard', href: '/dashboard', exact: true }],
     },
     {
-        label: 'Pengaturan',
+        label: t('Pengaturan'),
         items: [
-            { label: 'Pengaturan', icon: 'settings', href: '/settings', exact: true },
-            { label: 'Gerbang WhatsApp', icon: 'chat', href: '/settings/whatsapp' },
+            { label: t('Pengaturan'), icon: 'settings', href: '/settings', exact: true },
+            { label: t('Gerbang WhatsApp'), icon: 'chat', href: '/settings/whatsapp' },
         ],
     },
     {
-        label: 'Anggota',
-        items: [{ label: 'Portal Saya', icon: 'account_circle', href: '/portal' }],
+        label: t('Anggota'),
+        items: [{ label: t('Portal Saya'), icon: 'account_circle', href: '/portal' }],
     },
     {
         label: 'siupk',
         items: [
             {
                 key: 'master-data',
-                label: 'Master Data',
+                label: t('Master Data'),
                 icon: 'database',
                 children: [
-                    { label: 'Data Desa', icon: 'location_city', href: '/master-data/villages' },
+                    { label: t('Data Desa'), icon: 'location_city', href: '/master-data/villages' },
                     {
                         key: 'members',
-                        label: 'Anggota',
+                        label: t('Anggota'),
                         icon: 'person',
                         children: [
-                            { label: 'Tambah Anggota', href: '/master-data/members/create', exact: true },
-                            { label: 'Daftar Anggota', href: '/master-data/members', exclude: '/master-data/members/create' },
+                            { label: t('Tambah Anggota'), href: '/master-data/members/create', exact: true },
+                            { label: t('Daftar Anggota'), href: '/master-data/members', exclude: '/master-data/members/create' },
                         ],
                     },
                     {
                         key: 'groups',
-                        label: 'Kelompok',
+                        label: t('Kelompok'),
                         icon: 'groups',
                         children: [
-                            { label: 'Tambah Kelompok', href: '/master-data/groups/create', exact: true },
-                            { label: 'Daftar Kelompok', href: '/master-data/groups', exclude: '/master-data/groups/create' },
+                            { label: t('Tambah Kelompok'), href: '/master-data/groups/create', exact: true },
+                            { label: t('Daftar Kelompok'), href: '/master-data/groups', exclude: '/master-data/groups/create' },
                         ],
                     },
                     {
                         key: 'institutions',
-                        label: 'Lembaga Lain',
+                        label: t('Lembaga Lain'),
                         icon: 'business',
                         children: [
-                            { label: 'Tambah Lembaga', href: '/master-data/institutions/create', exact: true },
-                            { label: 'Daftar Lembaga', href: '/master-data/institutions', exclude: '/master-data/institutions/create' },
+                            { label: t('Tambah Lembaga'), href: '/master-data/institutions/create', exact: true },
+                            { label: t('Daftar Lembaga'), href: '/master-data/institutions', exclude: '/master-data/institutions/create' },
                         ],
                     },
                 ],
             },
             {
                 key: 'loans',
-                label: 'Pinjaman',
+                label: t('Pinjaman'),
                 icon: 'account_balance',
                 children: [
                     {
                         key: 'register-proposal',
-                        label: 'Register Proposal',
+                        label: t('Register Proposal'),
                         icon: 'assignment_add',
                         children: [
-                            { label: 'Proposal Kelompok', href: '/lending/loans/create', exact: true },
-                            { label: 'Proposal Individu', href: '/lending/member-loans/create', exact: true },
+                            { label: t('Proposal Kelompok'), href: '/lending/loans/create', exact: true },
+                            { label: t('Proposal Individu'), href: '/lending/member-loans/create', exact: true },
                         ],
                     },
                     {
                         key: 'tahapan-perguliran',
-                        label: 'Tahapan Perguliran',
+                        label: t('Tahapan Perguliran'),
                         icon: 'sync_alt',
                         children: [
-                            { label: 'Kelompok', href: '/lending/loans', exclude: '/lending/loans/create' },
-                            { label: 'Individu', href: '/lending/member-loans', exclude: '/lending/member-loans/create' },
+                            { label: t('Kelompok'), href: '/lending/loans', exclude: '/lending/loans/create' },
+                            { label: t('Individu'), href: '/lending/member-loans', exclude: '/lending/member-loans/create' },
                         ],
                     },
-                    { label: 'Simulasi Pinjaman', icon: 'calculate', href: '/lending/simulation' },
+                    { label: t('Simulasi Pinjaman'), icon: 'calculate', href: '/lending/simulation' },
                 ],
             },
         ],
     },
     {
-        label: 'Simpanan',
+        label: t('Simpanan'),
         module: 'simpanan',
         accent: true,
         items: [
-            { label: 'Rekening Simpanan', icon: 'savings', href: '/simpanan', exclude: ['/simpanan/create', '/simpanan/bunga'] },
-            { label: 'Buka Rekening', icon: 'add_card', href: '/simpanan/create' },
-            { label: 'Bunga & Pajak', icon: 'percent', href: '/simpanan/bunga' },
+            { label: t('Buka Rekening'), icon: 'add_card', href: '/simpanan/create' },
+            { label: t('Rekening Simpanan'), icon: 'savings', href: '/simpanan', exclude: ['/simpanan/create', '/simpanan/bunga'] },
+            { label: t('Bunga & Pajak'), icon: 'percent', href: '/simpanan/bunga' },
         ],
     },
     {
-        label: 'Keuangan',
+        label: t('Keuangan'),
         items: [
             {
                 key: 'transactions',
-                label: 'Transaksi',
+                label: t('Transaksi'),
                 icon: 'receipt_long',
                 children: [
-                    { label: 'Daftar Jurnal', href: '/accounting/journals' },
-                    { label: 'Daftar Inventaris', href: '/accounting/assets' },
-                    { label: 'Jurnal Umum', href: '/accounting/journal-entries/create' },
+                    { label: t('Jurnal Umum'), href: '/accounting/journal-entries/create' },
                     {
                         key: 'jurnal-angsuran',
-                        label: 'Jurnal Angsuran',
+                        label: t('Jurnal Angsuran'),
                         icon: 'payments',
                         children: [
-                            { label: 'Kelompok', href: '/accounting/journal-entries/installment' },
-                            { label: 'Individu', href: '/accounting/journal-entries/installment-individual' },
+                            { label: t('Kelompok'), href: '/accounting/journal-entries/installment' },
+                            { label: t('Individu'), href: '/accounting/journal-entries/installment-individual' },
                         ],
                     },
+                    { label: t('Daftar Jurnal'), href: '/accounting/journals' },
+                    { label: t('Daftar Inventaris'), href: '/accounting/assets' },
                 ],
             },
-            { label: 'Bagan Akun', icon: 'account_tree', href: '/accounting/chart-of-accounts' },
+            { label: t('Bagan Akun'), icon: 'account_tree', href: '/accounting/chart-of-accounts' },
             {
                 key: 'finance-periodic',
-                label: 'Periodik',
+                label: t('Periodik'),
                 icon: 'event_note',
                 children: [
-                    { label: 'E-Budgeting', href: '/budgeting' },
-                    { label: 'Tutup Buku', href: '/accounting/period-close' },
-                    { label: 'Taksiran Pajak', href: '/accounting/tax-estimate' },
+                    { label: t('E-Budgeting'), href: '/budgeting' },
+                    { label: t('Tutup Buku'), href: '/accounting/period-close' },
+                    { label: t('Taksiran Pajak'), href: '/accounting/tax-estimate' },
                 ],
             },
             {
                 key: 'reports',
-                label: 'Pelaporan',
+                label: t('Pelaporan'),
                 icon: 'assessment',
                 children: [
-                    { label: 'Ringkasan Laporan', href: '/accounting/reports', exact: true },
-                    { label: 'Portofolio Pinjaman', href: '/lending/reports/portfolio' },
-                    { label: 'Rencana vs Realisasi', href: '/lending/reports/schedule-vs-actual' },
+                    { label: t('Ringkasan Laporan'), href: '/accounting/reports', exact: true },
+                    { label: t('Portofolio Pinjaman'), href: '/lending/reports/portfolio' },
+                    { label: t('Rencana vs Realisasi'), href: '/lending/reports/schedule-vs-actual' },
                     {
                         key: 'lpp',
-                        label: 'LPP (Perkembangan Piutang)',
+                        label: t('LPP (Perkembangan Piutang)'),
                         icon: 'trending_up',
                         children: [
-                            { label: 'Rekap Desa', href: '/lending/reports/lpp-desa' },
-                            { label: 'Rekap Desa Individu', href: '/lending/reports/lpp-desa-individu' },
-                            { label: 'Rincian Kelompok', href: '/lending/reports/lpp-kelompok' },
-                            { label: 'Rincian Individu', href: '/lending/reports/lpp-individu' },
+                            { label: t('Rekap Desa'), href: '/lending/reports/lpp-desa' },
+                            { label: t('Rekap Desa Individu'), href: '/lending/reports/lpp-desa-individu' },
+                            { label: t('Rincian Kelompok'), href: '/lending/reports/lpp-kelompok' },
+                            { label: t('Rincian Individu'), href: '/lending/reports/lpp-individu' },
                         ],
                     },
                     {
                         key: 'kolek',
-                        label: 'Kolektibilitas',
+                        label: t('Kolektibilitas'),
                         icon: 'fact_check',
                         children: [
-                            { label: 'Rekap Desa', href: '/lending/reports/kolek-desa' },
-                            { label: 'Rincian Kelompok', href: '/lending/reports/kolek-kelompok' },
-                            { label: 'Rekap Desa Individu', href: '/lending/reports/kolek-desa-individu' },
-                            { label: 'Rincian Individu', href: '/lending/reports/kolek-individu' },
+                            { label: t('Rekap Desa'), href: '/lending/reports/kolek-desa' },
+                            { label: t('Rincian Kelompok'), href: '/lending/reports/kolek-kelompok' },
+                            { label: t('Rekap Desa Individu'), href: '/lending/reports/kolek-desa-individu' },
+                            { label: t('Rincian Individu'), href: '/lending/reports/kolek-individu' },
                         ],
                     },
                     {
                         key: 'lending-weekly',
-                        label: 'Laporan Mingguan',
+                        label: t('Laporan Mingguan'),
                         icon: 'calendar_view_week',
                         children: [
                             {
-                                label: 'LPP Individu Mingguan',
+                                label: t('LPP Individu Mingguan'),
                                 href: '/lending/reports/weekly/lpp-individu',
                             },
                             {
-                                label: 'LPP Kelompok Mingguan',
+                                label: t('LPP Kelompok Mingguan'),
                                 href: '/lending/reports/weekly/lpp-kelompok',
                             },
                             {
-                                label: 'Kolektibilitas Individu Mingguan',
+                                label: t('Kolektibilitas Individu Mingguan'),
                                 href: '/lending/reports/weekly/kolek-individu',
                             },
                             {
-                                label: 'Kolektibilitas Kelompok Mingguan',
+                                label: t('Kolektibilitas Kelompok Mingguan'),
                                 href: '/lending/reports/weekly/kolek-kelompok',
                             },
                         ],
                     },
-                    { label: 'Cadangan Penghapusan (CKPN)', href: '/lending/reports/cadangan-penghapusan' },
-                    { label: 'CKPN Pinjaman Individu', href: '/lending/reports/cadangan-penghapusan-individu' },
+                    { label: t('Cadangan Penghapusan (CKPN)'), href: '/lending/reports/cadangan-penghapusan' },
+                    { label: t('CKPN Pinjaman Individu'), href: '/lending/reports/cadangan-penghapusan-individu' },
                     // === Phase 1: Pipeline Pinjaman (proses awal pengajuan) ===
                     {
                         key: 'lending-pipeline',
-                        label: 'Pipeline Pinjaman',
+                        label: t('Pipeline Pinjaman'),
                         icon: 'inventory',
                         children: [
-                            { label: 'Daftar Proposal', icon: 'description', href: '/lending/reports/proposals' },
-                            { label: 'Daftar Verifikasi', icon: 'pending_actions', href: '/lending/reports/verifications' },
-                            { label: 'Daftar Waiting List', icon: 'event', href: '/lending/reports/waiting-list' },
+                            { label: t('Daftar Proposal'), icon: 'description', href: '/lending/reports/proposals' },
+                            { label: t('Daftar Verifikasi'), icon: 'pending_actions', href: '/lending/reports/verifications' },
+                            { label: t('Daftar Waiting List'), icon: 'event', href: '/lending/reports/waiting-list' },
                         ],
                     },
                     // === Phase 1: Status Pinjaman (lunas & hapus buku) ===
                     {
                         key: 'lending-status',
-                        label: 'Status Pinjaman',
+                        label: t('Status Pinjaman'),
                         icon: 'checklist',
                         children: [
-                            { label: 'Daftar Pinjaman Lunas', icon: 'check_circle', href: '/lending/reports/paid' },
-                            { label: 'Pinjaman Dihapusbukukan', icon: 'cancel', href: '/lending/reports/write-offs' },
-                            { label: 'Pinjaman Dihapusbukukan Individu', icon: 'person_off', href: '/lending/reports/write-offs-individu' },
-                            { label: 'Anggota Hapus Buku Kelompok', icon: 'group_remove', href: '/lending/reports/write-offs/beneficiaries' },
+                            { label: t('Daftar Pinjaman Lunas'), icon: 'check_circle', href: '/lending/reports/paid' },
+                            { label: t('Pinjaman Dihapusbukukan'), icon: 'cancel', href: '/lending/reports/write-offs' },
+                            { label: t('Pinjaman Dihapusbukukan Individu'), icon: 'person_off', href: '/lending/reports/write-offs-individu' },
+                            { label: t('Anggota Hapus Buku Kelompok'), icon: 'group_remove', href: '/lending/reports/write-offs/beneficiaries' },
                         ],
                     },
                     // === Phase 1: Tracking & Monitoring (tagihan & tunggakan) ===
                     {
                         key: 'lending-tracking',
-                        label: 'Tracking & Monitoring',
+                        label: t('Tracking & Monitoring'),
                         icon: 'monitor_heart',
                         children: [
-                            { label: 'Tagihan Jatuh Tempo Hari Ini', icon: 'today', href: '/lending/reports/due-today' },
-                            { label: 'Daftar Tunggakan', icon: 'warning', href: '/lending/reports/overdue' },
+                            { label: t('Tagihan Jatuh Tempo Hari Ini'), icon: 'today', href: '/lending/reports/due-today' },
+                            { label: t('Daftar Tunggakan'), icon: 'warning', href: '/lending/reports/overdue' },
                             {
-                                label: 'Pelunasan 3 Bulan ke Depan',
+                                label: t('Pelunasan 3 Bulan ke Depan'),
                                 icon: 'event_available',
                                 href: '/lending/reports/near-settlement',
                             },
@@ -476,91 +476,91 @@ const sections = [
                     // === Phase 1: Laporan Tambahan (rencana & realisasi khusus individu) ===
                     {
                         key: 'lending-extra',
-                        label: 'Laporan Tambahan',
+                        label: t('Laporan Tambahan'),
                         icon: 'summarize',
                         children: [
-                            { label: 'Rencana & Realisasi Individu', icon: 'compare_arrows', href: '/lending/reports/schedule-vs-actual-individu' },
+                            { label: t('Rencana & Realisasi Individu'), icon: 'compare_arrows', href: '/lending/reports/schedule-vs-actual-individu' },
                         ],
                     },
                     // === Phase 1: Monitoring Aktif (kelompok & pemanfaat aktif) ===
                     {
                         key: 'lending-active',
-                        label: 'Monitoring Aktif',
+                        label: t('Monitoring Aktif'),
                         icon: 'online_prediction',
                         children: [
-                            { label: 'Kelompok Aktif', icon: 'group', href: '/lending/reports/groups/active' },
-                            { label: 'Individu Aktif', icon: 'person', href: '/lending/reports/members/active' },
-                            { label: 'Pemanfaat Aktif', icon: 'groups_2', href: '/lending/reports/beneficiaries/active' },
+                            { label: t('Kelompok Aktif'), icon: 'group', href: '/lending/reports/groups/active' },
+                            { label: t('Individu Aktif'), icon: 'person', href: '/lending/reports/members/active' },
+                            { label: t('Pemanfaat Aktif'), icon: 'groups_2', href: '/lending/reports/beneficiaries/active' },
                         ],
                     },
                     {
                         key: 'ojk',
-                        label: 'Laporan OJK',
+                        label: t('Laporan OJK'),
                         icon: 'account_balance',
                         children: [
-                            { label: 'Cover OJK', href: '/regulatory/ojk/cover' },
-                            { label: 'Profil OJK', href: '/regulatory/ojk/profile' },
-                            { label: 'Neraca OJK', href: '/regulatory/ojk/balance-sheet' },
-                            { label: 'Laba Rugi OJK', href: '/regulatory/ojk/income-statement' },
-                            { label: 'Rincian Pinjaman Aktif', href: '/regulatory/ojk/active-loans' },
-                            { label: 'Rincian Pinjaman Lunas Kelompok', href: '/regulatory/ojk/paid-group' },
-                            { label: 'Rincian Pinjaman Lunas Individu', href: '/regulatory/ojk/paid-individu' },
-                            { label: 'Rincian Tabungan', href: '/regulatory/ojk/savings' },
-                            { label: 'Rincian Pinjaman Diterima', href: '/regulatory/ojk/loans-received' },
-                            { label: 'Kolektibilitas OJK', href: '/regulatory/ojk/collectibility' },
-                            { label: 'Kolektibilitas OJK v2', href: '/regulatory/ojk/collectibility-v2' },
-                            { label: 'Penyisihan Cadangan', href: '/regulatory/ojk/allowance' },
-                            { label: 'Tingkat Kesehatan (POJK 41)', href: '/regulatory/ojk/health?framework=41' },
-                            { label: 'Tingkat Kesehatan (POJK 19)', href: '/regulatory/ojk/health?framework=19' },
-                            { label: 'Rincian Bunga', href: '/regulatory/ojk/interest' },
-                            { label: 'Simpanan Piutang', href: '/regulatory/ojk/savings-receivables' },
+                            { label: t('Cover OJK'), href: '/regulatory/ojk/cover' },
+                            { label: t('Profil OJK'), href: '/regulatory/ojk/profile' },
+                            { label: t('Neraca OJK'), href: '/regulatory/ojk/balance-sheet' },
+                            { label: t('Laba Rugi OJK'), href: '/regulatory/ojk/income-statement' },
+                            { label: t('Rincian Pinjaman Aktif'), href: '/regulatory/ojk/active-loans' },
+                            { label: t('Rincian Pinjaman Lunas Kelompok'), href: '/regulatory/ojk/paid-group' },
+                            { label: t('Rincian Pinjaman Lunas Individu'), href: '/regulatory/ojk/paid-individu' },
+                            { label: t('Rincian Tabungan'), href: '/regulatory/ojk/savings' },
+                            { label: t('Rincian Pinjaman Diterima'), href: '/regulatory/ojk/loans-received' },
+                            { label: t('Kolektibilitas OJK'), href: '/regulatory/ojk/collectibility' },
+                            { label: t('Kolektibilitas OJK v2'), href: '/regulatory/ojk/collectibility-v2' },
+                            { label: t('Penyisihan Cadangan'), href: '/regulatory/ojk/allowance' },
+                            { label: t('Tingkat Kesehatan (POJK 41)'), href: '/regulatory/ojk/health?framework=41' },
+                            { label: t('Tingkat Kesehatan (POJK 19)'), href: '/regulatory/ojk/health?framework=19' },
+                            { label: t('Rincian Bunga'), href: '/regulatory/ojk/interest' },
+                            { label: t('Simpanan Piutang'), href: '/regulatory/ojk/savings-receivables' },
                         ],
                     },
-                    { label: 'Jurnal Transaksi', href: '/accounting/reports/journals' },
-                    { label: 'Neraca Saldo', href: '/accounting/reports/trial-balance' },
-                    { label: 'Neraca', href: '/accounting/reports/balance-sheet' },
-                    { label: 'Laba Rugi', href: '/accounting/reports/income-statement' },
-                    { label: 'Arus Kas', href: '/accounting/reports/cash-flow' },
-                    { label: 'Perubahan Ekuitas', href: '/accounting/reports/equity-change' },
+                    { label: t('Jurnal Transaksi'), href: '/accounting/reports/journals' },
+                    { label: t('Neraca Saldo'), href: '/accounting/reports/trial-balance' },
+                    { label: t('Neraca'), href: '/accounting/reports/balance-sheet' },
+                    { label: t('Laba Rugi'), href: '/accounting/reports/income-statement' },
+                    { label: t('Arus Kas'), href: '/accounting/reports/cash-flow' },
+                    { label: t('Perubahan Ekuitas'), href: '/accounting/reports/equity-change' },
                     { label: 'CALK', href: '/accounting/reports/calk' },
-                    { label: 'Buku Besar', href: '/accounting/reports/general-ledger' },
-                    { label: 'Daftar Simpanan', href: '/accounting/reports/simpanan' },
+                    { label: t('Buku Besar'), href: '/accounting/reports/general-ledger' },
+                    { label: t('Daftar Simpanan'), href: '/accounting/reports/simpanan' },
                 ],
             },
         ],
     },
     {
-        label: 'Tagihan',
+        label: t('Tagihan'),
         items: [
-            { label: 'Daftar Tagihan', icon: 'receipt_long', href: '/billing/invoices' },
+            { label: t('Daftar Tagihan'), icon: 'receipt_long', href: '/billing/invoices' },
         ],
     },
     {
-        label: 'Pengguna',
+        label: t('Pengguna'),
         items: [
             {
                 key: 'users-access',
-                label: 'Pengguna',
+                label: t('Pengguna'),
                 icon: 'manage_accounts',
                 children: [
-                    { label: 'Manajemen Role', href: '/access/roles' },
-                    { label: 'Manajemen User', href: '/access/users' },
+                    { label: t('Manajemen Role'), href: '/access/roles' },
+                    { label: t('Manajemen User'), href: '/access/users' },
                 ],
             },
         ],
     },
     {
-        label: 'Website',
+        label: t('Website'),
         items: [
-            { label: 'Berita', icon: 'article', href: '/website/posts' },
-            { label: 'Halaman', icon: 'description', href: '/website/pages' },
-            { label: 'Pengaturan Situs', icon: 'tune', href: '/website/settings' },
-            { label: 'Pesan Masuk', icon: 'inbox', href: '/website/messages' },
+            { label: t('Berita'), icon: 'article', href: '/website/posts' },
+            { label: t('Halaman'), icon: 'description', href: '/website/pages' },
+            { label: t('Pengaturan Situs'), icon: 'tune', href: '/website/settings' },
+            { label: t('Pesan Masuk'), icon: 'inbox', href: '/website/messages' },
         ],
     },
 ];
 
-const platformNavigation = [{ label: 'Panel Admin', icon: 'admin_panel_settings', href: '/admin' }];
+const platformNavigation = [{ label: t('Panel Admin'), icon: 'admin_panel_settings', href: '/admin' }];
 
 function isActive(item) {
     if (item.children) return item.children.some(isActive);
@@ -673,7 +673,7 @@ function onParentItemClick(item, event) {
                     <AppIcon v-else name="account_balance" class="text-zinc-100" />
                 </div>
                 <div v-show="!(sidebarCollapsed && !mobileMenuOpen)" class="min-w-0 flex-1 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && !mobileMenuOpen ? 'lg:hidden' : 'lg:opacity-100'">
-                    <p class="truncate font-bold leading-none text-white">{{ page.props.auth?.tenant?.name || 'BUMDesma/LKD' }}</p>
+                    <p class="truncate font-bold leading-none text-white">{{ page.props.auth?.tenant?.name || t('BUMDesma/LKD') }}</p>
                     <p class="mt-1 truncate text-[10px] font-semibold uppercase tracking-widest text-zinc-400">{{ t('Financial Management') }}</p>
                 </div>
                 <button
@@ -917,7 +917,7 @@ function onParentItemClick(item, event) {
                         <AppIcon name="admin_panel_settings" tone="primary" />
                         <p class="min-w-0 flex-1 break-words font-medium">
                             <span class="font-bold">{{ t('Mode Impersonasi Superadmin:') }}</span>
-                            {{ t('Anda sedang mengakses tenant sebagai') }} <span class="font-bold">{{ user?.name }}</span> ({{ t('diinisiasi oleh Superadmin') }} <span class="font-bold">{{ impersonatorName || 'Superadmin' }}</span>).
+                            {{ t('Anda sedang mengakses tenant sebagai') }} <span class="font-bold">{{ user?.name }}</span> ({{ t('diinisiasi oleh Superadmin') }} <span class="font-bold">{{ impersonatorName || t('Superadmin') }}</span>).
                         </p>
                     </div>
                     <form class="shrink-0" @submit.prevent="leaveImpersonation">

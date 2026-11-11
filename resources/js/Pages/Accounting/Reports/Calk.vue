@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -57,8 +59,8 @@ function save() {
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Catatan Atas Laporan Keuangan</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Catatan Atas Laporan Keuangan') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         {{ period.period_label }} · ringkasan otomatis + catatan lembaga
                     </p>
@@ -78,7 +80,7 @@ function save() {
             </AppCard>
 
             <AppCard class="p-5">
-                <h2 class="text-sm font-bold uppercase tracking-wide text-on-surface-variant">Identitas entitas</h2>
+                <h2 class="text-sm font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Identitas entitas') }}</h2>
                 <p class="mt-2 text-lg font-bold text-primary">{{ identity.legal_name }}</p>
                 <p v-if="identity.address" class="text-sm text-on-surface-variant">{{ identity.address }}</p>
                 <p v-if="identity.registration_number || identity.tax_number" class="mt-1 text-xs text-on-surface-variant">
@@ -101,27 +103,27 @@ function save() {
             </div>
 
             <AppCard class="p-5">
-                <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">Kebijakan akuntansi (ringkas)</h2>
+                <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Kebijakan akuntansi (ringkas)') }}</h2>
                 <ol class="list-decimal space-y-2 pl-5 text-sm text-on-surface">
                     <li v-for="(p, i) in policies" :key="i">{{ p }}</li>
                 </ol>
             </AppCard>
 
             <AppCard class="p-5">
-                <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">Catatan tambahan</h2>
+                <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Catatan tambahan') }}</h2>
                 <form v-if="allowEdit" class="space-y-3" @submit.prevent="save">
                     <AppTextarea
                         v-model="form.notes"
-                        label="Catatan manajemen / peristiwa penting"
+                        :label="t('Catatan manajemen / peristiwa penting')"
                         :error="form.errors.notes"
-                        placeholder="Masukkan catatan"
+                        :placeholder="t('Masukkan catatan')"
                     />
                     <div class="flex justify-end">
-                        <AppButton type="submit" icon="save" :loading="form.processing">Simpan catatan</AppButton>
+                        <AppButton type="submit" icon="save" :loading="form.processing">{{ t('Simpan catatan') }}</AppButton>
                     </div>
                 </form>
                 <div v-else class="whitespace-pre-wrap text-sm text-on-surface">
-                    {{ notes || 'Belum ada catatan tambahan.' }}
+                    {{ notes || t('Belum ada catatan tambahan.') }}
                 </div>
             </AppCard>
         </div>

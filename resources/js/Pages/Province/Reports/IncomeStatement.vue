@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import AppCard from '../../../Components/AppCard.vue';
 import ReportPeriodFilter from '../../../Components/ReportPeriodFilter.vue';
@@ -39,15 +41,15 @@ const baseUrl = '/province/reports/income-statement';
             <!-- Summary Cards -->
             <div class="grid gap-4 sm:grid-cols-3">
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Pendapatan Operasional</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Pendapatan Operasional') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ money(report.revenue_ops?.total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Beban Operasional</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Beban Operasional') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ money(report.expense_ops?.total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Laba Bersih YTD</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Laba Bersih YTD') }}</span>
                     <p class="mt-2 text-2xl font-bold text-secondary">{{ money(report.summary?.after_tax?.ytd) }}</p>
                 </AppCard>
             </div>
@@ -60,9 +62,9 @@ const baseUrl = '/province/reports/income-statement';
                     <table class="w-full text-left text-sm divide-y divide-outline-variant">
                         <thead>
                             <tr class="bg-surface-container-low text-xs font-bold uppercase">
-                                <th class="px-4 py-3">Kode</th>
-                                <th class="px-4 py-3">Uraian</th>
-                                <th class="px-4 py-3 text-right">Jumlah (Rp)</th>
+                                <th class="px-4 py-3">{{ t('Kode') }}</th>
+                                <th class="px-4 py-3">{{ t('Uraian') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Jumlah (Rp)') }}</th>
                             </tr>
                         </thead>
                         <tbody>

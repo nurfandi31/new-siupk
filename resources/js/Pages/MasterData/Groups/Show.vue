@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppAccordion from '../../../Components/AppAccordion.vue';
@@ -24,9 +26,9 @@ const canManage = computed(() => can('groups.manage'));
 
 async function confirmDelete() {
     if (!await confirmAction({
-        title: 'Hapus Kelompok',
+        title: t('Hapus Kelompok'),
         message: `Apakah Anda yakin ingin menghapus kelompok "${props.group.name}"? Penghapusan hanya berhasil jika kelompok belum pernah memiliki riwayat pinjaman dan tidak memiliki anggota aktif.`,
-        confirmText: 'Ya, Hapus Kelompok',
+        confirmText: t('Ya, Hapus Kelompok'),
         variant: 'danger',
     })) return;
 
@@ -41,7 +43,7 @@ function formatDate(v) {
     if (!v) return '—';
     const d = new Date(v);
     if (Number.isNaN(d.getTime())) return v;
-    return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
+    return new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
 }
 
 const statusLabels = { active: 'Aktif', inactive: 'Tidak aktif' };
@@ -58,14 +60,14 @@ const positionIcons = {
 const officerOrder = ['chair', 'secretary', 'treasurer'];
 
 const profileRows = computed(() => [
-    { label: 'Kode', value: props.group.code || '—', icon: 'tag' },
-    { label: 'Desa', value: props.group.village?.name || '—', icon: 'location_city' },
-    { label: 'Tanggal berdiri', value: formatDate(props.group.established_at), icon: 'event' },
-    { label: 'No. HP', value: props.group.phone || '—', icon: 'phone' },
-    { label: 'Jenis usaha', value: props.group.business_type || '—', icon: 'storefront' },
-    { label: 'Jenis kegiatan', value: props.group.activity_type || '—', icon: 'event_note' },
-    { label: 'Tingkatan', value: props.group.level || '—', icon: 'military_tech' },
-    { label: 'Fungsi kelompok', value: props.group.function || '—', icon: 'workspaces' },
+    { label: t('Kode'), value: props.group.code || '—', icon: 'tag' },
+    { label: t('Desa'), value: props.group.village?.name || '—', icon: 'location_city' },
+    { label: t('Tanggal berdiri'), value: formatDate(props.group.established_at), icon: 'event' },
+    { label: t('No. HP'), value: props.group.phone || '—', icon: 'phone' },
+    { label: t('Jenis usaha'), value: props.group.business_type || '—', icon: 'storefront' },
+    { label: t('Jenis kegiatan'), value: props.group.activity_type || '—', icon: 'event_note' },
+    { label: t('Tingkatan'), value: props.group.level || '—', icon: 'military_tech' },
+    { label: t('Fungsi kelompok'), value: props.group.function || '—', icon: 'workspaces' },
 ]);
 
 const officers = computed(() => {
@@ -80,10 +82,10 @@ const officers = computed(() => {
 });
 
 const accordionItems = computed(() => [
-    { key: 'profile', title: 'Profil Kelompok', icon: 'info', defaultOpen: true },
-    { key: 'address', title: 'Alamat', icon: 'home', subtitle: props.group.address ? null : 'Belum diisi' },
-    { key: 'officers', title: 'Pengurus', icon: 'workspace_premium' },
-    { key: 'members', title: 'Anggota', icon: 'people', badge: props.group.members_count ?? 0 },
+    { key: 'profile', title: t('Profil Kelompok'), icon: 'info', defaultOpen: true },
+    { key: 'address', title: t('Alamat'), icon: 'home', subtitle: props.group.address ? null : 'Belum diisi' },
+    { key: 'officers', title: t('Pengurus'), icon: 'workspace_premium' },
+    { key: 'members', title: t('Anggota'), icon: 'people', badge: props.group.members_count ?? 0 },
 ]);
 </script>
 
@@ -112,7 +114,7 @@ const accordionItems = computed(() => [
                     <div class="flex items-center gap-3">
                         <AppIcon name="groups" tone="primary" :container-size="11" />
                         <div class="min-w-0">
-                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Anggota aktif</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Anggota aktif') }}</p>
                             <p class="text-2xl font-bold text-primary">{{ group.members_count }}</p>
                         </div>
                     </div>
@@ -121,7 +123,7 @@ const accordionItems = computed(() => [
                     <div class="flex items-center gap-3">
                         <AppIcon name="receipt_long" tone="secondary" :container-size="11" />
                         <div class="min-w-0">
-                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Riwayat pinjaman</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Riwayat pinjaman') }}</p>
                             <p class="text-2xl font-bold text-primary">{{ summary.loan_count }}</p>
                             <p class="text-xs text-on-surface-variant">{{ summary.active_loan_count }} aktif</p>
                         </div>
@@ -131,7 +133,7 @@ const accordionItems = computed(() => [
                     <div class="flex items-center gap-3">
                         <AppIcon name="payments" tone="warning" :container-size="11" />
                         <div class="min-w-0">
-                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Sisa pokok</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Sisa pokok') }}</p>
                             <p class="text-2xl font-bold tabular-nums text-primary">Rp {{ formatMoney(summary.principal_remaining) }}</p>
                         </div>
                     </div>
@@ -159,7 +161,7 @@ const accordionItems = computed(() => [
                         </template>
                         <template #content-address>
                             <p v-if="group.address" class="text-sm leading-relaxed text-primary">{{ group.address }}</p>
-                            <p v-else class="text-sm text-on-surface-variant">Belum ada alamat.</p>
+                            <p v-else class="text-sm text-on-surface-variant">{{ t('Belum ada alamat.') }}</p>
                         </template>
                         <template #content-officers>
                             <ul class="space-y-3">
@@ -186,7 +188,7 @@ const accordionItems = computed(() => [
                                     <span class="shrink-0 font-mono text-xs text-on-surface-variant">{{ m.member_number || m.row_id }}</span>
                                 </li>
                             </ul>
-                            <p v-else class="text-sm text-on-surface-variant">Belum ada anggota aktif.</p>
+                            <p v-else class="text-sm text-on-surface-variant">{{ t('Belum ada anggota aktif.') }}</p>
                         </template>
                     </AppAccordion>
                 </div>
@@ -196,9 +198,9 @@ const accordionItems = computed(() => [
                     <template #header>
                         <div class="flex items-center gap-2">
                             <AppIcon name="receipt_long" tone="primary" :container-size="9" />
-                            <h2 class="text-sm font-bold text-primary">Riwayat Pinjaman</h2>
+                            <h2 class="text-sm font-bold text-primary">{{ t('Riwayat Pinjaman') }}</h2>
                         </div>
-                        <p class="text-xs text-on-surface-variant">Klik nomor pinjaman untuk membuka detail.</p>
+                        <p class="text-xs text-on-surface-variant">{{ t('Klik nomor pinjaman untuk membuka detail.') }}</p>
                     </template>
                     <LoanHistoryTable fill :loans="loans" empty-description="Kelompok ini belum memiliki pinjaman." />
                 </AppCard>
@@ -209,13 +211,13 @@ const accordionItems = computed(() => [
                 <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2 md:gap-3">
                     <Link href="/master-data/groups" class="contents">
                         <AppButton variant="secondary" icon="arrow_back" size="compact">
-                            Kembali ke daftar
+                            {{ t('Kembali ke daftar') }}
                         </AppButton>
                     </Link>
                     <div class="flex flex-wrap items-center gap-1 sm:justify-end">
                         <Link v-if="canManage" :href="`/master-data/groups/${group.row_id}/edit`" class="contents">
                             <AppButton variant="tertiary" icon="edit" size="compact">
-                                Edit kelompok
+                                {{ t('Edit kelompok') }}
                             </AppButton>
                         </Link>
                         <AppButton
@@ -225,7 +227,7 @@ const accordionItems = computed(() => [
                             size="compact"
                             @click="confirmDelete"
                         >
-                            Hapus kelompok
+                            {{ t('Hapus kelompok') }}
                         </AppButton>
                     </div>
                 </div>

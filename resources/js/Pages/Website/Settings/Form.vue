@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, useForm } from '@inertiajs/vue3';
 import { watch } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -48,75 +50,75 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Pengaturan Situs" />
+    <Head :title="t('Pengaturan Situs')" />
 
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Pengaturan Situs</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Pengaturan Situs') }}</h1>
                     <p class="mt-1 text-on-surface-variant">
-                        Tampilan halaman depan, kanal sosial media, dan kontak pada situs publik desa.
+                        {{ t('Tampilan halaman depan, kanal sosial media, dan kontak pada situs publik desa.') }}
                     </p>
                 </div>
             </header>
             <form class="space-y-6" @submit.prevent="submit">
                 <AppCard padded>
-                    <h2 class="text-base font-bold text-primary">Hero Halaman Depan</h2>
+                    <h2 class="text-base font-bold text-primary">{{ t('Hero Halaman Depan') }}</h2>
                     <div class="mt-4 space-y-5">
                         <AppInput
                             v-model="form.hero_tagline"
-                            label="Tagline"
+                            :label="t('Tagline')"
                             icon="campaign"
-                            placeholder="Masukkan tagline"
+                            :placeholder="t('Masukkan tagline')"
                             :error="form.errors.hero_tagline"
                         />
                         <AppTextarea
                             v-model="form.hero_description"
-                            label="Deskripsi Hero"
+                            :label="t('Deskripsi Hero')"
                             icon="notes"
-                            placeholder="Masukkan deskripsi"
+                            :placeholder="t('Masukkan deskripsi')"
                             :error="form.errors.hero_description"
                         />
 
                         <AppFileUpload
                             v-model="form.hero_image"
-                            label="Gambar Hero"
+                            :label="t('Gambar Hero')"
                             accept="image/png,image/jpeg,image/webp"
                             :error="form.errors.hero_image"
                         />
                         <div v-if="heroImageUrl && !form.remove_hero_image" class="flex items-center gap-4">
-                            <img :src="heroImageUrl" alt="Gambar hero saat ini" class="h-24 w-40 rounded-xl border border-outline-variant object-cover">
+                            <img :src="heroImageUrl" :alt="t('Gambar hero saat ini')" class="h-24 w-40 rounded-xl border border-outline-variant object-cover">
                             <AppButton variant="secondary" size="compact" type="button" @click="form.remove_hero_image = true">
-                                Hapus gambar
+                                {{ t('Hapus gambar') }}
                             </AppButton>
                         </div>
                         <p v-if="form.remove_hero_image" class="ml-1 text-sm text-tertiary">
                             Gambar akan dihapus saat disimpan.
-                            <button type="button" class="font-semibold underline" @click="form.remove_hero_image = false">Batalkan</button>
+                            <button type="button" class="font-semibold underline" @click="form.remove_hero_image = false">{{ t('Batalkan') }}</button>
                         </p>
                     </div>
                 </AppCard>
 
                 <AppCard padded>
-                    <h2 class="text-base font-bold text-primary">Tentang Singkat</h2>
+                    <h2 class="text-base font-bold text-primary">{{ t('Tentang Singkat') }}</h2>
                     <div class="mt-4">
                         <AppTextarea
                             v-model="form.about_short"
-                            label="Ringkasan Profil"
+                            :label="t('Ringkasan Profil')"
                             icon="info"
-                            placeholder="Masukkan ringkasan"
+                            :placeholder="t('Masukkan ringkasan')"
                             :error="form.errors.about_short"
                         />
                     </div>
                 </AppCard>
 
                 <AppCard padded>
-                    <h2 class="text-base font-bold text-primary">Sosial Media</h2>
+                    <h2 class="text-base font-bold text-primary">{{ t('Sosial Media') }}</h2>
                     <div class="mt-4 space-y-5">
                         <AppInput
                             v-model="form.facebook_url"
-                            label="Facebook"
+                            :label="t('Facebook')"
                             icon="public"
                             type="url"
                             placeholder="https://facebook.com/"
@@ -124,7 +126,7 @@ function submit() {
                         />
                         <AppInput
                             v-model="form.instagram_url"
-                            label="Instagram"
+                            :label="t('Instagram')"
                             icon="photo_camera"
                             type="url"
                             placeholder="https://instagram.com/"
@@ -132,7 +134,7 @@ function submit() {
                         />
                         <AppInput
                             v-model="form.youtube_url"
-                            label="YouTube"
+                            :label="t('YouTube')"
                             icon="smart_display"
                             type="url"
                             placeholder="https://youtube.com/@"
@@ -142,35 +144,35 @@ function submit() {
                 </AppCard>
 
                 <AppCard padded>
-                    <h2 class="text-base font-bold text-primary">Kontak &amp; Footer</h2>
+                    <h2 class="text-base font-bold text-primary">{{ t('Kontak & Footer') }}</h2>
                     <div class="mt-4 space-y-5">
                         <AppInput
                             v-model="form.contact_phone"
-                            label="Telepon Kontak"
+                            :label="t('Telepon Kontak')"
                             icon="call"
                             placeholder="08xx-xxxx-xxxx"
                             :error="form.errors.contact_phone"
                         />
                         <AppInput
                             v-model="form.contact_email"
-                            label="Email Kontak"
+                            :label="t('Email Kontak')"
                             icon="mail"
                             type="email"
-                            placeholder="Masukkan email"
+                            :placeholder="t('Masukkan email')"
                             :error="form.errors.contact_email"
                         />
                         <AppTextarea
                             v-model="form.contact_address"
-                            label="Alamat Kontak"
+                            :label="t('Alamat Kontak')"
                             icon="place"
-                            placeholder="Masukkan alamat"
+                            :placeholder="t('Masukkan alamat')"
                             :error="form.errors.contact_address"
                         />
                         <AppInput
                             v-model="form.footer_note"
-                            label="Catatan Footer"
+                            :label="t('Catatan Footer')"
                             icon="copyright"
-                            placeholder="Masukkan catatan"
+                            :placeholder="t('Masukkan catatan')"
                             :error="form.errors.footer_note"
                         />
                     </div>
@@ -178,7 +180,7 @@ function submit() {
 
                     <div class="flex justify-end">
                         <AppButton type="submit" icon="save" :loading="form.processing">
-                            Simpan Pengaturan
+                            {{ t('Simpan Pengaturan') }}
                         </AppButton>
                     </div>
             </form>

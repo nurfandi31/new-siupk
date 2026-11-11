@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { computed, onBeforeUnmount, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useToast } from '../composables/useToast';
@@ -7,27 +9,46 @@ import AppIcon from './AppIcon.vue';
 const page = usePage();
 const { toastState, show, dismiss, pause, resume } = useToast();
 
-const toneStyles = computed(() => ({
+const tones = {
     success: {
-        iconBg: 'bg-secondary-container/60 text-secondary ring-1 ring-secondary/30 shadow-sm',
+        label: t('Berhasil'),
         icon: 'check_circle',
+        iconBg: 'bg-secondary-container/70 text-secondary ring-secondary/25',
+        halo: 'bg-secondary/25',
+        accent: 'bg-secondary',
+        bar: 'bg-secondary',
+        labelColor: 'text-secondary',
     },
     error: {
-        iconBg: 'bg-error-container/60 text-error ring-1 ring-error/30 shadow-sm',
+        label: t('Gagal'),
         icon: 'error',
+        iconBg: 'bg-error-container/70 text-error ring-error/25',
+        halo: 'bg-error/25',
+        accent: 'bg-error',
+        bar: 'bg-error',
+        labelColor: 'text-error',
     },
     warning: {
-        iconBg: 'bg-tertiary-fixed/60 text-tertiary ring-1 ring-tertiary/30 shadow-sm',
+        label: t('Perhatian'),
         icon: 'warning',
+        iconBg: 'bg-tertiary-fixed/70 text-tertiary ring-tertiary/25',
+        halo: 'bg-tertiary/25',
+        accent: 'bg-tertiary',
+        bar: 'bg-tertiary',
+        labelColor: 'text-tertiary',
     },
     info: {
-        iconBg: 'bg-primary-container/40 text-primary ring-1 ring-primary/20 shadow-sm',
+        label: t('Informasi'),
         icon: 'info',
+        iconBg: 'bg-primary-container/70 text-primary ring-primary/25',
+        halo: 'bg-primary/25',
+        accent: 'bg-primary',
+        bar: 'bg-primary',
+        labelColor: 'text-primary',
     },
-}[toastState.tone] || {
-    iconBg: 'bg-surface-container-high text-on-surface-variant ring-1 ring-outline-variant shadow-sm',
-    icon: 'info',
-}));
+};
+
+const toneStyles = computed(() => tones[toastState.tone] || tones.info);
 
 watch(
     () => page.props.flash,
@@ -49,47 +70,62 @@ onBeforeUnmount(() => {
 <template>
     <Teleport to="body">
         <div
-            class="pointer-events-none fixed inset-x-0 top-4 z-[100] flex justify-center px-4 sm:justify-end sm:px-6"
+            class="pointer-events-none fixed inset-x-0 top-4 z-[100] flex justify-end px-4 sm:top-6 sm:px-6"
             aria-live="polite"
+            aria-atomic="true"
         >
             <Transition name="toast">
                 <div
                     v-if="toastState.visible"
+                    :key="toastState.token"
                     role="status"
-                    class="pointer-events-auto flex max-w-md items-center gap-3.5 rounded-2xl floating-shadow bg-surface-container-lowest px-4 py-3.5 ring-1 ring-outline-variant/40 transition-all duration-200"
+                    class="toast-card pointer-events-auto relative flex w-full max-w-md items-start gap-3.5 overflow-hidden rounded-2xl border border-outline-variant/50 bg-surface-container-lowest/95 py-3.5 pl-5 pr-3.5 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-md"
                     @mouseenter="pause"
                     @mouseleave="resume"
                 >
-                    <!-- Left Icon Badge -->
+                    <!-- Aksen warna sesuai tone -->
+                    <span class="absolute inset-y-0 left-0 w-1.5" :class="toneStyles.accent" aria-hidden="true" />
+
+                    <!-- Ikon -->
                     <div
-                        class="grid size-9 shrink-0 place-items-center rounded-xl"
+                        class="relative grid size-10 shrink-0 place-items-center rounded-xl ring-1 ring-inset"
                         :class="toneStyles.iconBg"
                     >
-                        <AppIcon :name="toneStyles.icon" class="text-xl" />
+                        <span class="absolute inset-0 rounded-xl opacity-60 blur-md" :class="toneStyles.halo" aria-hidden="true" />
+                        <AppIcon :name="toneStyles.icon" class="relative text-[22px]" />
                     </div>
 
-                    <!-- Message Body -->
-                    <div class="min-w-0 flex-1">
+                    <!-- Pesan -->
+                    <div class="min-w-0 flex-1 pt-0.5">
                         <p
-                            v-if="toastState.title"
-                            class="mb-0.5 text-xs font-bold uppercase tracking-wider text-on-surface-variant"
+                            class="text-[10px] font-bold uppercase tracking-[0.16em]"
+                            :class="toneStyles.labelColor"
                         >
-                            {{ toastState.title }}
+                            {{ toastState.title || toneStyles.label }}
                         </p>
-                        <p class="text-sm font-semibold leading-snug text-on-surface">
+                        <p class="mt-0.5 text-sm font-semibold leading-snug text-on-surface">
                             {{ toastState.message }}
                         </p>
                     </div>
 
-                    <!-- Close Button -->
+                    <!-- Tombol tutup -->
                     <button
                         type="button"
-                        class="grid size-8 shrink-0 place-items-center rounded-full text-on-surface-variant/70 transition-colors hover:bg-surface-container-high hover:text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        aria-label="Tutup notifikasi"
+                        class="grid size-8 shrink-0 place-items-center rounded-full text-on-surface-variant/60 transition-colors hover:bg-surface-container-high hover:text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                        :aria-label="t('Tutup notifikasi')"
                         @click="dismiss"
                     >
                         <AppIcon name="close" class="text-lg" />
                     </button>
+
+                    <!-- Progress bar durasi tampil -->
+                    <span
+                        v-if="toastState.duration > 0"
+                        class="toast-progress absolute inset-x-0 bottom-0 h-0.5 origin-left"
+                        :class="toneStyles.bar"
+                        :style="{ animationDuration: `${toastState.duration}ms` }"
+                        aria-hidden="true"
+                    />
                 </div>
             </Transition>
         </div>
@@ -97,19 +133,42 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.toast-enter-active,
+.toast-enter-active {
+    transition: opacity 240ms ease, transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
 .toast-leave-active {
-    transition: opacity 220ms ease, transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 160ms ease, transform 160ms ease;
 }
 .toast-enter-from,
 .toast-leave-to {
     opacity: 0;
     transform: translateY(-0.75rem) scale(0.96);
 }
+
+.toast-progress {
+    animation-name: toast-progress;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+.toast-card:hover .toast-progress {
+    animation-play-state: paused;
+}
+@keyframes toast-progress {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .toast-enter-active,
     .toast-leave-active {
         transition: none;
+    }
+    .toast-progress {
+        animation: none;
     }
 }
 </style>

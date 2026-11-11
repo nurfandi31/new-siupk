@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { computed, ref, watch } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import AppCard from '../../../Components/AppCard.vue';
@@ -55,11 +57,11 @@ function onAccountChange() {
 </script>
 
 <template>
-    <Head title="Buku Besar" />
+    <Head :title="t('Buku Besar')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div>
-                <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan</p>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
                 <h1 class="mt-1 text-2xl font-bold text-primary">
                     Buku Besar
                     <span v-if="account" class="text-lg font-semibold text-on-surface-variant">— {{ account.name }}</span>
@@ -85,9 +87,9 @@ function onAccountChange() {
                         <div class="w-full min-w-0 flex-1 lg:max-w-sm">
                             <SmartSelect
                                 v-model="selectedAccount"
-                                label="Akun"
+                                :label="t('Akun')"
                                 :options="accountOptions"
-                                placeholder="Pilih akun postable"
+                                :placeholder="t('Pilih akun postable')"
                                 searchable
                                 @update:model-value="onAccountChange"
                             />
@@ -98,7 +100,7 @@ function onAccountChange() {
             </AppCard>
 
             <AppCard v-if="!account" class="p-8 text-center text-on-surface-variant">
-                Pilih akun untuk menampilkan buku besar.
+                {{ t('Pilih akun untuk menampilkan buku besar.') }}
             </AppCard>
 
             <AppCard v-else class="overflow-hidden p-0">
@@ -106,13 +108,13 @@ function onAccountChange() {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left">No</th>
-                                <th class="px-3 py-2 text-left">Tanggal</th>
-                                <th class="px-3 py-2 text-left">No. Jurnal</th>
-                                <th class="px-3 py-2 text-left">Keterangan</th>
-                                <th class="px-3 py-2 text-right">Debit</th>
-                                <th class="px-3 py-2 text-right">Kredit</th>
-                                <th class="px-3 py-2 text-right">Saldo</th>
+                                <th class="px-3 py-2 text-left">{{ t('No') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Tanggal') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('No. Jurnal') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Keterangan') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Debit') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Kredit') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Saldo') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -144,25 +146,25 @@ function onAccountChange() {
                                 <td class="px-3 py-2 text-right tabular-nums font-medium">{{ money.format(row.balance) }}</td>
                             </tr>
                             <tr v-if="rows.length === 0">
-                                <td colspan="7" class="px-3 py-6 text-center text-on-surface-variant">Tidak ada mutasi pada periode.</td>
+                                <td colspan="7" class="px-3 py-6 text-center text-on-surface-variant">{{ t('Tidak ada mutasi pada periode.') }}</td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                <td class="px-3 py-2" colspan="4">{{ totals.period?.label || 'Total Transaksi Periode' }}</td>
+                                <td class="px-3 py-2" colspan="4">{{ totals.period?.label || t('Total Transaksi Periode') }}</td>
                                 <!-- gl-footer-v2 -->
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.period?.debit ?? totals.debit) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.period?.credit ?? totals.credit) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums"></td>
                             </tr>
                             <tr class="bg-surface-container-low font-semibold">
-                                <td class="px-3 py-2" colspan="4">{{ totals.ytd?.label || 'Total Transaksi s/d Periode' }}</td>
+                                <td class="px-3 py-2" colspan="4">{{ totals.ytd?.label || t('Total Transaksi s/d Periode') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.ytd?.debit ?? 0) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.ytd?.credit ?? 0) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.ytd?.balance ?? totals.closing_balance) }}</td>
                             </tr>
                             <tr class="bg-surface-container font-bold">
-                                <td class="px-3 py-2" colspan="4">{{ totals.cumulative?.label || 'Total Transaksi Kumulatif Tahun' }}</td>
+                                <td class="px-3 py-2" colspan="4">{{ totals.cumulative?.label || t('Total Transaksi Kumulatif Tahun') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.cumulative?.debit ?? 0) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.cumulative?.credit ?? 0) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums"></td>

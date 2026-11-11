@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
@@ -26,22 +28,22 @@ const planId = ref(props.filters.plan_id || '');
 const perPage = ref(String(props.filters.per_page || 15));
 
 const statusOptions = [
-    { value: '', label: 'Semua Status Pembayaran' },
-    { value: 'paid', label: 'Lunas' },
-    { value: 'pending', label: 'Menunggu Pembayaran' },
-    { value: 'overdue', label: 'Jatuh Tempo / Overdue' },
-    { value: 'no_invoice', label: 'Belum Ada Tagihan' },
+    { value: '', label: t('Semua Status Pembayaran') },
+    { value: 'paid', label: t('Lunas') },
+    { value: 'pending', label: t('Menunggu Pembayaran') },
+    { value: 'overdue', label: t('Jatuh Tempo / Overdue') },
+    { value: 'no_invoice', label: t('Belum Ada Tagihan') },
 ];
 
 const planOptions = [
-    { value: '', label: 'Semua Paket' },
+    { value: '', label: t('Semua Paket') },
     ...props.plans.map((p) => ({ value: String(p.row_id), label: p.name })),
 ];
 
 const perPageOptions = [
-    { value: '15', label: '15 per halaman' },
-    { value: '30', label: '30 per halaman' },
-    { value: '50', label: '50 per halaman' },
+    { value: '15', label: t('15 per halaman') },
+    { value: '30', label: t('30 per halaman') },
+    { value: '50', label: t('50 per halaman') },
 ];
 
 function applyFilters(page = 1) {
@@ -70,15 +72,15 @@ watch([status, planId, perPage], () => {
 </script>
 
 <template>
-    <Head title="Monitor Pendapatan & Tagihan Tenant" />
+    <Head :title="t('Monitor Pendapatan & Tagihan Tenant')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <AdminPageHeader
-                title="Monitor Pendapatan & Tagihan"
-                subtitle="Pantau nominal tagihan, tanggal jatuh tempo, dan status pembayaran per masing-masing tenant."
+                :title="t('Monitor Pendapatan & Tagihan')"
+                :subtitle="t('Pantau nominal tagihan, tanggal jatuh tempo, dan status pembayaran per masing-masing tenant.')"
             >
                 <template #actions>
-                    <Link href="/admin/invoices/create"><AppButton icon="add">Terbitkan Tagihan</AppButton></Link>
+                    <Link href="/admin/invoices/create"><AppButton icon="add">{{ t('Terbitkan Tagihan') }}</AppButton></Link>
                 </template>
             </AdminPageHeader>
 
@@ -86,40 +88,40 @@ watch([status, planId, perPage], () => {
             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <AppCard>
                     <div class="flex items-center justify-between">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Tenant Lunas</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Tenant Lunas') }}</p>
                         <AppIcon name="check_circle" tone="success" container-size="8" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold text-secondary">{{ summary.tenants_paid }} <span class="text-xs font-medium text-on-surface-variant">/ {{ summary.total_tenants }} tenant</span></p>
                     <p class="mt-1.5 text-xs text-on-surface-variant">
-                        Total Pemasukan: <strong class="text-secondary">{{ money(summary.total_collected) }}</strong>
+                        {{ t('Total Pemasukan:') }} <strong class="text-secondary">{{ money(summary.total_collected) }}</strong>
                     </p>
                 </AppCard>
 
                 <AppCard>
                     <div class="flex items-center justify-between">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Menunggu Pembayaran</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Menunggu Pembayaran') }}</p>
                         <AppIcon name="hourglass_top" tone="warning" container-size="8" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold text-warning">{{ summary.tenants_pending }}</p>
                     <p class="mt-1.5 text-xs text-on-surface-variant">
-                        Invoice aktif belum jatuh tempo
+                        {{ t('Invoice aktif belum jatuh tempo') }}
                     </p>
                 </AppCard>
 
                 <AppCard>
                     <div class="flex items-center justify-between">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jatuh Tempo (Overdue)</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jatuh Tempo (Overdue)') }}</p>
                         <AppIcon name="warning" tone="error" container-size="8" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold text-error">{{ summary.tenants_overdue }}</p>
                     <p class="mt-1.5 text-xs text-on-surface-variant">
-                        Membutuhkan tindak lanjut penagihan
+                        {{ t('Membutuhkan tindak lanjut penagihan') }}
                     </p>
                 </AppCard>
 
                 <AppCard>
                     <div class="flex items-center justify-between">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Piutang Belum Bayar</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Piutang Belum Bayar') }}</p>
                         <AppIcon name="account_balance_wallet" tone="primary" container-size="8" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold" :class="summary.total_outstanding > 0 ? 'text-error' : 'text-primary'">
@@ -136,23 +138,23 @@ watch([status, planId, perPage], () => {
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <AppInput
                         v-model="search"
-                        label="Cari Tenant / Invoice"
-                        placeholder="Cari tenant/invoice"
+                        :label="t('Cari Tenant / Invoice')"
+                        :placeholder="t('Cari tenant/invoice')"
                         icon="search"
                     />
                     <SmartSelect
                         v-model="status"
-                        label="Status Pembayaran"
+                        :label="t('Status Pembayaran')"
                         :options="statusOptions"
                     />
                     <SmartSelect
                         v-model="planId"
-                        label="Paket Langganan"
+                        :label="t('Paket Langganan')"
                         :options="planOptions"
                     />
                     <SmartSelect
                         v-model="perPage"
-                        label="Tampilkan"
+                        :label="t('Tampilkan')"
                         :options="perPageOptions"
                     />
                 </div>
@@ -164,13 +166,13 @@ watch([status, planId, perPage], () => {
                     <table class="w-full text-left text-sm">
                         <thead class="border-b border-outline-variant bg-surface-container-low text-xs font-bold uppercase tracking-wider text-on-surface-variant">
                             <tr>
-                                <th class="px-6 py-4">Tenant / BUMDesma</th>
-                                <th class="px-4 py-4">Paket &amp; Tarif</th>
-                                <th class="px-4 py-4 text-right">Tagihan Terakhir</th>
-                                <th class="px-4 py-4">Jatuh Tempo</th>
-                                <th class="px-4 py-4">Status Pembayaran</th>
-                                <th class="px-4 py-4 text-right">Total Terbayar</th>
-                                <th class="px-6 py-4 text-right">Aksi</th>
+                                <th class="px-6 py-4">{{ t('Tenant / BUMDesma') }}</th>
+                                <th class="px-4 py-4">{{ t('Paket & Tarif') }}</th>
+                                <th class="px-4 py-4 text-right">{{ t('Tagihan Terakhir') }}</th>
+                                <th class="px-4 py-4">{{ t('Jatuh Tempo') }}</th>
+                                <th class="px-4 py-4">{{ t('Status Pembayaran') }}</th>
+                                <th class="px-4 py-4 text-right">{{ t('Total Terbayar') }}</th>
+                                <th class="px-6 py-4 text-right">{{ t('Aksi') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/30">
@@ -203,7 +205,7 @@ watch([status, planId, perPage], () => {
                                             {{ money(tenant.plan.price_amount, tenant.plan.currency) }} / {{ tenant.plan.billing_period }}
                                         </p>
                                     </div>
-                                    <span v-else class="text-xs text-on-surface-variant italic">Belum Ada Paket</span>
+                                    <span v-else class="text-xs text-on-surface-variant italic">{{ t('Belum Ada Paket') }}</span>
                                 </td>
 
                                 <!-- Latest Invoice Amount -->
@@ -260,13 +262,13 @@ watch([status, planId, perPage], () => {
                                             v-if="tenant.latest_invoice"
                                             :href="`/admin/invoices/${tenant.latest_invoice.row_id}`"
                                         >
-                                            <AppButton variant="ghost" size="compact" icon="receipt">Invoice</AppButton>
+                                            <AppButton variant="ghost" size="compact" icon="receipt">{{ t('Invoice') }}</AppButton>
                                         </Link>
                                         <Link :href="`/admin/invoices/create?tenant_id=${tenant.row_id}`">
-                                            <AppButton variant="secondary" size="compact" icon="add">Tagih</AppButton>
+                                            <AppButton variant="secondary" size="compact" icon="add">{{ t('Tagih') }}</AppButton>
                                         </Link>
                                         <Link :href="`/admin/tenants/${tenant.row_id}`">
-                                            <AppButton variant="ghost" size="compact" icon="visibility">Detail</AppButton>
+                                            <AppButton variant="ghost" size="compact" icon="visibility">{{ t('Detail') }}</AppButton>
                                         </Link>
                                     </div>
                                 </td>
@@ -275,7 +277,7 @@ watch([status, planId, perPage], () => {
                             <tr v-if="!tenants.data || tenants.data.length === 0">
                                 <td colspan="7" class="px-6 py-12 text-center text-on-surface-variant">
                                     <AppIcon name="inbox" class="mx-auto text-4xl text-outline mb-2 block" />
-                                    <p class="font-semibold">Tidak ada data tenant yang cocok dengan filter.</p>
+                                    <p class="font-semibold">{{ t('Tidak ada data tenant yang cocok dengan filter.') }}</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -297,7 +299,7 @@ watch([status, planId, perPage], () => {
                             :disabled="tenants.current_page <= 1"
                             @click="applyFilters(tenants.current_page - 1)"
                         >
-                            Sebelumnya
+                            {{ t('Sebelumnya') }}
                         </AppButton>
                         <AppButton
                             variant="ghost"
@@ -305,7 +307,7 @@ watch([status, planId, perPage], () => {
                             :disabled="tenants.current_page >= tenants.last_page"
                             @click="applyFilters(tenants.current_page + 1)"
                         >
-                            Selanjutnya
+                            {{ t('Selanjutnya') }}
                         </AppButton>
                     </div>
                 </div>

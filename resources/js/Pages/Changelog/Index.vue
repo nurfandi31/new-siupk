@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed, reactive, ref } from 'vue';
 import AppAccordion from '../../Components/AppAccordion.vue';
@@ -70,16 +72,16 @@ const allExpanded = computed(() => {
 });
 
 const categoryFilterItems = computed(() => [
-    { value: 'all', label: 'Semua Kategori', icon: 'auto_stories' },
-    { value: 'Added', label: 'Fitur Baru', icon: 'add_circle' },
-    { value: 'Changed', label: 'Pembaruan', icon: 'published_with_changes' },
-    { value: 'Fixed', label: 'Perbaikan', icon: 'bug_report' },
-    { value: 'Security', label: 'Keamanan', icon: 'security' },
+    { value: 'all', label: t('Semua Kategori'), icon: 'auto_stories' },
+    { value: 'Added', label: t('Fitur Baru'), icon: 'add_circle' },
+    { value: 'Changed', label: t('Pembaruan'), icon: 'published_with_changes' },
+    { value: 'Fixed', label: t('Perbaikan'), icon: 'bug_report' },
+    { value: 'Security', label: t('Keamanan'), icon: 'security' },
 ]);
 
 const categoryMeta = {
     Added: {
-        label: 'Fitur Baru',
+        label: t('Fitur Baru'),
         tone: 'success-soft',
         icon: 'add_circle',
         borderCls: 'border-secondary/30 bg-secondary-container/10',
@@ -87,7 +89,7 @@ const categoryMeta = {
         itemTone: 'text-secondary',
     },
     Changed: {
-        label: 'Pembaruan & Peningkatan',
+        label: t('Pembaruan & Peningkatan'),
         tone: 'info-soft',
         icon: 'published_with_changes',
         borderCls: 'border-primary/30 bg-primary-container/10',
@@ -95,7 +97,7 @@ const categoryMeta = {
         itemTone: 'text-primary',
     },
     Fixed: {
-        label: 'Perbaikan Bug',
+        label: t('Perbaikan Bug'),
         tone: 'warning-soft',
         icon: 'bug_report',
         borderCls: 'border-tertiary/30 bg-tertiary-fixed/10',
@@ -103,7 +105,7 @@ const categoryMeta = {
         itemTone: 'text-tertiary',
     },
     Security: {
-        label: 'Keamanan',
+        label: t('Keamanan'),
         tone: 'error-soft',
         icon: 'security',
         borderCls: 'border-error/30 bg-error-container/10',
@@ -111,7 +113,7 @@ const categoryMeta = {
         itemTone: 'text-error',
     },
     Deprecated: {
-        label: 'Usang (Deprecated)',
+        label: t('Usang (Deprecated)'),
         tone: 'warning-soft',
         icon: 'warning',
         borderCls: 'border-warning/30 bg-warning-container/10',
@@ -119,7 +121,7 @@ const categoryMeta = {
         itemTone: 'text-warning',
     },
     Removed: {
-        label: 'Dihapus',
+        label: t('Dihapus'),
         tone: 'error-soft',
         icon: 'delete',
         borderCls: 'border-error/30 bg-error-container/10',
@@ -186,7 +188,7 @@ const filteredReleases = computed(() => {
 
 <template>
     <component :is="activeLayout">
-        <Head title="Catatan Rilis & Changelog" />
+        <Head :title="t('Catatan Rilis & Changelog')" />
 
         <div class="mx-auto max-w-5xl space-y-6 pb-12">
             <!-- Header Hero Card -->
@@ -198,11 +200,11 @@ const filteredReleases = computed(() => {
                         </div>
                         <div>
                             <div class="flex flex-wrap items-center gap-2.5">
-                                <h1 class="text-xl font-bold text-on-surface sm:text-2xl">Catatan Rilis & Riwayat Pembaruan</h1>
+                                <h1 class="text-xl font-bold text-on-surface sm:text-2xl">{{ t('Catatan Rilis & Riwayat Pembaruan') }}</h1>
                                 <AppBadge tone="primary-soft" class="px-3 py-1 font-mono text-xs">v{{ latest_version }}</AppBadge>
                             </div>
                             <p class="mt-1 text-sm text-on-surface-variant max-w-2xl leading-relaxed">
-                                Dokumentasi lengkap fitur baru, peningkatan antarmuka, optimasi performa, dan perbaikan berkala pada sistem siupk Next.
+                                {{ t('Dokumentasi lengkap fitur baru, peningkatan antarmuka, optimasi performa, dan perbaikan berkala pada sistem siupk Next.') }}
                             </p>
                         </div>
                     </div>
@@ -226,7 +228,7 @@ const filteredReleases = computed(() => {
                         <div class="w-full sm:max-w-xs">
                             <AppInput
                                 v-model="searchQuery"
-                                placeholder="Cari changelog..."
+                                :placeholder="t('Cari changelog...')"
                                 icon="search"
                                 clearable
                             />
@@ -236,7 +238,7 @@ const filteredReleases = computed(() => {
                             :items="categoryFilterItems"
                             variant="segment"
                             size="compact"
-                            aria-label="Filter kategori perubahan"
+                            :aria-label="t('Filter kategori perubahan')"
                         />
                     </div>
 
@@ -247,7 +249,7 @@ const filteredReleases = computed(() => {
                             :icon="allExpanded ? 'unfold_less' : 'unfold_more'"
                             @click="allExpanded ? collapseAll() : expandAll()"
                         >
-                            {{ allExpanded ? 'Tutup Semua' : 'Buka Semua' }}
+                            {{ allExpanded ? t('Tutup Semua') : t('Buka Semua') }}
                         </AppButton>
                     </div>
                 </div>
@@ -295,7 +297,7 @@ const filteredReleases = computed(() => {
                                 </div>
                                 <AppBadge v-if="release.is_latest" tone="success-soft" class="flex items-center gap-1">
                                     <span class="size-1.5 rounded-full bg-secondary inline-block animate-ping" />
-                                    Versi Terbaru
+                                    {{ t('Versi Terbaru') }}
                                 </AppBadge>
                             </div>
 
@@ -417,8 +419,8 @@ const filteredReleases = computed(() => {
             <AppEmptyState
                 v-else
                 icon="search_off"
-                title="Tidak Ada Catatan Rilis yang Cocok"
-                description="Coba ubah kata kunci pencarian atau reset filter kategori untuk melihat riwayat rilis lainnya."
+                :title="t('Tidak Ada Catatan Rilis yang Cocok')"
+                :description="t('Coba ubah kata kunci pencarian atau reset filter kategori untuk melihat riwayat rilis lainnya.')"
             >
                 <div class="mt-4 flex justify-center gap-2">
                     <AppButton
@@ -427,7 +429,7 @@ const filteredReleases = computed(() => {
                         icon="restart_alt"
                         @click="searchQuery = ''; selectedCategory = 'all'"
                     >
-                        Reset Filter
+                        {{ t('Reset Filter') }}
                     </AppButton>
                 </div>
             </AppEmptyState>

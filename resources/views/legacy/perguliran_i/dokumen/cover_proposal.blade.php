@@ -8,7 +8,7 @@
     }
 @endphp
 
-<title>COVER PROPOSAL ({{ $pinkel->anggota->namadepan . ' - Loan ID. ' . $pinkel->id }})</title>
+<title>PROPOSAL ({{ $pinkel->anggota->namadepan . ' - Loan ID. ' . $pinkel->id }})</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
 <style>
@@ -59,8 +59,8 @@
 
 <body>
     <header>
-        <h1 style="margin: 0px;">{{ strtoupper($judul) }}</h1>
-        <div style="margin: 0px; font-size: 24px;">
+        <h1 style="margin: 0 0 8px; font-size: 30px; line-height: 1.2;">PROPOSAL</h1>
+        <div style="margin: 0; font-size: 22px; line-height: 1.3;">
             {{ strtoupper('Pinjaman Individu ' . $pinkel->jpp->nama_jpp) }}
         </div>
     </header>

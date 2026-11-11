@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { onMounted, onUnmounted, ref } from 'vue';
 import AppButton from './AppButton.vue';
 import AppIcon from './AppIcon.vue';
@@ -84,9 +86,9 @@ onUnmounted(() => {
                 <div class="flex items-center gap-3">
                     <AppIcon name="wifi_off" tone="warning" container-size="9" container-shape="pill" class="shrink-0" />
                     <div class="min-w-0">
-                        <p class="text-xs font-bold sm:text-sm">Mode Offline — Input Diizinkan</p>
+                        <p class="text-xs font-bold sm:text-sm">{{ t('Mode Offline — Input Diizinkan') }}</p>
                         <p class="truncate text-[11px] opacity-90 sm:text-xs">
-                            {{ customMessage || 'Data tetap dapat dibaca & dicetak dari database lokal. Fitur penambahan/perubahan data dinonaktifkan.' }}
+                            {{ customMessage || t('Data tetap dapat dibaca & dicetak dari database lokal. Fitur penambahan/perubahan data dinonaktifkan.') }}
                         </p>
                     </div>
                 </div>
@@ -96,10 +98,10 @@ onUnmounted(() => {
                         size="compact"
                         icon="refresh"
                         :loading="isChecking"
-                        aria-label="Cek koneksi server"
+                        :aria-label="t('Cek koneksi server')"
                         @click="reconnect"
                     >
-                        Cek Server
+                        {{ t('Cek Server') }}
                     </AppButton>
                 </div>
             </div>
@@ -112,8 +114,8 @@ onUnmounted(() => {
             >
                 <AppIcon name="wifi" tone="success" container-size="9" container-shape="pill" filled class="shrink-0" />
                 <div class="min-w-0">
-                    <p class="text-xs font-bold sm:text-sm">Koneksi Pulih</p>
-                    <p class="truncate text-[11px] opacity-90 sm:text-xs">Anda telah terhubung kembali ke server utama.</p>
+                    <p class="text-xs font-bold sm:text-sm">{{ t('Koneksi Pulih') }}</p>
+                    <p class="truncate text-[11px] opacity-90 sm:text-xs">{{ t('Anda telah terhubung kembali ke server utama.') }}</p>
                 </div>
             </div>
         </Transition>

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, reactive, ref, watch } from 'vue';
 import AppBadge from '../../Components/AppBadge.vue';
@@ -120,14 +122,14 @@ function monthMeta(month) {
 </script>
 
 <template>
-    <Head title="E-Budgeting" />
+    <Head :title="t('E-Budgeting')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6 pb-28">
             <header class="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">E-Budgeting</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('E-Budgeting') }}</h1>
                     <p class="mt-1 text-on-surface-variant">
-                        Rencana anggaran per tahun &amp; bulan. Hanya akun pendapatan/beban yang postable.
+                        {{ t('Rencana anggaran per tahun & bulan. Hanya akun pendapatan/beban yang postable.') }}
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -139,7 +141,7 @@ function monthMeta(month) {
                         size="compact"
                         @click="approve"
                     >
-                        Setujui Tahun
+                        {{ t('Setujui Tahun') }}
                     </AppButton>
                     <AppButton
                         v-else-if="can('budgeting.manage')"
@@ -148,12 +150,12 @@ function monthMeta(month) {
                         size="compact"
                         @click="reopen"
                     >
-                        Buka Draft
+                        {{ t('Buka Draft') }}
                     </AppButton>
                 </div>
             </header>
 
-            <AppDatePicker v-model="selectedYear" mode="year" label="Tahun" />
+            <AppDatePicker v-model="selectedYear" mode="year" :label="t('Tahun')" />
 
             <div class="grid gap-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-12">
                 <AppButton
@@ -173,15 +175,15 @@ function monthMeta(month) {
 
             <div class="grid gap-4 md:grid-cols-3">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pendapatan</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pendapatan') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(liveTotals.revenue) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Beban</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Beban') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(liveTotals.expense) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Surplus / Defisit</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Surplus / Defisit') }}</p>
                     <p class="mt-2 text-2xl font-bold" :class="liveTotals.surplus >= 0 ? 'text-primary' : 'text-error'">
                         {{ formatMoney(liveTotals.surplus) }}
                     </p>
@@ -196,7 +198,7 @@ function monthMeta(month) {
                 <div class="flex items-center justify-between border-b border-outline-variant px-6 py-4">
                     <h2 class="text-lg font-bold text-primary">{{ group.label }}</h2>
                     <p class="text-sm font-semibold text-on-surface-variant">
-                        Total: {{ formatMoney(liveTotals[group.type]) }}
+                        {{ t('Total:') }} {{ formatMoney(liveTotals[group.type]) }}
                     </p>
                 </div>
 
@@ -245,7 +247,7 @@ function monthMeta(month) {
                         :disabled="form.processing"
                         @click="copyPrevious"
                     >
-                        Salin bulan lalu
+                        {{ t('Salin bulan lalu') }}
                     </AppButton>
                     <AppButton icon="save" :loading="form.processing" @click="submit">
                         Simpan {{ monthLabels[month] }}

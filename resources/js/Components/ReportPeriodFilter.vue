@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AppButton from './AppButton.vue';
@@ -122,28 +124,28 @@ function toMonthValue(year, month) {
 <template>
     <div class="flex w-full flex-col gap-3 lg:flex-row lg:items-end lg:gap-3">
         <div class="grid w-full flex-1 grid-cols-1 gap-3 sm:grid-cols-2" :class="showDay ? 'lg:grid-cols-3' : 'lg:grid-cols-2'">
-            <AppDatePicker v-model="selectedYear" label="Tahun" mode="year" required />
+            <AppDatePicker v-model="selectedYear" :label="t('Tahun')" mode="year" required />
             <AppDatePicker
                 v-model="selectedMonth"
-                label="Bulan"
+                :label="t('Bulan')"
                 mode="month"
                 clearable
-                placeholder="Semua bulan"
+                :placeholder="t('Semua bulan')"
             />
             <AppDatePicker
                 v-if="showDay"
                 v-model="selectedDay"
-                label="Tanggal"
+                :label="t('Tanggal')"
                 mode="date"
                 clearable
-                placeholder="Semua tanggal"
+                :placeholder="t('Semua tanggal')"
                 :min="selectedMonth ? `${selectedMonth}-01` : selectedYear ? `${selectedYear}-01-01` : null"
                 :max="dayMax"
             />
         </div>
         <slot name="extra" />
         <div class="flex shrink-0 items-end gap-2">
-            <AppButton type="button" class="!min-h-11 h-11 px-5" @click="apply">Tampilkan</AppButton>
+            <AppButton type="button" class="!min-h-11 h-11 px-5" @click="apply">{{ t('Tampilkan') }}</AppButton>
             <a
                 v-if="pdfUrl"
                 :href="pdfHref()"
@@ -159,7 +161,7 @@ function toMonthValue(year, month) {
                 class="inline-flex h-11 min-h-11 items-center gap-1.5 rounded-xl border border-outline-variant px-4 text-sm font-semibold text-primary hover:bg-surface-container-low"
             >
                 <AppIcon name="table_view" class="text-base" />
-                Excel
+                {{ t('Excel') }}
             </a>
         </div>
     </div>

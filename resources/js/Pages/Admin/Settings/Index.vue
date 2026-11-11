@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
@@ -25,10 +27,10 @@ const editingKey = ref(null);
 const createOpen = ref(false);
 
 const typeOptions = [
-    { value: 'string', label: 'String' },
-    { value: 'int', label: 'Angka (int)' },
-    { value: 'float', label: 'Desimal (float)' },
-    { value: 'bool', label: 'Boolean' },
+    { value: 'string', label: t('String') },
+    { value: 'int', label: t('Angka (int)') },
+    { value: 'float', label: t('Desimal (float)') },
+    { value: 'bool', label: t('Boolean') },
     { value: 'json', label: 'JSON' },
 ];
 
@@ -36,10 +38,10 @@ const editForm = useForm({ key: '', value: '', value_type: 'string' });
 const createForm = useForm({ key: '', value: '', value_type: 'string' });
 
 const columns = [
-    { key: 'key', label: 'Key' },
-    { key: 'value_type', label: 'Tipe' },
-    { key: 'value', label: 'Nilai' },
-    { key: 'updated_at', label: 'Diperbarui' },
+    { key: 'key', label: t('Key') },
+    { key: 'value_type', label: t('Tipe') },
+    { key: 'value', label: t('Nilai') },
+    { key: 'updated_at', label: t('Diperbarui') },
 ];
 
 function startEdit(row) {
@@ -73,9 +75,9 @@ function saveCreate() {
 
 async function removeSetting(key) {
     const ok = await confirm({
-        title: 'Hapus Setting?',
+        title: t('Hapus Setting?'),
         message: `Setting [${key}] akan dihapus permanen dari database platform. Fitur yang bergantung padanya akan kembali ke nilai default.`,
-        confirmLabel: 'Hapus',
+        confirmLabel: t('Hapus'),
         variant: 'danger',
     });
     if (!ok) return;
@@ -88,15 +90,15 @@ async function removeSetting(key) {
 </script>
 
 <template>
-    <Head title="Pengaturan Platform" />
+    <Head :title="t('Pengaturan Platform')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <AdminPageHeader
-                title="Pengaturan Platform"
-                subtitle="Key-value store tingkat instalasi yang berlaku untuk semua tenant — kredensial payment gateway, template WhatsApp, dan konfigurasi integrasi lainnya."
+                :title="t('Pengaturan Platform')"
+                :subtitle="t('Key-value store tingkat instalasi yang berlaku untuk semua tenant — kredensial payment gateway, template WhatsApp, dan konfigurasi integrasi lainnya.')"
             >
                 <template #actions>
-                    <AppButton icon="add" @click="createOpen = !createOpen">{{ createOpen ? 'Tutup' : 'Setting Baru' }}</AppButton>
+                    <AppButton icon="add" @click="createOpen = !createOpen">{{ createOpen ? t('Tutup') : t('Setting Baru') }}</AppButton>
                 </template>
             </AdminPageHeader>
 
@@ -104,38 +106,38 @@ async function removeSetting(key) {
             <div class="grid gap-4 sm:grid-cols-2">
                 <AppCard>
                     <div class="flex items-center justify-between">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Setting</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Setting') }}</p>
                         <AppIcon name="tune" tone="primary" container-size="8" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold tabular-nums text-primary">{{ summary.total }}</p>
                 </AppCard>
                 <AppCard>
                     <div class="flex items-center justify-between">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Nilai Sensitif (terenkripsi)</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Nilai Sensitif (terenkripsi)') }}</p>
                         <AppIcon name="encrypted" :tone="summary.sensitive > 0 ? 'success' : 'neutral'" container-size="8" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold tabular-nums text-primary">{{ summary.sensitive }}</p>
-                    <p class="mt-1.5 text-xs text-on-surface-variant">Disimpan terenkripsi & tidak pernah tampil di layar</p>
+                    <p class="mt-1.5 text-xs text-on-surface-variant">{{ t('Disimpan terenkripsi & tidak pernah tampil di layar') }}</p>
                 </AppCard>
             </div>
 
             <!-- Form setting baru -->
             <AppCard v-if="createOpen">
                 <form class="grid gap-4 sm:grid-cols-[1fr_10rem_2fr_auto] sm:items-end" @submit.prevent="saveCreate">
-                    <AppInput v-model="createForm.key" label="Key" placeholder="Masukkan key" required />
+                    <AppInput v-model="createForm.key" :label="t('Key')" :placeholder="t('Masukkan key')" required />
                     <SmartSelect
                         v-model="createForm.value_type"
-                        label="Tipe"
+                        :label="t('Tipe')"
                         :options="typeOptions"
                         value-key="value"
                     />
                     <AppInput
                         v-model="createForm.value"
-                        label="Nilai"
-                        placeholder="Masukkan nilai"
+                        :label="t('Nilai')"
+                        :placeholder="t('Masukkan nilai')"
                         :type="/(secret|api_key|private_key|token|password)/i.test(createForm.key) ? 'password' : 'text'"
                     />
-                    <AppButton type="submit" icon="save" :loading="createForm.processing">Simpan</AppButton>
+                    <AppButton type="submit" icon="save" :loading="createForm.processing">{{ t('Simpan') }}</AppButton>
                 </form>
                 <p class="mt-3 text-xs text-on-surface-variant">
                     Key yang mengandung <code>secret / api_key / private_key / token / password</code> otomatis disimpan terenkripsi dan nilainya tidak akan pernah dikirim balik ke browser.
@@ -163,7 +165,7 @@ async function removeSetting(key) {
                         <AppBadge tone="info-soft" class="whitespace-nowrap">{{ row.value_type }}</AppBadge>
                     </template>
                     <template #cell-value="{ row }">
-                        <span v-if="editingKey !== row.key" class="break-all font-mono text-xs text-on-surface">{{ row.has_value ? row.value || '(kosong)' : '(kosong)' }}</span>
+                        <span v-if="editingKey !== row.key" class="break-all font-mono text-xs text-on-surface">{{ row.has_value ? row.value || t('(kosong)') : t('(kosong)') }}</span>
                         <form v-else class="flex flex-wrap items-end gap-2" @submit.prevent="saveEdit">
                             <AppInput
                                 v-model="editForm.value"
@@ -173,8 +175,8 @@ async function removeSetting(key) {
                                 :type="row.is_sensitive ? 'password' : 'text'"
                                 :placeholder="row.is_sensitive ? 'Ganti nilai' : 'Nilai baru'"
                             />
-                            <AppButton type="submit" variant="success" size="compact" icon="check" :loading="editForm.processing">Simpan</AppButton>
-                            <AppButton variant="ghost" size="compact" @click="cancelEdit">Batal</AppButton>
+                            <AppButton type="submit" variant="success" size="compact" icon="check" :loading="editForm.processing">{{ t('Simpan') }}</AppButton>
+                            <AppButton variant="ghost" size="compact" @click="cancelEdit">{{ t('Batal') }}</AppButton>
                         </form>
                     </template>
                     <template #cell-updated_at="{ row }">
@@ -190,7 +192,7 @@ async function removeSetting(key) {
                                 icon="edit"
                                 @click="startEdit(row)"
                             >
-                                Ubah
+                                {{ t('Ubah') }}
                             </AppButton>
                             <AppButton
                                 variant="ghost"
@@ -199,7 +201,7 @@ async function removeSetting(key) {
                                 class="text-error"
                                 @click="removeSetting(row.key)"
                             >
-                                Hapus
+                                {{ t('Hapus') }}
                             </AppButton>
                         </div>
                     </template>

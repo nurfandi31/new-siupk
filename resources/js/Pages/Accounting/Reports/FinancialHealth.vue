@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -24,18 +26,18 @@ const selectedYear = ref(String(props.filters.year));
 const selectedMonth = ref(String(props.filters.month));
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -70,22 +72,22 @@ const pdfUrl = computed(() => {
 </script>
 
 <template>
-    <Head title="Penilaian Kesehatan Keuangan" />
+    <Head :title="t('Penilaian Kesehatan Keuangan')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Analisis Keuangan</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Penilaian Tingkat Kesehatan Keuangan</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Analisis Keuangan') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Penilaian Tingkat Kesehatan Keuangan') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Evaluasi kelayakan kinerja keuangan BUMDesma / LKD (Permendesa / Kepmendesa No. 136/2022)
+                        {{ t('Evaluasi kelayakan kinerja keuangan BUMDesma / LKD (Permendesa / Kepmendesa No. 136/2022)') }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -95,11 +97,11 @@ const pdfUrl = computed(() => {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -108,7 +110,7 @@ const pdfUrl = computed(() => {
             <!-- Score Summary Card -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <AppCard class="p-6 md:col-span-1 flex flex-col items-center justify-center text-center">
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Skor Evaluasi</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Skor Evaluasi') }}</p>
                     <div class="mt-2 text-5xl font-black text-primary">
                         {{ total_score }}
                         <span class="text-lg font-normal text-on-surface-variant">/ 100</span>
@@ -119,38 +121,38 @@ const pdfUrl = computed(() => {
                 </AppCard>
 
                 <AppCard class="p-6 md:col-span-2 space-y-4">
-                    <h3 class="text-sm font-bold text-on-surface">Data Pokok Finansial (Basis Perhitungan)</h3>
+                    <h3 class="text-sm font-bold text-on-surface">{{ t('Data Pokok Finansial (Basis Perhitungan)') }}</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                         <div class="p-3 rounded-lg bg-surface-variant/30">
-                            <span class="text-on-surface-variant block">Total Pendapatan</span>
+                            <span class="text-on-surface-variant block">{{ t('Total Pendapatan') }}</span>
                             <span class="font-bold text-sm text-on-surface">{{ formatMoney(financial_data.pendapatan) }}</span>
                         </div>
                         <div class="p-3 rounded-lg bg-surface-variant/30">
-                            <span class="text-on-surface-variant block">Total Beban/Biaya</span>
+                            <span class="text-on-surface-variant block">{{ t('Total Beban/Biaya') }}</span>
                             <span class="font-bold text-sm text-on-surface">{{ formatMoney(financial_data.biaya) }}</span>
                         </div>
                         <div class="p-3 rounded-lg bg-surface-variant/30">
-                            <span class="text-on-surface-variant block">Surplus Bersih</span>
+                            <span class="text-on-surface-variant block">{{ t('Surplus Bersih') }}</span>
                             <span class="font-bold text-sm text-secondary">{{ formatMoney(financial_data.surplus) }}</span>
                         </div>
                         <div class="p-3 rounded-lg bg-surface-variant/30">
-                            <span class="text-on-surface-variant block">Total Aset</span>
+                            <span class="text-on-surface-variant block">{{ t('Total Aset') }}</span>
                             <span class="font-bold text-sm text-primary">{{ formatMoney(financial_data.total_aset) }}</span>
                         </div>
                         <div class="p-3 rounded-lg bg-surface-variant/30">
-                            <span class="text-on-surface-variant block">Saldo Pokok Pinjaman</span>
+                            <span class="text-on-surface-variant block">{{ t('Saldo Pokok Pinjaman') }}</span>
                             <span class="font-bold text-sm text-on-surface">{{ formatMoney(financial_data.saldo_pokok) }}</span>
                         </div>
                         <div class="p-3 rounded-lg bg-surface-variant/30">
-                            <span class="text-on-surface-variant block">Tunggakan Pokok</span>
+                            <span class="text-on-surface-variant block">{{ t('Tunggakan Pokok') }}</span>
                             <span class="font-bold text-sm text-error">{{ formatMoney(financial_data.tunggakan_pokok) }}</span>
                         </div>
                         <div class="p-3 rounded-lg bg-surface-variant/30">
-                            <span class="text-on-surface-variant block">Cadangan Piutang (CKPN)</span>
+                            <span class="text-on-surface-variant block">{{ t('Cadangan Piutang (CKPN)') }}</span>
                             <span class="font-bold text-sm text-on-surface">{{ formatMoney(financial_data.ckpn) }}</span>
                         </div>
                         <div class="p-3 rounded-lg bg-surface-variant/30">
-                            <span class="text-on-surface-variant block">Total Ekuitas</span>
+                            <span class="text-on-surface-variant block">{{ t('Total Ekuitas') }}</span>
                             <span class="font-bold text-sm text-on-surface">{{ formatMoney(financial_data.total_ekuitas) }}</span>
                         </div>
                     </div>
@@ -162,13 +164,13 @@ const pdfUrl = computed(() => {
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                         <tr class="border-b border-outline-variant/30">
-                            <th class="p-3 w-10 text-center">No</th>
-                            <th class="p-3">Indikator Kinerja Keuangan</th>
-                            <th class="p-3">Formula / Rasio</th>
-                            <th class="p-3 text-right">Nilai Rasio</th>
-                            <th class="p-3 text-center">Bobot</th>
-                            <th class="p-3 text-right">Skor</th>
-                            <th class="p-3 text-center">Status</th>
+                            <th class="p-3 w-10 text-center">{{ t('No') }}</th>
+                            <th class="p-3">{{ t('Indikator Kinerja Keuangan') }}</th>
+                            <th class="p-3">{{ t('Formula / Rasio') }}</th>
+                            <th class="p-3 text-right">{{ t('Nilai Rasio') }}</th>
+                            <th class="p-3 text-center">{{ t('Bobot') }}</th>
+                            <th class="p-3 text-right">{{ t('Skor') }}</th>
+                            <th class="p-3 text-center">{{ t('Status') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-outline-variant/20">

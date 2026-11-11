@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -61,18 +63,18 @@ const selectedScope = ref(props.filters.scope ?? 'all');
 const selectedCollectibility = ref(props.filters.collectibility ?? 'all');
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -85,15 +87,15 @@ const yearOptions = computed(() => {
 });
 
 const scopeOptions = [
-    { value: 'all', label: 'Semua' },
-    { value: 'group', label: 'Kelompok' },
-    { value: 'member', label: 'Individu' },
+    { value: 'all', label: t('Semua') },
+    { value: 'group', label: t('Kelompok') },
+    { value: 'member', label: t('Individu') },
 ];
 
 const collectibilityOptions = [
-    { value: 'all', label: 'Semua Kolektibilitas' },
-    { value: 'current', label: 'Lancar' },
-    { value: 'overdue', label: 'Menunggak' },
+    { value: 'all', label: t('Semua Kolektibilitas') },
+    { value: 'current', label: t('Lancar') },
+    { value: 'overdue', label: t('Menunggak') },
 ];
 
 const money = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
@@ -126,7 +128,7 @@ const pdfUrl = computed(() => {
 function formatDate(value: string | null): string {
     if (!value) return '—';
     try {
-        return new Date(value).toLocaleDateString('id-ID', {
+        return new Date(value).toLocaleDateString(dateLocale(), {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
@@ -144,16 +146,16 @@ function collectibilityTone(code: string): string {
 </script>
 
 <template>
-    <Head title="DRP — Pinjaman Aktif (OJK)" />
+    <Head :title="t('DRP — Pinjaman Aktif (OJK)')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Laporan OJK · DRP
+                        {{ t('Laporan OJK · DRP') }}
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">
-                        Daftar Rincian Pinjaman Aktif
+                        {{ t('Daftar Rincian Pinjaman Aktif') }}
                     </h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Pinjaman aktif (status active/disbursed) yang dicairkan pada periode
@@ -165,7 +167,7 @@ function collectibilityTone(code: string): string {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -175,19 +177,19 @@ function collectibilityTone(code: string): string {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Jenis</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Jenis') }}</label>
                         <SmartSelect v-model="selectedScope" :options="scopeOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Kolektibilitas</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Kolektibilitas') }}</label>
                         <SmartSelect v-model="selectedCollectibility" :options="collectibilityOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -196,19 +198,19 @@ function collectibilityTone(code: string): string {
             <!-- Summary tiles -->
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jumlah Pinjaman</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Pinjaman') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.count }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Pokok') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.principal_total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Sisa Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Sisa Pokok') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.principal_remaining_total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pinjaman Menunggak</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pinjaman Menunggak') }}</p>
                     <p :class="totals.overdue_count > 0 ? 'text-2xl font-bold text-error mt-2' : 'text-2xl font-bold text-primary mt-2'">
                         {{ totals.overdue_count }}
                     </p>
@@ -223,18 +225,18 @@ function collectibilityTone(code: string): string {
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                         <tr class="border-b border-outline-variant/30">
-                            <th class="p-3 text-center">No</th>
-                            <th class="p-3 text-left">No. Kontrak</th>
-                            <th class="p-3 text-center">Tgl Cair</th>
-                            <th class="p-3 text-left">Peminjam</th>
-                            <th class="p-3 text-center">Jenis</th>
-                            <th class="p-3 text-left">Desa</th>
-                            <th class="p-3 text-right">Pokok</th>
-                            <th class="p-3 text-right">Sisa Pokok</th>
-                            <th class="p-3 text-center">Angs ke-</th>
-                            <th class="p-3 text-center">Jatuh Tempo</th>
-                            <th class="p-3 text-center">Kol.</th>
-                            <th class="p-3 text-center">Hari</th>
+                            <th class="p-3 text-center">{{ t('No') }}</th>
+                            <th class="p-3 text-left">{{ t('No. Kontrak') }}</th>
+                            <th class="p-3 text-center">{{ t('Tgl Cair') }}</th>
+                            <th class="p-3 text-left">{{ t('Peminjam') }}</th>
+                            <th class="p-3 text-center">{{ t('Jenis') }}</th>
+                            <th class="p-3 text-left">{{ t('Desa') }}</th>
+                            <th class="p-3 text-right">{{ t('Pokok') }}</th>
+                            <th class="p-3 text-right">{{ t('Sisa Pokok') }}</th>
+                            <th class="p-3 text-center">{{ t('Angs ke-') }}</th>
+                            <th class="p-3 text-center">{{ t('Jatuh Tempo') }}</th>
+                            <th class="p-3 text-center">{{ t('Kol.') }}</th>
+                            <th class="p-3 text-center">{{ t('Hari') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-outline-variant/20">
@@ -284,8 +286,8 @@ function collectibilityTone(code: string): string {
             <AppCard v-if="rows.length === 0" class="p-8 text-center">
                 <AppEmptyState
                     icon="inbox"
-                    title="Tidak ada pinjaman aktif"
-                    description="Belum ada pinjaman aktif yang dicairkan pada periode ini."
+                    :title="t('Tidak ada pinjaman aktif')"
+                    :description="t('Belum ada pinjaman aktif yang dicairkan pada periode ini.')"
                 />
             </AppCard>
         </div>

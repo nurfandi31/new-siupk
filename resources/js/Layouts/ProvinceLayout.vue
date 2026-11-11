@@ -22,12 +22,12 @@ function navLabel(label) {
 }
 
 const navigation = [
-    { label: 'Beranda', icon: 'dashboard', href: '/province/dashboard', exact: true },
-    { label: 'Paket 5 Laporan (PDF)', icon: 'picture_as_pdf', href: '/province/reports/pack' },
-    { label: 'Neraca', icon: 'account_balance', href: '/province/reports/balance-sheet' },
-    { label: 'Laba Rugi', icon: 'trending_up', href: '/province/reports/income-statement' },
-    { label: 'Arus Kas', icon: 'payments', href: '/province/reports/cash-flow' },
-    { label: 'Perubahan Ekuitas', icon: 'balance', href: '/province/reports/equity-changes' },
+    { label: t('Beranda'), icon: 'dashboard', href: '/province/dashboard', exact: true },
+    { label: t('Paket 5 Laporan (PDF)'), icon: 'picture_as_pdf', href: '/province/reports/pack' },
+    { label: t('Neraca'), icon: 'account_balance', href: '/province/reports/balance-sheet' },
+    { label: t('Laba Rugi'), icon: 'trending_up', href: '/province/reports/income-statement' },
+    { label: t('Arus Kas'), icon: 'payments', href: '/province/reports/cash-flow' },
+    { label: t('Perubahan Ekuitas'), icon: 'balance', href: '/province/reports/equity-changes' },
     { label: 'CALK', icon: 'description', href: '/province/reports/calk' },
 ];
 

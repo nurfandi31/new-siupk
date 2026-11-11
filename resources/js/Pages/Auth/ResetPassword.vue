@@ -1,10 +1,13 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { computed } from 'vue';
 import { Head, Link, usePage, useForm } from '@inertiajs/vue3';
 import AppButton from '../../Components/AppButton.vue';
 import AppCard from '../../Components/AppCard.vue';
 import AppIcon from '../../Components/AppIcon.vue';
 import AppInput from '../../Components/AppInput.vue';
+import AppLanguageSwitcher from '../../Components/AppLanguageSwitcher.vue';
 
 const props = defineProps({
     grantToken: { type: String, required: true },
@@ -25,16 +28,19 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Reset Password - siupk Next" />
+    <Head :title="t('Reset Password - siupk Next')" />
 
-    <main class="flex min-h-screen items-center justify-center bg-surface p-6 font-sans text-on-surface sm:p-12">
+    <main class="relative flex min-h-screen items-center justify-center bg-surface p-6 font-sans text-on-surface sm:p-12">
+        <div class="absolute right-4 top-4 z-30 sm:right-6 sm:top-6">
+            <AppLanguageSwitcher align="right" tone="surface" />
+        </div>
         <div class="w-full max-w-md space-y-6">
             <header class="space-y-2 text-center">
                 <div class="mx-auto grid size-12 place-items-center rounded-2xl bg-primary-container text-on-primary shadow-md">
                     <AppIcon name="lock_reset" class="text-3xl" />
                 </div>
-                <h1 class="text-3xl font-black tracking-tight text-primary">Buat Password Baru</h1>
-                <p class="text-sm text-on-surface-variant">Gunakan password baru yang kuat dan belum pernah dipakai sebelumnya.</p>
+                <h1 class="text-3xl font-black tracking-tight text-primary">{{ t('Buat Password Baru') }}</h1>
+                <p class="text-sm text-on-surface-variant">{{ t('Gunakan password baru yang kuat dan belum pernah dipakai sebelumnya.') }}</p>
             </header>
 
             <AppCard>
@@ -50,7 +56,7 @@ function submit() {
 
                     <AppInput
                         v-model="form.password"
-                        label="Password Baru"
+                        :label="t('Password Baru')"
                         icon="lock"
                         type="password"
                         autocomplete="new-password"
@@ -62,7 +68,7 @@ function submit() {
 
                     <AppInput
                         v-model="form.password_confirmation"
-                        label="Konfirmasi Password Baru"
+                        :label="t('Konfirmasi Password Baru')"
                         icon="lock"
                         type="password"
                         autocomplete="new-password"
@@ -79,7 +85,7 @@ function submit() {
                         :loading="form.processing"
                         icon="save"
                     >
-                        Simpan Password Baru
+                        {{ t('Simpan Password Baru') }}
                     </AppButton>
 
                     <Link
@@ -87,7 +93,7 @@ function submit() {
                         class="inline-flex items-center justify-center gap-1.5 text-sm font-bold text-primary hover:underline"
                     >
                         <AppIcon name="arrow_back" class="text-base" />
-                        Kembali ke halaman masuk
+                        {{ t('Kembali ke halaman masuk') }}
                     </Link>
                 </form>
             </AppCard>

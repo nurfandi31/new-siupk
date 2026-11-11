@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -20,19 +22,19 @@ const { can } = useCan();
 const { confirm: confirmAction } = useConfirm();
 
 const columns = [
-    { key: 'title', label: 'Judul', sortable: true },
-    { key: 'status', label: 'Status', sortable: true },
-    { key: 'published_at', label: 'Tanggal Terbit', sortable: true },
+    { key: 'title', label: t('Judul'), sortable: true },
+    { key: 'status', label: t('Status'), sortable: true },
+    { key: 'published_at', label: t('Tanggal Terbit'), sortable: true },
 ];
 
 function formatDateTime(value) {
     if (!value) return '—';
-    return new Date(value).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
+    return new Date(value).toLocaleString(dateLocale(), { dateStyle: 'long', timeStyle: 'short' });
 }
 
 async function destroy(post) {
     if (!await confirmAction({
-        title: 'Hapus Berita',
+        title: t('Hapus Berita'),
         message: `Pindahkan berita "${post.title}" ke sampah?`,
     })) return;
     router.delete(`/website/posts/${post.row_id}`, { preserveScroll: true });
@@ -40,7 +42,7 @@ async function destroy(post) {
 
 async function restore(post) {
     if (!await confirmAction({
-        title: 'Pulihkan Berita',
+        title: t('Pulihkan Berita'),
         message: `Pulihkan berita "${post.title}"?`,
     })) return;
     router.post(`/website/posts/${post.row_id}/restore`, {}, { preserveScroll: true });
@@ -48,16 +50,16 @@ async function restore(post) {
 </script>
 
 <template>
-    <Head title="Berita Website" />
+    <Head :title="t('Berita Website')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Berita Website</h1>
-                    <p class="mt-1 text-on-surface-variant">Kelola berita yang tampil di situs publik organisasi.</p>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Berita Website') }}</h1>
+                    <p class="mt-1 text-on-surface-variant">{{ t('Kelola berita yang tampil di situs publik organisasi.') }}</p>
                 </div>
                 <div v-if="can('website.manage')">
-                    <Link href="/website/posts/create"><AppButton icon="add">Tulis Berita</AppButton></Link>
+                    <Link href="/website/posts/create"><AppButton icon="add">{{ t('Tulis Berita') }}</AppButton></Link>
                 </div>
             </header>
             <AppCard :padded="false">
@@ -71,7 +73,7 @@ async function restore(post) {
                     :sort="sort"
                     :direction="direction"
                     search-label="Cari berita"
-                    search-placeholder="Cari berita..."
+                    :search-placeholder="t('Cari berita...')"
                     empty-title="Belum ada berita"
                     empty-description="Tulis berita pertama untuk ditampilkan di situs publik."
                 >
@@ -85,7 +87,7 @@ async function restore(post) {
                         <AppBadge :tone="row.status === 'published' ? 'success' : 'neutral'">
                             {{ row.status === 'published' ? 'Terbit' : 'Draf' }}
                         </AppBadge>
-                        <span v-if="row.deleted_at" class="ml-1 inline-flex"><AppBadge tone="error">Terhapus</AppBadge></span>
+                        <span v-if="row.deleted_at" class="ml-1 inline-flex"><AppBadge tone="error">{{ t('Terhapus') }}</AppBadge></span>
                     </template>
                     <template #cell-published_at="{ row }">
                         {{ formatDateTime(row.published_at) }}
@@ -93,13 +95,13 @@ async function restore(post) {
                     <template #actions="{ row }">
                         <div class="flex justify-end gap-1">
                             <template v-if="row.deleted_at">
-                                <AppButton v-if="can('website.manage')" variant="ghost" size="compact" icon="restore" aria-label="Pulihkan berita" @click="restore(row)">Pulihkan</AppButton>
+                                <AppButton v-if="can('website.manage')" variant="ghost" size="compact" icon="restore" :aria-label="t('Pulihkan berita')" @click="restore(row)">{{ t('Pulihkan') }}</AppButton>
                             </template>
                             <template v-else>
                                 <Link v-if="can('website.manage')" :href="`/website/posts/${row.row_id}/edit`">
-                                    <AppButton variant="ghost" size="compact" icon="edit" aria-label="Edit berita">Edit</AppButton>
+                                    <AppButton variant="ghost" size="compact" icon="edit" :aria-label="t('Edit berita')">{{ t('Edit') }}</AppButton>
                                 </Link>
-                                <AppButton v-if="can('website.manage')" variant="ghost" size="compact" icon="delete" aria-label="Hapus berita" @click="destroy(row)">Hapus</AppButton>
+                                <AppButton v-if="can('website.manage')" variant="ghost" size="compact" icon="delete" :aria-label="t('Hapus berita')" @click="destroy(row)">{{ t('Hapus') }}</AppButton>
                             </template>
                         </div>
                     </template>

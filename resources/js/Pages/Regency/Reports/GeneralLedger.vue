@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -24,7 +26,7 @@ const selectedTenant = ref(props.selected_tenant_id || '');
 const selectedAccountId = ref(props.selected_account_id || props.report.account?.row_id || '');
 
 const tenantOptions = computed(() => [
-    { value: '', label: 'Semua Kecamatan (Gabungan)' },
+    { value: '', label: t('Semua Kecamatan (Gabungan)') },
     ...(props.report.kecamatans || []).map(kec => ({
         value: kec.id,
         label: kec.name,
@@ -72,7 +74,7 @@ watch([selectedTenant, selectedAccountId], () => {
                     <SmartSelect
                         v-model="selectedAccountId"
                         :options="accountOptions"
-                        label="Akun"
+                        :label="t('Akun')"
                         value-key="value"
                         label-key="label"
                         hide-label
@@ -81,7 +83,7 @@ watch([selectedTenant, selectedAccountId], () => {
                     <SmartSelect
                         v-model="selectedTenant"
                         :options="tenantOptions"
-                        label="Kecamatan"
+                        :label="t('Kecamatan')"
                         value-key="value"
                         label-key="label"
                         hide-label
@@ -92,19 +94,19 @@ watch([selectedTenant, selectedAccountId], () => {
             <!-- Summary Cards -->
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Saldo Awal</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Saldo Awal') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ money(report.opening_balance) }}</p>
                 </AppCard>
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Total Debit</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Total Debit') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ money(report.total_debit) }}</p>
                 </AppCard>
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Total Kredit</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Total Kredit') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ money(report.total_credit) }}</p>
                 </AppCard>
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Saldo Akhir</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Saldo Akhir') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ money(report.closing_balance) }}</p>
                 </AppCard>
             </div>
@@ -115,13 +117,13 @@ watch([selectedTenant, selectedAccountId], () => {
                     <table class="w-full text-left text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase text-on-surface-variant">
                             <tr>
-                                <th class="px-4 py-3">Tanggal</th>
-                                <th class="px-4 py-3">No. Jurnal</th>
-                                <th v-if="report.is_consolidated" class="px-4 py-3">Kecamatan</th>
-                                <th class="px-4 py-3">Keterangan</th>
-                                <th class="px-4 py-3 text-right">Debit</th>
-                                <th class="px-4 py-3 text-right">Kredit</th>
-                                <th class="px-4 py-3 text-right">Saldo</th>
+                                <th class="px-4 py-3">{{ t('Tanggal') }}</th>
+                                <th class="px-4 py-3">{{ t('No. Jurnal') }}</th>
+                                <th v-if="report.is_consolidated" class="px-4 py-3">{{ t('Kecamatan') }}</th>
+                                <th class="px-4 py-3">{{ t('Keterangan') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Debit') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Kredit') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Saldo') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
@@ -129,7 +131,7 @@ watch([selectedTenant, selectedAccountId], () => {
                                 <td class="px-4 py-2 text-xs font-mono">{{ report.period?.from }}</td>
                                 <td class="px-4 py-2">—</td>
                                 <td v-if="report.is_consolidated" class="px-4 py-2">—</td>
-                                <td class="px-4 py-2">Saldo Awal Periode</td>
+                                <td class="px-4 py-2">{{ t('Saldo Awal Periode') }}</td>
                                 <td class="px-4 py-2 text-right">—</td>
                                 <td class="px-4 py-2 text-right">—</td>
                                 <td class="px-4 py-2 text-right font-bold text-primary">{{ money(report.opening_balance) }}</td>
@@ -149,7 +151,7 @@ watch([selectedTenant, selectedAccountId], () => {
                             </tr>
                             <tr v-if="!report.entries?.length">
                                 <td :colspan="report.is_consolidated ? 7 : 6" class="px-6 py-8 text-center text-on-surface-variant">
-                                    Tidak ada mutasi transaksi pada akun dan periode ini.
+                                    {{ t('Tidak ada mutasi transaksi pada akun dan periode ini.') }}
                                 </td>
                             </tr>
                         </tbody>

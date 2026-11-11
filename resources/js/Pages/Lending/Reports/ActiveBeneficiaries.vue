@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -53,18 +55,18 @@ const selectedYear = ref(String(props.filters.year));
 const selectedMonth = ref(String(props.filters.month));
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -102,7 +104,7 @@ const pdfUrl = computed(() => {
 const formatDate = (v: string | null): string => {
     if (!v) return '—';
     try {
-        return new Date(v).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        return new Date(v).toLocaleDateString(dateLocale(), { day: '2-digit', month: '2-digit', year: 'numeric' });
     } catch {
         return v;
     }
@@ -110,22 +112,22 @@ const formatDate = (v: string | null): string => {
 </script>
 
 <template>
-    <Head title="Pemanfaat Aktif (Kelompok)" />
+    <Head :title="t('Pemanfaat Aktif (Kelompok)')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Laporan Piutang</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Pemanfaat Aktif (Kelompok)</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Laporan Piutang') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Pemanfaat Aktif (Kelompok)') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Daftar anggota (pemanfaat) yang sedang terdaftar pada pinjaman kelompok aktif per periode.
+                        {{ t('Daftar anggota (pemanfaat) yang sedang terdaftar pada pinjaman kelompok aktif per periode.') }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -135,11 +137,11 @@ const formatDate = (v: string | null): string => {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -148,15 +150,15 @@ const formatDate = (v: string | null): string => {
             <!-- Summary cards -->
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <AppCard class="p-4">
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jumlah Kelompok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Kelompok') }}</p>
                     <p class="mt-1 text-2xl font-bold text-primary">{{ totals.group_count }}</p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jumlah Pemanfaat</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Pemanfaat') }}</p>
                     <p class="mt-1 text-2xl font-bold text-primary">{{ totals.member_count }}</p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Alokasi</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Alokasi') }}</p>
                     <p class="mt-1 text-2xl font-bold text-primary">{{ formatMoney(totals.alokasi_total) }}</p>
                 </AppCard>
             </div>
@@ -164,8 +166,8 @@ const formatDate = (v: string | null): string => {
             <!-- Per kelompok -->
             <div v-if="groups.length === 0">
                 <AppEmptyState
-                    title="Belum ada data"
-                    description="Tidak ada pinjaman kelompok aktif pada periode ini."
+                    :title="t('Belum ada data')"
+                    :description="t('Tidak ada pinjaman kelompok aktif pada periode ini.')"
                 />
             </div>
             <div v-else class="space-y-4">
@@ -180,20 +182,20 @@ const formatDate = (v: string | null): string => {
                         </div>
                         <div class="text-right text-xs">
                             <p><strong>{{ group.members.length }}</strong> pemanfaat</p>
-                            <p>Alokasi: <strong>{{ formatMoney(group.subtotal_alokasi) }}</strong></p>
+                            <p>{{ t('Alokasi:') }} <strong>{{ formatMoney(group.subtotal_alokasi) }}</strong></p>
                         </div>
                     </div>
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-surface-variant/30 text-on-surface font-semibold">
                             <tr class="border-b border-outline-variant/30">
                                 <th class="p-2.5">NIK</th>
-                                <th class="p-2.5">No. Anggota</th>
-                                <th class="p-2.5">Nama</th>
-                                <th class="p-2.5">Tgl Cair</th>
-                                <th class="p-2.5">No. Pinjaman</th>
-                                <th class="p-2.5 text-right">Alokasi</th>
-                                <th class="p-2.5 text-right">Tunggakan Pokok</th>
-                                <th class="p-2.5 text-right">Tunggakan Jasa</th>
+                                <th class="p-2.5">{{ t('No. Anggota') }}</th>
+                                <th class="p-2.5">{{ t('Nama') }}</th>
+                                <th class="p-2.5">{{ t('Tgl Cair') }}</th>
+                                <th class="p-2.5">{{ t('No. Pinjaman') }}</th>
+                                <th class="p-2.5 text-right">{{ t('Alokasi') }}</th>
+                                <th class="p-2.5 text-right">{{ t('Tunggakan Pokok') }}</th>
+                                <th class="p-2.5 text-right">{{ t('Tunggakan Jasa') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/20">
@@ -223,13 +225,13 @@ const formatDate = (v: string | null): string => {
             <!-- Grand total -->
             <AppCard v-if="groups.length > 0" class="bg-primary-container/10 p-4">
                 <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
-                    <span class="font-bold uppercase tracking-wider text-primary">Grand Total</span>
+                    <span class="font-bold uppercase tracking-wider text-primary">{{ t('Grand Total') }}</span>
                     <div class="flex flex-wrap items-center gap-4 text-xs">
-                        <span>Kelompok: <strong>{{ totals.group_count }}</strong></span>
-                        <span>Pemanfaat: <strong>{{ totals.member_count }}</strong></span>
-                        <span>Alokasi: <strong>{{ formatMoney(totals.alokasi_total) }}</strong></span>
-                        <span>Tunggakan Pokok: <strong class="text-error">{{ formatMoney(totals.tunggakan_pokok_total) }}</strong></span>
-                        <span>Tunggakan Jasa: <strong class="text-error">{{ formatMoney(totals.tunggakan_jasa_total) }}</strong></span>
+                        <span>{{ t('Kelompok:') }} <strong>{{ totals.group_count }}</strong></span>
+                        <span>{{ t('Pemanfaat:') }} <strong>{{ totals.member_count }}</strong></span>
+                        <span>{{ t('Alokasi:') }} <strong>{{ formatMoney(totals.alokasi_total) }}</strong></span>
+                        <span>{{ t('Tunggakan Pokok:') }} <strong class="text-error">{{ formatMoney(totals.tunggakan_pokok_total) }}</strong></span>
+                        <span>{{ t('Tunggakan Jasa:') }} <strong class="text-error">{{ formatMoney(totals.tunggakan_jasa_total) }}</strong></span>
                     </div>
                 </div>
             </AppCard>

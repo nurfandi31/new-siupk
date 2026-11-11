@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -59,17 +61,17 @@ const selectedHorizon = ref(String(props.filters.horizon_days || props.horizon_d
 const selectedScope = ref(props.filters.scope || 'all');
 
 const horizonOptions = [
-    { value: '30', label: '30 hari ke depan' },
-    { value: '60', label: '60 hari ke depan' },
-    { value: '90', label: '90 hari ke depan' },
-    { value: '120', label: '120 hari ke depan' },
-    { value: '180', label: '180 hari ke depan' },
+    { value: '30', label: t('30 hari ke depan') },
+    { value: '60', label: t('60 hari ke depan') },
+    { value: '90', label: t('90 hari ke depan') },
+    { value: '120', label: t('120 hari ke depan') },
+    { value: '180', label: t('180 hari ke depan') },
 ];
 
 const scopeOptions = [
-    { value: 'all', label: 'Semua (Kelompok + Individu)' },
-    { value: 'group', label: 'Kelompok saja' },
-    { value: 'member', label: 'Individu saja' },
+    { value: 'all', label: t('Semua (Kelompok + Individu)') },
+    { value: 'group', label: t('Kelompok saja') },
+    { value: 'member', label: t('Individu saja') },
 ];
 
 const money = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
@@ -110,13 +112,13 @@ function formatDate(s: string | null | undefined): string {
 </script>
 
 <template>
-    <Head title="Pinjaman Mendekati Jatuh Tempo" />
+    <Head :title="t('Pinjaman Mendekati Jatuh Tempo')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan Lending — Operasional</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Pinjaman Mendekati Jatuh Tempo</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Lending — Operasional') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Pinjaman Mendekati Jatuh Tempo') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         {{ period_label }} — {{ identity.legal_name }}
                     </p>
@@ -125,7 +127,7 @@ function formatDate(s: string | null | undefined): string {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -144,11 +146,11 @@ function formatDate(s: string | null | undefined): string {
                         />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Horizon (hari ke depan)</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Horizon (hari ke depan)') }}</label>
                         <SmartSelect v-model="selectedHorizon" :options="horizonOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Subjek Pinjaman</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Subjek Pinjaman') }}</label>
                         <SmartSelect v-model="selectedScope" :options="scopeOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -157,21 +159,21 @@ function formatDate(s: string | null | undefined): string {
             <!-- KPI tiles -->
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jumlah Pinjaman</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Pinjaman') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.count }}</p>
                     <p class="mt-1 text-[11px] text-on-surface-variant">Sisa tenor ≤ {{ max_remaining_tenor }} angsuran</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Pokok') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.principal_total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Sisa Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Sisa Pokok') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.remaining_principal_total) }}</p>
-                    <p class="mt-1 text-[11px] text-on-surface-variant">Estimasi kembali ke kas</p>
+                    <p class="mt-1 text-[11px] text-on-surface-variant">{{ t('Estimasi kembali ke kas') }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Rata-rata Sisa Tenor</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Rata-rata Sisa Tenor') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.remaining_tenor_avg }}</p>
                     <p class="mt-1 text-[11px] text-on-surface-variant">angsuran</p>
                 </AppCard>
@@ -181,14 +183,14 @@ function formatDate(s: string | null | undefined): string {
             <AppCard class="p-4 bg-surface-container-low">
                 <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
                     <div>
-                        <span class="font-bold text-primary">Konteks:</span>
+                        <span class="font-bold text-primary">{{ t('Konteks:') }}</span>
                         <span class="text-on-surface">
                             Pinjaman aktif dengan angsuran berikutnya jatuh tempo antara
                             <strong>{{ formatDate(as_of) }}</strong> s.d. <strong>{{ formatDate(horizon_end) }}</strong>
                         </span>
                     </div>
                     <div class="text-xs text-on-surface-variant">
-                        Sort: <span class="font-semibold text-primary">tgl jatuh tempo paling dekat di atas</span>
+                        Sort: <span class="font-semibold text-primary">{{ t('tgl jatuh tempo paling dekat di atas') }}</span>
                     </div>
                 </div>
             </AppCard>
@@ -198,20 +200,20 @@ function formatDate(s: string | null | undefined): string {
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                         <tr class="border-b border-outline-variant/30 text-center">
-                            <th class="p-3 text-left">No</th>
-                            <th class="p-3 text-left">No. Kontrak</th>
-                            <th class="p-3 text-left">Subjek</th>
-                            <th class="p-3 text-left">Peminjam / Kelompok</th>
-                            <th class="p-3 text-left">Alamat</th>
-                            <th class="p-3 text-left">Telpon</th>
-                            <th class="p-3 text-right">Pokok</th>
-                            <th class="p-3 text-right">Sisa Pokok</th>
-                            <th class="p-3 text-center">Jangka (bln)</th>
-                            <th class="p-3 text-center">Sisa Tenor</th>
-                            <th class="p-3 text-center">Tgl Jatuh Tempo Berikutnya</th>
-                            <th class="p-3 text-center">Sisa Waktu (hari)</th>
-                            <th class="p-3 text-center">Tgl Estimasi Lunas</th>
-                            <th class="p-3 text-center">Status</th>
+                            <th class="p-3 text-left">{{ t('No') }}</th>
+                            <th class="p-3 text-left">{{ t('No. Kontrak') }}</th>
+                            <th class="p-3 text-left">{{ t('Subjek') }}</th>
+                            <th class="p-3 text-left">{{ t('Peminjam / Kelompok') }}</th>
+                            <th class="p-3 text-left">{{ t('Alamat') }}</th>
+                            <th class="p-3 text-left">{{ t('Telpon') }}</th>
+                            <th class="p-3 text-right">{{ t('Pokok') }}</th>
+                            <th class="p-3 text-right">{{ t('Sisa Pokok') }}</th>
+                            <th class="p-3 text-center">{{ t('Jangka (bln)') }}</th>
+                            <th class="p-3 text-center">{{ t('Sisa Tenor') }}</th>
+                            <th class="p-3 text-center">{{ t('Tgl Jatuh Tempo Berikutnya') }}</th>
+                            <th class="p-3 text-center">{{ t('Sisa Waktu (hari)') }}</th>
+                            <th class="p-3 text-center">{{ t('Tgl Estimasi Lunas') }}</th>
+                            <th class="p-3 text-center">{{ t('Status') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-outline-variant/20">
@@ -266,8 +268,8 @@ function formatDate(s: string | null | undefined): string {
             <AppCard v-if="rows.length === 0" class="p-8 text-center">
                 <AppEmptyState
                     icon="event_available"
-                    title="Tidak ada pinjaman mendekati jatuh tempo"
-                    description="Tidak ada pinjaman aktif dengan sisa tenor ≤ 3 angsuran yang jatuh tempo dalam horizon yang dipilih."
+                    :title="t('Tidak ada pinjaman mendekati jatuh tempo')"
+                    :description="t('Tidak ada pinjaman aktif dengan sisa tenor ≤ 3 angsuran yang jatuh tempo dalam horizon yang dipilih.')"
                 />
             </AppCard>
         </div>

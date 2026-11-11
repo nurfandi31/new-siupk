@@ -1,10 +1,13 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { computed } from 'vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AppButton from '../../Components/AppButton.vue';
 import AppCard from '../../Components/AppCard.vue';
 import AppIcon from '../../Components/AppIcon.vue';
 import AppInput from '../../Components/AppInput.vue';
+import AppLanguageSwitcher from '../../Components/AppLanguageSwitcher.vue';
 
 defineProps({
     maskedPhone: { type: String, required: true },
@@ -26,17 +29,20 @@ function resend() {
 </script>
 
 <template>
-    <Head title="Verifikasi OTP - siupk Next" />
+    <Head :title="t('Verifikasi OTP - siupk Next')" />
 
-    <main class="flex min-h-screen items-center justify-center bg-surface p-6 font-sans text-on-surface sm:p-12">
+    <main class="relative flex min-h-screen items-center justify-center bg-surface p-6 font-sans text-on-surface sm:p-12">
+        <div class="absolute right-4 top-4 z-30 sm:right-6 sm:top-6">
+            <AppLanguageSwitcher align="right" tone="surface" />
+        </div>
         <div class="w-full max-w-md space-y-6">
             <header class="space-y-2 text-center">
                 <div class="mx-auto grid size-12 place-items-center rounded-2xl bg-primary-container text-on-primary shadow-md">
                     <AppIcon name="verified_user" class="text-3xl" />
                 </div>
-                <h1 class="text-3xl font-black tracking-tight text-primary">Verifikasi OTP</h1>
+                <h1 class="text-3xl font-black tracking-tight text-primary">{{ t('Verifikasi OTP') }}</h1>
                 <p class="text-sm text-on-surface-variant">
-                    Masukkan 6 digit kode OTP yang dikirim ke <span class="font-bold text-primary">{{ maskedPhone }}</span>.
+                    {{ t('Masukkan 6 digit kode OTP yang dikirim ke') }} <span class="font-bold text-primary">{{ maskedPhone }}</span>.
                 </p>
             </header>
 
@@ -52,7 +58,7 @@ function resend() {
 
                     <AppInput
                         v-model="form.otp"
-                        label="Kode OTP"
+                        :label="t('Kode OTP')"
                         icon="pin"
                         inputmode="numeric"
                         autocomplete="one-time-code"
@@ -71,7 +77,7 @@ function resend() {
                         :loading="form.processing"
                         icon="check_circle"
                     >
-                        Verifikasi OTP
+                        {{ t('Verifikasi OTP') }}
                     </AppButton>
 
                     <div class="flex flex-col items-center justify-between gap-3 sm:flex-row">
@@ -84,10 +90,10 @@ function resend() {
                             :loading="form.processing"
                             @click="resend"
                         >
-                            Kirim Ulang
+                            {{ t('Kirim Ulang') }}
                         </AppButton>
                         <p class="text-sm text-on-surface-variant">
-                            Sisa kirim ulang: <span class="font-bold text-primary">{{ resendsLeft }}</span>
+                            {{ t('Sisa kirim ulang:') }} <span class="font-bold text-primary">{{ resendsLeft }}</span>
                         </p>
                     </div>
 
@@ -96,7 +102,7 @@ function resend() {
                         class="inline-flex items-center justify-center gap-1.5 text-sm font-bold text-primary hover:underline"
                     >
                         <AppIcon name="arrow_back" class="text-base" />
-                        Ubah nomor atau minta kode baru
+                        {{ t('Ubah nomor atau minta kode baru') }}
                     </Link>
                 </form>
             </AppCard>

@@ -24,6 +24,11 @@ final class SimulateLoanToolTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        if (! class_exists(ToolRegistry::class)) {
+            self::markTestSkipped('Optional package enpii/assistant is not installed.');
+        }
+
         $this->rebuildTenantTestDatabases();
         $this->withoutMiddleware([ResolveTenant::class, PreventRequestForgery::class]);
 

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import AppCurrencyInput from './AppCurrencyInput.vue';
 import { useMoney } from '../composables/useMoney';
 
@@ -21,7 +23,7 @@ const { money } = useMoney();
         <table class="w-full text-left text-sm">
             <thead class="bg-surface-container-low text-xs uppercase tracking-wider text-on-surface-variant">
                 <tr>
-                    <th class="px-4 py-3">Anggota</th>
+                    <th class="px-4 py-3">{{ t('Anggota') }}</th>
                     <th class="px-4 py-3 text-right">{{ label }}</th>
                 </tr>
             </thead>
@@ -46,7 +48,7 @@ const { money } = useMoney();
             </tbody>
             <tfoot class="bg-surface-container-low">
                 <tr>
-                    <td class="px-4 py-3 text-right text-xs font-bold uppercase tracking-widest text-on-surface-variant">Total</td>
+                    <td class="px-4 py-3 text-right text-xs font-bold uppercase tracking-widest text-on-surface-variant">{{ t('Total') }}</td>
                     <td class="px-4 py-3 text-right font-bold text-primary">{{ money(total) }}</td>
                 </tr>
             </tfoot>

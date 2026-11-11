@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -56,9 +58,9 @@ function onIdentityPhotoChange(event) {
 
 async function confirmDeleteIdentityPhoto() {
     if (!await confirmAction({
-        title: 'Hapus Foto KTP',
-        message: 'Apakah Anda yakin ingin menghapus foto KTP anggota ini?',
-        confirmText: 'Ya, Hapus Foto',
+        title: t('Hapus Foto KTP'),
+        message: t('Apakah Anda yakin ingin menghapus foto KTP anggota ini?'),
+        confirmText: t('Ya, Hapus Foto'),
         variant: 'danger',
     })) return;
 
@@ -69,9 +71,9 @@ async function confirmDeleteIdentityPhoto() {
 
 async function confirmDelete() {
     if (!await confirmAction({
-        title: 'Hapus Anggota',
+        title: t('Hapus Anggota'),
         message: `Apakah Anda yakin ingin menghapus anggota "${props.member.name}"? Penghapusan hanya berhasil jika anggota tidak terdaftar di kelompok dan tidak memiliki riwayat pinjaman.`,
-        confirmText: 'Ya, Hapus Anggota',
+        confirmText: t('Ya, Hapus Anggota'),
         variant: 'danger',
     })) return;
 
@@ -86,7 +88,7 @@ function formatDate(v) {
     if (!v) return '—';
     const d = new Date(v);
     if (Number.isNaN(d.getTime())) return v;
-    return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
+    return new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
 }
 
 const statusLabels = { active: 'Aktif', exited: 'Keluar', deceased: 'Meninggal' };
@@ -158,28 +160,28 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                             <div class="rounded-lg bg-surface-container-low/60 px-3 py-2.5">
                                 <dt class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                                     <AppIcon name="location_on" class="text-sm" />
-                                    Desa
+                                    {{ t('Desa') }}
                                 </dt>
                                 <dd class="mt-1 truncate font-semibold text-primary">{{ member.village?.name || '—' }}</dd>
                             </div>
                             <div class="rounded-lg bg-surface-container-low/60 px-3 py-2.5">
                                 <dt class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                                     <AppIcon name="event" class="text-sm" />
-                                    Terdaftar
+                                    {{ t('Terdaftar') }}
                                 </dt>
                                 <dd class="mt-1 truncate font-semibold text-primary">{{ formatDate(member.registered_at) }}</dd>
                             </div>
                             <div class="rounded-lg bg-surface-container-low/60 px-3 py-2.5">
                                 <dt class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                                     <AppIcon name="person" class="text-sm" />
-                                    Jenis Kelamin
+                                    {{ t('Jenis Kelamin') }}
                                 </dt>
                                 <dd class="mt-1 truncate font-semibold text-primary">{{ genderLabels[member.gender] || member.gender || '—' }}</dd>
                             </div>
                             <div class="rounded-lg bg-surface-container-low/60 px-3 py-2.5">
                                 <dt class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                                     <AppIcon name="call" class="text-sm" />
-                                    No. HP
+                                    {{ t('No. HP') }}
                                 </dt>
                                 <dd class="mt-1 truncate font-mono font-semibold text-primary">{{ member.phone || '—' }}</dd>
                             </div>
@@ -195,7 +197,7 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                         <AppIcon name="receipt_long" />
                     </div>
                     <div class="min-w-0">
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Riwayat pinjaman</p>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Riwayat pinjaman') }}</p>
                         <p class="mt-0.5 truncate text-lg font-bold text-primary md:text-xl">
                             {{ summary.loan_count }}
                             <span class="text-xs font-medium text-on-surface-variant">pinjaman</span>
@@ -208,11 +210,11 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                         <AppIcon name="payments" />
                     </div>
                     <div class="min-w-0">
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Sisa pokok</p>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Sisa pokok') }}</p>
                         <p class="mt-0.5 truncate text-lg font-bold text-primary tabular-nums md:text-xl">
                             Rp {{ formatMoney(summary.principal_remaining) }}
                         </p>
-                        <p class="text-[11px] text-on-surface-variant">belum dilunasi</p>
+                        <p class="text-[11px] text-on-surface-variant">{{ t('belum dilunasi') }}</p>
                     </div>
                 </AppCard>
                 <AppCard class="flex items-center gap-3">
@@ -220,12 +222,12 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                         <AppIcon name="groups" />
                     </div>
                     <div class="min-w-0">
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Kelompok</p>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Kelompok') }}</p>
                         <p class="mt-0.5 truncate text-lg font-bold text-primary md:text-xl">
                             {{ (member.groups || []).length }}
                             <span class="text-xs font-medium text-on-surface-variant">kelompok</span>
                         </p>
-                        <p class="text-[11px] text-on-surface-variant">keanggotaan aktif</p>
+                        <p class="text-[11px] text-on-surface-variant">{{ t('keanggotaan aktif') }}</p>
                     </div>
                 </AppCard>
             </div>
@@ -234,14 +236,14 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
             <AppCard v-if="savings.enabled">
                 <header class="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                     <div>
-                        <h2 class="text-base font-bold text-primary">Simpanan</h2>
-                        <p class="text-xs text-on-surface-variant">Rekening simpanan yang dimiliki anggota ini.</p>
+                        <h2 class="text-base font-bold text-primary">{{ t('Simpanan') }}</h2>
+                        <p class="text-xs text-on-surface-variant">{{ t('Rekening simpanan yang dimiliki anggota ini.') }}</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
                         <AppBadge tone="primary-soft">{{ savings.accounts.length }} rekening</AppBadge>
                         <Link v-if="canManageSavings" :href="`/simpanan/create?member=${member.row_id}`" class="contents">
                             <AppButton variant="primary" icon="add" size="compact">
-                                Buka Rekening
+                                {{ t('Buka Rekening') }}
                             </AppButton>
                         </Link>
                     </div>
@@ -272,8 +274,8 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                 </div>
                 <div v-else class="flex flex-col items-center gap-2 rounded-xl border border-dashed border-outline-variant px-4 py-8 text-center text-on-surface-variant">
                     <AppIcon name="savings" class="text-3xl" />
-                    <p class="text-sm font-medium">Belum ada rekening simpanan.</p>
-                    <p v-if="canManageSavings" class="text-xs">Gunakan tombol Buka Rekening untuk menambahkan simpanan anggota ini.</p>
+                    <p class="text-sm font-medium">{{ t('Belum ada rekening simpanan.') }}</p>
+                    <p v-if="canManageSavings" class="text-xs">{{ t('Gunakan tombol Buka Rekening untuk menambahkan simpanan anggota ini.') }}</p>
                 </div>
             </AppCard>
 
@@ -283,8 +285,8 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                 <AppCard class="lg:col-span-3">
                     <header class="mb-4 flex items-center justify-between gap-3">
                         <div>
-                            <h2 class="text-base font-bold text-primary">Profil</h2>
-                            <p class="text-xs text-on-surface-variant">Data identitas dan kontak anggota.</p>
+                            <h2 class="text-base font-bold text-primary">{{ t('Profil') }}</h2>
+                            <p class="text-xs text-on-surface-variant">{{ t('Data identitas dan kontak anggota.') }}</p>
                         </div>
                         <AppIcon name="badge" tone="primary" />
                     </header>
@@ -304,7 +306,7 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                     <section v-if="member.business?.name" class="mt-6 border-t border-outline-variant pt-4">
                         <header class="mb-2 flex items-center gap-2">
                             <AppIcon name="storefront" tone="success" container-size="7" />
-                            <h3 class="text-sm font-bold text-primary">Usaha</h3>
+                            <h3 class="text-sm font-bold text-primary">{{ t('Usaha') }}</h3>
                         </header>
                         <p class="font-semibold text-primary">{{ member.business.name }}</p>
                         <p v-if="member.business.description" class="mt-1 whitespace-pre-line text-sm text-on-surface-variant">
@@ -316,7 +318,7 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                     <section v-if="member.guarantor?.name" class="mt-6 border-t border-outline-variant pt-4">
                         <header class="mb-2 flex items-center gap-2">
                             <AppIcon name="verified_user" tone="info" container-size="7" />
-                            <h3 class="text-sm font-bold text-primary">Penjamin</h3>
+                            <h3 class="text-sm font-bold text-primary">{{ t('Penjamin') }}</h3>
                         </header>
                         <p class="font-semibold text-primary">{{ member.guarantor.name }}</p>
                         <p class="text-sm text-on-surface-variant">
@@ -331,7 +333,7 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                     <section v-if="(member.groups || []).length" class="mt-6 border-t border-outline-variant pt-4">
                         <header class="mb-2 flex items-center gap-2">
                             <AppIcon name="groups" tone="primary" container-size="7" />
-                            <h3 class="text-sm font-bold text-primary">Keanggotaan kelompok</h3>
+                            <h3 class="text-sm font-bold text-primary">{{ t('Keanggotaan kelompok') }}</h3>
                         </header>
                         <ul class="space-y-1.5">
                             <li v-for="g in member.groups" :key="g.row_id" class="flex items-baseline gap-2 text-sm">
@@ -349,8 +351,8 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                 <AppCard class="lg:col-span-2">
                     <header class="mb-4 flex items-center justify-between gap-3">
                         <div>
-                            <h2 class="text-base font-bold text-primary">Foto KTP</h2>
-                            <p class="text-xs text-on-surface-variant">Digunakan pada dokumen pinjaman.</p>
+                            <h2 class="text-base font-bold text-primary">{{ t('Foto KTP') }}</h2>
+                            <p class="text-xs text-on-surface-variant">{{ t('Digunakan pada dokumen pinjaman.') }}</p>
                         </div>
                         <AppIcon name="contact_page" tone="primary" />
                     </header>
@@ -359,18 +361,18 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                         <img
                             v-if="identityPhotoPreview"
                             :src="identityPhotoPreview"
-                            alt="Foto KTP anggota"
+                            :alt="t('Foto KTP anggota')"
                             class="max-h-64 w-full object-contain sm:max-h-72 md:max-h-80"
                         />
                         <div v-else class="flex flex-col items-center gap-2 px-6 py-10 text-on-surface-variant">
                             <AppIcon name="image_not_supported" class="text-4xl" />
-                            <p class="text-xs font-medium">Belum ada foto KTP</p>
+                            <p class="text-xs font-medium">{{ t('Belum ada foto KTP') }}</p>
                         </div>
                     </div>
 
                     <p class="mt-3 text-sm">
                         <span class="text-on-surface-variant">NIK:</span>
-                        <span class="ml-1 font-mono font-semibold text-primary">{{ member.nik || 'Belum tersedia' }}</span>
+                        <span class="ml-1 font-mono font-semibold text-primary">{{ member.nik || t('Belum tersedia') }}</span>
                     </p>
                     <p v-if="identityPhotoForm.errors.identity_photo" class="mt-1 text-xs text-error">
                         {{ identityPhotoForm.errors.identity_photo }}
@@ -388,10 +390,10 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                             <div class="flex items-center justify-center gap-2">
                                 <AppIcon name="upload" class="text-lg text-primary" />
                                 <span class="text-sm font-semibold text-primary">
-                                    {{ identityPhotoForm.processing ? 'Mengunggah...' : (identityPhotoPreview ? 'Ganti foto KTP' : 'Unggah foto KTP') }}
+                                    {{ identityPhotoForm.processing ? t('Mengunggah...') : (identityPhotoPreview ? t('Ganti foto KTP') : t('Unggah foto KTP')) }}
                                 </span>
                             </div>
-                            <p class="mt-0.5 text-[11px] text-on-surface-variant">JPG, PNG, atau WebP · Maks 4 MB</p>
+                            <p class="mt-0.5 text-[11px] text-on-surface-variant">{{ t('JPG, PNG, atau WebP · Maks 4 MB') }}</p>
                         </label>
 
                         <div v-if="identityPhotoPreview" class="flex justify-end">
@@ -403,7 +405,7 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                                 :disabled="identityPhotoForm.processing"
                                 @click="confirmDeleteIdentityPhoto"
                             >
-                                Hapus foto
+                                {{ t('Hapus foto') }}
                             </AppButton>
                         </div>
                     </div>
@@ -413,8 +415,8 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                 <AppCard class="lg:col-span-5 overflow-hidden p-0">
                     <div class="flex items-center justify-between gap-3 border-b border-outline-variant px-4 py-3 sm:px-5 sm:py-4">
                         <div>
-                            <h2 class="font-bold text-primary">Riwayat pinjaman</h2>
-                            <p class="text-xs text-on-surface-variant">Klik nomor pinjaman untuk membuka detail.</p>
+                            <h2 class="font-bold text-primary">{{ t('Riwayat pinjaman') }}</h2>
+                            <p class="text-xs text-on-surface-variant">{{ t('Klik nomor pinjaman untuk membuka detail.') }}</p>
                         </div>
                         <AppIcon name="history" tone="primary" />
                     </div>
@@ -427,13 +429,13 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                 <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2 md:gap-3">
                     <Link href="/master-data/members" class="contents">
                         <AppButton variant="secondary" icon="arrow_back" size="compact">
-                            Kembali ke daftar
+                            {{ t('Kembali ke daftar') }}
                         </AppButton>
                     </Link>
                     <div class="flex flex-wrap items-center gap-1 sm:justify-end">
                         <Link v-if="canManage" :href="`/master-data/members/${member.row_id}/edit`" class="contents">
                             <AppButton variant="tertiary" icon="edit" size="compact">
-                                Edit anggota
+                                {{ t('Edit anggota') }}
                             </AppButton>
                         </Link>
                         <AppButton
@@ -443,7 +445,7 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                             size="compact"
                             @click="confirmDelete"
                         >
-                            Hapus anggota
+                            {{ t('Hapus anggota') }}
                         </AppButton>
                     </div>
                 </div>

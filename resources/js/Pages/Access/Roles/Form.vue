@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -90,13 +92,13 @@ function submit() {
                             {{ editing ? `Role: ${role.name}` : 'Tambah Role Kustom Baru' }}
                         </h1>
                         <p class="mt-1 text-sm text-on-surface-variant">
-                            Tentukan perizinan akses modul dan fitur yang dapat diakses oleh pemegang peran ini.
+                            {{ t('Tentukan perizinan akses modul dan fitur yang dapat diakses oleh pemegang peran ini.') }}
                         </p>
                     </div>
                     <div v-if="editing" class="flex items-center gap-2">
-                        <AppBadge v-if="isLocked" tone="primary">Terkunci (Admin)</AppBadge>
-                        <AppBadge v-else-if="isSystem" tone="neutral">Bawaan Sistem</AppBadge>
-                        <AppBadge v-else tone="info">Kustom</AppBadge>
+                        <AppBadge v-if="isLocked" tone="primary">{{ t('Terkunci (Admin)') }}</AppBadge>
+                        <AppBadge v-else-if="isSystem" tone="neutral">{{ t('Bawaan Sistem') }}</AppBadge>
+                        <AppBadge v-else tone="info">{{ t('Kustom') }}</AppBadge>
                     </div>
                 </div>
             </header>
@@ -105,28 +107,28 @@ function submit() {
             <div v-if="isLocked" class="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-primary">
                 <AppIcon name="lock" class="mt-0.5 text-xl text-primary" />
                 <div class="space-y-1">
-                    <p class="font-bold">Role Administrator Terkunci Penuh</p>
+                    <p class="font-bold">{{ t('Role Administrator Terkunci Penuh') }}</p>
                     <p class="text-sm text-on-surface-variant">
-                        Role Administrator memiliki wewenang penuh (*) ke seluruh modul dan tidak dapat diubah izinnya demi keamanan sistem.
+                        {{ t('Role Administrator memiliki wewenang penuh (*) ke seluruh modul dan tidak dapat diubah izinnya demi keamanan sistem.') }}
                     </p>
                 </div>
             </div>
 
             <form class="space-y-6" @submit.prevent="submit">
-                <AppCard title="Identitas Role">
+                <AppCard :title="t('Identitas Role')">
                     <div class="grid gap-4 sm:grid-cols-2">
                         <AppInput
                             v-model="form.name"
-                            label="Nama Role"
-                            placeholder="Masukkan nama role"
+                            :label="t('Nama Role')"
+                            :placeholder="t('Masukkan nama role')"
                             required
                             :readonly="isLocked"
                             :error="form.errors.name"
                         />
                         <AppInput
                             v-model="form.code"
-                            label="Kode Role (Huruf kecil, angka, atau underscore)"
-                            placeholder="Masukkan kode role"
+                            :label="t('Kode Role (Huruf kecil, angka, atau underscore)')"
+                            :placeholder="t('Masukkan kode role')"
                             required
                             :readonly="isLocked || isSystem"
                             :error="form.errors.code"
@@ -134,8 +136,8 @@ function submit() {
                         <div class="sm:col-span-2">
                             <AppInput
                                 v-model="form.description"
-                                label="Deskripsi / Catatan Peran (Opsional)"
-                                placeholder="Masukkan deskripsi"
+                                :label="t('Deskripsi / Catatan Peran (Opsional)')"
+                                :placeholder="t('Masukkan deskripsi')"
                                 :readonly="isLocked"
                                 :error="form.errors.description"
                             />
@@ -145,12 +147,12 @@ function submit() {
 
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-lg font-bold text-primary">Matriks Hak Akses (Permissions)</h2>
-                        <p class="text-xs text-on-surface-variant">Centang izin akses yang diberikan untuk peran ini.</p>
+                        <h2 class="text-lg font-bold text-primary">{{ t('Matriks Hak Akses (Permissions)') }}</h2>
+                        <p class="text-xs text-on-surface-variant">{{ t('Centang izin akses yang diberikan untuk peran ini.') }}</p>
                     </div>
                     <div v-if="!isLocked" class="flex items-center gap-2">
-                        <AppButton variant="secondary" size="compact" type="button" @click="selectAllPermissions">Pilih Semua</AppButton>
-                        <AppButton variant="ghost" size="compact" type="button" @click="clearAllPermissions">Kosongkan</AppButton>
+                        <AppButton variant="secondary" size="compact" type="button" @click="selectAllPermissions">{{ t('Pilih Semua') }}</AppButton>
+                        <AppButton variant="ghost" size="compact" type="button" @click="clearAllPermissions">{{ t('Kosongkan') }}</AppButton>
                     </div>
                 </div>
 
@@ -200,10 +202,10 @@ function submit() {
 
                 <div v-if="!isLocked" class="flex items-center justify-end gap-3 pt-2">
                     <Link href="/access/roles">
-                        <AppButton variant="secondary" type="button">Batal</AppButton>
+                        <AppButton variant="secondary" type="button">{{ t('Batal') }}</AppButton>
                     </Link>
                     <AppButton type="submit" :loading="form.processing" icon="save">
-                        {{ editing ? 'Simpan Perubahan Hak Akses' : 'Buat Role' }}
+                        {{ editing ? t('Simpan Perubahan Hak Akses') : t('Buat Role') }}
                     </AppButton>
                 </div>
             </form>

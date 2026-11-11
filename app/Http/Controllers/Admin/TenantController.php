@@ -78,17 +78,20 @@ final class TenantController
             ->values()
             ->all();
 
+        $configuredPassword = trim((string) config('tenancy.seed_users.password', ''));
+
         return Inertia::render('Admin/Tenants/Create', [
             'seedRoles' => $roles,
-            'seedPassword' => (bool) config('tenancy.seed_users.enabled', true)
-                ? (string) config('tenancy.seed_users.password', 'password')
+            'seedPassword' => (bool) config('tenancy.seed_users.enabled', true) && $configuredPassword !== ''
+                ? $configuredPassword
                 : null,
         ]);
     }
 
     public function store(StoreTenantRequest $request, TenantRegistrationService $registration, AuditLogger $audit): RedirectResponse
     {
-        $tenant = $registration->register($request->validated());
+        $result = $registration->register($request->validated());
+        $tenant = $result['tenant'];
 
         $audit->record(
             'tenant.create',
@@ -100,14 +103,21 @@ final class TenantController
         );
 
         $userCount = User::query()->where('tenant_id', $tenant->row_id)->count();
-        $credentialsHint = (bool) config('tenancy.seed_users.enabled', true)
-            ? sprintf(
-                ' %d akun login otomatis dibuat (username: %s.{role}, password awal: %s).',
-                $userCount,
-                $tenant->code,
-                (string) config('tenancy.seed_users.password', 'password'),
-            )
-            : '';
+        $credentialsHint = '';
+        if ((bool) config('tenancy.seed_users.enabled', true) && $userCount > 0) {
+            $credentialsHint = $result['login_password'] !== null
+                ? sprintf(
+                    ' %d akun login otomatis dibuat (username: %s.{role}, password awal: %s).',
+                    $userCount,
+                    $tenant->code,
+                    $result['login_password'],
+                )
+                : sprintf(
+                    ' %d akun login otomatis sudah tersedia (username: %s.{role}); password tidak diubah.',
+                    $userCount,
+                    $tenant->code,
+                );
+        }
 
         return to_route('admin.tenants.show', $tenant)
             ->with('success', "Tenant [{$tenant->name}] berhasil didaftarkan.{$credentialsHint}");

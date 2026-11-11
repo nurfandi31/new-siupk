@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { computed, onMounted, ref, watch } from 'vue';
 import AppButton from './AppButton.vue';
 import AppIcon from './AppIcon.vue';
@@ -118,7 +120,7 @@ defineExpose({ clear, save });
             >
                 <div class="flex items-center gap-2">
                     <AppIcon name="draw" class="text-on-surface-variant" />
-                    <span>Goreskan tanda tangan di sini</span>
+                    <span>{{ t('Goreskan tanda tangan di sini') }}</span>
                 </div>
             </div>
         </div>
@@ -133,7 +135,7 @@ defineExpose({ clear, save });
                     :disabled="!hasDrawn"
                     @click="clear"
                 >
-                    Hapus Ulang
+                    {{ t('Hapus Ulang') }}
                 </AppButton>
             </div>
             <div class="flex items-center gap-2">
@@ -143,7 +145,7 @@ defineExpose({ clear, save });
                     size="compact"
                     @click="$emit('cancel')"
                 >
-                    Batal
+                    {{ t('Batal') }}
                 </AppButton>
                 <AppButton
                     type="button"
@@ -153,7 +155,7 @@ defineExpose({ clear, save });
                     :disabled="!hasDrawn"
                     @click="save"
                 >
-                    Gunakan Tanda Tangan
+                    {{ t('Gunakan Tanda Tangan') }}
                 </AppButton>
             </div>
         </div>

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Mobile\MobileExecutiveController;
 use App\Http\Controllers\Api\Mobile\MobileSyncController;
 use App\Http\Controllers\Api\Mobile\MobileVerificationController;
 use App\Http\Controllers\Assistant\AssistantToolController;
+use Enpii\Assistant\Services\Tools\ToolRegistry;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,14 +19,16 @@ use Illuminate\Support\Facades\Route;
 | Auth = HMAC signature + external_user_id -> platform user.
 | Tenant resolved from host / optional X-Tenant-Code.
 */
-Route::middleware(['orchestrator.signature', 'tenant', 'assistant.actor'])
-    ->prefix('assistant/tools')
-    ->group(function (): void {
-        Route::post('/', AssistantToolController::class)->name('assistant.tools.dispatch');
-        Route::post('/{tool}', AssistantToolController::class)
-            ->where('tool', '[a-z0-9_]+')
-            ->name('assistant.tools.run');
-    });
+if (class_exists(ToolRegistry::class)) {
+    Route::middleware(['orchestrator.signature', 'tenant', 'assistant.actor'])
+        ->prefix('assistant/tools')
+        ->group(function (): void {
+            Route::post('/', AssistantToolController::class)->name('assistant.tools.dispatch');
+            Route::post('/{tool}', AssistantToolController::class)
+                ->where('tool', '[a-z0-9_]+')
+                ->name('assistant.tools.run');
+        });
+}
 
 /*
 |--------------------------------------------------------------------------

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import AppCard from '../../../Components/AppCard.vue';
 import ReportPeriodFilter from '../../../Components/ReportPeriodFilter.vue';
@@ -21,12 +23,12 @@ function formatMoney(v) {
 </script>
 
 <template>
-    <Head title="Perubahan Ekuitas" />
+    <Head :title="t('Perubahan Ekuitas')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div>
-                <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan</p>
-                <h1 class="mt-1 text-2xl font-bold text-primary">Laporan Perubahan Ekuitas</h1>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
+                <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Laporan Perubahan Ekuitas') }}</h1>
                 <p class="text-sm text-on-surface-variant">
                     {{ period.period_label }} · opening → laba/mutasi → closing (bukan daftar saldo saja)
                 </p>
@@ -59,16 +61,16 @@ function formatMoney(v) {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left">Rekening</th>
-                                <th class="px-3 py-2 text-right">Awal</th>
-                                <th class="px-3 py-2 text-right">Mutasi</th>
-                                <th class="px-3 py-2 text-right">Akhir</th>
+                                <th class="px-3 py-2 text-left">{{ t('Rekening') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Awal') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Mutasi') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Akhir') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="rows.length === 0">
                                 <td colspan="4" class="px-3 py-8 text-center text-on-surface-variant">
-                                    Belum ada akun ekuitas postable.
+                                    {{ t('Belum ada akun ekuitas postable.') }}
                                 </td>
                             </tr>
                             <tr
@@ -93,7 +95,7 @@ function formatMoney(v) {
                         </tbody>
                         <tfoot v-if="rows.length > 0">
                             <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                <td class="px-3 py-2">Total ekuitas</td>
+                                <td class="px-3 py-2">{{ t('Total ekuitas') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(summary.opening_total) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(summary.movement_total) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(summary.closing_total) }}</td>

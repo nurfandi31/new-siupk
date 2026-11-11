@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { Link, router } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import AppIcon from './AppIcon.vue';
@@ -147,7 +149,7 @@ onBeforeUnmount(() => {
         <button
             type="button"
             class="relative grid size-10 shrink-0 place-items-center rounded-full text-on-surface-variant transition-all duration-150 hover:bg-surface-container hover:text-primary active:scale-90 focus:outline-none cursor-pointer"
-            aria-label="Notifikasi"
+            :aria-label="t('Notifikasi')"
             :aria-expanded="open"
             @click="toggleDropdown"
         >
@@ -178,7 +180,7 @@ onBeforeUnmount(() => {
                 <div class="flex items-center justify-between inset-divider bg-surface-container-low/80 px-4 py-3">
                     <div class="flex items-center gap-2">
                         <AppIcon name="notifications" class="text-lg text-primary" />
-                        <h3 class="text-sm font-bold text-primary">Notifikasi</h3>
+                        <h3 class="text-sm font-bold text-primary">{{ t('Notifikasi') }}</h3>
                         <span v-if="unreadCount > 0" class="rounded-full bg-error/15 px-2 py-0.5 text-[10px] font-bold text-error">
                             {{ unreadCount }} baru
                         </span>
@@ -189,7 +191,7 @@ onBeforeUnmount(() => {
                         class="text-xs font-semibold text-primary hover:underline focus:outline-none cursor-pointer"
                         @click.stop="markAsRead(null)"
                     >
-                        Tandai semua dibaca
+                        {{ t('Tandai semua dibaca') }}
                     </button>
                 </div>
 
@@ -216,7 +218,7 @@ onBeforeUnmount(() => {
                 <!-- List Content -->
                 <div class="max-h-96 overflow-y-auto divide-y divide-outline-variant/30">
                     <div v-if="loading && items.length === 0" class="py-8 text-center text-xs text-on-surface-variant">
-                        Memuat notifikasi...
+                        {{ t('Memuat notifikasi...') }}
                     </div>
                     <div v-else-if="filteredItems.length === 0" class="py-8 text-center text-xs text-on-surface-variant">
                         Tidak ada notifikasi {{ activeTab === 'unread' ? 'belum dibaca' : '' }}.
@@ -267,7 +269,7 @@ onBeforeUnmount(() => {
                         @click="open = false"
                     >
                         <AppIcon name="chat" class="text-base" />
-                        Pengingat WhatsApp
+                        {{ t('Pengingat WhatsApp') }}
                     </Link>
                     <Link
                         href="/billing/invoices"
@@ -275,7 +277,7 @@ onBeforeUnmount(() => {
                         @click="open = false"
                     >
                         <AppIcon name="receipt" class="text-base" />
-                        Tagihan siupk
+                        {{ t('Tagihan siupk') }}
                     </Link>
                 </div>
             </div>

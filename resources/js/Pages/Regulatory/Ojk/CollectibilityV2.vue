@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -113,9 +115,9 @@ const yearOptions = computed(() => {
 const monthOptions = computed(() => {
     const opts: { value: string; label: string }[] = [];
     const labels: Record<number, string> = {
-        1: 'Januari', 2: 'Februari', 3: 'Maret', 4: 'April',
-        5: 'Mei', 6: 'Juni', 7: 'Juli', 8: 'Agustus',
-        9: 'September', 10: 'Oktober', 11: 'November', 12: 'Desember',
+         1: t('Januari'), 2: t('Februari'), 3: t('Maret'), 4: t('April'),
+         5: t('Mei'), 6: t('Juni'), 7: t('Juli'), 8: t('Agustus'),
+         9: t('September'), 10: t('Oktober'), 11: t('November'), 12: t('Desember'),
     };
     for (let m = 1; m <= 12; m++) {
         opts.push({ value: String(m), label: labels[m] });
@@ -124,9 +126,9 @@ const monthOptions = computed(() => {
 });
 
 const scopeOptions = [
-    { value: 'all', label: 'Semua' },
-    { value: 'group', label: 'Kelompok' },
-    { value: 'member', label: 'Individu' },
+    { value: 'all', label: t('Semua') },
+    { value: 'group', label: t('Kelompok') },
+    { value: 'member', label: t('Individu') },
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -165,15 +167,15 @@ const pdfUrl = computed<string>(() => {
 </script>
 
 <template>
-    <Head title="Kolektibilitas OJK v2 (KBP2)" />
+    <Head :title="t('Kolektibilitas OJK v2 (KBP2)')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        OJK · Regulatory
+                        {{ t('OJK · Regulatory') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Kolektibilitas OJK v2 (KBP2)</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Kolektibilitas OJK v2 (KBP2)') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         {{ props.period_label }} · per {{ props.as_of ?? '-' }}
                     </p>
@@ -185,7 +187,7 @@ const pdfUrl = computed<string>(() => {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -193,7 +195,7 @@ const pdfUrl = computed<string>(() => {
 
             <AppCard v-if="error" class="border border-error/30 bg-error-container/40 p-4">
                 <p class="text-sm text-error">
-                    <span class="font-bold">Gagal membangun laporan:</span> {{ error }}
+                    <span class="font-bold">{{ t('Gagal membangun laporan:') }}</span> {{ error }}
                 </p>
             </AppCard>
 
@@ -201,19 +203,19 @@ const pdfUrl = computed<string>(() => {
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                     <div class="space-y-1.5">
                         <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">
-                            Tahun
+                            {{ t('Tahun') }}
                         </label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" hide-label @update:model-value="apply" />
                     </div>
                     <div class="space-y-1.5">
                         <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">
-                            Bulan
+                            {{ t('Bulan') }}
                         </label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" hide-label @update:model-value="apply" />
                     </div>
                     <div class="space-y-1.5">
                         <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">
-                            Jenis Pinjaman
+                            {{ t('Jenis Pinjaman') }}
                         </label>
                         <SmartSelect v-model="selectedScope" :options="scopeOptions" hide-label @update:model-value="apply" />
                     </div>
@@ -223,19 +225,19 @@ const pdfUrl = computed<string>(() => {
             <!-- Grand Total KPI -->
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                 <AppCard class="p-4">
-                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">Total Pinjaman</p>
+                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Total Pinjaman') }}</p>
                     <p class="mt-1 text-2xl font-bold tabular-nums">{{ Number(props.grand_total.loan_count) }}</p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">Total Outstanding</p>
+                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Total Outstanding') }}</p>
                     <p class="mt-1 text-2xl font-bold tabular-nums">{{ fmt(props.grand_total.outstanding) }}</p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">Total Cadangan Wajib</p>
+                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Total Cadangan Wajib') }}</p>
                     <p class="mt-1 text-2xl font-bold tabular-nums">{{ fmt(props.grand_total.allowance_required) }}</p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">Total Cadangan Dibentuk</p>
+                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Total Cadangan Dibentuk') }}</p>
                     <p class="mt-1 text-2xl font-bold tabular-nums">{{ fmt(props.grand_total.allowance_formed) }}</p>
                 </AppCard>
             </div>
@@ -257,17 +259,17 @@ const pdfUrl = computed<string>(() => {
                         <table class="w-full text-sm border-collapse">
                             <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                                 <tr class="border-b border-outline-variant/30 text-center">
-                                    <th rowspan="2" class="p-3 text-left">Golongan</th>
-                                    <th rowspan="2" class="p-3 text-left">Hari</th>
-                                    <th colspan="2" class="p-3 border-l border-outline-variant/20">Posisi Pinjaman</th>
+                                    <th rowspan="2" class="p-3 text-left">{{ t('Golongan') }}</th>
+                                    <th rowspan="2" class="p-3 text-left">{{ t('Hari') }}</th>
+                                    <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Posisi Pinjaman') }}</th>
                                     <th colspan="3" class="p-3 border-l border-outline-variant/20">CKPN</th>
                                 </tr>
                                 <tr class="border-b border-outline-variant/30 text-center text-[11px] text-on-surface-variant">
-                                    <th class="p-2 border-l border-outline-variant/20 text-right">Jumlah</th>
-                                    <th class="p-2 text-right">Outstanding</th>
+                                    <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Jumlah') }}</th>
+                                    <th class="p-2 text-right">{{ t('Outstanding') }}</th>
                                     <th class="p-2 border-l border-outline-variant/20 text-right">%</th>
-                                    <th class="p-2 text-right">Wajib</th>
-                                    <th class="p-2 text-right">Dibentuk</th>
+                                    <th class="p-2 text-right">{{ t('Wajib') }}</th>
+                                    <th class="p-2 text-right">{{ t('Dibentuk') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-outline-variant/20">
@@ -296,7 +298,7 @@ const pdfUrl = computed<string>(() => {
                                     <td class="p-3 text-right tabular-nums">{{ fmt(prod.allowance_formed) }}</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="6" class="p-3 text-right text-on-surface-variant">Selisih:</td>
+                                    <td colspan="6" class="p-3 text-right text-on-surface-variant">{{ t('Selisih:') }}</td>
                                     <td class="p-3 text-right">
                                         <AppBadge :tone="prod.selisih >= 0 ? 'success' : 'error'">
                                             {{ fmt(prod.selisih) }}
@@ -310,7 +312,7 @@ const pdfUrl = computed<string>(() => {
             </div>
 
             <p v-if="!hasData" class="text-center text-sm text-on-surface-variant">
-                Belum ada data pinjaman aktif untuk periode ini.
+                {{ t('Belum ada data pinjaman aktif untuk periode ini.') }}
             </p>
 
             <p v-if="generated_at" class="text-right text-[11px] text-on-surface-variant">

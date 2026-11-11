@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -18,46 +20,46 @@ const props = defineProps({
 });
 
 const tabs = [
-    { key: 'proposal', label: 'Proposal', icon: 'inventory_2' },
-    { key: 'verifikasi', label: 'Verifikasi', icon: 'task_alt' },
-    { key: 'waiting', label: 'Waiting', icon: 'hourglass_top' },
-    { key: 'aktif', label: 'Aktif', icon: 'payments' },
-    { key: 'lunas', label: 'Lunas', icon: 'verified' },
+    { key: 'proposal', label: t('Proposal'), icon: 'inventory_2' },
+    { key: 'verifikasi', label: t('Verifikasi'), icon: 'task_alt' },
+    { key: 'waiting', label: t('Waiting'), icon: 'hourglass_top' },
+    { key: 'aktif', label: t('Aktif'), icon: 'payments' },
+    { key: 'lunas', label: t('Lunas'), icon: 'verified' },
 ];
 
 const emptyMessages = {
-    proposal: { title: 'Belum ada proposal individu', description: 'Belum ada pengajuan pinjaman individu yang baru didaftarkan.' },
-    verifikasi: { title: 'Belum ada verifikasi', description: 'Tidak ada pinjaman individu yang sedang menunggu verifikasi.' },
-    waiting: { title: 'Belum ada waiting', description: 'Tidak ada pinjaman individu yang menunggu keputusan pendanaan.' },
-    aktif: { title: 'Belum ada pinjaman aktif', description: 'Tidak ada pinjaman individu yang sedang aktif berjalan.' },
-    lunas: { title: 'Belum ada pinjaman lunas', description: 'Tidak ada pinjaman individu yang telah dilunasi.' },
+    proposal: { title: t('Belum ada proposal individu'), description: t('Belum ada pengajuan pinjaman individu yang baru didaftarkan.') },
+    verifikasi: { title: t('Belum ada verifikasi'), description: t('Tidak ada pinjaman individu yang sedang menunggu verifikasi.') },
+    waiting: { title: t('Belum ada waiting'), description: t('Tidak ada pinjaman individu yang menunggu keputusan pendanaan.') },
+    aktif: { title: t('Belum ada pinjaman aktif'), description: t('Tidak ada pinjaman individu yang sedang aktif berjalan.') },
+    lunas: { title: t('Belum ada pinjaman lunas'), description: t('Tidak ada pinjaman individu yang telah dilunasi.') },
 };
 
 const moneyFormatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
 function formatNumber(value) { if (value === null || value === undefined || value === '') return '—'; return moneyFormatter.format(Number(value)); }
 function formatServiceRate(value) { return `${Number(value ?? 0).toFixed(2)}%`; }
-function formatDate(value) { if (!value) return '—'; const date = new Date(value); return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(date); }
+function formatDate(value) { if (!value) return '—'; const date = new Date(value); return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' }).format(date); }
 
 function switchTab(tabKey) { router.get('/lending/member-loans', { tab: tabKey }, { preserveState: false }); }
 
-const emptyMessage = computed(() => emptyMessages[props.tab] ?? { title: 'Belum ada data', description: 'Tidak ditemukan data pinjaman individu.' });
+const emptyMessage = computed(() => emptyMessages[props.tab] ?? { title: t('Belum ada data'), description: t('Tidak ditemukan data pinjaman individu.') });
 </script>
 
 <template>
-    <Head title="Tahapan Perguliran Individu" />
+    <Head :title="t('Tahapan Perguliran Individu')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6 pb-12">
             <div class="flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h1 class="text-xl font-extrabold tracking-tight text-on-surface sm:text-2xl">
-                        Tahapan Perguliran Individu
+                        {{ t('Tahapan Perguliran Individu') }}
                     </h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Pantau pergerakan pinjaman perorangan dari pengajuan hingga pelunasan.
+                        {{ t('Pantau pergerakan pinjaman perorangan dari pengajuan hingga pelunasan.') }}
                     </p>
                 </div>
                 <Link href="/lending/member-loans/create">
-                    <AppButton icon="add">Register Proposal Individu</AppButton>
+                    <AppButton icon="add">{{ t('Register Proposal Individu') }}</AppButton>
                 </Link>
             </div>
 
@@ -67,7 +69,7 @@ const emptyMessage = computed(() => emptyMessages[props.tab] ?? { title: 'Belum 
                     :items="tabs"
                     variant="underline"
                     align="end"
-                    aria-label="Tabs Status Pinjaman Individu"
+                    :aria-label="t('Tabs Status Pinjaman Individu')"
                     @update:model-value="switchTab($event)"
                 />
             </div>
@@ -87,7 +89,7 @@ const emptyMessage = computed(() => emptyMessages[props.tab] ?? { title: 'Belum 
                     :direction="direction"
                     :row-href="(row) => `/lending/member-loans/${row.row_id}`"
                     search-label="Cari pinjaman individu"
-                    search-placeholder="Cari anggota..."
+                    :search-placeholder="t('Cari anggota...')"
                     :empty-title="emptyMessage.title"
                     :empty-description="emptyMessage.description"
                 >

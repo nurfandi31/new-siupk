@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -64,18 +66,18 @@ const selectedMonth = ref(String(props.filters.month));
 const selectedFramework = ref<string>(props.filters.framework ?? '41');
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const frameworkOptions = [
@@ -146,7 +148,7 @@ function statusClass(status: string): string {
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">OJK • Regulatory</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('OJK • Regulatory') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ title }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         {{ framework_label }} · {{ period_label }} · per {{ as_of ?? '-' }}
@@ -157,28 +159,28 @@ function statusClass(status: string): string {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
             </div>
 
             <AppCard v-if="error" class="border border-error/30 bg-error-container/40 p-4">
-                <p class="text-sm text-error"><span class="font-bold">Gagal membangun laporan:</span> {{ error }}</p>
+                <p class="text-sm text-error"><span class="font-bold">{{ t('Gagal membangun laporan:') }}</span> {{ error }}</p>
             </AppCard>
 
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" hide-label @update:model-value="apply" />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" hide-label @update:model-value="apply" />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Kerangka POJK</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Kerangka POJK') }}</label>
                         <SmartSelect v-model="selectedFramework" :options="frameworkOptions" hide-label @update:model-value="apply" />
                     </div>
                 </div>
@@ -192,17 +194,17 @@ function statusClass(status: string): string {
                     </p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Peringkat Komposit</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Peringkat Komposit') }}</p>
                     <p class="mt-2 text-lg font-bold text-on-surface">{{ rating }}</p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">NPL Neto</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('NPL Neto') }}</p>
                     <p class="mt-2 text-2xl font-bold" :class="values.npl_neto > 5 ? 'text-error' : 'text-secondary'">
                         {{ formatPercent(values.npl_neto) }}
                     </p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Coverage PPAP</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Coverage PPAP') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatPercent(values.coverage_ppap) }}</p>
                 </AppCard>
             </div>
@@ -210,7 +212,7 @@ function statusClass(status: string): string {
             <AppCard v-if="supervision_status" class="p-4">
                 <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Status Pengawasan POJK 49/2024</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Status Pengawasan POJK 49/2024') }}</p>
                         <p class="mt-1 text-lg font-bold text-on-surface">{{ supervision_status }}</p>
                     </div>
                     <p class="max-w-xl text-xs text-on-surface-variant">{{ supervision_basis }}</p>
@@ -219,7 +221,7 @@ function statusClass(status: string): string {
 
             <AppCard class="p-0">
                 <div class="border-b border-outline-variant/30 px-4 py-3">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-primary">A. Parameter Keuangan Utama</h2>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-primary">{{ t('A. Parameter Keuangan Utama') }}</h2>
                 </div>
                 <div class="grid grid-cols-1 divide-y divide-outline-variant/20 sm:grid-cols-2 sm:divide-y-0">
                     <div v-for="(p, idx) in parameters" :key="p.label" class="flex items-center justify-between gap-4 px-4 py-2.5 text-sm" :class="idx % 2 === 0 ? 'sm:border-r sm:border-outline-variant/20' : ''">
@@ -231,19 +233,19 @@ function statusClass(status: string): string {
 
             <AppCard class="overflow-x-auto p-0">
                 <div class="border-b border-outline-variant/30 px-4 py-3">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-primary">B. Matriks Analisis Rasio & Skoring</h2>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-primary">{{ t('B. Matriks Analisis Rasio & Skoring') }}</h2>
                 </div>
                 <table class="w-full border-collapse text-left text-xs">
                     <thead class="bg-surface-variant/40 text-center font-semibold text-on-surface">
                         <tr class="border-b border-outline-variant/30">
-                            <th class="p-2.5" width="4%">No</th>
-                            <th class="p-2.5" width="15%">Aspek</th>
-                            <th class="p-2.5" width="21%">Rasio</th>
-                            <th class="p-2.5" width="24%">Parameter</th>
-                            <th class="p-2.5" width="18%">Klasifikasi / Kriteria</th>
-                            <th class="p-2.5 text-right" width="8%">Hasil</th>
-                            <th class="p-2.5 text-right" width="8%">Skor</th>
-                            <th class="p-2.5" width="10%">Status</th>
+                            <th class="p-2.5" width="4%">{{ t('No') }}</th>
+                            <th class="p-2.5" width="15%">{{ t('Aspek') }}</th>
+                            <th class="p-2.5" width="21%">{{ t('Rasio') }}</th>
+                            <th class="p-2.5" width="24%">{{ t('Parameter') }}</th>
+                            <th class="p-2.5" width="18%">{{ t('Klasifikasi / Kriteria') }}</th>
+                            <th class="p-2.5 text-right" width="8%">{{ t('Hasil') }}</th>
+                            <th class="p-2.5 text-right" width="8%">{{ t('Skor') }}</th>
+                            <th class="p-2.5" width="10%">{{ t('Status') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-outline-variant/20">
@@ -272,7 +274,7 @@ function statusClass(status: string): string {
                         </tr>
                         <tr v-if="!hasData">
                             <td colspan="8" class="p-6 text-center text-sm text-on-surface-variant">
-                                Belum ada data untuk periode ini.
+                                {{ t('Belum ada data untuk periode ini.') }}
                             </td>
                         </tr>
                     </tbody>

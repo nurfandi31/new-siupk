@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, watch } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -30,22 +32,22 @@ const form = useForm({
 });
 
 const purposeOptions = [
-    { value: 'subscription', label: 'Langganan / perpanjangan' },
-    { value: 'setup', label: 'Biaya setup / onboarding' },
-    { value: 'support', label: 'Dukungan / maintenance' },
-    { value: 'training', label: 'Pelatihan' },
-    { value: 'custom_dev', label: 'Pengembangan custom' },
-    { value: 'other', label: 'Lainnya' },
+    { value: 'subscription', label: t('Langganan / perpanjangan') },
+    { value: 'setup', label: t('Biaya setup / onboarding') },
+    { value: 'support', label: t('Dukungan / maintenance') },
+    { value: 'training', label: t('Pelatihan') },
+    { value: 'custom_dev', label: t('Pengembangan custom') },
+    { value: 'other', label: t('Lainnya') },
 ];
 
 const currencyOptions = [
-    { value: 'IDR', label: 'IDR — Rupiah' },
-    { value: 'USD', label: 'USD — US Dollar' },
+    { value: 'IDR', label: t('IDR — Rupiah') },
+    { value: 'USD', label: t('USD — US Dollar') },
 ];
 
 const statusOptions = [
-    { value: 'issued', label: 'Terbitkan sekarang' },
-    { value: 'draft', label: 'Draft' },
+    { value: 'issued', label: t('Terbitkan sekarang') },
+    { value: 'draft', label: t('Draft') },
 ];
 
 const tenantOptions = computed(() =>
@@ -79,12 +81,12 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Buat Invoice" />
+    <Head :title="t('Buat Invoice')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header>
-                <h1 class="text-2xl font-bold text-primary">Buat Invoice</h1>
-                <p class="mt-1 text-on-surface-variant">Tagihan ke tenant untuk langganan, setup, support, training, custom, atau keperluan lain.</p>
+                <h1 class="text-2xl font-bold text-primary">{{ t('Buat Invoice') }}</h1>
+                <p class="mt-1 text-on-surface-variant">{{ t('Tagihan ke tenant untuk langganan, setup, support, training, custom, atau keperluan lain.') }}</p>
             </header>
 
             <AppCard>
@@ -93,7 +95,7 @@ function submit() {
                         <SmartSelect
                             v-model="form.tenant_id"
                             class="min-w-0"
-                            label="Tenant"
+                            :label="t('Tenant')"
                             :options="tenantOptions"
                             searchable
                             required
@@ -102,7 +104,7 @@ function submit() {
                         <SmartSelect
                             v-model="form.purpose"
                             class="min-w-0"
-                            label="Keperluan"
+                            :label="t('Keperluan')"
                             :options="purposeOptions"
                             required
                             :error="form.errors.purpose"
@@ -112,7 +114,7 @@ function submit() {
                     <SmartSelect
                         v-if="needsSubscription"
                         v-model="form.subscription_id"
-                        label="Langganan"
+                        :label="t('Langganan')"
                         :options="subscriptionOptions"
                         required
                         :error="form.errors.subscription_id"
@@ -122,7 +124,7 @@ function submit() {
                         <AppCurrencyInput
                             v-model="form.amount"
                             class="min-w-0"
-                            label="Nominal"
+                            :label="t('Nominal')"
                             :min="0.01"
                             :step="0.01"
                             required
@@ -131,14 +133,14 @@ function submit() {
                         <AppDatePicker
                             v-model="form.due_at"
                             class="min-w-0"
-                            label="Jatuh tempo"
+                            :label="t('Jatuh tempo')"
                             clearable
                             :error="form.errors.due_at"
                         />
                         <SmartSelect
                             v-model="form.currency"
                             class="min-w-0"
-                            label="Mata uang"
+                            :label="t('Mata uang')"
                             :options="currencyOptions"
                             required
                             :error="form.errors.currency"
@@ -146,7 +148,7 @@ function submit() {
                         <SmartSelect
                             v-model="form.status"
                             class="min-w-0"
-                            label="Status"
+                            :label="t('Status')"
                             :options="statusOptions"
                             :error="form.errors.status"
                         />
@@ -162,11 +164,11 @@ function submit() {
                             />
                             <div class="space-y-0.5">
                                 <span class="text-sm font-bold text-primary flex items-center gap-1.5">
-                                    <span>Blokir Akses Operasional Tenant Jika Belum Lunas</span>
-                                    <span v-if="form.blocks_access" class="rounded bg-error/10 px-1.5 py-0.2 text-[10px] font-bold text-error">Blokir Aktif</span>
+                                    <span>{{ t('Blokir Akses Operasional Tenant Jika Belum Lunas') }}</span>
+                                    <span v-if="form.blocks_access" class="rounded bg-error/10 px-1.5 py-0.2 text-[10px] font-bold text-error">{{ t('Blokir Aktif') }}</span>
                                 </span>
                                 <p class="text-xs text-on-surface-variant leading-relaxed">
-                                    Jika diaktifkan, pengguna tenant tidak dapat mengakses fitur operasional (hanya dapat membuka halaman pembayaran invoice) sampai tagihan ini diselesaikan.
+                                    {{ t('Jika diaktifkan, pengguna tenant tidak dapat mengakses fitur operasional (hanya dapat membuka halaman pembayaran invoice) sampai tagihan ini diselesaikan.') }}
                                 </p>
                             </div>
                         </label>
@@ -174,15 +176,15 @@ function submit() {
 
                     <AppInput
                         v-model="form.description"
-                        label="Deskripsi"
-                        hint="Ringkas isi tagihan, mis. “Setup BUMDes X” atau “Pelatihan kasir batch 2”."
+                        :label="t('Deskripsi')"
+                        :hint="t('Ringkas isi tagihan, mis. “Setup BUMDes X” atau “Pelatihan kasir batch 2”.')"
                         :error="form.errors.description"
                     />
-                    <AppTextarea v-model="form.notes" label="Catatan internal" :error="form.errors.notes" />
+                    <AppTextarea v-model="form.notes" :label="t('Catatan internal')" :error="form.errors.notes" />
 
                     <div class="flex justify-end gap-3">
-                        <Link href="/admin/invoices"><AppButton variant="secondary">Batal</AppButton></Link>
-                        <AppButton type="submit" :loading="form.processing" icon="save">Simpan</AppButton>
+                        <Link href="/admin/invoices"><AppButton variant="secondary">{{ t('Batal') }}</AppButton></Link>
+                        <AppButton type="submit" :loading="form.processing" icon="save">{{ t('Simpan') }}</AppButton>
                     </div>
                 </form>
             </AppCard>

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import AppIcon from './AppIcon.vue';
@@ -37,7 +39,7 @@ async function triggerSync() {
         if (res.ok) {
             syncMessage.value = 'Sinkronisasi berhasil!';
             window.desktopAPI?.sendNotification?.({
-                title: 'Sinkronisasi Berhasil',
+                title: t('Sinkronisasi Berhasil'),
                 body: `Data lokal diperbarui dari cloud oleh ${currentUserName.value}.`,
                 url: '/dashboard',
             });
@@ -68,7 +70,7 @@ async function handleClose() {
 
     // Trigger visual Goodbye / Exit Screen
     window.dispatchEvent(new CustomEvent('desktop:closing', {
-        detail: { message: 'Menyimpan sesi & mengamankan data...' }
+        detail: { message: t('Menyimpan sesi & mengamankan data...') }
     }));
 
     const user = page.props.auth?.user;
@@ -159,22 +161,22 @@ const tenantName = computed(() => {
             <div
                 v-if="isOnline"
                 class="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-400"
-                title="Aplikasi terhubung langsung dengan server cloud"
+                :title="t('Aplikasi terhubung langsung dengan server cloud')"
             >
                 <span class="relative flex h-2 w-2">
                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                     <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
                 </span>
-                <span>Online</span>
+                <span>{{ t('Online') }}</span>
             </div>
 
             <div
                 v-else
                 class="flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-400"
-                title="Mode offline lokal aktif; input, edit, dan delete tetap diizinkan"
+                :title="t('Mode offline lokal aktif; input, edit, dan delete tetap diizinkan')"
             >
                 <span class="inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
-                <span>Offline (Input Diizinkan)</span>
+                <span>{{ t('Offline (Input Diizinkan)') }}</span>
             </div>
 
             <!-- Quick Sync Button -->
@@ -183,7 +185,7 @@ const tenantName = computed(() => {
                 type="button"
                 class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-slate-400 transition hover:bg-slate-800 hover:text-slate-200"
                 :disabled="isSyncing || isClosing"
-                title="Sinkronkan data dari cloud server"
+                :title="t('Sinkronkan data dari cloud server')"
                 @click="triggerSync"
             >
                 <svg
@@ -195,7 +197,7 @@ const tenantName = computed(() => {
                 >
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                <span>{{ syncMessage || 'Sinkron' }}</span>
+                <span>{{ syncMessage || t('Sinkron') }}</span>
             </button>
         </div>
 
@@ -210,8 +212,8 @@ const tenantName = computed(() => {
             <button
                 type="button"
                 class="flex w-10 items-center justify-center text-slate-400 transition hover:bg-slate-800 hover:text-white"
-                title="Minimize"
-                aria-label="Minimize"
+                :title="t('Minimize')"
+                :aria-label="t('Minimize')"
                 :disabled="isClosing"
                 @click="handleMinimize"
             >
@@ -243,8 +245,8 @@ const tenantName = computed(() => {
                 type="button"
                 class="flex w-11 items-center justify-center text-slate-400 transition hover:bg-rose-600 hover:text-white"
                 :class="{ 'opacity-70 cursor-wait': isClosing }"
-                title="Keluar & Tutup Aplikasi"
-                aria-label="Keluar & Tutup Aplikasi"
+                :title="t('Keluar & Tutup Aplikasi')"
+                :aria-label="t('Keluar & Tutup Aplikasi')"
                 :disabled="isClosing"
                 @click="handleClose"
             >

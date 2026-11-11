@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -47,18 +49,18 @@ const selectedYear = ref(String(props.filters.year));
 const selectedMonth = ref(String(props.filters.month));
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -96,7 +98,7 @@ const pdfUrl = computed(() => {
 function formatDate(value: string | null): string {
     if (!value) return '—';
     try {
-        return new Date(value).toLocaleDateString('id-ID', {
+        return new Date(value).toLocaleDateString(dateLocale(), {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
@@ -108,16 +110,16 @@ function formatDate(value: string | null): string {
 </script>
 
 <template>
-    <Head title="DRPLi — Pinjaman Lunas Individu (OJK)" />
+    <Head :title="t('DRPLi — Pinjaman Lunas Individu (OJK)')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Laporan OJK · DRPLi
+                        {{ t('Laporan OJK · DRPLi') }}
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">
-                        Rincian Pinjaman Lunas Individu
+                        {{ t('Rincian Pinjaman Lunas Individu') }}
                     </h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Pinjaman individu yang telah dilunasi (status completed) pada periode
@@ -129,7 +131,7 @@ function formatDate(value: string | null): string {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -139,11 +141,11 @@ function formatDate(value: string | null): string {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan Pelunasan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan Pelunasan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -152,19 +154,19 @@ function formatDate(value: string | null): string {
             <!-- Summary tiles -->
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jumlah Pinjaman</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Pinjaman') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.count }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Pokok') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.principal_total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Dibayar</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Dibayar') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.paid_amount_total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Bunga</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Bunga') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.interest_total) }}</p>
                 </AppCard>
             </div>
@@ -174,18 +176,18 @@ function formatDate(value: string | null): string {
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                         <tr class="border-b border-outline-variant/30">
-                            <th class="p-3 text-center">No</th>
-                            <th class="p-3 text-left">No. Kontrak</th>
-                            <th class="p-3 text-left">Peminjam</th>
+                            <th class="p-3 text-center">{{ t('No') }}</th>
+                            <th class="p-3 text-left">{{ t('No. Kontrak') }}</th>
+                            <th class="p-3 text-left">{{ t('Peminjam') }}</th>
                             <th class="p-3 text-center">NIK</th>
-                            <th class="p-3 text-left">Desa</th>
-                            <th class="p-3 text-right">Pokok</th>
-                            <th class="p-3 text-right">Total Dibayar</th>
-                            <th class="p-3 text-center">Tgl Cair</th>
-                            <th class="p-3 text-center">Tgl Lunas</th>
-                            <th class="p-3 text-center">Lama (bulan)</th>
-                            <th class="p-3 text-center">Suku Bunga</th>
-                            <th class="p-3 text-right">Bunga</th>
+                            <th class="p-3 text-left">{{ t('Desa') }}</th>
+                            <th class="p-3 text-right">{{ t('Pokok') }}</th>
+                            <th class="p-3 text-right">{{ t('Total Dibayar') }}</th>
+                            <th class="p-3 text-center">{{ t('Tgl Cair') }}</th>
+                            <th class="p-3 text-center">{{ t('Tgl Lunas') }}</th>
+                            <th class="p-3 text-center">{{ t('Lama (bulan)') }}</th>
+                            <th class="p-3 text-center">{{ t('Suku Bunga') }}</th>
+                            <th class="p-3 text-right">{{ t('Bunga') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-outline-variant/20">
@@ -225,8 +227,8 @@ function formatDate(value: string | null): string {
             <AppCard v-if="rows.length === 0" class="p-8 text-center">
                 <AppEmptyState
                     icon="inbox"
-                    title="Tidak ada pinjaman individu lunas"
-                    description="Belum ada pinjaman individu yang divalidasi pelunasan pada periode ini."
+                    :title="t('Tidak ada pinjaman individu lunas')"
+                    :description="t('Belum ada pinjaman individu yang divalidasi pelunasan pada periode ini.')"
                 />
             </AppCard>
         </div>

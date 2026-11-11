@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -22,18 +24,18 @@ const selectedMonth = ref(String(props.filters.month));
 const selectedProduct = ref(props.filters.product || 'all');
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -97,22 +99,22 @@ function kolekLabelDynamic(level) {
 </script>
 
 <template>
-    <Head title="Kolektibilitas Pinjaman Kelompok" />
+    <Head :title="t('Kolektibilitas Pinjaman Kelompok')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Laporan Piutang</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Kolektibilitas Pinjaman Kelompok</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Laporan Piutang') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Kolektibilitas Pinjaman Kelompok') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Kualitas portofolio piutang per kelompok: Lancar, Diragukan, dan Macet
+                        {{ t('Kualitas portofolio piutang per kelompok: Lancar, Diragukan, dan Macet') }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -121,26 +123,26 @@ function kolekLabelDynamic(level) {
             <AppCard class="p-4">
                 <div class="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant">
                     <span class="material-symbols-outlined text-base">rule</span>
-                    <span>Aturan kolek aktif:</span>
+                    <span>{{ t('Aturan kolek aktif:') }}</span>
                     <span v-for="lvl in levelColumns" :key="lvl.bucket_key" class="rounded-full bg-surface-variant/50 px-2 py-0.5">
                         Tingkat {{ lvl.level }} - <strong>{{ lvl.nama }}</strong> (CKPN {{ lvl.prosentase }}%)
                     </span>
-                    <a href="/settings/sop?tab=kolek" class="ml-auto text-xs font-bold text-primary hover:underline">Ubah aturan</a>
+                    <a href="/settings/sop?tab=kolek" class="ml-auto text-xs font-bold text-primary hover:underline">{{ t('Ubah aturan') }}</a>
                 </div>
             </AppCard>
 
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" hide-label @update:model-value="apply" />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" hide-label @update:model-value="apply" />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Produk</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Produk') }}</label>
                         <SmartSelect v-model="selectedProduct" :options="[{ value: 'all', label: 'Semua Produk' }]" hide-label disabled />
                     </div>
                 </div>
@@ -157,16 +159,16 @@ function kolekLabelDynamic(level) {
                     <table class="w-full border-collapse text-left text-xs">
                         <thead class="bg-surface-variant/40 font-semibold text-on-surface">
                             <tr class="border-b border-outline-variant/30 text-center">
-                                <th rowspan="2" class="p-3 text-left">Desa</th>
-                                <th rowspan="2" class="p-3 text-left">Kelompok</th>
-                                <th rowspan="2" class="p-3 text-right">Alokasi</th>
-                                <th rowspan="2" class="p-3 text-right">Saldo Pokok</th>
-                                <th colspan="2" class="border-l border-outline-variant/20 p-3">Tunggakan</th>
-                                <th rowspan="2" class="border-l border-outline-variant/20 p-3">Kolek</th>
+                                <th rowspan="2" class="p-3 text-left">{{ t('Desa') }}</th>
+                                <th rowspan="2" class="p-3 text-left">{{ t('Kelompok') }}</th>
+                                <th rowspan="2" class="p-3 text-right">{{ t('Alokasi') }}</th>
+                                <th rowspan="2" class="p-3 text-right">{{ t('Saldo Pokok') }}</th>
+                                <th colspan="2" class="border-l border-outline-variant/20 p-3">{{ t('Tunggakan') }}</th>
+                                <th rowspan="2" class="border-l border-outline-variant/20 p-3">{{ t('Kolek') }}</th>
                             </tr>
                             <tr class="border-b border-outline-variant/30 text-center text-[11px] text-on-surface-variant">
-                                <th class="border-l border-outline-variant/20 p-2 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
+                                <th class="border-l border-outline-variant/20 p-2 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/20">
@@ -226,7 +228,7 @@ function kolekLabelDynamic(level) {
             </div>
 
             <AppCard v-if="products.length === 0" class="p-8 text-center">
-                <p class="text-sm text-on-surface-variant">Tidak ada pinjaman kelompok aktif pada periode ini.</p>
+                <p class="text-sm text-on-surface-variant">{{ t('Tidak ada pinjaman kelompok aktif pada periode ini.') }}</p>
             </AppCard>
         </div>
     </AuthenticatedLayout>

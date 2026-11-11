@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { computed, ref } from 'vue';
 import { Link, useForm, router } from '@inertiajs/vue3';
 import AppButton from './AppButton.vue';
@@ -35,24 +37,24 @@ const activeAction = ref(null);
 const activeLoan = ref(null);
 
 const kanbanTabs = [
-    { key: 'proposal', label: 'Proposal', icon: 'inventory_2', accent: 'neutral' },
-    { key: 'verifikasi', label: 'Verifikasi', icon: 'task_alt', accent: 'primary' },
-    { key: 'waiting', label: 'Waiting', icon: 'hourglass_top', accent: 'warning' },
-    { key: 'aktif', label: 'Aktif', icon: 'payments', accent: 'success' },
-    { key: 'lunas', label: 'Lunas', icon: 'verified', accent: 'neutral' },
+    { key: 'proposal', label: t('Proposal'), icon: 'inventory_2', accent: 'neutral' },
+    { key: 'verifikasi', label: t('Verifikasi'), icon: 'task_alt', accent: 'primary' },
+    { key: 'waiting', label: t('Waiting'), icon: 'hourglass_top', accent: 'warning' },
+    { key: 'aktif', label: t('Aktif'), icon: 'payments', accent: 'success' },
+    { key: 'lunas', label: t('Lunas'), icon: 'verified', accent: 'neutral' },
 ];
 
 const ACTION_TRANSITIONS = {
     proposal: {
-        verify: { to: 'verifikasi', label: 'Verifikasi', permission: 'loans.verify' },
+        verify: { to: 'verifikasi', label: t('Verifikasi'), permission: 'loans.verify' },
     },
     verifikasi: {
-        allocate: { to: 'waiting', label: 'Setujui & Alokasi', permission: 'loans.approve' },
-        revert: { to: 'proposal', label: 'Kembalikan ke Proposal', permission: 'loans.manage' },
+        allocate: { to: 'waiting', label: t('Setujui & Alokasi'), permission: 'loans.approve' },
+        revert: { to: 'proposal', label: t('Kembalikan ke Proposal'), permission: 'loans.manage' },
     },
     waiting: {
-        disburse: { to: 'aktif', label: 'Catat Pencairan', permission: 'loans.disburse' },
-        revert: { to: 'proposal', label: 'Kembalikan ke Proposal', permission: 'loans.manage' },
+        disburse: { to: 'aktif', label: t('Catat Pencairan'), permission: 'loans.disburse' },
+        revert: { to: 'proposal', label: t('Kembalikan ke Proposal'), permission: 'loans.manage' },
     },
 };
 
@@ -176,10 +178,10 @@ function openAction(actionKey, loan) {
         return;
     }
     confirmAction({
-        title: 'Kembalikan ke Proposal',
+        title: t('Kembalikan ke Proposal'),
         message: `Pinjaman ${loan.loan_number || '#' + loan.row_id} akan dikembalikan ke status draft. Lanjutkan?`,
-        confirmLabel: 'Ya, Kembalikan',
-        cancelLabel: 'Batal',
+        confirmLabel: t('Ya, Kembalikan'),
+        cancelLabel: t('Batal'),
         variant: 'warning',
     }).then((confirmed) => {
         if (!confirmed) return;
@@ -262,39 +264,39 @@ function allocatedAmountError(beneficiary) {
     <div class="space-y-4">
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-3.5">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">Total Pinjaman</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">{{ t('Total Pinjaman') }}</p>
                 <p class="mt-1 text-xl font-extrabold tabular-nums leading-tight text-on-surface">{{ totalCards }}</p>
-                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">Semua tahap</p>
+                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">{{ t('Semua tahap') }}</p>
             </div>
             <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-3.5">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">Nilai Portofolio</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">{{ t('Nilai Portofolio') }}</p>
                 <p class="mt-1 truncate text-xl font-extrabold tabular-nums leading-tight text-on-surface" :title="money(totalNominal)">
                     {{ money(totalNominal) }}
                 </p>
-                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">Akumulasi plafon</p>
+                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">{{ t('Akumulasi plafon') }}</p>
             </div>
             <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-3.5">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">Pinjaman Aktif</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">{{ t('Pinjaman Aktif') }}</p>
                 <p class="mt-1 text-xl font-extrabold tabular-nums leading-tight text-secondary">{{ activeLoanCount }}</p>
-                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">Berjalan saat ini</p>
+                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">{{ t('Berjalan saat ini') }}</p>
             </div>
             <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-3.5">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">Sisa Pokok</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant/80">{{ t('Sisa Pokok') }}</p>
                 <p class="mt-1 truncate text-xl font-extrabold tabular-nums leading-tight text-on-surface" :title="money(principalRemainingTotal)">
                     {{ money(principalRemainingTotal) }}
                 </p>
-                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">Belum tertagih</p>
+                <p class="mt-0.5 truncate text-[11px] text-on-surface-variant">{{ t('Belum tertagih') }}</p>
             </div>
         </div>
 
         <div v-if="totalCards === 0" class="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-outline-variant bg-surface-container-lowest/60 px-6 py-12 text-center">
             <AppIcon name="view_kanban" class="text-4xl text-outline" />
-            <p class="text-sm font-bold text-on-surface">Belum ada pinjaman untuk ditampilkan</p>
+            <p class="text-sm font-bold text-on-surface">{{ t('Belum ada pinjaman untuk ditampilkan') }}</p>
             <p class="max-w-md text-xs text-on-surface-variant">
-                Papan kanban akan otomatis terisi ketika ada proposal, verifikasi, atau pencairan yang masuk pada tahap manapun.
+                {{ t('Papan kanban akan otomatis terisi ketika ada proposal, verifikasi, atau pencairan yang masuk pada tahap manapun.') }}
             </p>
             <Link v-if="can('loans.propose')" href="/lending/loans/create" class="mt-2">
-                <AppButton icon="add">Ajukan Pinjaman</AppButton>
+                <AppButton icon="add">{{ t('Ajukan Pinjaman') }}</AppButton>
             </Link>
         </div>
 
@@ -327,14 +329,14 @@ function allocatedAmountError(beneficiary) {
 
         <AppModal v-model="actionModalOpen" :title="modalTitle" size="md">
             <form v-if="activeAction?.key === 'verify'" class="space-y-4" @submit.prevent="submitVerify">
-                <AppDatePicker v-model="verifyForm.verified_at" label="Tanggal Verifikasi" :max="today" required :error="verifyForm.errors.verified_at" />
-                <AppCurrencyInput v-model="verifyForm.verification_amount" label="Nominal Verifikasi (opsional)" :min="0" :error="verifyForm.errors.verification_amount" />
-                <AppTextarea v-model="verifyForm.verification_notes" label="Catatan Verifikasi (opsional)" :error="verifyForm.errors.verification_notes" />
+                <AppDatePicker v-model="verifyForm.verified_at" :label="t('Tanggal Verifikasi')" :max="today" required :error="verifyForm.errors.verified_at" />
+                <AppCurrencyInput v-model="verifyForm.verification_amount" :label="t('Nominal Verifikasi (opsional)')" :min="0" :error="verifyForm.errors.verification_amount" />
+                <AppTextarea v-model="verifyForm.verification_notes" :label="t('Catatan Verifikasi (opsional)')" :error="verifyForm.errors.verification_notes" />
 
                 <LoanBeneficiaryAmountTable
                     :beneficiaries="verifyBeneficiaries"
                     amount-field="verified_amount"
-                    label="Nominal Verifikasi"
+                    :label="t('Nominal Verifikasi')"
                     :total="verifyBeneficiaryTotal"
                     :error-for="verifiedAmountError"
                     @update-amount="setBeneficiaryVerifiedAmount"
@@ -343,37 +345,37 @@ function allocatedAmountError(beneficiary) {
 
             <form v-else-if="activeAction?.key === 'allocate'" class="space-y-4" @submit.prevent="submitApprove">
                 <div class="grid gap-4 sm:grid-cols-2">
-                    <AppDatePicker v-model="approveForm.approved_at" label="Tanggal Penetapan" :max="today" required :error="approveForm.errors.approved_at" />
-                    <AppDatePicker v-model="approveForm.planned_disbursed_at" label="Rencana Tanggal Cair" :min="approveForm.approved_at" required :error="approveForm.errors.planned_disbursed_at" />
+                    <AppDatePicker v-model="approveForm.approved_at" :label="t('Tanggal Penetapan')" :max="today" required :error="approveForm.errors.approved_at" />
+                    <AppDatePicker v-model="approveForm.planned_disbursed_at" :label="t('Rencana Tanggal Cair')" :min="approveForm.approved_at" required :error="approveForm.errors.planned_disbursed_at" />
                 </div>
-                <AppCurrencyInput v-model="approveForm.allocated_principal" label="Plafon Alokasi Kelompok" :min="0" required :error="approveForm.errors.allocated_principal" />
-                <AppTextarea v-model="approveForm.allocation_notes" label="Catatan Penetapan (opsional)" :error="approveForm.errors.allocation_notes" />
+                <AppCurrencyInput v-model="approveForm.allocated_principal" :label="t('Plafon Alokasi Kelompok')" :min="0" required :error="approveForm.errors.allocated_principal" />
+                <AppTextarea v-model="approveForm.allocation_notes" :label="t('Catatan Penetapan (opsional)')" :error="approveForm.errors.allocation_notes" />
 
                 <LoanBeneficiaryAmountTable
                     :beneficiaries="approveForm.beneficiaries"
                     amount-field="allocated_amount"
-                    label="Nominal Alokasi"
+                    :label="t('Nominal Alokasi')"
                     :total="approveBeneficiaryTotal"
                     :max-amount="Number(approveForm.allocated_principal || 0)"
                     :error-for="allocatedAmountError"
                     @update-amount="setBeneficiaryAllocatedAmount"
                 />
                 <p v-if="approveBeneficiaryTotal > Number(approveForm.allocated_principal || 0)" class="text-sm text-error">
-                    Total alokasi per anggota melebihi plafon alokasi kelompok.
+                    {{ t('Total alokasi per anggota melebihi plafon alokasi kelompok.') }}
                 </p>
             </form>
 
             <form v-else-if="activeAction?.key === 'disburse'" class="space-y-4" @submit.prevent="submitDisburse">
-                <AppDatePicker v-model="disburseForm.disbursed_at" label="Tanggal Cair" :max="today" required :error="disburseForm.errors.disbursed_at" />
-                <SmartSelect v-model="disburseForm.disbursement_account_row_id" :options="disbursementAccounts" label="Akun Sumber Dana" required :error="disburseForm.errors.disbursement_account_row_id" />
-                <AppTextarea v-model="disburseForm.disbursement_notes" label="Catatan Pencairan (opsional)" :error="disburseForm.errors.disbursement_notes" />
+                <AppDatePicker v-model="disburseForm.disbursed_at" :label="t('Tanggal Cair')" :max="today" required :error="disburseForm.errors.disbursed_at" />
+                <SmartSelect v-model="disburseForm.disbursement_account_row_id" :options="disbursementAccounts" :label="t('Akun Sumber Dana')" required :error="disburseForm.errors.disbursement_account_row_id" />
+                <AppTextarea v-model="disburseForm.disbursement_notes" :label="t('Catatan Pencairan (opsional)')" :error="disburseForm.errors.disbursement_notes" />
             </form>
 
             <template #footer>
-                <AppButton variant="secondary" @click="actionModalOpen = false">Batal</AppButton>
-                <AppButton v-if="activeAction?.key === 'verify'" variant="primary" :loading="verifyForm.processing" @click="submitVerify">Simpan Verifikasi</AppButton>
-                <AppButton v-else-if="activeAction?.key === 'allocate'" variant="primary" :loading="approveForm.processing" @click="submitApprove">Simpan &amp; Alokasikan</AppButton>
-                <AppButton v-else-if="activeAction?.key === 'disburse'" variant="primary" :loading="disburseForm.processing" @click="submitDisburse">Catat Pencairan</AppButton>
+                <AppButton variant="secondary" @click="actionModalOpen = false">{{ t('Batal') }}</AppButton>
+                <AppButton v-if="activeAction?.key === 'verify'" variant="primary" :loading="verifyForm.processing" @click="submitVerify">{{ t('Simpan Verifikasi') }}</AppButton>
+                <AppButton v-else-if="activeAction?.key === 'allocate'" variant="primary" :loading="approveForm.processing" @click="submitApprove">{{ t('Simpan & Alokasikan') }}</AppButton>
+                <AppButton v-else-if="activeAction?.key === 'disburse'" variant="primary" :loading="disburseForm.processing" @click="submitDisburse">{{ t('Catat Pencairan') }}</AppButton>
             </template>
         </AppModal>
     </div>

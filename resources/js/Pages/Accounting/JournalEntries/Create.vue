@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -184,9 +186,9 @@ function currency(value) {
 }
 
 const periodOptions = [
-    { value: 'daily', label: 'Harian' },
-    { value: 'monthly', label: 'Bulanan' },
-    { value: 'yearly', label: 'Tahunan' },
+    { value: 'daily', label: t('Harian') },
+    { value: 'monthly', label: t('Bulanan') },
+    { value: 'yearly', label: t('Tahunan') },
 ];
 
 const historyForm = ref({
@@ -264,16 +266,16 @@ function closeHistoryModal() {
 </script>
 
 <template>
-    <Head title="Jurnal Umum" />
+    <Head :title="t('Jurnal Umum')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <!-- Compact header bar (plain flex, tidak dibungkus card) -->
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">Input Jurnal Umum</h1>
-                    <p class="mt-1 text-on-surface-variant">Catat transaksi jurnal manual dengan satu akun debit dan satu akun kredit.</p>
+                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">{{ t('Input Jurnal Umum') }}</h1>
+                    <p class="mt-1 text-on-surface-variant">{{ t('Catat transaksi jurnal manual dengan satu akun debit dan satu akun kredit.') }}</p>
                 </div>
-                <AppButton v-if="props.history?.account" type="button" variant="secondary" icon="history" size="compact" @click="openHistoryModal">Buka Riwayat</AppButton>
+                <AppButton v-if="props.history?.account" type="button" variant="secondary" icon="history" size="compact" @click="openHistoryModal">{{ t('Buka Riwayat') }}</AppButton>
             </div>
 
             <!-- Flash entry (success, full-width) -->
@@ -297,27 +299,27 @@ function closeHistoryModal() {
                     <div class="rounded-xl border border-secondary/30 bg-secondary-container/40 p-4">
                         <div class="mb-3 flex items-center gap-2">
                             <AppIcon name="arrow_downward" class="text-secondary" />
-                            <p class="text-xs font-bold uppercase tracking-wider text-secondary">Akun Bertambah</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-secondary">{{ t('Akun Bertambah') }}</p>
                         </div>
                         <ul class="space-y-2">
                             <li v-for="line in debitedLines" :key="`d-${line.account_code}`" class="rounded-lg bg-surface-container-lowest p-3">
                                 <p class="text-sm font-bold text-primary">{{ line.account_code }} · {{ line.account_name }}</p>
                                 <p class="mt-1 text-base font-bold text-secondary">{{ currency(line.debit) }}</p>
                             </li>
-                            <li v-if="!debitedLines.length" class="text-sm text-on-surface-variant">Tidak ada akun debit.</li>
+                            <li v-if="!debitedLines.length" class="text-sm text-on-surface-variant">{{ t('Tidak ada akun debit.') }}</li>
                         </ul>
                     </div>
                     <div class="rounded-xl border border-error/30 bg-error-container/40 p-4">
                         <div class="mb-3 flex items-center gap-2">
                             <AppIcon name="arrow_outward" class="text-error" />
-                            <p class="text-xs font-bold uppercase tracking-wider text-error">Akun Berkurang</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-error">{{ t('Akun Berkurang') }}</p>
                         </div>
                         <ul class="space-y-2">
                             <li v-for="line in creditedLines" :key="`c-${line.account_code}`" class="rounded-lg bg-surface-container-lowest p-3">
                                 <p class="text-sm font-bold text-primary">{{ line.account_code }} · {{ line.account_name }}</p>
                                 <p class="mt-1 text-base font-bold text-error">{{ currency(line.credit) }}</p>
                             </li>
-                            <li v-if="!creditedLines.length" class="text-sm text-on-surface-variant">Tidak ada akun kredit.</li>
+                            <li v-if="!creditedLines.length" class="text-sm text-on-surface-variant">{{ t('Tidak ada akun kredit.') }}</li>
                         </ul>
                     </div>
                 </div>
@@ -338,36 +340,36 @@ function closeHistoryModal() {
                                 <AppIcon name="edit_note" class="text-lg" />
                             </span>
                             <div>
-                                <h2 class="text-base font-bold text-on-surface">Form Input Jurnal</h2>
-                                <p class="mt-0.5 text-xs text-on-surface-variant">Catat transaksi jurnal manual (1 debit + 1 kredit).</p>
+                                <h2 class="text-base font-bold text-on-surface">{{ t('Form Input Jurnal') }}</h2>
+                                <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Catat transaksi jurnal manual (1 debit + 1 kredit).') }}</p>
                             </div>
                         </div>
                     </template>
 
                     <form class="space-y-4" @submit.prevent="submit">
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <AppDatePicker v-model="form.transaction_date" label="Tanggal Transaksi" required :error="form.errors.transaction_date" />
-                            <SmartSelect v-model="form.transaction_type" :options="props.transactionTypes" label="Jenis Transaksi" placeholder="Pilih jenis transaksi" required :error="form.errors.transaction_type" />
+                            <AppDatePicker v-model="form.transaction_date" :label="t('Tanggal Transaksi')" required :error="form.errors.transaction_date" />
+                            <SmartSelect v-model="form.transaction_type" :options="props.transactionTypes" :label="t('Jenis Transaksi')" :placeholder="t('Pilih jenis transaksi')" required :error="form.errors.transaction_type" />
                         </div>
 
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <SmartSelect v-model="form.sumber_dana_row_id" :options="sumberDanaOptions" :label="sumberDanaLabel + ' (Kredit)'" placeholder="Pilih akun" :disabled="!currentType" required :error="form.errors.sumber_dana_row_id" />
-                            <SmartSelect v-model="form.disimpan_ke_row_id" :options="disimpanKeOptions" :label="disimpanKeLabel + ' (Debit)'" placeholder="Pilih akun" :disabled="!currentType" required :error="form.errors.disimpan_ke_row_id" />
+                            <SmartSelect v-model="form.sumber_dana_row_id" :options="sumberDanaOptions" :label="sumberDanaLabel + ' (Kredit)'" :placeholder="t('Pilih akun')" :disabled="!currentType" required :error="form.errors.sumber_dana_row_id" />
+                            <SmartSelect v-model="form.disimpan_ke_row_id" :options="disimpanKeOptions" :label="disimpanKeLabel + ' (Debit)'" :placeholder="t('Pilih akun')" :disabled="!currentType" required :error="form.errors.disimpan_ke_row_id" />
                         </div>
 
                         <p v-if="form.errors.sumber_dana_row_id || form.errors.disimpan_ke_row_id" class="text-sm text-error">{{ form.errors.sumber_dana_row_id || form.errors.disimpan_ke_row_id }}</p>
 
                         <template v-if="isInventory">
                             <div class="grid gap-4 sm:grid-cols-3">
-                                <AppInput v-model="form.reference" label="Relasi" :error="form.errors.reference" placeholder="Masukkan referensi" />
-                                <AppInput v-model="form.asset_name" label="Nama Barang" required :error="form.errors.asset_name" placeholder="Masukkan nama" />
-                                <AppInput v-model="form.asset_quantity" label="Jml. Unit" type="number" min="1" required :error="form.errors.asset_quantity" placeholder="1" />
+                                <AppInput v-model="form.reference" :label="t('Relasi')" :error="form.errors.reference" :placeholder="t('Masukkan referensi')" />
+                                <AppInput v-model="form.asset_name" :label="t('Nama Barang')" required :error="form.errors.asset_name" :placeholder="t('Masukkan nama')" />
+                                <AppInput v-model="form.asset_quantity" :label="t('Jml. Unit')" type="number" min="1" required :error="form.errors.asset_quantity" placeholder="1" />
                             </div>
                             <div class="grid gap-4 sm:grid-cols-3">
-                                <AppCurrencyInput v-model="form.asset_unit_cost" label="Harga Satuan" icon="payments" :min="1" required :error="form.errors.asset_unit_cost" placeholder="0" />
+                                <AppCurrencyInput v-model="form.asset_unit_cost" :label="t('Harga Satuan')" icon="payments" :min="1" required :error="form.errors.asset_unit_cost" placeholder="0" />
                                 <AppInput
                                     v-model="form.asset_useful_life_months"
-                                    label="Umur Eko. (bulan)"
+                                    :label="t('Umur Eko. (bulan)')"
                                     type="number"
                                     :min="currentType === 'pembelian_aset_tanah' ? 0 : 1"
                                     required
@@ -375,27 +377,27 @@ function closeHistoryModal() {
                                     :placeholder="currentType === 'pembelian_aset_tanah' ? '0' : '48'"
                                     :hint="currentType === 'pembelian_aset_tanah' ? 'Tanah: 0 = tidak disusutkan' : null"
                                 />
-                                <AppCurrencyInput v-model="form.amount" label="Harga Perolehan" icon="payments" :min="1" required readonly :error="form.errors.amount" placeholder="0" hint="Otomatis: unit × harga satuan" />
+                                <AppCurrencyInput v-model="form.amount" :label="t('Harga Perolehan')" icon="payments" :min="1" required readonly :error="form.errors.amount" placeholder="0" :hint="t('Otomatis: unit × harga satuan')" />
                             </div>
                         </template>
 
                         <template v-else>
-                            <AppInput v-model="form.reference" label="Relasi (opsional)" :error="form.errors.reference" placeholder="Masukkan referensi" />
-                            <AppCurrencyInput v-model="form.amount" label="Nominal" icon="payments" :min="1" required :error="form.errors.amount" placeholder="0" />
+                            <AppInput v-model="form.reference" :label="t('Relasi (opsional)')" :error="form.errors.reference" :placeholder="t('Masukkan referensi')" />
+                            <AppCurrencyInput v-model="form.amount" :label="t('Nominal')" icon="payments" :min="1" required :error="form.errors.amount" placeholder="0" />
                         </template>
 
                         <AppTextarea
                             v-if="!isInventory"
                             v-model="form.description"
-                            label="Keterangan / Deskripsi"
+                            :label="t('Keterangan / Deskripsi')"
                             required
                             :error="form.errors.description"
-                            placeholder="Masukkan keterangan"
+                            :placeholder="t('Masukkan keterangan')"
                         />
 
                         <div class="flex gap-3 border-t border-outline-variant pt-4">
-                            <a :href="pagePath" class="flex-1"><AppButton class="w-full" variant="secondary" type="button">Reset</AppButton></a>
-                            <AppButton class="flex-1" type="submit" :loading="form.processing" :disabled="form.processing" icon="save">Catat Jurnal</AppButton>
+                            <a :href="pagePath" class="flex-1"><AppButton class="w-full" variant="secondary" type="button">{{ t('Reset') }}</AppButton></a>
+                            <AppButton class="flex-1" type="submit" :loading="form.processing" :disabled="form.processing" icon="save">{{ t('Catat Jurnal') }}</AppButton>
                         </div>
                     </form>
                     </AppCard>
@@ -410,15 +412,15 @@ function closeHistoryModal() {
                                 <AppIcon name="history" class="text-lg" />
                             </span>
                             <div>
-                                <h2 class="text-base font-bold text-on-surface">Riwayat Transaksi Akun</h2>
-                                <p class="mt-0.5 text-xs text-on-surface-variant">Pergerakan debit/kredit akun pada periode tertentu.</p>
+                                <h2 class="text-base font-bold text-on-surface">{{ t('Riwayat Transaksi Akun') }}</h2>
+                                <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Pergerakan debit/kredit akun pada periode tertentu.') }}</p>
                             </div>
                         </div>
                     </template>
 
                     <form class="space-y-4" @submit.prevent="fetchHistory">
-                        <SmartSelect v-model="historyForm.account_row_id" :options="props.accountOptions" label="Akun" placeholder="Pilih akun" required searchable search-placeholder="Cari akun..." />
-                        <AppRadioGroup v-model="historyForm.period" :options="periodOptions" label="Periode" required />
+                        <SmartSelect v-model="historyForm.account_row_id" :options="props.accountOptions" :label="t('Akun')" :placeholder="t('Pilih akun')" required searchable :search-placeholder="t('Cari akun...')" />
+                        <AppRadioGroup v-model="historyForm.period" :options="periodOptions" :label="t('Periode')" required />
                         <AppDatePicker
                             :key="historyForm.period"
                             v-model="periodValue"
@@ -427,8 +429,8 @@ function closeHistoryModal() {
                         />
 
                         <div class="flex gap-3 border-t border-outline-variant pt-4">
-                            <AppButton class="flex-1" variant="secondary" type="button" icon="restart_alt" @click="resetHistory">Reset</AppButton>
-                            <AppButton class="flex-1" type="submit" :loading="historyLoading" icon="search">Tampilkan</AppButton>
+                            <AppButton class="flex-1" variant="secondary" type="button" icon="restart_alt" @click="resetHistory">{{ t('Reset') }}</AppButton>
+                            <AppButton class="flex-1" type="submit" :loading="historyLoading" icon="search">{{ t('Tampilkan') }}</AppButton>
                         </div>
                     </form>
                     </AppCard>
@@ -443,19 +445,19 @@ function closeHistoryModal() {
 
                 <div v-if="historySummary" class="grid gap-3 sm:grid-cols-4">
                     <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Transaksi</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Transaksi') }}</p>
                         <p class="mt-1 text-xl font-bold text-primary">{{ historySummary.count }}</p>
                     </div>
                     <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Debit</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Debit') }}</p>
                         <p class="mt-1 text-xl font-bold text-secondary">{{ currency(historySummary.totalDebit) }}</p>
                     </div>
                     <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Kredit</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Kredit') }}</p>
                         <p class="mt-1 text-xl font-bold text-error">{{ currency(historySummary.totalCredit) }}</p>
                     </div>
                     <div class="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Saldo Akhir</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Saldo Akhir') }}</p>
                         <p class="mt-1 text-xl font-bold text-primary">{{ currency(historySummary.closingBalance) }}</p>
                     </div>
                 </div>
@@ -464,13 +466,13 @@ function closeHistoryModal() {
                     <table class="w-full text-left text-sm">
                         <thead class="bg-surface-container-low text-xs font-bold uppercase tracking-wider text-primary">
                             <tr>
-                                <th class="px-4 py-3">Nomor</th>
-                                <th class="px-4 py-3">Tanggal</th>
-                                <th class="px-4 py-3">Trx ID</th>
-                                <th class="px-4 py-3">Keterangan</th>
-                                <th class="px-4 py-3 text-right">Debit</th>
-                                <th class="px-4 py-3 text-right">Kredit</th>
-                                <th class="px-4 py-3 text-right">Saldo</th>
+                                <th class="px-4 py-3">{{ t('Nomor') }}</th>
+                                <th class="px-4 py-3">{{ t('Tanggal') }}</th>
+                                <th class="px-4 py-3">{{ t('Trx ID') }}</th>
+                                <th class="px-4 py-3">{{ t('Keterangan') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Debit') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Kredit') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Saldo') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -486,7 +488,7 @@ function closeHistoryModal() {
                         </tbody>
                     </table>
                 </div>
-                <AppEmptyState v-else icon="history" title="Belum ada transaksi" :description="`Tidak ada jurnal terposting pada akun ini di periode ${periodDetail}.`" />
+                <AppEmptyState v-else icon="history" :title="t('Belum ada transaksi')" :description="`Tidak ada jurnal terposting pada akun ini di periode ${periodDetail}.`" />
             </div>
         </AppModal>
     </AuthenticatedLayout>

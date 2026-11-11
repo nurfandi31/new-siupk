@@ -11,6 +11,15 @@ use Tests\TestCase;
 
 final class DownloadReportToolTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        if (! class_exists(ToolRegistry::class)) {
+            self::markTestSkipped('Optional package enpii/assistant is not installed.');
+        }
+    }
+
     public function test_download_report_handler_metadata(): void
     {
         /** @var DownloadReportHandler $handler */

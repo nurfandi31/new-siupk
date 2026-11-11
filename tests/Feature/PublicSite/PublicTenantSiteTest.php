@@ -88,6 +88,47 @@ final class PublicTenantSiteTest extends TestCase
                 ->where('organization.phone', '081234567890'));
     }
 
+    public function test_tenant_landing_stats_are_derived_from_tenant_database(): void
+    {
+        $this->testTenant->forceFill([
+            'metadata' => ['domains' => ['bumdes-sukamaju.test']],
+        ])->save();
+        app(PublicSiteResolver::class)->flush();
+
+        $response = $this->get('http://bumdes-sukamaju.test/');
+
+        $response->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('PublicSite/TenantHome')
+                ->has('stats')
+                ->where('stats.members_active', 0)
+                ->where('stats.groups_active', 0)
+                ->where('stats.loans_active', 0)
+                ->where('stats.loans_total', 0)
+                ->where('stats.collection_rate', null)
+                ->where('stats.punctuality_rate', null)
+                ->missing('demo'));
+    }
+
+    public function test_demo_card_only_renders_for_demo_tenant_code(): void
+    {
+        config(['tenancy.demo_tenant_code' => 'demo']);
+
+        $this->testTenant->forceFill([
+            'code' => 'demo',
+            'metadata' => ['domains' => ['bumdes-sukamaju.test']],
+        ])->save();
+        app(PublicSiteResolver::class)->flush();
+
+        $response = $this->get('http://bumdes-sukamaju.test/');
+
+        $response->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('PublicSite/TenantHome')
+                ->where('tenant.code', 'demo')
+                ->has('demo.login_url'));
+    }
+
     public function test_suspended_tenant_falls_back_to_vendor_home(): void
     {
         $this->testTenant->forceFill([

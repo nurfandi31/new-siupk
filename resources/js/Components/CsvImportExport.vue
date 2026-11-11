@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import AppButton from './AppButton.vue';
@@ -46,18 +48,18 @@ function submitImport() {
 
 <template>
     <div class="flex flex-wrap items-center gap-2">
-        <AppButton type="button" variant="secondary" icon="download" size="compact" @click="exportCsv">Export CSV</AppButton>
-        <AppButton type="button" variant="secondary" icon="upload" size="compact" @click="openImport">Import CSV</AppButton>
+        <AppButton type="button" variant="secondary" icon="download" size="compact" @click="exportCsv">{{ t('Export CSV') }}</AppButton>
+        <AppButton type="button" variant="secondary" icon="upload" size="compact" @click="openImport">{{ t('Import CSV') }}</AppButton>
     </div>
 
     <AppModal v-model="open" :title="title" size="md">
         <p class="mb-4 text-sm text-on-surface-variant">{{ hint }}</p>
         <div class="mb-4 rounded-xl chip-shadow bg-surface-container-low p-4 ring-1 ring-outline-variant/40">
-            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Kolom header</p>
+            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Kolom header') }}</p>
             <p class="mt-2 font-mono text-sm text-primary">{{ columns.join(';') }}</p>
         </div>
         <label class="block space-y-2">
-            <span class="ml-1 text-sm font-bold uppercase tracking-wider text-primary">File CSV</span>
+            <span class="ml-1 text-sm font-bold uppercase tracking-wider text-primary">{{ t('File CSV') }}</span>
             <input
                 ref="fileInput"
                 type="file"
@@ -68,8 +70,8 @@ function submitImport() {
             <p v-if="form.errors.file" class="text-sm text-error">{{ form.errors.file }}</p>
         </label>
         <template #footer>
-            <AppButton variant="secondary" :disabled="form.processing" @click="open = false">Batal</AppButton>
-            <AppButton :loading="form.processing" :disabled="!form.file" icon="upload" @click="submitImport">Impor</AppButton>
+            <AppButton variant="secondary" :disabled="form.processing" @click="open = false">{{ t('Batal') }}</AppButton>
+            <AppButton :loading="form.processing" :disabled="!form.file" icon="upload" @click="submitImport">{{ t('Impor') }}</AppButton>
         </template>
     </AppModal>
 </template>

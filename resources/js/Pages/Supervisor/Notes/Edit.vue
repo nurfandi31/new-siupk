@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -9,6 +11,9 @@ import AppInput from '../../../Components/AppInput.vue';
 import AppSelect from '../../../Components/SmartSelect.vue';
 import AppTextarea from '../../../Components/AppTextarea.vue';
 import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import { useConfirm } from '../../../composables/useConfirm';
+
+const { confirm } = useConfirm();
 
 interface NotePayload {
     row_id: number;
@@ -119,11 +124,15 @@ function submitForReview(): void {
     router.post(`/supervisor/notes/${props.note.row_id}/submit`, {}, { preserveScroll: true });
 }
 
-function remove(): void {
+async function remove(): Promise<void> {
     if (!props.note) return;
-    if (typeof window !== 'undefined' && !window.confirm('Hapus catatan ini? Tindakan tidak dapat dibatalkan.')) {
-        return;
-    }
+    const ok = await confirm({
+        title: t('Hapus Catatan Pengawas'),
+        message: t('Catatan ini akan dihapus permanen dan tidak dapat dikembalikan.'),
+        confirmLabel: t('Ya, Hapus'),
+        variant: 'danger',
+    });
+    if (!ok) return;
     router.delete(`/supervisor/notes/${props.note.row_id}`, { preserveScroll: true });
 }
 
@@ -139,36 +148,36 @@ function backHref(): string {
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Pengawas
+                        {{ t('Pengawas') }}
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">
-                        {{ isEdit ? 'Edit Catatan Pengawas' : 'Catatan Pengawas Baru' }}
+                        {{ isEdit ? t('Edit Catatan Pengawas') : t('Catatan Pengawas Baru') }}
                     </h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ identity.legal_name }} · {{ isEdit && note ? note.period_label : 'Catatan & rekomendasi kinerja lembaga' }}
+                        {{ identity.legal_name }} · {{ isEdit && note ? note.period_label : t('Catatan & rekomendasi kinerja lembaga') }}
                     </p>
                 </div>
                 <a
                     :href="backHref()"
                     class="inline-flex h-10 items-center rounded-xl border border-outline-variant px-4 text-sm font-semibold text-primary hover:bg-surface-container-low"
                 >
-                    Kembali
+                    {{ t('Kembali') }}
                 </a>
             </div>
 
             <AppCard v-if="isEdit && note" class="p-4">
                 <div class="flex flex-wrap items-center gap-3 text-sm">
-                    <p class="text-on-surface-variant">Status saat ini:</p>
+                    <p class="text-on-surface-variant">{{ t('Status saat ini:') }}</p>
                     <AppBadge
                         :tone="note.status === 'acknowledged' ? 'success' : note.status === 'submitted' ? 'info-soft' : 'neutral'"
                     >
                         {{ note.status_label }}
                     </AppBadge>
                     <p v-if="note.submitted_at" class="text-xs text-on-surface-variant">
-                        Disubmit: {{ new Date(note.submitted_at).toLocaleString('id-ID') }}
+                        {{ t('Disubmit:') }} {{ new Date(note.submitted_at).toLocaleString(dateLocale()) }}
                     </p>
                     <p v-if="note.acknowledged_at" class="text-xs text-on-surface-variant">
-                        ACK: {{ new Date(note.acknowledged_at).toLocaleString('id-ID') }}
+                        ACK: {{ new Date(note.acknowledged_at).toLocaleString(dateLocale()) }}
                     </p>
                 </div>
             </AppCard>
@@ -176,17 +185,17 @@ function backHref(): string {
             <AppCard class="p-5">
                 <form class="space-y-4" @submit.prevent="submit">
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        <AppDatePicker v-model="selectedYear" label="Tahun Periode" mode="year" required />
+                        <AppDatePicker v-model="selectedYear" :label="t('Tahun Periode')" mode="year" required />
                         <AppSelect
                             v-model="selectedMonth"
-                            label="Bulan"
+                            :label="t('Bulan')"
                             :options="monthOptions"
-                            placeholder="Tahunan (semua bulan)"
+                            :placeholder="t('Tahunan (semua bulan)')"
                             clearable
                         />
                         <AppSelect
                             v-model="form.category"
-                            label="Kategori"
+                            :label="t('Kategori')"
                             :options="categoryOptions"
                             required
                             :error="errors.category"
@@ -195,17 +204,17 @@ function backHref(): string {
 
                     <AppInput
                         v-model="form.subject"
-                        label="Judul Catatan"
-                        placeholder="Masukkan judul"
+                        :label="t('Judul Catatan')"
+                        :placeholder="t('Masukkan judul')"
                         required
                         :error="errors.subject"
                     />
 
                     <AppTextarea
                         v-model="form.content"
-                        label="Isi Catatan"
+                        :label="t('Isi Catatan')"
                         rows="10"
-                        placeholder="Tulis catatan..."
+                        :placeholder="t('Tulis catatan...')"
                         required
                         :error="errors.content"
                     />
@@ -215,7 +224,7 @@ function backHref(): string {
                             :href="backHref()"
                             class="inline-flex h-11 items-center rounded-xl border border-outline-variant px-4 text-sm font-semibold text-primary hover:bg-surface-container-low"
                         >
-                            Batal
+                            {{ t('Batal') }}
                         </a>
                         <AppButton
                             v-if="canDelete && isEdit"
@@ -224,7 +233,7 @@ function backHref(): string {
                             icon="delete"
                             @click="remove"
                         >
-                            Hapus
+                            {{ t('Hapus') }}
                         </AppButton>
                         <AppButton
                             v-if="canSubmit && isEdit"
@@ -233,14 +242,14 @@ function backHref(): string {
                             icon="send"
                             @click="submitForReview"
                         >
-                            Simpan & Submit
+                            {{ t('Simpan & Submit') }}
                         </AppButton>
                         <AppButton
                             type="submit"
                             icon="save"
                             :loading="form.processing"
                         >
-                            {{ isEdit ? 'Simpan Perubahan' : 'Simpan Catatan' }}
+                            {{ isEdit ? t('Simpan Perubahan') : t('Simpan Catatan') }}
                         </AppButton>
                     </div>
                 </form>

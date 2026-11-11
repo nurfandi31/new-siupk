@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import AppIcon from './AppIcon.vue';
 import { parseMarkdownTree } from '../composables/useMarkdown';
@@ -132,7 +134,7 @@ async function describeHttpError(response) {
 function notifyError(message) {
     const safe = sanitizeText(message) || FRIENDLY_ERROR;
     error.value = safe;
-    toast.error({ title: 'Asisten AI', message: safe }, { duration: 6000 });
+    toast.error({ title: t('Asisten AI'), message: safe }, { duration: 6000 });
 }
 
 async function markCurrentConversationRead() {
@@ -361,7 +363,7 @@ function handleEvent(event, data, assistantMsg) {
         const technical = /exception|stack|trace|sql|vendor[\\/]|\.php\b|syntax|undefined/i.test(raw);
         const friendly = raw && raw.length <= 160 && !technical ? raw : FRIENDLY_ERROR;
         error.value = friendly;
-        toast.error({ title: 'Asisten AI', message: friendly }, { duration: 6000 });
+        toast.error({ title: t('Asisten AI'), message: friendly }, { duration: 6000 });
         return;
     }
     if (event === 'result') {
@@ -386,7 +388,7 @@ function processFiles(files) {
     );
     for (const file of validFiles) {
         if (file.size > 15 * 1024 * 1024) {
-            toast.warning({ title: 'Lampiran', message: 'Ukuran berkas maksimal 15MB.' });
+            toast.warning({ title: t('Lampiran'), message: t('Ukuran berkas maksimal 15MB.') });
             continue;
         }
         const isPdf = file.type === 'application/pdf';
@@ -645,12 +647,12 @@ onBeforeUnmount(() => {
                             <span v-if="persona?.slug" class="block truncate text-[10px] font-medium uppercase tracking-wide text-on-primary/70">{{ persona.slug }}</span>
                         </div>
                     </div>
-                    <button type="button" class="rounded-lg p-1 hover:bg-on-primary/10" aria-label="Tutup asisten" @click="open = false">
+                    <button type="button" class="rounded-lg p-1 hover:bg-on-primary/10" :aria-label="t('Tutup asisten')" @click="open = false">
                         <AppIcon name="close" class="text-xl" />
                     </button>
                 </div>
 
-                <p v-if="loading && !messages.length" class="shrink-0 p-4 text-sm text-on-surface-variant">Menghubungkan…</p>
+                <p v-if="loading && !messages.length" class="shrink-0 p-4 text-sm text-on-surface-variant">{{ t('Menghubungkan…') }}</p>
 
                 <div
                     v-if="error"
@@ -663,7 +665,7 @@ onBeforeUnmount(() => {
                     <button
                         type="button"
                         class="shrink-0 rounded p-0.5 transition-colors hover:bg-black/5"
-                        aria-label="Tutup notifikasi"
+                        :aria-label="t('Tutup notifikasi')"
                         @click="error = null"
                     >
                         <AppIcon name="close" class="text-sm" />
@@ -685,7 +687,7 @@ onBeforeUnmount(() => {
                         >
                             <template v-if="msg.role === 'tool'">
                                 <span class="font-semibold">{{ msg.kind === 'use' ? 'Tool' : 'Hasil' }}: {{ msg.name }}</span>
-                                <span v-if="msg.ok === false" class="text-error"> (gagal)</span>
+                                <span v-if="msg.ok === false" class="text-error"> {{ t('(gagal)') }}</span>
                             </template>
                             <template v-else-if="msg.role === 'user' || msg.role === 'error'">
                                 <div v-if="msg.attachments && msg.attachments.length" class="mb-2 flex flex-col gap-2">
@@ -719,7 +721,7 @@ onBeforeUnmount(() => {
                                                 <AppIcon name="picture_as_pdf" class="text-2xl" />
                                             </div>
                                             <div class="min-w-0 flex-1">
-                                                <span class="block truncate text-xs font-bold leading-tight">{{ att.name || 'Dokumen' }}</span>
+                                                <span class="block truncate text-xs font-bold leading-tight">{{ att.name || t('Dokumen') }}</span>
                                                 <span class="block text-[10px] text-white/75 mt-0.5">{{ formatFileSize(att.size) || 'PDF Dokumen' }}</span>
                                             </div>
                                             <a
@@ -727,7 +729,7 @@ onBeforeUnmount(() => {
                                                 :href="att.url"
                                                 :download="att.name || 'dokumen.pdf'"
                                                 class="grid size-8 shrink-0 place-items-center rounded-lg bg-white/10 text-white transition hover:bg-white/20"
-                                                title="Unduh Berkas"
+                                                :title="t('Unduh Berkas')"
                                             >
                                                 <AppIcon name="download" class="text-base" />
                                             </a>
@@ -795,13 +797,13 @@ onBeforeUnmount(() => {
                                 class="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-on-primary disabled:opacity-50"
                                 :disabled="sending"
                                 @click="decideConfirmation('approve')"
-                            >Setuju</button>
+                            >{{ t('Setuju') }}</button>
                             <button
                                 type="button"
                                 class="rounded-lg ring-1 ring-outline-variant px-3 py-1.5 text-xs font-semibold text-on-surface shadow-sm shadow-black/5 disabled:opacity-50"
                                 :disabled="sending"
                                 @click="decideConfirmation('reject')"
-                            >Tolak</button>
+                            >{{ t('Tolak') }}</button>
                         </div>
                     </div>
                 </div>
@@ -822,7 +824,7 @@ onBeforeUnmount(() => {
                             <button
                                 type="button"
                                 class="absolute inset-0 grid place-items-center bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
-                                aria-label="Hapus lampiran"
+                                :aria-label="t('Hapus lampiran')"
                                 @click="removeAttachedImage(idx)"
                             >
                                 <AppIcon name="close" class="text-base" />
@@ -843,8 +845,8 @@ onBeforeUnmount(() => {
                             type="button"
                             class="mb-0.5 grid size-11 shrink-0 place-items-center rounded-xl chip-shadow ring-1 ring-outline-variant text-on-surface-variant transition hover:bg-surface-container hover:text-on-surface focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                             :disabled="sending || loading"
-                            aria-label="Lampirkan Gambar atau Dokumen"
-                            title="Lampirkan Gambar atau Dokumen (PDF)"
+                            :aria-label="t('Lampirkan Gambar atau Dokumen')"
+                            :title="t('Lampirkan Gambar atau Dokumen (PDF)')"
                             @click="triggerAttach"
                         >
                             <AppIcon name="add_photo_alternate" class="text-xl" />
@@ -864,7 +866,7 @@ onBeforeUnmount(() => {
                             type="button"
                             class="mb-0.5 grid size-11 shrink-0 place-items-center rounded-xl bg-primary text-on-primary disabled:opacity-50"
                             :disabled="sending || loading || (!input.trim() && !attachedImages.length)"
-                            aria-label="Kirim"
+                            :aria-label="t('Kirim')"
                             @click="sendMessage"
                         >
                             <AppIcon name="send" class="text-xl" />
@@ -883,19 +885,19 @@ onBeforeUnmount(() => {
                     v-if="previewImageUrl"
                     class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
                     role="dialog"
-                    aria-label="Preview Gambar"
+                    :aria-label="t('Preview Gambar')"
                     @click.self="closeImagePreview"
                 >
                     <div class="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-2xl bg-surface-container-lowest shadow-2xl">
                         <button
                             type="button"
                             class="absolute top-3 right-3 z-10 grid size-9 place-items-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
-                            aria-label="Tutup preview"
+                            :aria-label="t('Tutup preview')"
                             @click="closeImagePreview"
                         >
                             <AppIcon name="close" class="text-xl" />
                         </button>
-                        <img :src="previewImageUrl" alt="Preview Gambar" class="max-h-[85vh] max-w-full object-contain" />
+                        <img :src="previewImageUrl" :alt="t('Preview Gambar')" class="max-h-[85vh] max-w-full object-contain" />
                     </div>
                 </div>
             </Transition>

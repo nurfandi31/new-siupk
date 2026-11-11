@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, ref, watch } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -23,7 +25,6 @@ const submitUrl = '/accounting/journal-entries/installment-individual';
 const form = useForm({
     transaction_date: props.today,
     loan_id: '',
-    installment_row_id: '',
     installment_number: '',
     principal_amount: '',
     interest_amount: '',
@@ -59,7 +60,7 @@ const autoInstallment = computed(() => {
     return candidates[0] ?? null;
 });
 
-const selectedInstallment = computed(() => availableInstallments.value.find((i) => i.value === Number(form.installment_row_id)) ?? null);
+const selectedInstallment = computed(() => availableInstallments.value.find((i) => i.value === Number(form.installment_number)) ?? null);
 
 function applyInstallmentDefaults(target) {
     if (! target) return;
@@ -68,7 +69,6 @@ function applyInstallmentDefaults(target) {
 }
 
 watch(() => form.loan_id, () => {
-    form.installment_row_id = '';
     form.installment_number = '';
     form.principal_amount = '';
     form.interest_amount = '';
@@ -82,7 +82,6 @@ watch(() => form.loan_id, () => {
 
 watch(() => form.transaction_date, () => {
     if (autoInstallment.value) {
-        form.installment_row_id = autoInstallment.value.value;
         form.installment_number = autoInstallment.value.value;
         applyInstallmentDefaults(autoInstallment.value);
     }
@@ -147,7 +146,7 @@ function submit() {
     form.post(submitUrl, {
         preserveScroll: true,
         onSuccess: () => {
-            form.reset('principal_amount', 'interest_amount', 'penalty_amount', 'cash_account_row_id', 'installment_row_id', 'reference', 'description');
+            form.reset('principal_amount', 'interest_amount', 'penalty_amount', 'cash_account_row_id', 'installment_number', 'reference', 'description');
             form.transaction_date = props.today;
             memberSearch.value = '';
             // Re-generate description setelah reset (watch tidak trigger karena loan belum berubah).
@@ -199,12 +198,12 @@ async function fetchJson(url) {
 </script>
 
 <template>
-    <Head title="Jurnal Angsuran Individu" />
+    <Head :title="t('Jurnal Angsuran Individu')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header>
-                <h1 class="text-2xl font-bold text-primary sm:text-3xl">Input Jurnal Angsuran Individu</h1>
-                <p class="mt-1 text-on-surface-variant">Catat pembayaran angsuran pinjaman perorangan dengan akun debit kas dan kredit piutang/jasa/denda. Setiap angsuran hanya untuk satu peminjam.</p>
+                <h1 class="text-2xl font-bold text-primary sm:text-3xl">{{ t('Input Jurnal Angsuran Individu') }}</h1>
+                <p class="mt-1 text-on-surface-variant">{{ t('Catat pembayaran angsuran pinjaman perorangan dengan akun debit kas dan kredit piutang/jasa/denda. Setiap angsuran hanya untuk satu peminjam.') }}</p>
             </header>
 
             <AppCard v-if="flashEntry" ref="successCardRef">
@@ -229,7 +228,7 @@ async function fetchJson(url) {
                         class="shrink-0"
                     >
                         <AppButton type="button" variant="secondary" icon="print" size="compact">
-                            Cetak Bukti
+                            {{ t('Cetak Bukti') }}
                         </AppButton>
                     </a>
                 </div>
@@ -238,27 +237,27 @@ async function fetchJson(url) {
                     <div class="rounded-xl border border-secondary/30 bg-secondary-container/40 p-4">
                         <div class="mb-3 flex items-center gap-2">
                             <AppIcon name="arrow_downward" class="text-secondary" />
-                            <p class="text-xs font-bold uppercase tracking-wider text-secondary">Akun Bertambah (Debit)</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-secondary">{{ t('Akun Bertambah (Debit)') }}</p>
                         </div>
                         <ul class="space-y-2">
                             <li v-for="line in debitedLines" :key="`d-${line.account_code}`" class="rounded-lg bg-surface-container-lowest p-3">
                                 <p class="text-sm font-bold text-primary">{{ line.account_code }} · {{ line.account_name }}</p>
                                 <p class="mt-1 text-base font-bold text-secondary">{{ currency(line.debit) }}</p>
                             </li>
-                            <li v-if="!debitedLines.length" class="text-sm text-on-surface-variant">Tidak ada akun debit.</li>
+                            <li v-if="!debitedLines.length" class="text-sm text-on-surface-variant">{{ t('Tidak ada akun debit.') }}</li>
                         </ul>
                     </div>
                     <div class="rounded-xl border border-error/30 bg-error-container/40 p-4">
                         <div class="mb-3 flex items-center gap-2">
                             <AppIcon name="arrow_outward" class="text-error" />
-                            <p class="text-xs font-bold uppercase tracking-wider text-error">Akun Berkurang (Kredit)</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-error">{{ t('Akun Berkurang (Kredit)') }}</p>
                         </div>
                         <ul class="space-y-2">
                             <li v-for="line in creditedLines" :key="`c-${line.account_code}`" class="rounded-lg bg-surface-container-lowest p-3">
                                 <p class="text-sm font-bold text-primary">{{ line.account_code }} · {{ line.account_name }}</p>
                                 <p class="mt-1 text-base font-bold text-error">{{ currency(line.credit) }}</p>
                             </li>
-                            <li v-if="!creditedLines.length" class="text-sm text-on-surface-variant">Tidak ada akun kredit.</li>
+                            <li v-if="!creditedLines.length" class="text-sm text-on-surface-variant">{{ t('Tidak ada akun kredit.') }}</li>
                         </ul>
                     </div>
                 </div>
@@ -266,7 +265,7 @@ async function fetchJson(url) {
 
             <AppCard>
                 <form class="space-y-5" @submit.prevent="submit">
-                    <SmartSelect v-model="form.loan_id" :options="props.loanOptions" label="Pinjaman Perorangan" placeholder="Cari pinjaman..." required searchable search-placeholder="Cari pinjaman..." hint="Loan perorangan dengan status aktif atau sudah dicairkan" />
+                    <SmartSelect v-model="form.loan_id" :options="props.loanOptions" :label="t('Pinjaman Perorangan')" :placeholder="t('Cari pinjaman...')" required searchable :search-placeholder="t('Cari pinjaman...')" :hint="t('Loan perorangan dengan status aktif atau sudah dicairkan')" />
 
                     <div v-if="selectedLoan?.subject_label" class="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
                         <div class="flex items-start gap-3">
@@ -274,7 +273,7 @@ async function fetchJson(url) {
                                 <AppIcon name="person" class="text-lg" />
                             </span>
                             <div class="min-w-0 flex-1">
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Peminjam</p>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">{{ t('Peminjam') }}</p>
                                 <p class="mt-0.5 text-base font-bold text-primary break-words">{{ selectedLoan.subject_label }}</p>
                                 <p v-if="selectedLoan.borrower_member_row_id" class="mt-0.5 text-xs text-on-surface-variant">ID Anggota #{{ selectedLoan.borrower_member_row_id }}</p>
                             </div>
@@ -290,26 +289,26 @@ async function fetchJson(url) {
                             <AppIcon v-if="memberVerified" name="check_circle" class="text-base text-secondary" />
                         </div>
                         <p v-if="memberSearch && !memberVerified" class="mt-2 text-[11px] text-on-surface-variant">Tidak ada kecocokan dengan "{{ memberSearch }}". Pastikan nama/NIK sesuai.</p>
-                        <p v-else-if="memberVerified" class="mt-2 text-[11px] font-semibold text-secondary">Kecocokan terkonfirmasi.</p>
+                        <p v-else-if="memberVerified" class="mt-2 text-[11px] font-semibold text-secondary">{{ t('Kecocokan terkonfirmasi.') }}</p>
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <AppDatePicker v-model="form.transaction_date" label="Tanggal Angsuran" required :error="form.errors.transaction_date" />
-                        <AppInput :model-value="installmentLabel" label="Angsuran ke-N" readonly hint="Otomatis dari tanggal; pilih pinjaman untuk melihat daftar" />
+                        <AppDatePicker v-model="form.transaction_date" :label="t('Tanggal Angsuran')" required :error="form.errors.transaction_date" />
+                        <AppInput :model-value="installmentLabel" :label="t('Angsuran ke-N')" readonly :hint="t('Otomatis dari tanggal; pilih pinjaman untuk melihat daftar')" />
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <AppCurrencyInput v-model="form.principal_amount" label="Pokok" icon="payments" :min="1" required :error="form.errors.principal_amount" placeholder="0" />
-                        <AppCurrencyInput v-model="form.interest_amount" label="Jasa" icon="payments" :min="0" required :error="form.errors.interest_amount" placeholder="0" />
+                        <AppCurrencyInput v-model="form.principal_amount" :label="t('Pokok')" icon="payments" :min="1" required :error="form.errors.principal_amount" placeholder="0" />
+                        <AppCurrencyInput v-model="form.interest_amount" :label="t('Jasa')" icon="payments" :min="0" required :error="form.errors.interest_amount" placeholder="0" />
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <AppCurrencyInput v-model="form.penalty_amount" label="Denda" icon="payments" :min="0" :error="form.errors.penalty_amount" placeholder="0" />
-                        <AppInput :model-value="currency(totalAmount)" label="Total (Pokok + Jasa + Denda)" readonly icon="calculate" />
+                        <AppCurrencyInput v-model="form.penalty_amount" :label="t('Denda')" icon="payments" :min="0" :error="form.errors.penalty_amount" placeholder="0" />
+                        <AppInput :model-value="currency(totalAmount)" :label="t('Total (Pokok + Jasa + Denda)')" readonly icon="calculate" />
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <SmartSelect v-model="form.cash_account_row_id" :options="props.cashAccounts" label="Tujuan (Akun Debit)" placeholder="Pilih akun kas" required :error="form.errors.cash_account_row_id" />
+                        <SmartSelect v-model="form.cash_account_row_id" :options="props.cashAccounts" :label="t('Tujuan (Akun Debit)')" :placeholder="t('Pilih akun kas')" required :error="form.errors.cash_account_row_id" />
                     </div>
 
                     <input type="hidden" :value="form.description">
@@ -317,29 +316,29 @@ async function fetchJson(url) {
 
                     <div class="flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant pt-4">
                         <div class="flex flex-wrap gap-2">
-                            <AppButton variant="secondary" icon="history" type="button" :disabled="!selectedLoan" @click="openHistoryModal">Riwayat Angsuran</AppButton>
+                            <AppButton variant="secondary" icon="history" type="button" :disabled="!selectedLoan" @click="openHistoryModal">{{ t('Riwayat Angsuran') }}</AppButton>
                         </div>
                         <div class="flex gap-2">
-                            <a :href="submitUrl"><AppButton variant="secondary" type="button">Reset</AppButton></a>
-                            <AppButton type="submit" :loading="form.processing" :disabled="form.processing" icon="save">Catat Jurnal Angsuran</AppButton>
+                            <a :href="submitUrl"><AppButton variant="secondary" type="button">{{ t('Reset') }}</AppButton></a>
+                            <AppButton type="submit" :loading="form.processing" :disabled="form.processing" icon="save">{{ t('Catat Jurnal Angsuran') }}</AppButton>
                         </div>
                     </div>
                 </form>
             </AppCard>
 
-            <AppModal v-model="historyModalOpen" title="Riwayat Angsuran" size="full">
-                <div v-if="historyLoading" class="py-8 text-center text-on-surface-variant">Memuat…</div>
+            <AppModal v-model="historyModalOpen" :title="t('Riwayat Angsuran')" size="full">
+                <div v-if="historyLoading" class="py-8 text-center text-on-surface-variant">{{ t('Memuat…') }}</div>
                 <div v-else-if="historyRows.length" class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wider text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left">Tanggal</th>
-                                <th class="px-3 py-2 text-left">No. Jurnal</th>
-                                <th class="px-3 py-2 text-left">Angsuran</th>
-                                <th class="px-3 py-2 text-left">Keterangan</th>
-                                <th class="px-3 py-2 text-right">Pokok</th>
-                                <th class="px-3 py-2 text-right">Jasa</th>
-                                <th class="px-3 py-2 text-right">Denda</th>
+                                <th class="px-3 py-2 text-left">{{ t('Tanggal') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('No. Jurnal') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Angsuran') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Keterangan') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Jasa') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Denda') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -355,7 +354,7 @@ async function fetchJson(url) {
                         </tbody>
                     </table>
                 </div>
-                <div v-else class="py-8 text-center text-on-surface-variant">Belum ada jurnal angsuran terposting untuk pinjaman ini.</div>
+                <div v-else class="py-8 text-center text-on-surface-variant">{{ t('Belum ada jurnal angsuran terposting untuk pinjaman ini.') }}</div>
             </AppModal>
         </div>
     </AuthenticatedLayout>

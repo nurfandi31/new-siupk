@@ -3,6 +3,26 @@
 Semua perubahan penting pada proyek **siupk Next** didokumentasikan dalam berkas ini.
 Format penulisan mengikuti panduan [Keep a Changelog](https://keepachangelog.com/id/1.0.0/).
 
+## [Unreleased] — Dukungan Dua Bahasa UI (Indonesia / English)
+
+### Added
+- **Pemilih bahasa** (`AppLanguageSwitcher`) di seluruh layout utama, halaman publik, dan halaman autentikasi (`Login`, `UserLogin`, `ForgotPassword`, `ResetPassword`, `VerifyOtp`). Perubahan bahasa memuat ulang halaman agar label yang disusun saat `setup` (kolom tabel, menu) ikut berganti.
+- **`dateLocale()` / `numberLocale()`** di `resources/js/i18n/index.js` — tanggal mengikuti locale (`id-ID` / `en-GB`), sementara format Rupiah dan parser input tetap `id-ID`.
+- **Skrip pemeliharaan i18n** di `scripts/`: `i18n-scan.mjs` (audit + bungkus otomatis teks statis), `i18n-extract.mjs` (key yang belum ada), `i18n-translate.mjs` (terjemahan mesin + glosarium domain), `i18n-apply.mjs` (tulis ke kamus), `i18n-dates.mjs` (lokalisasi formatter tanggal).
+- **Laporan audit** `docs/audit/2026-11-11-i18n-audit.md`.
+
+### Changed
+- **Seluruh UI Vue** — teks statis di template, atribut (placeholder/title/aria-label), dan objek label di `<script setup>` dibungkus `t()`: **210 dari 230 berkas**, ±6.672 call site.
+- **Kamus Inggris** (`resources/js/i18n/index.js`) diperluas menjadi **3.648 key**; seluruh key `t()` yang dipakai aplikasi tercakup (0 key hilang), dengan glosarium domain (Pokok→Principal, Jasa→Interest, Pemanfaat→Beneficiaries, Pencairan→Disbursement, Tunggakan→Arrears, Simpanan→Savings, dan seterusnya).
+- **Format tanggal** di 30 berkas memakai `dateLocale()`; label bulan pada `usePeriodOptions`, `AppDatePicker`, dan peta kolektibilitas OJK dibungkus `t()`.
+
+### Fixed
+- **Scanner i18n** — komponen `<Link>` tidak lagi salah dianggap tag HTML void `link`; mendukung literal string di dalam mustache (`{{ 'Teks' }}`, ternary, fallback `||`); aturan "mixed" tidak lagi terblokir ikon dekoratif.
+- **`VerifyOtp.vue`** — menambahkan import `usePage` yang hilang.
+
+### Out of scope
+- Pesan flash/validasi backend, halaman error Blade, template PDF laporan, dan konten dari database tetap Bahasa Indonesia.
+
 ## [Unreleased] — Pemisahan Halaman /user Pusat dan Tenant
 
 ### Added

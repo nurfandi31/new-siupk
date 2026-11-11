@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -47,9 +49,9 @@ function openDetail(row) {
 
 function remove(row) {
     confirm({
-        title: 'Hapus pesan?',
+        title: t('Hapus pesan?'),
         message: `Pesan dari "${row.name}" akan dihapus permanen.`,
-        confirmText: 'Hapus',
+        confirmText: t('Hapus'),
         variant: 'danger',
         onConfirm: () => router.delete(route('website.messages.destroy', row.row_id)),
     });
@@ -61,13 +63,13 @@ function markRead(row) {
 </script>
 
 <template>
-    <Head title="Pesan Masuk" />
+    <Head :title="t('Pesan Masuk')" />
 
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Pesan Masuk</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Pesan Masuk') }}</h1>
                     <p class="mt-1 text-on-surface-variant">
                         Pesan dari formulir kontak publik
                         <span v-if="unreadCount" class="ml-2 inline-flex items-center rounded-full bg-warning-container px-2 py-0.5 text-xs font-bold text-on-warning-container">{{ unreadCount }} belum dibaca</span>
@@ -78,24 +80,24 @@ function markRead(row) {
                 <div class="p-6">
                     <div class="flex flex-wrap items-center gap-3">
                         <div class="flex items-center gap-2">
-                            <input v-model="q" type="search" placeholder="Cari pesan..." class="h-10 w-64 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-sm text-primary placeholder:text-outline transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none" @keydown.enter="applySearch" />
-                            <AppButton variant="secondary" size="compact" icon="search" @click="applySearch">Cari</AppButton>
+                            <input v-model="q" type="search" :placeholder="t('Cari pesan...')" class="h-10 w-64 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-sm text-primary placeholder:text-outline transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none" @keydown.enter="applySearch" />
+                            <AppButton variant="secondary" size="compact" icon="search" @click="applySearch">{{ t('Cari') }}</AppButton>
                         </div>
                     </div>
 
                     <div v-if="messages.data.length === 0" class="py-8">
-                        <AppEmptyState icon="inbox" title="Belum ada pesan" description="Pesan dari halaman kontak publik akan tampil di sini." />
+                        <AppEmptyState icon="inbox" :title="t('Belum ada pesan')" :description="t('Pesan dari halaman kontak publik akan tampil di sini.')" />
                     </div>
 
                     <div v-else class="mt-5 overflow-x-auto">
                             <table class="w-full text-left text-sm">
                         <thead class="border-b border-outline-variant text-xs font-bold uppercase tracking-wider text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2">Pengirim</th>
-                                <th class="px-3 py-2">Subjek</th>
-                                <th class="px-3 py-2">Status</th>
-                                <th class="px-3 py-2">Tanggal</th>
-                                <th class="px-3 py-2 text-right">Aksi</th>
+                                <th class="px-3 py-2">{{ t('Pengirim') }}</th>
+                                <th class="px-3 py-2">{{ t('Subjek') }}</th>
+                                <th class="px-3 py-2">{{ t('Status') }}</th>
+                                <th class="px-3 py-2">{{ t('Tanggal') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Aksi') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/60">
@@ -109,14 +111,14 @@ function markRead(row) {
                                     <p class="max-w-[16rem] truncate text-xs text-on-surface-variant sm:max-w-[20rem]">{{ row.message }}</p>
                                 </td>
                                 <td class="px-3 py-3">
-                                    <AppBadge :tone="row.is_read ? 'neutral' : 'warning'">{{ row.is_read ? 'Sudah dibaca' : 'Baru' }}</AppBadge>
+                                    <AppBadge :tone="row.is_read ? 'neutral' : 'warning'">{{ row.is_read ? t('Sudah dibaca') : t('Baru') }}</AppBadge>
                                 </td>
-                                <td class="px-3 py-3 text-xs text-on-surface-variant">{{ row.created_at ? new Date(row.created_at).toLocaleString('id-ID') : '—' }}</td>
+                                <td class="px-3 py-3 text-xs text-on-surface-variant">{{ row.created_at ? new Date(row.created_at).toLocaleString(dateLocale()) : '—' }}</td>
                                 <td class="px-3 py-3">
                                     <div class="flex justify-end gap-1.5">
-                                        <AppButton variant="outline" size="compact" icon="visibility" @click="openDetail(row)">Lihat</AppButton>
-                                        <AppButton v-if="!row.is_read && canManage" variant="secondary" size="compact" icon="mark_email_read" @click="markRead(row)">Tandai dibaca</AppButton>
-                                        <AppButton v-if="canManage" variant="danger" size="compact" icon="delete" @click="remove(row)">Hapus</AppButton>
+                                        <AppButton variant="outline" size="compact" icon="visibility" @click="openDetail(row)">{{ t('Lihat') }}</AppButton>
+                                        <AppButton v-if="!row.is_read && canManage" variant="secondary" size="compact" icon="mark_email_read" @click="markRead(row)">{{ t('Tandai dibaca') }}</AppButton>
+                                        <AppButton v-if="canManage" variant="danger" size="compact" icon="delete" @click="remove(row)">{{ t('Hapus') }}</AppButton>
                                     </div>
                                 </td>
                             </tr>
@@ -133,15 +135,15 @@ function markRead(row) {
             <AppModal v-model="showDetail" :title="detail ? `Pesan dari ${detail.name}` : 'Detail pesan'" size="md">
                 <div v-if="detail" class="space-y-3 text-sm">
                     <div class="grid grid-cols-2 gap-3 text-xs">
-                        <div><p class="font-bold uppercase tracking-wider text-on-surface-variant">Email</p><p class="mt-1 text-primary">{{ detail.email || '—' }}</p></div>
-                        <div><p class="font-bold uppercase tracking-wider text-on-surface-variant">Telepon</p><p class="mt-1 text-primary">{{ detail.phone || '—' }}</p></div>
+                        <div><p class="font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Email') }}</p><p class="mt-1 text-primary">{{ detail.email || '—' }}</p></div>
+                        <div><p class="font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Telepon') }}</p><p class="mt-1 text-primary">{{ detail.phone || '—' }}</p></div>
                     </div>
-                    <div v-if="detail.subject"><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Subjek</p><p class="mt-1 font-semibold text-primary">{{ detail.subject }}</p></div>
-                    <div><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pesan</p><p class="mt-1 whitespace-pre-wrap leading-relaxed text-on-surface">{{ detail.message }}</p></div>
-                    <p class="text-xs text-on-surface-variant">{{ detail.created_at ? new Date(detail.created_at).toLocaleString('id-ID') : '' }}</p>
+                    <div v-if="detail.subject"><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Subjek') }}</p><p class="mt-1 font-semibold text-primary">{{ detail.subject }}</p></div>
+                    <div><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pesan') }}</p><p class="mt-1 whitespace-pre-wrap leading-relaxed text-on-surface">{{ detail.message }}</p></div>
+                    <p class="text-xs text-on-surface-variant">{{ detail.created_at ? new Date(detail.created_at).toLocaleString(dateLocale()) : '' }}</p>
                 </div>
                 <template #footer>
-                    <AppButton variant="secondary" @click="showDetail = false">Tutup</AppButton>
+                    <AppButton variant="secondary" @click="showDetail = false">{{ t('Tutup') }}</AppButton>
                 </template>
             </AppModal>
         </div>

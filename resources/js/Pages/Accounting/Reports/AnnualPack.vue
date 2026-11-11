@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -35,26 +37,26 @@ function apply() {
 
 const docs = computed(() => [
     {
-        title: 'Cover Buku Laporan Tahunan',
-        desc: 'Sampul resmi buku laporan keuangan & LPJ tahunan berlogo',
+        title: t('Cover Buku Laporan Tahunan'),
+        desc: t('Sampul resmi buku laporan keuangan & LPJ tahunan berlogo'),
         href: `/accounting/reports/annual-pack/cover/pdf?year=${selectedYear.value}`,
         icon: 'auto_stories',
     },
     {
-        title: 'Surat Pengantar Laporan (LPJ)',
-        desc: 'Surat dinas penyampaian bendel laporan kepada MAD, BPD, dan Pembina',
+        title: t('Surat Pengantar Laporan (LPJ)'),
+        desc: t('Surat dinas penyampaian bendel laporan kepada MAD, BPD, dan Pembina'),
         href: `/accounting/reports/annual-pack/surat-pengantar/pdf?year=${selectedYear.value}`,
         icon: 'mark_email_read',
     },
     {
-        title: 'Berita Acara Pengesahan (LPJ)',
-        desc: 'Naskah Berita Acara Musyawarah Antar Desa penetapan surplus & pelepasan tanggung jawab',
+        title: t('Berita Acara Pengesahan (LPJ)'),
+        desc: t('Naskah Berita Acara Musyawarah Antar Desa penetapan surplus & pelepasan tanggung jawab'),
         href: `/accounting/reports/annual-pack/ba-pergantian/pdf?year=${selectedYear.value}`,
         icon: 'fact_check',
     },
     {
-        title: 'Naskah Kerjasama Antar Desa (MoU)',
-        desc: 'Kesepakatan bersama Kepala Desa se-Kecamatan atas pengelolaan usaha dana bergulir',
+        title: t('Naskah Kerjasama Antar Desa (MoU)'),
+        desc: t('Kesepakatan bersama Kepala Desa se-Kecamatan atas pengelolaan usaha dana bergulir'),
         href: `/accounting/reports/annual-pack/mou/pdf?year=${selectedYear.value}`,
         icon: 'handshake',
     },
@@ -62,15 +64,15 @@ const docs = computed(() => [
 </script>
 
 <template>
-    <Head title="Dokumen LPJ & Cover Tahunan" />
+    <Head :title="t('Dokumen LPJ & Cover Tahunan')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Administrasi Pelaporan</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Paket Dokumen LPJ & Cover Tahunan</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Administrasi Pelaporan') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Paket Dokumen LPJ & Cover Tahunan') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Dokumen administratif pelaporan pertanggungjawaban tahunan dan perjanjian kerjasama antar desa
+                        {{ t('Dokumen administratif pelaporan pertanggungjawaban tahunan dan perjanjian kerjasama antar desa') }}
                     </p>
                 </div>
             </div>
@@ -79,7 +81,7 @@ const docs = computed(() => [
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun Buku</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun Buku') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -88,15 +90,15 @@ const docs = computed(() => [
             <AppCard class="p-4">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 class="text-sm font-bold text-on-surface">Download Bundle Laporan</h2>
+                        <h2 class="text-sm font-bold text-on-surface">{{ t('Download Bundle Laporan') }}</h2>
                         <p class="mt-1 text-xs text-on-surface-variant">
-                            Satu file ZIP berisi 8 laporan keuangan + Buku Besar per akun + 4 dokumen LPJ untuk periode terpilih.
+                            {{ t('Satu file ZIP berisi 8 laporan keuangan + Buku Besar per akun + 4 dokumen LPJ untuk periode terpilih.') }}
                         </p>
                     </div>
                     <a :href="`/accounting/reports/bundle/pdf?year=${selectedYear.value}&month=12`" class="sm:shrink-0">
                         <AppButton variant="primary">
                             <span class="material-symbols-outlined mr-1 text-sm">folder_zip</span>
-                            Download Bundle Laporan (ZIP)
+                            {{ t('Download Bundle Laporan (ZIP)') }}
                         </AppButton>
                     </a>
                 </div>
@@ -118,7 +120,7 @@ const docs = computed(() => [
                         <a :href="doc.href" target="_blank">
                             <AppButton size="compact" variant="outline">
                                 <span class="material-symbols-outlined mr-1 text-sm">picture_as_pdf</span>
-                                Unduh / Cetak PDF
+                                {{ t('Unduh / Cetak PDF') }}
                             </AppButton>
                         </a>
                     </div>

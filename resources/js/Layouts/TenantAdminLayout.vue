@@ -45,36 +45,36 @@ function navLabel(label) {
 
 const sections = [
     {
-        label: 'Beranda',
-        items: [{ label: 'Beranda', icon: 'dashboard', href: '/dashboard', exact: true }],
+        label: t('Beranda'),
+        items: [{ label: t('Beranda'), icon: 'dashboard', href: '/dashboard', exact: true }],
     },
     {
-        label: 'Pengaturan',
+        label: t('Pengaturan'),
         items: [
-            { label: 'Pengaturan', icon: 'settings', href: '/settings', exact: true },
-            { label: 'Gerbang WhatsApp', icon: 'chat', href: '/settings/whatsapp' },
+            { label: t('Pengaturan'), icon: 'settings', href: '/settings', exact: true },
+            { label: t('Gerbang WhatsApp'), icon: 'chat', href: '/settings/whatsapp' },
         ],
     },
     {
-        label: 'Pengguna',
+        label: t('Pengguna'),
         items: [
-            { label: 'Manajemen User', icon: 'manage_accounts', href: '/access/users' },
-            { label: 'Manajemen Role', icon: 'admin_panel_settings', href: '/access/roles' },
+            { label: t('Manajemen User'), icon: 'manage_accounts', href: '/access/users' },
+            { label: t('Manajemen Role'), icon: 'admin_panel_settings', href: '/access/roles' },
         ],
     },
     {
-        label: 'Website',
+        label: t('Website'),
         items: [
-            { label: 'Berita', icon: 'article', href: '/website/posts' },
-            { label: 'Halaman', icon: 'description', href: '/website/pages' },
-            { label: 'Pengaturan Situs', icon: 'tune', href: '/website/settings' },
-            { label: 'Pesan Masuk', icon: 'inbox', href: '/website/messages' },
+            { label: t('Berita'), icon: 'article', href: '/website/posts' },
+            { label: t('Halaman'), icon: 'description', href: '/website/pages' },
+            { label: t('Pengaturan Situs'), icon: 'tune', href: '/website/settings' },
+            { label: t('Pesan Masuk'), icon: 'inbox', href: '/website/messages' },
         ],
     },
     {
-        label: 'Notifikasi',
+        label: t('Notifikasi'),
         items: [
-            { label: 'Billing Notice', icon: 'campaign', href: '/notifications/billing' },
+            { label: t('Billing Notice'), icon: 'campaign', href: '/notifications/billing' },
         ],
     },
 ];

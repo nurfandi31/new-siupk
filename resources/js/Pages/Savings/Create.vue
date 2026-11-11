@@ -229,7 +229,7 @@ onMounted(() => {
                             v-model="form.relationship"
                             :label="t('Hubungan')"
                             :error="form.errors.relationship"
-                            placeholder="Suami / Istri / Anak"
+                            :placeholder="t('Suami / Istri / Anak')"
                         />
 
                         <div :class="!requiresClosingDate ? 'sm:col-span-2' : ''">
@@ -237,7 +237,7 @@ onMounted(() => {
                                 v-model="form.guardian_name"
                                 :label="t('Pengampu / Ahli Waris')"
                                 :error="form.errors.guardian_name"
-                                placeholder="Nama pengampu bila diwakilkan"
+                                :placeholder="t('Nama pengampu bila diwakilkan')"
                             />
                         </div>
 

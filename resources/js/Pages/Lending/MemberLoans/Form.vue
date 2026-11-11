@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -36,33 +38,33 @@ const memberOptions = computed(() => props.members.map((member) => ({
 })));
 
 const installmentMethodOptions = [
-    { value: 'flat', label: 'Flat' },
-    { value: 'annuity', label: 'Anuitas' },
-    { value: 'effective', label: 'Efektif' },
+    { value: 'flat', label: t('Flat') },
+    { value: 'annuity', label: t('Anuitas') },
+    { value: 'effective', label: t('Efektif') },
 ];
 
 const frequencyOptions = [
-    { value: 'weekly', label: 'Mingguan' },
-    { value: 'biweekly', label: '2 Mingguan' },
-    { value: 'monthly', label: 'Bulanan' },
-    { value: 'bimonthly', label: 'Tiap 2 Bulan' },
-    { value: 'quarterly', label: 'Tiap 3 Bulan' },
-    { value: 'every_4_months', label: 'Tiap 4 Bulan' },
-    { value: 'every_5_months', label: 'Tiap 5 Bulan' },
-    { value: 'every_6_months', label: 'Tiap 6 Bulan' },
-    { value: 'every_7_months', label: 'Tiap 7 Bulan' },
-    { value: 'every_8_months', label: 'Tiap 8 Bulan' },
-    { value: 'every_9_months', label: 'Tiap 9 Bulan' },
-    { value: 'every_10_months', label: 'Tiap 10 Bulan' },
-    { value: 'every_11_months', label: 'Tiap 11 Bulan' },
-    { value: 'every_12_months', label: 'Tiap 12 Bulan' },
-    { value: 'every_24_months', label: 'Tiap 24 Bulan' },
-    { value: 'every_36_months', label: 'Tiap 36 Bulan' },
-    { value: 'at_maturity', label: 'Sekaligus di Akhir' },
+    { value: 'weekly', label: t('Mingguan') },
+    { value: 'biweekly', label: t('2 Mingguan') },
+    { value: 'monthly', label: t('Bulanan') },
+    { value: 'bimonthly', label: t('Tiap 2 Bulan') },
+    { value: 'quarterly', label: t('Tiap 3 Bulan') },
+    { value: 'every_4_months', label: t('Tiap 4 Bulan') },
+    { value: 'every_5_months', label: t('Tiap 5 Bulan') },
+    { value: 'every_6_months', label: t('Tiap 6 Bulan') },
+    { value: 'every_7_months', label: t('Tiap 7 Bulan') },
+    { value: 'every_8_months', label: t('Tiap 8 Bulan') },
+    { value: 'every_9_months', label: t('Tiap 9 Bulan') },
+    { value: 'every_10_months', label: t('Tiap 10 Bulan') },
+    { value: 'every_11_months', label: t('Tiap 11 Bulan') },
+    { value: 'every_12_months', label: t('Tiap 12 Bulan') },
+    { value: 'every_24_months', label: t('Tiap 24 Bulan') },
+    { value: 'every_36_months', label: t('Tiap 36 Bulan') },
+    { value: 'at_maturity', label: t('Sekaligus di Akhir') },
 ];
 
 const graceOptions = [
-    { value: 0, label: 'Tanpa Grace' },
+    { value: 0, label: t('Tanpa Grace') },
     { value: 1, label: 'M1' },
     { value: 2, label: 'M2' },
     { value: 3, label: 'M3' },
@@ -72,14 +74,14 @@ const graceOptions = [
 ];
 
 const roundingOptions = [
-    { value: '', label: 'Default' },
-    { value: '0', label: '2 Desimal' },
-    { value: '100', label: 'Rp 100' },
-    { value: '500', label: 'Rp 500' },
-    { value: '1000', label: 'Rp 1.000' },
-    { value: '5000', label: 'Rp 5.000' },
-    { value: '10000', label: 'Rp 10.000' },
-    { value: '50000', label: 'Rp 50.000' },
+    { value: '', label: t('Default') },
+    { value: '0', label: t('2 Desimal') },
+    { value: '100', label: t('Rp 100') },
+    { value: '500', label: t('Rp 500') },
+    { value: '1000', label: t('Rp 1.000') },
+    { value: '5000', label: t('Rp 5.000') },
+    { value: '10000', label: t('Rp 10.000') },
+    { value: '50000', label: t('Rp 50.000') },
 ];
 
 const frequencyMultiplier = {
@@ -190,10 +192,10 @@ const form = useForm({
 });
 
 const collateralTypeOptions = [
-    { value: 'sertifikat_tanah', label: 'Surat Tanah' },
+    { value: 'sertifikat_tanah', label: t('Surat Tanah') },
     { value: 'bpkb', label: 'BPKB' },
-    { value: 'sk_pegawai', label: 'SK. Pegawai' },
-    { value: 'lainnya', label: 'Lain Lain' },
+    { value: 'sk_pegawai', label: t('SK. Pegawai') },
+    { value: 'lainnya', label: t('Lain Lain') },
 ];
 
 const selectedProduct = computed(() => props.products.find((p) => String(p.row_id) === String(selectedProductId.value)) || null);
@@ -259,7 +261,7 @@ function submit() {
             <header class="mb-2 flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h1 class="text-xl font-bold text-primary">
-                        {{ isEdit ? 'Edit Proposal Pinjaman Individu' : 'Register Proposal Pinjaman Individu' }}
+                        {{ isEdit ? t('Edit Proposal Pinjaman Individu') : t('Register Proposal Pinjaman Individu') }}
                     </h1>
                     <p v-if="isEdit" class="mt-1 text-sm text-on-surface-variant">
                         Ubah parameter pinjaman untuk proposal
@@ -268,7 +270,7 @@ function submit() {
                     </p>
                 </div>
                 <Link v-if="isEdit" :href="`/lending/member-loans/${loan.row_id}`" class="text-sm font-semibold text-primary hover:underline">
-                    ← Kembali ke detail
+                    {{ t('← Kembali ke detail') }}
                 </Link>
             </header>
 
@@ -278,9 +280,9 @@ function submit() {
                         <div class="sm:col-span-6">
                             <SmartSelect
                                 v-model="selectedProductId"
-                                label="Produk"
+                                :label="t('Produk')"
                                 :options="productOptions"
-                                placeholder="Pilih produk"
+                                :placeholder="t('Pilih produk')"
                                 :required="!isEdit"
                                 :disabled="isEdit"
                                 :searchable="!isEdit"
@@ -290,9 +292,9 @@ function submit() {
                         <div class="sm:col-span-6">
                             <SmartSelect
                                 v-model="selectedMemberId"
-                                label="Anggota"
+                                :label="t('Anggota')"
                                 :options="memberOptions"
-                                placeholder="Pilih anggota"
+                                :placeholder="t('Pilih anggota')"
                                 :required="!isEdit"
                                 :disabled="isEdit"
                                 :searchable="!isEdit"
@@ -318,18 +320,18 @@ function submit() {
 
                     <div class="col-span-12 grid gap-x-5 gap-y-4 sm:grid-cols-12">
                         <div class="sm:col-span-3">
-                            <AppDatePicker v-model="form.proposed_at" label="Tgl Pengajuan" icon="event" :max="today" required :error="form.errors.proposed_at" />
+                            <AppDatePicker v-model="form.proposed_at" :label="t('Tgl Pengajuan')" icon="event" :max="today" required :error="form.errors.proposed_at" />
                         </div>
                         <div class="sm:col-span-4">
-                            <AppCurrencyInput v-model="form.principal_amount" label="Plafon" icon="payments" :min="0" required :error="form.errors.principal_amount" />
+                            <AppCurrencyInput v-model="form.principal_amount" :label="t('Plafon')" icon="payments" :min="0" required :error="form.errors.principal_amount" />
                         </div>
                         <div class="sm:col-span-2">
-                            <AppInput v-model="form.term_months" label="Tenor (bln)" icon="schedule" type="number" inputmode="numeric" min="1" max="120" required :error="form.errors.term_months" />
+                            <AppInput v-model="form.term_months" :label="t('Tenor (bln)')" icon="schedule" type="number" inputmode="numeric" min="1" max="120" required :error="form.errors.term_months" />
                         </div>
                         <div class="sm:col-span-3">
                             <AppInput
                                 v-model="form.service_rate_total"
-                                label="Total Jasa (%)"
+                                :label="t('Total Jasa (%)')"
                                 icon="percent"
                                 type="number"
                                 inputmode="decimal"
@@ -342,23 +344,23 @@ function submit() {
                         </div>
 
                         <div class="sm:col-span-3">
-                            <SmartSelect v-model="form.installment_method" label="Metode" :options="installmentMethodOptions" required :error="form.errors.installment_method" />
+                            <SmartSelect v-model="form.installment_method" :label="t('Metode')" :options="installmentMethodOptions" required :error="form.errors.installment_method" />
                         </div>
                         <div class="sm:col-span-3">
-                            <SmartSelect v-model="form.principal_frequency" label="Freq. Pokok" :options="frequencyOptions" required :error="form.errors.principal_frequency" />
+                            <SmartSelect v-model="form.principal_frequency" :label="t('Freq. Pokok')" :options="frequencyOptions" required :error="form.errors.principal_frequency" />
                         </div>
                         <div class="sm:col-span-3">
-                            <SmartSelect v-model="form.interest_frequency" label="Freq. Jasa" :options="frequencyOptions" required :error="form.errors.interest_frequency" />
+                            <SmartSelect v-model="form.interest_frequency" :label="t('Freq. Jasa')" :options="frequencyOptions" required :error="form.errors.interest_frequency" />
                         </div>
                         <div class="sm:col-span-3">
-                            <SmartSelect v-model="form.rounding_step" label="Pembulatan" :options="roundingOptions" :error="form.errors.rounding_step" />
+                            <SmartSelect v-model="form.rounding_step" :label="t('Pembulatan')" :options="roundingOptions" :error="form.errors.rounding_step" />
                         </div>
 
                         <div class="sm:col-span-6">
-                            <SmartSelect v-model="form.principal_grace_months" label="Grace Pokok" :options="graceOptions" required :error="form.errors.principal_grace_months" />
+                            <SmartSelect v-model="form.principal_grace_months" :label="t('Grace Pokok')" :options="graceOptions" required :error="form.errors.principal_grace_months" />
                         </div>
                         <div class="sm:col-span-6">
-                            <SmartSelect v-model="form.interest_grace_months" label="Grace Jasa" :options="graceOptions" required :error="form.errors.interest_grace_months" />
+                            <SmartSelect v-model="form.interest_grace_months" :label="t('Grace Jasa')" :options="graceOptions" required :error="form.errors.interest_grace_months" />
                         </div>
                     </div>
 
@@ -371,66 +373,66 @@ function submit() {
 
                     <div class="col-span-12 grid gap-x-5 gap-y-4 sm:grid-cols-12">
                         <div class="sm:col-span-3">
-                            <SmartSelect v-model="form.collateral.type" label="Jenis Jaminan" :options="collateralTypeOptions" :error="form.errors['collateral.type']" />
+                            <SmartSelect v-model="form.collateral.type" :label="t('Jenis Jaminan')" :options="collateralTypeOptions" :error="form.errors['collateral.type']" />
                         </div>
 
                         <template v-if="form.collateral.type === 'sertifikat_tanah'">
                             <div class="sm:col-span-3">
-                                <AppInput v-model="form.collateral.details.nomor_sertifikat" label="Nomor Sertifikat" icon="tag" maxlength="120" :error="form.errors['collateral.details.nomor_sertifikat']" />
+                                <AppInput v-model="form.collateral.details.nomor_sertifikat" :label="t('Nomor Sertifikat')" icon="tag" maxlength="120" :error="form.errors['collateral.details.nomor_sertifikat']" />
                             </div>
                             <div class="sm:col-span-3">
-                                <AppInput v-model="form.collateral.details.nama_pemilik" label="Nama Pemilik" icon="person" maxlength="120" :error="form.errors['collateral.details.nama_pemilik']" />
+                                <AppInput v-model="form.collateral.details.nama_pemilik" :label="t('Nama Pemilik')" icon="person" maxlength="120" :error="form.errors['collateral.details.nama_pemilik']" />
                             </div>
                             <div class="sm:col-span-3">
-                                <AppInput v-model="form.collateral.details.alamat" label="Alamat" icon="location_on" maxlength="200" :error="form.errors['collateral.details.alamat']" />
+                                <AppInput v-model="form.collateral.details.alamat" :label="t('Alamat')" icon="location_on" maxlength="200" :error="form.errors['collateral.details.alamat']" />
                             </div>
                             <div class="sm:col-span-3">
-                                <AppInput v-model="form.collateral.details.luas" label="Luas (m²)" icon="square_foot" maxlength="50" :error="form.errors['collateral.details.luas']" />
+                                <AppInput v-model="form.collateral.details.luas" :label="t('Luas (m²)')" icon="square_foot" maxlength="50" :error="form.errors['collateral.details.luas']" />
                             </div>
                             <div class="sm:col-span-3">
-                                <AppCurrencyInput v-model="form.collateral.details.nilai_jual_tanah" label="Nilai Jual Tanah" icon="payments" :min="0" :error="form.errors['collateral.details.nilai_jual_tanah']" />
+                                <AppCurrencyInput v-model="form.collateral.details.nilai_jual_tanah" :label="t('Nilai Jual Tanah')" icon="payments" :min="0" :error="form.errors['collateral.details.nilai_jual_tanah']" />
                             </div>
                         </template>
 
                         <template v-else-if="form.collateral.type === 'bpkb'">
                             <div class="sm:col-span-3">
-                                <AppInput v-model="form.collateral.details.nomor" label="Nomor" icon="tag" maxlength="120" :error="form.errors['collateral.details.nomor']" />
+                                <AppInput v-model="form.collateral.details.nomor" :label="t('Nomor')" icon="tag" maxlength="120" :error="form.errors['collateral.details.nomor']" />
                             </div>
                             <div class="sm:col-span-3">
-                                <AppInput v-model="form.collateral.details.nama_pemilik" label="Nama Pemilik" icon="person" maxlength="120" :error="form.errors['collateral.details.nama_pemilik']" />
+                                <AppInput v-model="form.collateral.details.nama_pemilik" :label="t('Nama Pemilik')" icon="person" maxlength="120" :error="form.errors['collateral.details.nama_pemilik']" />
                             </div>
                             <div class="sm:col-span-3">
-                                <AppInput v-model="form.collateral.details.jenis_kendaraan" label="Jenis Kendaraan" icon="directions_car" maxlength="120" :error="form.errors['collateral.details.jenis_kendaraan']" />
+                                <AppInput v-model="form.collateral.details.jenis_kendaraan" :label="t('Jenis Kendaraan')" icon="directions_car" maxlength="120" :error="form.errors['collateral.details.jenis_kendaraan']" />
                             </div>
                             <div class="sm:col-span-3">
-                                <AppInput v-model="form.collateral.details.nopol" label="Nopol" icon="pin" maxlength="30" :error="form.errors['collateral.details.nopol']" />
+                                <AppInput v-model="form.collateral.details.nopol" :label="t('Nopol')" icon="pin" maxlength="30" :error="form.errors['collateral.details.nopol']" />
                             </div>
                             <div class="sm:col-span-3">
-                                <AppCurrencyInput v-model="form.collateral.details.nilai_jual_kendaraan" label="Nilai Jual Kendaraan" icon="payments" :min="0" :error="form.errors['collateral.details.nilai_jual_kendaraan']" />
+                                <AppCurrencyInput v-model="form.collateral.details.nilai_jual_kendaraan" :label="t('Nilai Jual Kendaraan')" icon="payments" :min="0" :error="form.errors['collateral.details.nilai_jual_kendaraan']" />
                             </div>
                         </template>
 
                         <template v-else-if="form.collateral.type === 'sk_pegawai'">
                             <div class="sm:col-span-4">
-                                <AppInput v-model="form.collateral.details.nomor" label="Nomor" icon="tag" maxlength="120" :error="form.errors['collateral.details.nomor']" />
+                                <AppInput v-model="form.collateral.details.nomor" :label="t('Nomor')" icon="tag" maxlength="120" :error="form.errors['collateral.details.nomor']" />
                             </div>
                             <div class="sm:col-span-4">
-                                <AppInput v-model="form.collateral.details.nama_pegawai" label="Nama Pegawai" icon="person" maxlength="120" :error="form.errors['collateral.details.nama_pegawai']" />
+                                <AppInput v-model="form.collateral.details.nama_pegawai" :label="t('Nama Pegawai')" icon="person" maxlength="120" :error="form.errors['collateral.details.nama_pegawai']" />
                             </div>
                             <div class="sm:col-span-4">
-                                <AppInput v-model="form.collateral.details.nama_kuitansi_penerbit" label="Nama Instansi Penerbit" icon="account_balance" maxlength="120" :error="form.errors['collateral.details.nama_kuitansi_penerbit']" />
+                                <AppInput v-model="form.collateral.details.nama_kuitansi_penerbit" :label="t('Nama Instansi Penerbit')" icon="account_balance" maxlength="120" :error="form.errors['collateral.details.nama_kuitansi_penerbit']" />
                             </div>
                         </template>
 
                         <template v-else>
                             <div class="sm:col-span-4">
-                                <AppInput v-model="form.collateral.details.nama_jaminan" label="Nama Jaminan" icon="inventory_2" maxlength="120" :error="form.errors['collateral.details.nama_jaminan']" />
+                                <AppInput v-model="form.collateral.details.nama_jaminan" :label="t('Nama Jaminan')" icon="inventory_2" maxlength="120" :error="form.errors['collateral.details.nama_jaminan']" />
                             </div>
                             <div class="sm:col-span-4">
-                                <AppInput v-model="form.collateral.details.keterangan" label="Keterangan" icon="description" maxlength="200" :error="form.errors['collateral.details.keterangan']" />
+                                <AppInput v-model="form.collateral.details.keterangan" :label="t('Keterangan')" icon="description" maxlength="200" :error="form.errors['collateral.details.keterangan']" />
                             </div>
                             <div class="sm:col-span-4">
-                                <AppCurrencyInput v-model="form.collateral.details.nilai_jaminan" label="Nilai Jaminan" icon="payments" :min="0" :error="form.errors['collateral.details.nilai_jaminan']" />
+                                <AppCurrencyInput v-model="form.collateral.details.nilai_jaminan" :label="t('Nilai Jaminan')" icon="payments" :min="0" :error="form.errors['collateral.details.nilai_jaminan']" />
                             </div>
                         </template>
                     </div>
@@ -442,7 +444,7 @@ function submit() {
                             v-model="form.verification_remarks"
                             label=""
                             hide-label
-                            placeholder="Catatan verifikasi"
+                            :placeholder="t('Catatan verifikasi')"
                             :rows="2"
                             :maxlength="2000"
                             :error="form.errors.verification_remarks"
@@ -450,9 +452,9 @@ function submit() {
                     </div>
 
                     <div class="col-span-12 flex justify-end gap-3 border-t border-outline-variant pt-4">
-                        <Link :href="path"><AppButton variant="secondary">Batal</AppButton></Link>
+                        <Link :href="path"><AppButton variant="secondary">{{ t('Batal') }}</AppButton></Link>
                         <AppButton type="submit" :loading="form.processing" :disabled="form.processing" icon="save">
-                            {{ isEdit ? 'Simpan Perubahan' : 'Simpan Proposal' }}
+                            {{ isEdit ? t('Simpan Perubahan') : t('Simpan Proposal') }}
                         </AppButton>
                     </div>
                 </form>

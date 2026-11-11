@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link } from '@inertiajs/vue3';
 import AppCard from '../../../Components/AppCard.vue';
 import AppIcon from '../../../Components/AppIcon.vue';
@@ -10,12 +12,12 @@ defineProps({
 </script>
 
 <template>
-    <Head title="Pelaporan" />
+    <Head :title="t('Pelaporan')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div>
-                <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Keuangan</p>
-                <h1 class="mt-1 text-2xl font-bold text-primary">Pelaporan Akuntansi</h1>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Keuangan') }}</p>
+                <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Pelaporan Akuntansi') }}</h1>
                 <p class="mt-1 text-sm text-on-surface-variant">
                     Laporan dari jurnal posted. Sumber kebenaran = baris jurnal, bukan salinan saldo legacy.
                 </p>
@@ -39,7 +41,7 @@ defineProps({
                             <div>
                                 <h2 class="font-semibold text-on-surface">{{ report.title }}</h2>
                                 <p class="mt-1 text-xs text-on-surface-variant">
-                                    {{ report.external ? 'Buka PDF' : 'Buka laporan' }}
+                                    {{ report.external ? t('Buka PDF') : t('Buka laporan') }}
                                 </p>
                             </div>
                         </div>

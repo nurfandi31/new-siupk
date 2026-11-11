@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -95,12 +97,12 @@ const props = defineProps<{
 /* -------------------------------------------------------------------------- */
 
 const KIND_TABS: Array<{ key: 'all' | SavingsKind; label: string }> = [
-    { key: 'all', label: 'Semua' },
-    { key: 'pokok', label: 'Simpanan Pokok' },
-    { key: 'wajib', label: 'Simpanan Wajib' },
-    { key: 'sukarela', label: 'Simpanan Sukarela' },
-    { key: 'berjangka', label: 'Simpanan Berjangka' },
-    { key: 'lainnya', label: 'Lainnya' },
+    { key: 'all', label: t('Semua') },
+    { key: 'pokok', label: t('Simpanan Pokok') },
+    { key: 'wajib', label: t('Simpanan Wajib') },
+    { key: 'sukarela', label: t('Simpanan Sukarela') },
+    { key: 'berjangka', label: t('Simpanan Berjangka') },
+    { key: 'lainnya', label: t('Lainnya') },
 ];
 
 const activeTab = ref<'all' | SavingsKind>('all');
@@ -148,15 +150,15 @@ function isEmptyKind(kind: SavingsKind): boolean {
 </script>
 
 <template>
-    <Head title="Daftar Simpanan" />
+    <Head :title="t('Daftar Simpanan')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Pelaporan
+                        {{ t('Pelaporan') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Daftar Simpanan</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Daftar Simpanan') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         {{ periodLabel }} · per {{ period.as_of ?? '-' }}
                     </p>
@@ -168,7 +170,7 @@ function isEmptyKind(kind: SavingsKind): boolean {
 
             <AppCard v-if="error" class="border border-error/30 bg-error-container/40 p-4">
                 <p class="text-sm text-error">
-                    <span class="font-bold">Gagal membangun laporan:</span> {{ error }}
+                    <span class="font-bold">{{ t('Gagal membangun laporan:') }}</span> {{ error }}
                 </p>
             </AppCard>
 
@@ -213,21 +215,21 @@ function isEmptyKind(kind: SavingsKind): boolean {
                     class="grid grid-cols-2 gap-2 border-b border-outline-variant/40 bg-surface-container-lowest p-4 text-xs sm:grid-cols-4"
                 >
                     <div>
-                        <p class="text-on-surface-variant">Saldo Awal</p>
+                        <p class="text-on-surface-variant">{{ t('Saldo Awal') }}</p>
                         <p class="font-bold tabular-nums text-primary">
                             {{ fmt(visibleTotals.opening_balance) }}
                         </p>
                     </div>
                     <div>
-                        <p class="text-on-surface-variant">Mutasi Debit</p>
+                        <p class="text-on-surface-variant">{{ t('Mutasi Debit') }}</p>
                         <p class="font-bold tabular-nums">{{ fmt(visibleTotals.period_debit) }}</p>
                     </div>
                     <div>
-                        <p class="text-on-surface-variant">Mutasi Kredit</p>
+                        <p class="text-on-surface-variant">{{ t('Mutasi Kredit') }}</p>
                         <p class="font-bold tabular-nums">{{ fmt(visibleTotals.period_credit) }}</p>
                     </div>
                     <div>
-                        <p class="text-on-surface-variant">Saldo Akhir</p>
+                        <p class="text-on-surface-variant">{{ t('Saldo Akhir') }}</p>
                         <p class="font-bold tabular-nums" :class="visibleTotals.closing_balance < 0 ? 'text-error' : 'text-primary'">
                             {{ fmt(visibleTotals.closing_balance) }}
                         </p>
@@ -238,20 +240,20 @@ function isEmptyKind(kind: SavingsKind): boolean {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left w-16">No</th>
-                                <th class="px-3 py-2 text-left w-28">Kode Akun</th>
-                                <th class="px-3 py-2 text-left">Nama Akun</th>
-                                <th class="px-3 py-2 text-left w-40">Jenis Simpanan</th>
-                                <th class="px-3 py-2 text-right w-32">Saldo Awal</th>
-                                <th class="px-3 py-2 text-right w-32">Mutasi Debit</th>
-                                <th class="px-3 py-2 text-right w-32">Mutasi Kredit</th>
-                                <th class="px-3 py-2 text-right w-32">Saldo Akhir</th>
+                                <th class="px-3 py-2 text-left w-16">{{ t('No') }}</th>
+                                <th class="px-3 py-2 text-left w-28">{{ t('Kode Akun') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Nama Akun') }}</th>
+                                <th class="px-3 py-2 text-left w-40">{{ t('Jenis Simpanan') }}</th>
+                                <th class="px-3 py-2 text-right w-32">{{ t('Saldo Awal') }}</th>
+                                <th class="px-3 py-2 text-right w-32">{{ t('Mutasi Debit') }}</th>
+                                <th class="px-3 py-2 text-right w-32">{{ t('Mutasi Kredit') }}</th>
+                                <th class="px-3 py-2 text-right w-32">{{ t('Saldo Akhir') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="filteredRows.length === 0">
                                 <td colspan="8" class="px-3 py-8 text-center text-on-surface-variant">
-                                    Belum ada data simpanan untuk filter ini.
+                                    {{ t('Belum ada data simpanan untuk filter ini.') }}
                                 </td>
                             </tr>
                             <tr

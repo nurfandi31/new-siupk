@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -21,18 +23,18 @@ const selectedMonth = ref(String(props.filters.month));
 const selectedProduct = ref(props.filters.product || 'all');
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -49,7 +51,7 @@ const productOptions = computed(() => {
     for (const prod of props.products) {
         seen.set(prod.product_code, { value: prod.product_code, label: `${prod.product_code} — ${prod.product_name}` });
     }
-    return [{ value: 'all', label: 'Semua Produk' }, ...seen.values()];
+    return [{ value: 'all', label: t('Semua Produk') }, ...seen.values()];
 });
 
 const pdfUrl = computed(() => {
@@ -80,19 +82,19 @@ function formatMoney(value) {
 </script>
 
 <template>
-    <Head title="LPP Rincian Individu" />
+    <Head :title="t('LPP Rincian Individu')" />
 
     <AuthenticatedLayout>
         <template #header>
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan Lending</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">LPP Rincian Individu</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Lending') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('LPP Rincian Individu') }}</h1>
                     <p class="text-sm text-on-surface-variant">Periode {{ period_label }} — {{ identity.legal_name }}</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <a :href="pdfUrl" target="_blank">
-                        <AppButton variant="secondary" icon="picture_as_pdf" size="compact">Cetak PDF</AppButton>
+                        <AppButton variant="secondary" icon="picture_as_pdf" size="compact">{{ t('Cetak PDF') }}</AppButton>
                     </a>
                 </div>
             </div>
@@ -103,15 +105,15 @@ function formatMoney(value) {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Produk</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Produk') }}</label>
                         <SmartSelect v-model="selectedProduct" :options="productOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -129,32 +131,32 @@ function formatMoney(value) {
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                             <tr class="border-b border-outline-variant/30 text-center">
-                                <th rowspan="2" class="p-3 text-left">Peminjam / Loan ID</th>
+                                <th rowspan="2" class="p-3 text-left">{{ t('Peminjam / Loan ID') }}</th>
                                 <th rowspan="2" class="p-3">NIK</th>
-                                <th rowspan="2" class="p-3">Pencairan</th>
-                                <th rowspan="2" class="p-3 text-center">Tempo (bln)</th>
-                                <th rowspan="2" class="p-3 text-right">Alokasi</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Target</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Real s.d. Lalu</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Real Bulan Ini</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Real Kumulatif</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Saldo</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Tunggakan</th>
-                                <th rowspan="2" class="p-3 text-center">% Ratio</th>
+                                <th rowspan="2" class="p-3">{{ t('Pencairan') }}</th>
+                                <th rowspan="2" class="p-3 text-center">{{ t('Tempo (bln)') }}</th>
+                                <th rowspan="2" class="p-3 text-right">{{ t('Alokasi') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Target') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Real s.d. Lalu') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Real Bulan Ini') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Real Kumulatif') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Saldo') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Tunggakan') }}</th>
+                                <th rowspan="2" class="p-3 text-center">{{ t('% Ratio') }}</th>
                             </tr>
                             <tr class="border-b border-outline-variant/30 text-center text-[11px] text-on-surface-variant">
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/20">
@@ -223,7 +225,7 @@ function formatMoney(value) {
             </div>
 
             <AppCard v-if="products.length === 0" class="p-8 text-center">
-                <p class="text-sm text-on-surface-variant">Tidak ada pinjaman individu aktif pada periode ini.</p>
+                <p class="text-sm text-on-surface-variant">{{ t('Tidak ada pinjaman individu aktif pada periode ini.') }}</p>
             </AppCard>
         </div>
     </AuthenticatedLayout>

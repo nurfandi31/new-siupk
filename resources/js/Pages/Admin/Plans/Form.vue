@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -25,13 +27,13 @@ const form = useForm({
 });
 
 const periodOptions = [
-    { value: 'monthly', label: 'Bulanan' },
-    { value: 'yearly', label: 'Tahunan' },
+    { value: 'monthly', label: t('Bulanan') },
+    { value: 'yearly', label: t('Tahunan') },
 ];
 
 const currencyOptions = [
-    { value: 'IDR', label: 'IDR — Rupiah' },
-    { value: 'USD', label: 'USD — US Dollar' },
+    { value: 'IDR', label: t('IDR — Rupiah') },
+    { value: 'USD', label: t('USD — US Dollar') },
 ];
 
 function submit() {
@@ -45,22 +47,22 @@ function submit() {
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header>
-                <h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit Plan' : 'Tambah Plan' }}</h1>
+                <h1 class="text-2xl font-bold text-primary">{{ editing ? t('Edit Plan') : t('Tambah Plan') }}</h1>
             </header>
 
             <AppCard>
                 <form class="space-y-4" @submit.prevent="submit">
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <AppInput v-model="form.code" class="min-w-0" label="Kode" required :error="form.errors.code" :disabled="editing" />
-                        <AppInput v-model="form.name" class="min-w-0" label="Nama" required :error="form.errors.name" />
-                        <AppCurrencyInput v-model="form.price_amount" class="min-w-0" label="Harga" :min="0" :step="0.01" required :error="form.errors.price_amount" />
-                        <SmartSelect v-model="form.currency" class="min-w-0" label="Mata uang" :options="currencyOptions" required :error="form.errors.currency" />
-                        <SmartSelect v-model="form.billing_period" class="min-w-0" label="Periode" :options="periodOptions" required :error="form.errors.billing_period" />
-                        <AppSwitch v-model="form.is_active" class="min-w-0" field label="Status" />
+                        <AppInput v-model="form.code" class="min-w-0" :label="t('Kode')" required :error="form.errors.code" :disabled="editing" />
+                        <AppInput v-model="form.name" class="min-w-0" :label="t('Nama')" required :error="form.errors.name" />
+                        <AppCurrencyInput v-model="form.price_amount" class="min-w-0" :label="t('Harga')" :min="0" :step="0.01" required :error="form.errors.price_amount" />
+                        <SmartSelect v-model="form.currency" class="min-w-0" :label="t('Mata uang')" :options="currencyOptions" required :error="form.errors.currency" />
+                        <SmartSelect v-model="form.billing_period" class="min-w-0" :label="t('Periode')" :options="periodOptions" required :error="form.errors.billing_period" />
+                        <AppSwitch v-model="form.is_active" class="min-w-0" field :label="t('Status')" />
                     </div>
                     <div class="flex justify-end gap-3">
-                        <Link href="/admin/plans"><AppButton variant="secondary">Batal</AppButton></Link>
-                        <AppButton type="submit" :loading="form.processing" icon="save">Simpan</AppButton>
+                        <Link href="/admin/plans"><AppButton variant="secondary">{{ t('Batal') }}</AppButton></Link>
+                        <AppButton type="submit" :loading="form.processing" icon="save">{{ t('Simpan') }}</AppButton>
                     </div>
                 </form>
             </AppCard>

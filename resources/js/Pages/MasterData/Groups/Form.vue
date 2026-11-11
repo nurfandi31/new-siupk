@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -35,8 +37,8 @@ const quickError = ref('');
 const quickErrors = ref({});
 const quickMember = ref({ nik: '', name: '', gender: 'L', village_id: '' });
 const genderOptions = [
-    { value: 'L', label: 'Laki-laki', icon: 'male' },
-    { value: 'P', label: 'Perempuan', icon: 'female' },
+    { value: 'L', label: t('Laki-laki'), icon: 'male' },
+    { value: 'P', label: t('Perempuan'), icon: 'female' },
 ];
 let searchController = null;
 
@@ -164,51 +166,51 @@ searchMembers();
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
             <header class="mb-6">
-                <h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit Kelompok' : 'Tambah Kelompok' }}</h1>
-                <p class="mt-1 text-on-surface-variant">Kelola identitas, anggota, dan pengurus kelompok.</p>
+                <h1 class="text-2xl font-bold text-primary">{{ editing ? t('Edit Kelompok') : t('Tambah Kelompok') }}</h1>
+                <p class="mt-1 text-on-surface-variant">{{ t('Kelola identitas, anggota, dan pengurus kelompok.') }}</p>
             </header>
 
             <AppCard>
                 <form class="space-y-4" @submit.prevent="submit">
                     <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         <div v-if="editing" class="sm:col-span-2 xl:col-span-3">
-                            <AppInput :model-value="group.code" label="Kode Kelompok" icon="tag" readonly />
+                            <AppInput :model-value="group.code" :label="t('Kode Kelompok')" icon="tag" readonly />
                         </div>
-                        <AppInput v-model="form.name" label="Nama Kelompok" icon="groups" required :error="form.errors.name" />
-                        <SmartSelect v-model="form.village_id" label="Desa" :options="villageOptions" searchable required :error="form.errors.village_id" />
-                        <AppDatePicker v-model="form.established_at" label="Tanggal Berdiri" :max="today" clearable :error="form.errors.established_at" />
-                        <SmartSelect v-model="form.business_type_id" label="Jenis Usaha" :options="businessOptions" required :error="form.errors.business_type_id" />
-                        <SmartSelect v-model="form.activity_type_id" label="Jenis Kegiatan" :options="activityOptions" required :error="form.errors.activity_type_id" />
-                        <SmartSelect v-model="form.group_level_id" label="Tingkatan" :options="levelOptions" required :error="form.errors.group_level_id" />
+                        <AppInput v-model="form.name" :label="t('Nama Kelompok')" icon="groups" required :error="form.errors.name" />
+                        <SmartSelect v-model="form.village_id" :label="t('Desa')" :options="villageOptions" searchable required :error="form.errors.village_id" />
+                        <AppDatePicker v-model="form.established_at" :label="t('Tanggal Berdiri')" :max="today" clearable :error="form.errors.established_at" />
+                        <SmartSelect v-model="form.business_type_id" :label="t('Jenis Usaha')" :options="businessOptions" required :error="form.errors.business_type_id" />
+                        <SmartSelect v-model="form.activity_type_id" :label="t('Jenis Kegiatan')" :options="activityOptions" required :error="form.errors.activity_type_id" />
+                        <SmartSelect v-model="form.group_level_id" :label="t('Tingkatan')" :options="levelOptions" required :error="form.errors.group_level_id" />
                     </fieldset>
 
                     <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <div class="sm:col-span-2 xl:col-span-4">
-                            <AppTextarea v-model="form.address" label="Alamat" icon="home" placeholder="Masukkan alamat" :rows="3" :error="form.errors.address" />
+                            <AppTextarea v-model="form.address" :label="t('Alamat')" icon="home" :placeholder="t('Masukkan alamat')" :rows="3" :error="form.errors.address" />
                         </div>
-                        <SmartSelect v-model="form.group_function_id" label="Fungsi Kelompok" :options="functionOptions" required :error="form.errors.group_function_id" />
-                        <AppInput v-model="form.phone" label="No. HP" icon="phone" type="tel" :error="form.errors.phone" />
+                        <SmartSelect v-model="form.group_function_id" :label="t('Fungsi Kelompok')" :options="functionOptions" required :error="form.errors.group_function_id" />
+                        <AppInput v-model="form.phone" :label="t('No. HP')" icon="phone" type="tel" :error="form.errors.phone" />
                         <div class="sm:col-span-2 xl:col-span-2">
-                            <AppSwitch v-model="isActive" label="Kelompok Aktif" description="Tersedia untuk proses siupk." icon="toggle_on" field />
+                            <AppSwitch v-model="isActive" :label="t('Kelompok Aktif')" :description="t('Tersedia untuk proses siupk.')" icon="toggle_on" field />
                         </div>
                     </fieldset>
 
                     <fieldset class="grid items-start gap-4 xl:grid-cols-[1fr_auto]">
                         <SmartSelect
                             v-model="candidateId"
-                            label="Cari Anggota"
+                            :label="t('Cari Anggota')"
                             :options="memberOptions"
                             :loading="memberLoading"
                             :hint="memberHint"
                             :empty-action-label="memberSearchEmpty && memberSearch ? 'Daftarkan anggota baru' : null"
-                            placeholder="Cari anggota..."
+                            :placeholder="t('Cari anggota...')"
                             searchable
                             @search-change="updateMemberSearch"
                             @search="searchMembers"
                             @empty-action="openQuickMember"
                         />
                         <div class="flex items-center xl:mt-7">
-                            <AppButton variant="secondary" icon="person_add" :disabled="!candidateId" @click="addMember">Tambahkan</AppButton>
+                            <AppButton variant="secondary" icon="person_add" :disabled="!candidateId" @click="addMember">{{ t('Tambahkan') }}</AppButton>
                         </div>
                     </fieldset>
 
@@ -219,8 +221,8 @@ searchMembers();
                             <thead class="bg-surface-container-low">
                                 <tr>
                                     <th class="px-4 py-3">NIK</th>
-                                    <th class="px-4 py-3">Nama</th>
-                                    <th class="px-4 py-3 text-right">Aksi</th>
+                                    <th class="px-4 py-3">{{ t('Nama') }}</th>
+                                    <th class="px-4 py-3 text-right">{{ t('Aksi') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -228,7 +230,7 @@ searchMembers();
                                     <td class="px-4 py-3">{{ member.nik }}</td>
                                     <td class="px-4 py-3 font-semibold">{{ member.name }}</td>
                                     <td class="px-4 py-3 text-right">
-                                        <AppButton variant="ghost" size="compact" icon="close" aria-label="Hapus anggota" @click="removeMember(member.value)">Hapus</AppButton>
+                                        <AppButton variant="ghost" size="compact" icon="close" :aria-label="t('Hapus anggota')" @click="removeMember(member.value)">{{ t('Hapus') }}</AppButton>
                                     </td>
                                 </tr>
                             </tbody>
@@ -236,33 +238,33 @@ searchMembers();
                     </div>
 
                     <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                        <SmartSelect v-model="form.chair_id" label="Ketua" :options="selectedOptions" :excluded-values="[form.secretary_id, form.treasurer_id].filter(Boolean)" placeholder="Pilih ketua" required searchable :error="form.errors.chair_id" />
-                        <SmartSelect v-model="form.secretary_id" label="Sekretaris" :options="selectedOptions" :excluded-values="[form.chair_id, form.treasurer_id].filter(Boolean)" placeholder="Pilih sekretaris" required searchable :error="form.errors.secretary_id" />
-                        <SmartSelect v-model="form.treasurer_id" label="Bendahara" :options="selectedOptions" :excluded-values="[form.chair_id, form.secretary_id].filter(Boolean)" placeholder="Pilih bendahara" required searchable :error="form.errors.treasurer_id" />
+                        <SmartSelect v-model="form.chair_id" :label="t('Ketua')" :options="selectedOptions" :excluded-values="[form.secretary_id, form.treasurer_id].filter(Boolean)" :placeholder="t('Pilih ketua')" required searchable :error="form.errors.chair_id" />
+                        <SmartSelect v-model="form.secretary_id" :label="t('Sekretaris')" :options="selectedOptions" :excluded-values="[form.chair_id, form.treasurer_id].filter(Boolean)" :placeholder="t('Pilih sekretaris')" required searchable :error="form.errors.secretary_id" />
+                        <SmartSelect v-model="form.treasurer_id" :label="t('Bendahara')" :options="selectedOptions" :excluded-values="[form.chair_id, form.secretary_id].filter(Boolean)" :placeholder="t('Pilih bendahara')" required searchable :error="form.errors.treasurer_id" />
                     </fieldset>
 
                     <div class="flex justify-end gap-3 border-t border-outline-variant pt-4">
-                        <Link :href="path"><AppButton variant="secondary">Batal</AppButton></Link>
-                        <AppButton type="submit" :loading="form.processing" icon="save">Simpan</AppButton>
+                        <Link :href="path"><AppButton variant="secondary">{{ t('Batal') }}</AppButton></Link>
+                        <AppButton type="submit" :loading="form.processing" icon="save">{{ t('Simpan') }}</AppButton>
                     </div>
                 </form>
             </AppCard>
         </div>
 
-        <AppModal v-model="quickModalOpen" title="Daftarkan Anggota" :closeable="!quickSaving">
+        <AppModal v-model="quickModalOpen" :title="t('Daftarkan Anggota')" :closeable="!quickSaving">
             <form id="quick-member-form" class="space-y-4" @submit.prevent="storeQuickMember">
-                <p class="text-sm text-on-surface-variant">Lengkapi identitas ringkas. Tanggal terdaftar, alamat, dan status ditentukan otomatis.</p>
+                <p class="text-sm text-on-surface-variant">{{ t('Lengkapi identitas ringkas. Tanggal terdaftar, alamat, dan status ditentukan otomatis.') }}</p>
                 <div class="grid gap-4 sm:grid-cols-2">
                     <AppInput v-model="quickMember.nik" label="NIK" icon="badge" inputmode="numeric" maxlength="16" required autofocus :error="quickErrors.nik" />
-                    <AppInput v-model="quickMember.name" label="Nama" icon="person" required :error="quickErrors.name" />
-                    <AppRadioGroup v-model="quickMember.gender" label="Jenis Kelamin" :options="genderOptions" required :error="quickErrors.gender" />
-                    <SmartSelect v-model="quickMember.village_id" label="Desa" :options="villageOptions" searchable required :error="quickErrors.village_id" />
+                    <AppInput v-model="quickMember.name" :label="t('Nama')" icon="person" required :error="quickErrors.name" />
+                    <AppRadioGroup v-model="quickMember.gender" :label="t('Jenis Kelamin')" :options="genderOptions" required :error="quickErrors.gender" />
+                    <SmartSelect v-model="quickMember.village_id" :label="t('Desa')" :options="villageOptions" searchable required :error="quickErrors.village_id" />
                 </div>
                 <p v-if="quickError" class="rounded-xl bg-error/10 px-4 py-3 text-sm text-error">{{ quickError }}</p>
             </form>
             <template #footer>
-                <AppButton variant="secondary" :disabled="quickSaving" @click="quickModalOpen = false">Batal</AppButton>
-                <AppButton type="submit" form="quick-member-form" icon="person_add" :loading="quickSaving">Daftarkan</AppButton>
+                <AppButton variant="secondary" :disabled="quickSaving" @click="quickModalOpen = false">{{ t('Batal') }}</AppButton>
+                <AppButton type="submit" form="quick-member-form" icon="person_add" :loading="quickSaving">{{ t('Daftarkan') }}</AppButton>
             </template>
         </AppModal>
     </AuthenticatedLayout>

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
@@ -123,7 +125,7 @@ const manualFallbackTenantOptions = computed(() =>
 
 const suffixOptions = computed(() => {
     if (!discoveredSuffixes.value || discoveredSuffixes.value.length === 0) {
-        return [{ value: '1', label: 'Suffix 1', subtitle: 'Default manual input (transaksi_1 / saldo_1)' }];
+        return [{ value: '1', label: t('Suffix 1'), subtitle: 'Default manual input (transaksi_1 / saldo_1)' }];
     }
     return discoveredSuffixes.value.map(s => {
         const countText = s.transaksi_count !== null
@@ -378,13 +380,13 @@ const getStepStatusVariant = (status) => {
 </script>
 
 <template>
-    <Head title="Migrasi Data Tenant (Cutover)" />
+    <Head :title="t('Migrasi Data Tenant (Cutover)')" />
 
     <AdminLayout>
         <div class="space-y-6">
             <AppPageHeader
-                title="Migrasi & Cutover Tenant"
-                subtitle="Eksekusi migrasi data dari database MySQL legacy siupk (transaksi_*, saldo_*, dll) ke tenant Next platform."
+                :title="t('Migrasi & Cutover Tenant')"
+                :subtitle="t('Eksekusi migrasi data dari database MySQL legacy siupk (transaksi_*, saldo_*, dll) ke tenant Next platform.')"
             />
 
             <!-- Form Eksekusi Cutover & Petunjuk -->
@@ -393,7 +395,7 @@ const getStepStatusVariant = (status) => {
                 <div class="lg:col-span-2">
                     <AppCard>
                         <template #header>
-                            <h2 class="text-lg font-bold text-primary">Form Eksekusi Migrasi Baru</h2>
+                            <h2 class="text-lg font-bold text-primary">{{ t('Form Eksekusi Migrasi Baru') }}</h2>
                         </template>
 
                         <form @submit.prevent="submitCutover" class="space-y-5">
@@ -401,7 +403,7 @@ const getStepStatusVariant = (status) => {
                                 <div>
                                     <SmartSelect
                                         v-model="form.legacy_id"
-                                        label="Pilih Tenant Legacy"
+                                        :label="t('Pilih Tenant Legacy')"
                                         :options="legacyTenantOptions"
                                         :error="form.errors.legacy_id"
                                         :loading="isLoadingLegacyTenants"
@@ -415,7 +417,7 @@ const getStepStatusVariant = (status) => {
                                 <div v-if="selectedLegacyTenant" class="space-y-3 rounded-xl border border-outline-variant p-4">
                                     <div class="flex flex-wrap items-center justify-between gap-2">
                                         <div>
-                                            <p class="text-sm font-semibold text-primary">Target</p>
+                                            <p class="text-sm font-semibold text-primary">{{ t('Target') }}</p>
                                             <p v-if="selectedLegacyTenant.next_tenant" class="text-xs text-on-surface-variant">
                                                 {{ selectedLegacyTenant.next_tenant.name }} ({{ selectedLegacyTenant.next_tenant.code }})
                                             </p>
@@ -424,7 +426,7 @@ const getStepStatusVariant = (status) => {
                                             </p>
                                         </div>
                                         <AppBadge :tone="selectedLegacyTenant.next_tenant ? 'success' : 'warning'">
-                                            {{ selectedLegacyTenant.next_tenant ? 'Tenant Next ketemu' : 'Belum ada tenant Next' }}
+                                            {{ selectedLegacyTenant.next_tenant ? t('Tenant Next ketemu') : t('Belum ada tenant Next') }}
                                         </AppBadge>
                                     </div>
 
@@ -435,7 +437,7 @@ const getStepStatusVariant = (status) => {
                                             size="compact"
                                             @click="simpleFallbackMode = 'auto'"
                                         >
-                                            Buat tenant baru otomatis
+                                            {{ t('Buat tenant baru otomatis') }}
                                         </AppButton>
                                         <AppButton
                                             type="button"
@@ -443,14 +445,14 @@ const getStepStatusVariant = (status) => {
                                             size="compact"
                                             @click="simpleFallbackMode = 'manual'"
                                         >
-                                            Pilih tenant Next manual
+                                            {{ t('Pilih tenant Next manual') }}
                                         </AppButton>
                                     </div>
 
                                     <SmartSelect
                                         v-if="!selectedLegacyTenant.next_tenant && simpleFallbackMode === 'manual'"
                                         v-model="form.tenant_id"
-                                        label="Pilih Tenant Next"
+                                        :label="t('Pilih Tenant Next')"
                                         :options="manualFallbackTenantOptions"
                                         :error="form.errors.tenant_id"
                                         searchable
@@ -461,8 +463,8 @@ const getStepStatusVariant = (status) => {
                                 <div class="rounded-xl border border-outline-variant p-4">
                                     <AppSwitch
                                         v-model="form.is_dry_run"
-                                        label="Mode Dry-Run (Simulasi / Uji Coba)"
-                                        description="Menjalankan simulasi validasi tanpa menyimpan perubahan ke database utama."
+                                        :label="t('Mode Dry-Run (Simulasi / Uji Coba)')"
+                                        :description="t('Menjalankan simulasi validasi tanpa menyimpan perubahan ke database utama.')"
                                         icon="science"
                                     />
                                 </div>
@@ -473,7 +475,7 @@ const getStepStatusVariant = (status) => {
                                     <div>
                                         <SmartSelect
                                             v-model="form.tenant_id"
-                                            label="Pilih Tenant Target"
+                                            :label="t('Pilih Tenant Target')"
                                             :options="tenantOptions"
                                             :error="form.errors.tenant_id"
                                             searchable
@@ -485,7 +487,7 @@ const getStepStatusVariant = (status) => {
                                         <SmartSelect
                                             v-if="discoveredSuffixes.length > 0"
                                             v-model="form.suffix"
-                                            label="ID Lokasi (Suffix Terdeteksi)"
+                                            :label="t('ID Lokasi (Suffix Terdeteksi)')"
                                             :options="suffixOptions"
                                             :error="form.errors.suffix"
                                             searchable
@@ -494,8 +496,8 @@ const getStepStatusVariant = (status) => {
                                         <AppInput
                                             v-else
                                             v-model="form.suffix"
-                                            label="ID Lokasi (Suffix Legacy DB)"
-                                            placeholder="Masukkan ID"
+                                            :label="t('ID Lokasi (Suffix Legacy DB)')"
+                                            :placeholder="t('Masukkan ID')"
                                             hint="Akhiran tabel transaksi_* di database legacy (contoh: 1 untuk transaksi_1)"
                                             required
                                             :error="form.errors.suffix"
@@ -504,7 +506,7 @@ const getStepStatusVariant = (status) => {
                                             <span class="text-on-surface-variant">
                                                 <template v-if="isDiscovering">Memindai database legacy… ({{ Math.round(70) }}s)</template>
                                                 <template v-else-if="discoveryError">
-                                                    <span class="text-error">Gagal memindai: {{ discoveryError }}</span>
+                                                    <span class="text-error">{{ t('Gagal memindai:') }} {{ discoveryError }}</span>
                                                 </template>
                                                 <template v-else-if="discoveredSuffixes.length > 0">
                                                     {{ discoveryCount }} suffix terdeteksi.
@@ -521,7 +523,7 @@ const getStepStatusVariant = (status) => {
                                                 :disabled="isDiscovering"
                                                 @click="runDiscovery(true)"
                                             >
-                                                Pindai Ulang DB Legacy
+                                                {{ t('Pindai Ulang DB Legacy') }}
                                             </AppButton>
                                         </div>
                                     </div>
@@ -530,8 +532,8 @@ const getStepStatusVariant = (status) => {
                                 <div class="space-y-3 rounded-xl border border-outline-variant p-4">
                                     <AppSwitch
                                         v-model="form.run_immediately"
-                                        label="Eksekusi Langsung (Synchronous Execution)"
-                                        description="Jalankan langsung di server tanpa menunggu antrean background worker."
+                                        :label="t('Eksekusi Langsung (Synchronous Execution)')"
+                                        :description="t('Jalankan langsung di server tanpa menunggu antrean background worker.')"
                                         icon="bolt"
                                     />
                                 </div>
@@ -539,27 +541,27 @@ const getStepStatusVariant = (status) => {
                                 <div class="space-y-4 rounded-xl border border-outline-variant p-4">
                                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                         <div>
-                                            <AppInput v-model="form.chunk" label="Chunk Size" type="number" min="10" max="5000" />
+                                            <AppInput v-model="form.chunk" :label="t('Chunk Size')" type="number" min="10" max="5000" />
                                         </div>
                                         <div>
-                                            <AppDatePicker v-model="form.from_year" label="Tahun Fiskal Dari" mode="year" placeholder="Pilih Tahun" />
+                                            <AppDatePicker v-model="form.from_year" :label="t('Tahun Fiskal Dari')" mode="year" :placeholder="t('Pilih Tahun')" />
                                         </div>
                                         <div>
-                                            <AppDatePicker v-model="form.to_year" label="Tahun Fiskal Sampai" mode="year" placeholder="Pilih Tahun" />
+                                            <AppDatePicker v-model="form.to_year" :label="t('Tahun Fiskal Sampai')" mode="year" :placeholder="t('Pilih Tahun')" />
                                         </div>
                                     </div>
 
                                     <div class="space-y-3">
-                                        <span class="block text-xs font-bold uppercase tracking-wider text-primary">Lompati Step (Optional Skipping):</span>
+                                        <span class="block text-xs font-bold uppercase tracking-wider text-primary">{{ t('Lompati Step (Optional Skipping):') }}</span>
                                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                            <AppSwitch v-model="form.skip_fiscal" label="Lompati Periode Fiskal" description="Skip Fiscal Periods" />
-                                            <AppSwitch v-model="form.skip_coa" label="Lompati Bagan Akun (COA)" description="Skip COA Import" />
-                                            <AppSwitch v-model="form.skip_accounting" label="Lompati Jurnal Akuntansi" description="Skip Accounting Jurnal" />
-                                            <AppSwitch v-model="form.skip_membership" label="Lompati Keanggotaan" description="Skip Keanggotaan" />
-                                            <AppSwitch v-model="form.skip_lending" label="Lompati Data Pinjaman" description="Skip Pinjaman" />
-                                            <AppSwitch v-model="form.skip_payment_progress" label="Lompati Progress Angsuran" description="Skip Progress Angsuran" />
-                                            <AppSwitch v-model="form.skip_reconcile" label="Lompati Rekonsiliasi" description="Skip Rekonsiliasi" />
-                                            <AppSwitch v-model="form.skip_sequences" label="Lompati Sequences" description="Skip Sequences" />
+                                            <AppSwitch v-model="form.skip_fiscal" :label="t('Lompati Periode Fiskal')" :description="t('Skip Fiscal Periods')" />
+                                            <AppSwitch v-model="form.skip_coa" :label="t('Lompati Bagan Akun (COA)')" :description="t('Skip COA Import')" />
+                                            <AppSwitch v-model="form.skip_accounting" :label="t('Lompati Jurnal Akuntansi')" :description="t('Skip Accounting Jurnal')" />
+                                            <AppSwitch v-model="form.skip_membership" :label="t('Lompati Keanggotaan')" :description="t('Skip Keanggotaan')" />
+                                            <AppSwitch v-model="form.skip_lending" :label="t('Lompati Data Pinjaman')" :description="t('Skip Pinjaman')" />
+                                            <AppSwitch v-model="form.skip_payment_progress" :label="t('Lompati Progress Angsuran')" :description="t('Skip Progress Angsuran')" />
+                                            <AppSwitch v-model="form.skip_reconcile" :label="t('Lompati Rekonsiliasi')" :description="t('Skip Rekonsiliasi')" />
+                                            <AppSwitch v-model="form.skip_sequences" :label="t('Lompati Sequences')" :description="t('Skip Sequences')" />
                                         </div>
                                     </div>
                                 </div>
@@ -568,8 +570,8 @@ const getStepStatusVariant = (status) => {
                             <!-- Submit Button -->
                             <div class="flex justify-end pt-2">
                                 <AppButton type="submit" variant="primary" icon="play_arrow" :disabled="form.processing">
-                                    <span v-if="form.processing">Sedang Memproses...</span>
-                                    <span v-else>Jalankan Migrasi Data</span>
+                                    <span v-if="form.processing">{{ t('Sedang Memproses...') }}</span>
+                                    <span v-else>{{ t('Jalankan Migrasi Data') }}</span>
                                 </AppButton>
                             </div>
 
@@ -581,7 +583,7 @@ const getStepStatusVariant = (status) => {
                                     :icon="isExpertMode ? 'expand_less' : 'expand_more'"
                                     @click="isExpertMode = !isExpertMode"
                                 >
-                                    Mode Expert (lanjutan)
+                                    {{ t('Mode Expert (lanjutan)') }}
                                 </AppButton>
                             </div>
                         </form>
@@ -592,13 +594,13 @@ const getStepStatusVariant = (status) => {
                 <div>
                     <AppCard>
                         <template #header>
-                            <h2 class="text-lg font-bold text-primary">Petunjuk Alur Migrasi</h2>
+                            <h2 class="text-lg font-bold text-primary">{{ t('Petunjuk Alur Migrasi') }}</h2>
                         </template>
                         <div class="space-y-3 text-xs text-on-surface-variant leading-relaxed">
                             <div class="rounded-lg border border-outline-variant bg-surface-container-low p-3 space-y-1">
-                                <span class="block text-xs font-bold text-primary">Koneksi Database Legacy Aktif:</span>
-                                <p>Host: <code class="font-mono font-bold text-primary">{{ props.legacy_config?.host || '127.0.0.1' }}:{{ props.legacy_config?.port || 3306 }}</code></p>
-                                <p>Database: <code class="font-mono font-bold text-primary">{{ props.legacy_config?.database || 'siupk' }}</code></p>
+                                <span class="block text-xs font-bold text-primary">{{ t('Koneksi Database Legacy Aktif:') }}</span>
+                                <p>{{ t('Host:') }} <code class="font-mono font-bold text-primary">{{ props.legacy_config?.host || '127.0.0.1' }}:{{ props.legacy_config?.port || 3306 }}</code></p>
+                                <p>{{ t('Database:') }} <code class="font-mono font-bold text-primary">{{ props.legacy_config?.database || 'siupk' }}</code></p>
                             </div>
 
                             <div class="flex items-start space-x-2">
@@ -626,9 +628,9 @@ const getStepStatusVariant = (status) => {
             <AppCard>
                 <template #header>
                     <div class="flex items-center justify-between">
-                        <h2 class="text-lg font-bold text-primary">Riwayat Eksekusi Migrasi (Cutover Runs)</h2>
+                        <h2 class="text-lg font-bold text-primary">{{ t('Riwayat Eksekusi Migrasi (Cutover Runs)') }}</h2>
                         <AppButton variant="ghost" size="compact" icon="refresh" @click="router.reload({ only: ['runs'] })">
-                            Refresh Data
+                            {{ t('Refresh Data') }}
                         </AppButton>
                     </div>
                 </template>
@@ -637,13 +639,13 @@ const getStepStatusVariant = (status) => {
                     <table class="w-full text-left text-sm">
                         <thead class="bg-surface-container-lowest text-xs uppercase tracking-wider text-on-surface-variant">
                             <tr>
-                                <th class="px-4 py-3 font-bold">ID Run</th>
-                                <th class="px-4 py-3 font-bold">Tenant Target</th>
-                                <th class="px-4 py-3 font-bold">Suffix</th>
-                                <th class="px-4 py-3 font-bold">Mode</th>
-                                <th class="px-4 py-3 font-bold">Status</th>
-                                <th class="px-4 py-3 font-bold">Waktu Mulai</th>
-                                <th class="px-4 py-3 text-right font-bold">Aksi</th>
+                                <th class="px-4 py-3 font-bold">{{ t('ID Run') }}</th>
+                                <th class="px-4 py-3 font-bold">{{ t('Tenant Target') }}</th>
+                                <th class="px-4 py-3 font-bold">{{ t('Suffix') }}</th>
+                                <th class="px-4 py-3 font-bold">{{ t('Mode') }}</th>
+                                <th class="px-4 py-3 font-bold">{{ t('Status') }}</th>
+                                <th class="px-4 py-3 font-bold">{{ t('Waktu Mulai') }}</th>
+                                <th class="px-4 py-3 text-right font-bold">{{ t('Aksi') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
@@ -654,13 +656,13 @@ const getStepStatusVariant = (status) => {
                                     <div class="space-y-1">
                                         <span>{{ run.suffix }}</span>
                                         <span v-if="run.options?.legacy_name" class="block">
-                                            <AppBadge tone="neutral" class="text-[10px]">Legacy: {{ run.options.legacy_name }}</AppBadge>
+                                            <AppBadge tone="neutral" class="text-[10px]">{{ t('Legacy:') }} {{ run.options.legacy_name }}</AppBadge>
                                         </span>
                                     </div>
                                 </td>
                                 <td class="px-4 py-3">
                                     <AppBadge :tone="run.is_dry_run ? 'neutral' : 'warning'">
-                                        {{ run.is_dry_run ? 'Dry Run' : 'Live Cutover' }}
+                                        {{ run.is_dry_run ? t('Dry Run') : t('Live Cutover') }}
                                     </AppBadge>
                                 </td>
                                 <td class="px-4 py-3">
@@ -669,22 +671,22 @@ const getStepStatusVariant = (status) => {
                                     </AppBadge>
                                 </td>
                                 <td class="px-4 py-3 text-xs text-on-surface-variant">
-                                    {{ run.started_at ? new Date(run.started_at).toLocaleString('id-ID') : 'Belum dimulai' }}
+                                    {{ run.started_at ? new Date(run.started_at).toLocaleString(dateLocale()) : 'Belum dimulai' }}
                                 </td>
                                 <td class="px-4 py-3 text-right text-xs">
                                     <div class="flex items-center justify-end gap-2">
                                         <AppButton v-if="run.status === 'failed'" variant="warning" size="compact" icon="refresh" @click="retryRun(run)">
-                                            Coba Ulangi (Retry)
+                                            {{ t('Coba Ulangi (Retry)') }}
                                         </AppButton>
                                         <AppButton variant="secondary" size="compact" icon="terminal" @click="openLogModal(run)">
-                                            Detail & Log Output
+                                            {{ t('Detail & Log Output') }}
                                         </AppButton>
                                     </div>
                                 </td>
                             </tr>
                             <tr v-if="runs.data.length === 0">
                                 <td colspan="7" class="px-4 py-8 text-center text-xs text-on-surface-variant">
-                                    Belum ada riwayat proses migrasi yang dijalankan.
+                                    {{ t('Belum ada riwayat proses migrasi yang dijalankan.') }}
                                 </td>
                             </tr>
                         </tbody>
@@ -702,7 +704,7 @@ const getStepStatusVariant = (status) => {
                             <h3 class="text-lg font-bold text-primary">
                                 Monitoring Cutover Run #{{ selectedRun.id }} — {{ selectedRun.tenant_name }}
                             </h3>
-                            <p class="text-xs text-on-surface-variant">Suffix: {{ selectedRun.suffix }} | Mode: {{ selectedRun.is_dry_run ? 'Dry Run' : 'Live' }}</p>
+                            <p class="text-xs text-on-surface-variant">Suffix: {{ selectedRun.suffix }} | Mode: {{ selectedRun.is_dry_run ? t('Dry Run') : t('Live') }}</p>
                         </div>
                         <AppButton variant="ghost" size="compact" icon="close" @click="closeLogModal" />
                     </div>
@@ -710,7 +712,7 @@ const getStepStatusVariant = (status) => {
                     <div class="max-h-[80vh] overflow-y-auto space-y-4 p-4">
                         <!-- Step Progress Badges -->
                         <div v-if="selectedRun.steps && selectedRun.steps.length > 0" class="space-y-2">
-                            <span class="text-xs font-bold uppercase tracking-wider text-primary">Progress Tahapan Migrasi:</span>
+                            <span class="text-xs font-bold uppercase tracking-wider text-primary">{{ t('Progress Tahapan Migrasi:') }}</span>
                             <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                 <div v-for="step in selectedRun.steps" :key="step.name" class="rounded-lg border border-outline-variant p-2 text-xs">
                                     <div class="mb-1 flex items-center justify-between">
@@ -727,9 +729,9 @@ const getStepStatusVariant = (status) => {
                         <!-- Output Console Terminal Window -->
                         <div class="relative space-y-1">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs font-bold text-primary">Terminal Console Log Output:</span>
+                                <span class="text-xs font-bold text-primary">{{ t('Terminal Console Log Output:') }}</span>
                                 <span v-if="selectedRun.status === 'running'" class="animate-pulse text-xs font-medium text-tertiary">
-                                    Live Polling Output...
+                                    {{ t('Live Polling Output...') }}
                                 </span>
                             </div>
                             <div class="relative">
@@ -743,23 +745,23 @@ const getStepStatusVariant = (status) => {
                                     class="absolute bottom-3 right-4 !rounded-full backdrop-blur"
                                     @click="scrollToBottom"
                                 >
-                                    Scroll ke Bawah
+                                    {{ t('Scroll ke Bawah') }}
                                 </AppButton>
                             </div>
                         </div>
 
                         <div v-if="selectedRun.error_message" class="rounded-lg bg-error-container p-3 text-xs text-error">
-                            <strong>Error Exception:</strong> {{ selectedRun.error_message }}
+                            <strong>{{ t('Error Exception:') }}</strong> {{ selectedRun.error_message }}
                         </div>
                     </div>
 
                     <div class="flex items-center justify-between border-t border-outline-variant p-4">
                         <div>
                             <AppButton v-if="selectedRun.status === 'failed'" variant="warning" icon="refresh" @click="retryRun(selectedRun)">
-                                Coba Ulangi Migrasi (Retry)
+                                {{ t('Coba Ulangi Migrasi (Retry)') }}
                             </AppButton>
                         </div>
-                        <AppButton variant="secondary" @click="closeLogModal">Tutup Window Log</AppButton>
+                        <AppButton variant="secondary" @click="closeLogModal">{{ t('Tutup Window Log') }}</AppButton>
                     </div>
                 </div>
             </div>

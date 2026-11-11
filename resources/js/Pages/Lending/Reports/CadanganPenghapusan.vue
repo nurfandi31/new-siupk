@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -21,18 +23,18 @@ const selectedMonth = ref(String(props.filters.month));
 const selectedProduct = ref(props.filters.product || 'all');
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -72,22 +74,22 @@ const pdfUrl = computed(() => {
 </script>
 
 <template>
-    <Head title="Cadangan Penghapusan Piutang" />
+    <Head :title="t('Cadangan Penghapusan Piutang')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Laporan Piutang</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Cadangan Kerugian Penurunan Nilai (CKPN)</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Laporan Piutang') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Cadangan Kerugian Penurunan Nilai (CKPN)') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Perhitungan penyisihan cadangan risiko piutang: 0.5% (Lancar), 50% (Diragukan), dan 100% (Macet)
+                        {{ t('Perhitungan penyisihan cadangan risiko piutang: 0.5% (Lancar), 50% (Diragukan), dan 100% (Macet)') }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -97,11 +99,11 @@ const pdfUrl = computed(() => {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -119,19 +121,19 @@ const pdfUrl = computed(() => {
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                             <tr class="border-b border-outline-variant/30 text-center">
-                                <th rowspan="2" class="p-3 text-left">Desa</th>
-                                <th rowspan="2" class="p-3 text-right">Saldo Pokok</th>
-                                <th colspan="3" class="p-3 border-l border-outline-variant/20">Klasifikasi Kolektibilitas</th>
-                                <th colspan="3" class="p-3 border-l border-outline-variant/20">Penyisihan Cadangan (CKPN)</th>
-                                <th rowspan="2" class="p-3 border-l border-outline-variant/20 text-right">Total CKPN</th>
+                                <th rowspan="2" class="p-3 text-left">{{ t('Desa') }}</th>
+                                <th rowspan="2" class="p-3 text-right">{{ t('Saldo Pokok') }}</th>
+                                <th colspan="3" class="p-3 border-l border-outline-variant/20">{{ t('Klasifikasi Kolektibilitas') }}</th>
+                                <th colspan="3" class="p-3 border-l border-outline-variant/20">{{ t('Penyisihan Cadangan (CKPN)') }}</th>
+                                <th rowspan="2" class="p-3 border-l border-outline-variant/20 text-right">{{ t('Total CKPN') }}</th>
                             </tr>
                             <tr class="border-b border-outline-variant/30 text-center text-[11px] text-on-surface-variant">
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Lancar</th>
-                                <th class="p-2 text-right">Diragukan</th>
-                                <th class="p-2 text-right">Macet</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">0.5% Lancar</th>
-                                <th class="p-2 text-right">50% Diragukan</th>
-                                <th class="p-2 text-right">100% Macet</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Lancar') }}</th>
+                                <th class="p-2 text-right">{{ t('Diragukan') }}</th>
+                                <th class="p-2 text-right">{{ t('Macet') }}</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('0.5% Lancar') }}</th>
+                                <th class="p-2 text-right">{{ t('50% Diragukan') }}</th>
+                                <th class="p-2 text-right">{{ t('100% Macet') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/20">

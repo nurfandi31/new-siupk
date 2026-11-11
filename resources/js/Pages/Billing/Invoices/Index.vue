@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -17,12 +19,12 @@ const props = defineProps({
 });
 
 const columns = [
-    { key: 'number', label: 'Nomor', sortable: true },
-    { key: 'purpose', label: 'Keperluan' },
-    { key: 'description', label: 'Deskripsi' },
-    { key: 'amount', label: 'Nominal', sortable: true },
-    { key: 'due_at', label: 'Jatuh tempo', sortable: true },
-    { key: 'status', label: 'Status', sortable: true },
+    { key: 'number', label: t('Nomor'), sortable: true },
+    { key: 'purpose', label: t('Keperluan') },
+    { key: 'description', label: t('Deskripsi') },
+    { key: 'amount', label: t('Nominal'), sortable: true },
+    { key: 'due_at', label: t('Jatuh tempo'), sortable: true },
+    { key: 'status', label: t('Status'), sortable: true },
 ];
 
 const purposeLabels = {
@@ -35,12 +37,12 @@ const purposeLabels = {
 };
 
 const statusOptions = [
-    { value: '', label: 'Semua status' },
-    { value: 'issued', label: 'Belum dibayar' },
-    { value: 'partially_paid', label: 'Sebagian' },
-    { value: 'paid', label: 'Lunas' },
-    { value: 'overdue', label: 'Terlambat' },
-    { value: 'void', label: 'Dibatalkan' },
+    { value: '', label: t('Semua status') },
+    { value: 'issued', label: t('Belum dibayar') },
+    { value: 'partially_paid', label: t('Sebagian') },
+    { value: 'paid', label: t('Lunas') },
+    { value: 'overdue', label: t('Terlambat') },
+    { value: 'void', label: t('Dibatalkan') },
 ];
 
 function money(value, currency = 'IDR') {
@@ -77,12 +79,12 @@ function statusLabel(status) {
 </script>
 
 <template>
-    <Head title="Tagihan" />
+    <Head :title="t('Tagihan')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header>
-                <h1 class="text-2xl font-bold text-primary">Tagihan</h1>
-                <p class="mt-1 text-on-surface-variant">Daftar tagihan lembaga: langganan, setup, support, dan lainnya.</p>
+                <h1 class="text-2xl font-bold text-primary">{{ t('Tagihan') }}</h1>
+                <p class="mt-1 text-on-surface-variant">{{ t('Daftar tagihan lembaga: langganan, setup, support, dan lainnya.') }}</p>
             </header>
 
             <AppCard :padded="false">
@@ -95,13 +97,13 @@ function statusLabel(status) {
                         :per-page="perPage"
                         :sort="sort"
                         :direction="direction"
-                        search-placeholder="Cari invoice..."
+                        :search-placeholder="t('Cari invoice...')"
                         empty-title="Belum ada tagihan"
                         empty-description="Tagihan akan muncul di sini setelah diterbitkan."
                     >
                         <template #toolbar>
                             <div class="min-w-0 flex-1 sm:min-w-48 sm:flex-initial">
-                                <SmartSelect :model-value="status" label="Status" hide-label :options="statusOptions" @update:model-value="filterStatus" />
+                                <SmartSelect :model-value="status" :label="t('Status')" hide-label :options="statusOptions" @update:model-value="filterStatus" />
                             </div>
                         </template>
                         <template #cell-purpose="{ row }">
@@ -121,7 +123,7 @@ function statusLabel(status) {
                         </template>
                         <template #actions="{ row }">
                             <Link :href="`/billing/invoices/${row.row_id}`">
-                                <AppButton variant="ghost" size="compact" icon="visibility">Detail</AppButton>
+                                <AppButton variant="ghost" size="compact" icon="visibility">{{ t('Detail') }}</AppButton>
                             </Link>
                         </template>
                     </SmartDataTable>

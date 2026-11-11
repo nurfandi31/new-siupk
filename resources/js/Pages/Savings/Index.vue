@@ -49,12 +49,12 @@ const tableUrl = computed(() => {
 });
 
 const columns = [
-    { key: 'account_number', label: 'Nomor Rekening', sortable: true },
-    { key: 'member', label: 'Anggota' },
-    { key: 'product', label: 'Jenis Simpanan' },
-    { key: 'balance', label: 'Saldo', sortable: true, class: 'text-right', tdClass: 'text-right' },
-    { key: 'status', label: 'Status' },
-    { key: 'opened_at', label: 'Dibuka', sortable: true },
+    { key: 'account_number', label: t('Nomor Rekening'), sortable: true, class: 'w-[22%]' },
+    { key: 'member', label: t('Anggota'), class: 'w-[24%]' },
+    { key: 'product', label: t('Jenis Simpanan'), class: 'hidden w-[15%] xl:table-cell' },
+    { key: 'balance', label: t('Saldo'), sortable: true, class: 'w-[14%] text-right', tdClass: 'text-right' },
+    { key: 'status', label: t('Status'), class: 'w-[11%]' },
+    { key: 'opened_at', label: t('Dibuka'), sortable: true, class: 'hidden w-[11%] md:table-cell' },
 ];
 
 function applyFilters() {
@@ -216,14 +216,14 @@ function statusLabel(value) {
                 >
                     <template #cell-account_number="{ row }">
                         <div class="min-w-0">
-                            <p class="font-mono text-sm font-bold text-primary">{{ row.account_number }}</p>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ row.product.name }}</p>
+                            <p class="truncate font-mono text-sm font-bold text-primary">{{ row.account_number }}</p>
+                            <p class="mt-0.5 truncate text-xs text-on-surface-variant">{{ row.product.name }}</p>
                         </div>
                     </template>
                     <template #cell-member="{ row }">
                         <div class="min-w-0">
                             <p class="truncate font-semibold text-on-surface">{{ row.member.name }}</p>
-                            <p class="text-xs text-on-surface-variant">{{ row.member.member_number || '—' }}</p>
+                            <p class="truncate text-xs text-on-surface-variant">{{ row.member.member_number || '—' }}</p>
                         </div>
                     </template>
                     <template #cell-product="{ row }">
@@ -239,8 +239,8 @@ function statusLabel(value) {
                         <span class="whitespace-nowrap text-on-surface-variant">{{ row.opened_at || '—' }}</span>
                     </template>
                     <template #actions="{ row }">
-                        <Link :href="`/simpanan/${row.row_id}`">
-                            <AppIconButton name="chevron_right" tone="primary" size="sm" :tooltip="t('Buka rekening')" />
+                        <Link :href="`/simpanan/${row.row_id}`" :title="t('Buka rekening')">
+                            <AppIconButton name="chevron_right" tone="primary" size="sm" :aria-label="t('Buka rekening')" />
                         </Link>
                     </template>
                 </SmartDataTable>

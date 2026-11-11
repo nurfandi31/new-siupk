@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import AppBadge from '../../Components/AppBadge.vue';
@@ -47,7 +49,7 @@ function formatMoney(v) {
 }
 
 const categoryOptions = [
-    { value: '', label: 'Semua kategori' },
+    { value: '', label: t('Semua kategori') },
     ...props.categories.map((c) => ({ value: String(c.value), label: c.label })),
 ];
 
@@ -79,46 +81,46 @@ watch([status, category, asOf], () => {
 </script>
 
 <template>
-    <Head title="Inventaris" />
+    <Head :title="t('Inventaris')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Inventaris</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Inventaris') }}</h1>
                     <p class="mt-1 text-on-surface-variant">
                         Register &amp; nilai buku. <strong>Beli aset</strong> lewat Jurnal Umum → tipe Pembelian Inventaris.
                     </p>
                 </div>
                 <Link v-if="can('journals.create')" href="/accounting/journal-entries/create?type=pembelian_aset_peralatan">
-                    <AppButton icon="receipt_long">Beli di Jurnal Umum</AppButton>
+                    <AppButton icon="receipt_long">{{ t('Beli di Jurnal Umum') }}</AppButton>
                 </Link>
             </header>
 
             <div class="grid gap-3 sm:grid-cols-4">
                 <div class="rounded-xl bg-surface-container-low px-4 py-3">
-                    <p class="text-xs text-on-surface-variant">Total item</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Total item') }}</p>
                     <p class="text-xl font-bold text-primary">{{ counts.total }}</p>
                 </div>
                 <div class="rounded-xl bg-surface-container-low px-4 py-3">
-                    <p class="text-xs text-on-surface-variant">Kondisi baik</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Kondisi baik') }}</p>
                     <p class="text-xl font-bold text-primary">{{ counts.good }}</p>
                 </div>
                 <div class="rounded-xl bg-surface-container-low px-4 py-3">
-                    <p class="text-xs text-on-surface-variant">Nilai perolehan</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Nilai perolehan') }}</p>
                     <p class="text-xl font-bold text-primary">{{ formatMoney(counts.acquisition) }}</p>
                 </div>
                 <div class="rounded-xl bg-surface-container-low px-4 py-3">
-                    <p class="text-xs text-on-surface-variant">Nilai buku (aktif)</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Nilai buku (aktif)') }}</p>
                     <p class="text-xl font-bold text-primary">{{ formatMoney(counts.book) }}</p>
                 </div>
             </div>
 
             <AppCard>
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <AppInput v-model="q" label="Cari" placeholder="Cari aset..." />
-                    <SmartSelect v-model="status" label="Status" :options="status_options" />
-                    <SmartSelect v-model="category" label="Kategori" :options="categoryOptions" />
-                    <AppDatePicker v-model="asOf" label="Nilai buku per" />
+                    <AppInput v-model="q" :label="t('Cari')" :placeholder="t('Cari aset...')" />
+                    <SmartSelect v-model="status" :label="t('Status')" :options="status_options" />
+                    <SmartSelect v-model="category" :label="t('Kategori')" :options="categoryOptions" />
+                    <AppDatePicker v-model="asOf" :label="t('Nilai buku per')" />
                 </div>
             </AppCard>
 
@@ -127,20 +129,20 @@ watch([status, category, asOf], () => {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-left text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-4 py-3 font-semibold">Kode</th>
-                                <th class="px-4 py-3 font-semibold">Nama</th>
-                                <th class="px-4 py-3 font-semibold">Tgl beli</th>
-                                <th class="px-4 py-3 font-semibold text-right">Perolehan</th>
-                                <th class="px-4 py-3 font-semibold text-right">Nilai buku</th>
-                                <th class="px-4 py-3 font-semibold">Status</th>
-                                <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Kode') }}</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Nama') }}</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Tgl beli') }}</th>
+                                <th class="px-4 py-3 font-semibold text-right">{{ t('Perolehan') }}</th>
+                                <th class="px-4 py-3 font-semibold text-right">{{ t('Nilai buku') }}</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Status') }}</th>
+                                <th class="px-4 py-3 font-semibold text-right">{{ t('Aksi') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="!assets.data?.length">
                                 <td colspan="7" class="px-4 py-10 text-center text-on-surface-variant">
                                     Belum ada inventaris. Catat di
-                                    <Link href="/accounting/journal-entries/create?type=pembelian_aset_peralatan" class="font-semibold text-primary hover:underline">Jurnal Umum</Link>
+                                    <Link href="/accounting/journal-entries/create?type=pembelian_aset_peralatan" class="font-semibold text-primary hover:underline">{{ t('Jurnal Umum') }}</Link>
                                     — pilih jenis Pembelian Aset ….
                                 </td>
                             </tr>
@@ -167,10 +169,10 @@ watch([status, category, asOf], () => {
                                 <td class="px-4 py-2.5">
                                     <div class="flex justify-end gap-1">
                                         <Link :href="`/accounting/assets/${row.row_id}`">
-                                            <AppButton variant="ghost" size="compact" icon="visibility">Detail</AppButton>
+                                            <AppButton variant="ghost" size="compact" icon="visibility">{{ t('Detail') }}</AppButton>
                                         </Link>
                                         <Link v-if="can('assets.manage')" :href="`/accounting/assets/${row.row_id}/edit`">
-                                            <AppButton variant="ghost" size="compact" icon="edit">Edit</AppButton>
+                                            <AppButton variant="ghost" size="compact" icon="edit">{{ t('Edit') }}</AppButton>
                                         </Link>
                                     </div>
                                 </td>
@@ -192,7 +194,7 @@ watch([status, category, asOf], () => {
                             :disabled="assets.current_page <= 1"
                             @click="apply(assets.current_page - 1)"
                         >
-                            Prev
+                            {{ t('Prev') }}
                         </AppButton>
                         <AppButton
                             variant="ghost"
@@ -200,7 +202,7 @@ watch([status, category, asOf], () => {
                             :disabled="assets.current_page >= assets.last_page"
                             @click="apply(assets.current_page + 1)"
                         >
-                            Next
+                            {{ t('Next') }}
                         </AppButton>
                     </div>
                 </div>

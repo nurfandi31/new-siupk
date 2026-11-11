@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { computed } from 'vue';
 import AppIcon from './AppIcon.vue';
 import AppModal from './AppModal.vue';
@@ -14,43 +16,43 @@ const cmdKey = computed(() => (isMac.value ? 'Cmd' : 'Ctrl'));
 
 const shortcutGroups = computed(() => [
     {
-        title: 'Pencarian & Bantuan',
+        title: t('Pencarian & Bantuan'),
         icon: 'search',
         items: [
-            { keys: [cmdKey.value, 'K'], description: 'Buka Pencarian Cepat / Command Palette' },
-            { keys: [modifierKey.value, 'A'], description: 'Buka / Tutup Ariel AI Assistant' },
-            { keys: ['Shift', '?'], description: 'Buka Bantuan Pintasan Keyboard' },
-            { keys: ['Esc'], description: 'Tutup Dialog / Modal / Menu Terbuka' },
+            { keys: [cmdKey.value, 'K'], description: t('Buka Pencarian Cepat / Command Palette') },
+            { keys: [modifierKey.value, 'A'], description: t('Buka / Tutup Ariel AI Assistant') },
+            { keys: ['Shift', '?'], description: t('Buka Bantuan Pintasan Keyboard') },
+            { keys: ['Esc'], description: t('Tutup Dialog / Modal / Menu Terbuka') },
         ],
     },
     {
-        title: 'Navigasi Menu Utama',
+        title: t('Navigasi Menu Utama'),
         icon: 'navigation',
         items: [
-            { keys: [modifierKey.value, 'D'], description: 'Ke Halaman Dashboard' },
-            { keys: [modifierKey.value, 'J'], description: 'Ke Halaman Jurnal Umum' },
-            { keys: [modifierKey.value, 'L'], description: 'Ke Halaman Pinjaman & Pembiayaan' },
-            { keys: [modifierKey.value, 'M'], description: 'Ke Halaman Data Nasabah / Anggota' },
-            { keys: [modifierKey.value, 'G'], description: 'Ke Halaman Data Kelompok' },
-            { keys: [modifierKey.value, 'R'], description: 'Ke Halaman Laporan Keuangan' },
-            { keys: [modifierKey.value, 'B'], description: 'Ke Halaman E-Budgeting' },
-            { keys: [modifierKey.value, 'T'], description: 'Ke Halaman Tutup Buku' },
+            { keys: [modifierKey.value, 'D'], description: t('Ke Halaman Dashboard') },
+            { keys: [modifierKey.value, 'J'], description: t('Ke Halaman Jurnal Umum') },
+            { keys: [modifierKey.value, 'L'], description: t('Ke Halaman Pinjaman & Pembiayaan') },
+            { keys: [modifierKey.value, 'M'], description: t('Ke Halaman Data Nasabah / Anggota') },
+            { keys: [modifierKey.value, 'G'], description: t('Ke Halaman Data Kelompok') },
+            { keys: [modifierKey.value, 'R'], description: t('Ke Halaman Laporan Keuangan') },
+            { keys: [modifierKey.value, 'B'], description: t('Ke Halaman E-Budgeting') },
+            { keys: [modifierKey.value, 'T'], description: t('Ke Halaman Tutup Buku') },
         ],
     },
     {
-        title: 'Aksi Cepat & Sistem',
+        title: t('Aksi Cepat & Sistem'),
         icon: 'bolt',
         items: [
-            { keys: [modifierKey.value, 'S'], description: 'Sinkronisasi Data Lokal (Desktop / Cloud)' },
-            { keys: [modifierKey.value, 'N'], description: 'Buka / Tutup Notifikasi' },
-            { keys: [modifierKey.value, 'P'], description: 'Cetak Laporan / Halaman Aktif' },
+            { keys: [modifierKey.value, 'S'], description: t('Sinkronisasi Data Lokal (Desktop / Cloud)') },
+            { keys: [modifierKey.value, 'N'], description: t('Buka / Tutup Notifikasi') },
+            { keys: [modifierKey.value, 'P'], description: t('Cetak Laporan / Halaman Aktif') },
         ],
     },
 ]);
 </script>
 
 <template>
-    <AppModal v-model="model" title="Pintasan Keyboard (Shortcuts)" size="lg">
+    <AppModal v-model="model" :title="t('Pintasan Keyboard (Shortcuts)')" size="lg">
         <div class="space-y-6">
             <p class="text-xs text-on-surface-variant leading-relaxed">
                 Gunakan kombinasi tombol berikut untuk mempercepat navigasi dan pengoperasian aplikasi di <strong>Desktop</strong> maupun <strong>Website</strong>.

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../i18n';
+const { t } = useI18n();
 import { Link } from '@inertiajs/vue3';
 import AppBadge from './AppBadge.vue';
 
@@ -28,19 +30,19 @@ function formatDate(v) {
     if (!v) return '—';
     const d = new Date(v);
     if (Number.isNaN(d.getTime())) return v;
-    return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
+    return new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
 }
 
 const statusMeta = {
-    draft: { label: 'Proposal', tone: 'neutral' },
-    verified: { label: 'Verifikasi', tone: 'warning' },
-    waiting: { label: 'Waiting', tone: 'warning' },
-    approved: { label: 'Disetujui', tone: 'warning' },
-    active: { label: 'Aktif', tone: 'success' },
-    disbursed: { label: 'Aktif', tone: 'success' },
-    completed: { label: 'Lunas', tone: 'primary' },
-    written_off: { label: 'Hapus buku', tone: 'error' },
-    rescheduled: { label: 'Reschedule', tone: 'neutral' },
+    draft: { label: t('Proposal'), tone: 'neutral' },
+    verified: { label: t('Verifikasi'), tone: 'warning' },
+    waiting: { label: t('Waiting'), tone: 'warning' },
+    approved: { label: t('Disetujui'), tone: 'warning' },
+    active: { label: t('Aktif'), tone: 'success' },
+    disbursed: { label: t('Aktif'), tone: 'success' },
+    completed: { label: t('Lunas'), tone: 'primary' },
+    written_off: { label: t('Hapus buku'), tone: 'error' },
+    rescheduled: { label: t('Reschedule'), tone: 'neutral' },
 };
 
 const roleLabels = {
@@ -56,13 +58,13 @@ const roleLabels = {
         <table class="w-full min-w-[640px] text-sm">
             <thead :class="['text-xs uppercase tracking-wide text-on-surface-variant', fill ? 'bg-surface-container-low' : 'sticky top-0 z-10 bg-surface-container-low']">
                 <tr>
-                    <th class="px-3 py-2 text-left">Pinjaman</th>
-                    <th class="px-3 py-2 text-left">Produk</th>
-                    <th class="px-3 py-2 text-left">Peran</th>
-                    <th class="px-3 py-2 text-right">Plafon</th>
-                    <th class="px-3 py-2 text-right">Sisa Pokok</th>
-                    <th class="px-3 py-2 text-left">Cair</th>
-                    <th class="px-3 py-2 text-left">Status</th>
+                    <th class="px-3 py-2 text-left">{{ t('Pinjaman') }}</th>
+                    <th class="px-3 py-2 text-left">{{ t('Produk') }}</th>
+                    <th class="px-3 py-2 text-left">{{ t('Peran') }}</th>
+                    <th class="px-3 py-2 text-right">{{ t('Plafon') }}</th>
+                    <th class="px-3 py-2 text-right">{{ t('Sisa Pokok') }}</th>
+                    <th class="px-3 py-2 text-left">{{ t('Cair') }}</th>
+                    <th class="px-3 py-2 text-left">{{ t('Status') }}</th>
                 </tr>
             </thead>
             <tbody>

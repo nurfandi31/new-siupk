@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { ref } from 'vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
@@ -53,16 +55,16 @@ const apiCall = async (url, opts = {}) => {
 
 // === Duitku Tab ===
 const duitkuModeOptions = [
-    { value: 'sandbox', label: 'Sandbox (Pengujian / Test Mode)' },
-    { value: 'production', label: 'Production (Live Transaction)' },
+    { value: 'sandbox', label: t('Sandbox (Pengujian / Test Mode)') },
+    { value: 'production', label: t('Production (Live Transaction)') },
 ];
 const duitkuMethodOptions = [
-    { value: 'VC', label: 'Virtual Account (Semua Bank)' },
-    { value: 'SP', label: 'QRIS (ShopeePay / Duitku QR)' },
-    { value: 'BC', label: 'BCA Virtual Account' },
-    { value: 'M2', label: 'Mandiri Virtual Account' },
-    { value: 'B1', label: 'BNI Virtual Account' },
-    { value: 'I1', label: 'Indomaret / Alfamart' },
+    { value: 'VC', label: t('Virtual Account (Semua Bank)') },
+    { value: 'SP', label: t('QRIS (ShopeePay / Duitku QR)') },
+    { value: 'BC', label: t('BCA Virtual Account') },
+    { value: 'M2', label: t('Mandiri Virtual Account') },
+    { value: 'B1', label: t('BNI Virtual Account') },
+    { value: 'I1', label: t('Indomaret / Alfamart') },
 ];
 const duitkuForm = useForm({
     merchant_code: props.duitku?.merchant_code || '',
@@ -95,18 +97,18 @@ const testDuitkuConnection = async () => {
 
 // === Tripay Tab ===
 const tripayModeOptions = [
-    { value: 'sandbox', label: 'Sandbox (Pengujian / Test Mode)' },
-    { value: 'production', label: 'Production (Live Transaction)' },
+    { value: 'sandbox', label: t('Sandbox (Pengujian / Test Mode)') },
+    { value: 'production', label: t('Production (Live Transaction)') },
 ];
 const tripayMethodOptions = [
-    { value: 'QRIS2', label: 'QRIS Tripay (Semua Bank & E-Wallet)' },
-    { value: 'MYBVA', label: 'Maybank Virtual Account' },
-    { value: 'PERMATAVA', label: 'Permata Virtual Account' },
-    { value: 'BNIVA', label: 'BNI Virtual Account' },
-    { value: 'BRIVA', label: 'BRI Virtual Account' },
-    { value: 'MANDIRIVA', label: 'Mandiri Virtual Account' },
-    { value: 'BCAVA', label: 'BCA Virtual Account' },
-    { value: 'ALFAMART', label: 'Alfamart / Indomaret' },
+    { value: 'QRIS2', label: t('QRIS Tripay (Semua Bank & E-Wallet)') },
+    { value: 'MYBVA', label: t('Maybank Virtual Account') },
+    { value: 'PERMATAVA', label: t('Permata Virtual Account') },
+    { value: 'BNIVA', label: t('BNI Virtual Account') },
+    { value: 'BRIVA', label: t('BRI Virtual Account') },
+    { value: 'MANDIRIVA', label: t('Mandiri Virtual Account') },
+    { value: 'BCAVA', label: t('BCA Virtual Account') },
+    { value: 'ALFAMART', label: t('Alfamart / Indomaret') },
 ];
 const tripayForm = useForm({
     merchant_code: props.tripay?.merchant_code || '',
@@ -140,16 +142,16 @@ const testTripayConnection = async () => {
 
 // === Xendit Tab ===
 const xenditModeOptions = [
-    { value: 'sandbox', label: 'Sandbox (Pengujian / Test Mode)' },
-    { value: 'production', label: 'Production (Live Transaction)' },
+    { value: 'sandbox', label: t('Sandbox (Pengujian / Test Mode)') },
+    { value: 'production', label: t('Production (Live Transaction)') },
 ];
 const xenditMethodOptions = [
-    { value: 'QRIS', label: 'QRIS Xendit (Semua Bank & E-Wallet)' },
-    { value: 'BCA', label: 'BCA Virtual Account' },
-    { value: 'BRI', label: 'BRI Virtual Account' },
-    { value: 'BNI', label: 'BNI Virtual Account' },
-    { value: 'MANDIRI', label: 'Mandiri Virtual Account' },
-    { value: 'PERMATA', label: 'Permata Virtual Account' },
+    { value: 'QRIS', label: t('QRIS Xendit (Semua Bank & E-Wallet)') },
+    { value: 'BCA', label: t('BCA Virtual Account') },
+    { value: 'BRI', label: t('BRI Virtual Account') },
+    { value: 'BNI', label: t('BNI Virtual Account') },
+    { value: 'MANDIRI', label: t('Mandiri Virtual Account') },
+    { value: 'PERMATA', label: t('Permata Virtual Account') },
 ];
 const xenditForm = useForm({
     secret_key: '',
@@ -182,23 +184,23 @@ const testXenditConnection = async () => {
 };
 
 const gatewayTabs = [
-    { key: 'overview', label: 'Status & Gateway Utama', icon: 'dashboard' },
-    { key: 'duitku', label: 'Duitku Gateway', icon: 'account_balance_wallet' },
-    { key: 'tripay', label: 'Tripay Gateway', icon: 'payments' },
-    { key: 'xendit', label: 'Xendit Gateway', icon: 'credit_card' },
+    { key: 'overview', label: t('Status & Gateway Utama'), icon: 'dashboard' },
+    { key: 'duitku', label: t('Duitku Gateway'), icon: 'account_balance_wallet' },
+    { key: 'tripay', label: t('Tripay Gateway'), icon: 'payments' },
+    { key: 'xendit', label: t('Xendit Gateway'), icon: 'credit_card' },
 ];
 </script>
 
 <template>
-    <Head title="Pengaturan Payment Gateway" />
+    <Head :title="t('Pengaturan Payment Gateway')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <AdminPageHeader
-                title="Payment Gateway"
-                subtitle="Kelola provider Payment Gateway (Duitku, Tripay, Xendit) dan tetapkan gateway aktif penagihan sistem."
+                :title="t('Payment Gateway')"
+                :subtitle="t('Kelola provider Payment Gateway (Duitku, Tripay, Xendit) dan tetapkan gateway aktif penagihan sistem.')"
             >
                 <template #actions>
-                    <AppBadge tone="success">Active: {{ (props.active_gateway || 'duitku').toUpperCase() }}</AppBadge>
+                    <AppBadge tone="success">{{ t('Active:') }} {{ (props.active_gateway || 'duitku').toUpperCase() }}</AppBadge>
                 </template>
             </AdminPageHeader>
 
@@ -208,7 +210,7 @@ const gatewayTabs = [
                 v-model="activeTab"
                 :items="gatewayTabs"
                 variant="pills-bar"
-                aria-label="Tab payment gateway"
+                :aria-label="t('Tab payment gateway')"
             />
 
             <!-- OVERVIEW TAB -->
@@ -216,10 +218,10 @@ const gatewayTabs = [
                 <AppCard class="border-2 border-primary/20">
                     <header class="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <div>
-                            <h3 class="font-bold text-primary text-lg">Pilih Payment Gateway Utama (In-App Billing)</h3>
-                            <p class="text-xs text-on-surface-variant">Klik tombol aktifkan pada salah satu gateway di bawah ini untuk mengeset gateway penagihan invoice otomatis.</p>
+                            <h3 class="font-bold text-primary text-lg">{{ t('Pilih Payment Gateway Utama (In-App Billing)') }}</h3>
+                            <p class="text-xs text-on-surface-variant">{{ t('Klik tombol aktifkan pada salah satu gateway di bawah ini untuk mengeset gateway penagihan invoice otomatis.') }}</p>
                         </div>
-                        <AppBadge tone="success">Aktif: {{ (props.active_gateway || 'duitku').toUpperCase() }}</AppBadge>
+                        <AppBadge tone="success">{{ t('Aktif:') }} {{ (props.active_gateway || 'duitku').toUpperCase() }}</AppBadge>
                     </header>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -227,12 +229,12 @@ const gatewayTabs = [
                         <div class="flex flex-col justify-between rounded-xl border-2 p-5 transition" :class="props.active_gateway === 'duitku' ? 'border-primary bg-primary/5' : 'border-outline-variant bg-surface'">
                             <div class="space-y-2 mb-4">
                                 <div class="flex items-center justify-between">
-                                    <h4 class="font-bold text-base text-primary">Duitku Gateway</h4>
+                                    <h4 class="font-bold text-base text-primary">{{ t('Duitku Gateway') }}</h4>
                                     <AppBadge :tone="props.active_gateway === 'duitku' ? 'success' : 'neutral'">
                                         {{ props.active_gateway === 'duitku' ? 'Aktif Utama' : 'Nonaktif' }}
                                     </AppBadge>
                                 </div>
-                                <p class="text-xs text-on-surface-variant leading-relaxed">Virtual Account (Semua Bank), QRIS (ShopeePay/Duitku), Credit Card, Indomaret/Alfamart.</p>
+                                <p class="text-xs text-on-surface-variant leading-relaxed">{{ t('Virtual Account (Semua Bank), QRIS (ShopeePay/Duitku), Credit Card, Indomaret/Alfamart.') }}</p>
                             </div>
                             <AppButton size="compact" :variant="props.active_gateway === 'duitku' ? 'success' : 'secondary'" :disabled="props.active_gateway === 'duitku' || setGatewayForm.processing" icon="check_circle" @click="setGateway('duitku')">
                                 {{ props.active_gateway === 'duitku' ? 'Aktif Digunakan' : 'Aktifkan Duitku' }}
@@ -243,12 +245,12 @@ const gatewayTabs = [
                         <div class="flex flex-col justify-between rounded-xl border-2 p-5 transition" :class="props.active_gateway === 'tripay' ? 'border-primary bg-primary/5' : 'border-outline-variant bg-surface'">
                             <div class="space-y-2 mb-4">
                                 <div class="flex items-center justify-between">
-                                    <h4 class="font-bold text-base text-primary">Tripay Gateway</h4>
+                                    <h4 class="font-bold text-base text-primary">{{ t('Tripay Gateway') }}</h4>
                                     <AppBadge :tone="props.active_gateway === 'tripay' ? 'success' : 'neutral'">
                                         {{ props.active_gateway === 'tripay' ? 'Aktif Utama' : 'Nonaktif' }}
                                     </AppBadge>
                                 </div>
-                                <p class="text-xs text-on-surface-variant leading-relaxed">QRIS Tripay, Virtual Account (BCA, BRI, BNI, Mandiri, Permata), Retail Outlets.</p>
+                                <p class="text-xs text-on-surface-variant leading-relaxed">{{ t('QRIS Tripay, Virtual Account (BCA, BRI, BNI, Mandiri, Permata), Retail Outlets.') }}</p>
                             </div>
                             <AppButton size="compact" :variant="props.active_gateway === 'tripay' ? 'success' : 'secondary'" :disabled="props.active_gateway === 'tripay' || setGatewayForm.processing" icon="check_circle" @click="setGateway('tripay')">
                                 {{ props.active_gateway === 'tripay' ? 'Aktif Digunakan' : 'Aktifkan Tripay' }}
@@ -259,12 +261,12 @@ const gatewayTabs = [
                         <div class="flex flex-col justify-between rounded-xl border-2 p-5 transition" :class="props.active_gateway === 'xendit' ? 'border-primary bg-primary/5' : 'border-outline-variant bg-surface'">
                             <div class="space-y-2 mb-4">
                                 <div class="flex items-center justify-between">
-                                    <h4 class="font-bold text-base text-primary">Xendit Gateway</h4>
+                                    <h4 class="font-bold text-base text-primary">{{ t('Xendit Gateway') }}</h4>
                                     <AppBadge :tone="props.active_gateway === 'xendit' ? 'success' : 'neutral'">
                                         {{ props.active_gateway === 'xendit' ? 'Aktif Utama' : 'Nonaktif' }}
                                     </AppBadge>
                                 </div>
-                                <p class="text-xs text-on-surface-variant leading-relaxed">QRIS Xendit, Virtual Account (BCA, BRI, BNI, Mandiri, Permata), Kartu Kredit/Debit.</p>
+                                <p class="text-xs text-on-surface-variant leading-relaxed">{{ t('QRIS Xendit, Virtual Account (BCA, BRI, BNI, Mandiri, Permata), Kartu Kredit/Debit.') }}</p>
                             </div>
                             <AppButton size="compact" :variant="props.active_gateway === 'xendit' ? 'success' : 'secondary'" :disabled="props.active_gateway === 'xendit' || setGatewayForm.processing" icon="check_circle" @click="setGateway('xendit')">
                                 {{ props.active_gateway === 'xendit' ? 'Aktif Digunakan' : 'Aktifkan Xendit' }}
@@ -279,31 +281,31 @@ const gatewayTabs = [
                 <AppCard>
                     <header class="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant pb-4">
                         <div>
-                            <h2 class="text-lg font-bold text-primary">Kredensial & Pengaturan Duitku Payment Gateway</h2>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">Kelola Merchant Code dan API Key Duitku secara terpusat dari Superadmin.</p>
+                            <h2 class="text-lg font-bold text-primary">{{ t('Kredensial & Pengaturan Duitku Payment Gateway') }}</h2>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Kelola Merchant Code dan API Key Duitku secara terpusat dari Superadmin.') }}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <AppBadge :tone="props.duitku?.has_api_key && props.duitku?.merchant_code ? 'success' : 'warning'">
-                                {{ props.duitku?.has_api_key && props.duitku?.merchant_code ? 'Kredensial Aktif' : 'Kredensial Belum Lengkap' }}
+                                {{ props.duitku?.has_api_key && props.duitku?.merchant_code ? t('Kredensial Aktif') : t('Kredensial Belum Lengkap') }}
                             </AppBadge>
-                            <AppBadge tone="neutral">Mode: {{ (props.duitku?.mode || 'sandbox').toUpperCase() }}</AppBadge>
+                            <AppBadge tone="neutral">{{ t('Mode:') }} {{ (props.duitku?.mode || 'sandbox').toUpperCase() }}</AppBadge>
                         </div>
                     </header>
 
                     <form @submit.prevent="submitDuitku" class="space-y-6">
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                            <div><SmartSelect v-model="duitkuForm.mode" label="Mode Lingkungan" :options="duitkuModeOptions" required /></div>
-                            <div><AppInput v-model="duitkuForm.merchant_code" label="Merchant Code" placeholder="Masukkan kode" required /></div>
-                            <div class="sm:col-span-2"><AppInput v-model="duitkuForm.api_key" label="API Key (Secret)" type="password" :placeholder="props.duitku?.has_api_key ? 'Tersimpan' : 'Masukkan API key'" /></div>
-                            <div class="sm:col-span-2"><SmartSelect v-model="duitkuForm.default_method" label="Metode Pembayaran Default" :options="duitkuMethodOptions" required /></div>
+                            <div><SmartSelect v-model="duitkuForm.mode" :label="t('Mode Lingkungan')" :options="duitkuModeOptions" required /></div>
+                            <div><AppInput v-model="duitkuForm.merchant_code" :label="t('Merchant Code')" :placeholder="t('Masukkan kode')" required /></div>
+                            <div class="sm:col-span-2"><AppInput v-model="duitkuForm.api_key" :label="t('API Key (Secret)')" type="password" :placeholder="props.duitku?.has_api_key ? 'Tersimpan' : 'Masukkan API key'" /></div>
+                            <div class="sm:col-span-2"><SmartSelect v-model="duitkuForm.default_method" :label="t('Metode Pembayaran Default')" :options="duitkuMethodOptions" required /></div>
                         </div>
 
                         <div class="flex flex-wrap items-center justify-between gap-4 border-t border-outline-variant pt-4">
                             <AppButton type="button" variant="secondary" :disabled="duitkuTesting" @click="testDuitkuConnection">
                                 <AppIcon name="network_check" class="mr-1" />
-                                <span>{{ duitkuTesting ? 'Menguji Koneksi...' : 'Uji Koneksi Duitku API' }}</span>
+                                <span>{{ duitkuTesting ? t('Menguji Koneksi...') : t('Uji Koneksi Duitku API') }}</span>
                             </AppButton>
-                            <AppButton type="submit" variant="primary" :disabled="duitkuForm.processing">Simpan Kredensial Duitku</AppButton>
+                            <AppButton type="submit" variant="primary" :disabled="duitkuForm.processing">{{ t('Simpan Kredensial Duitku') }}</AppButton>
                         </div>
                     </form>
 
@@ -320,32 +322,32 @@ const gatewayTabs = [
                 <AppCard>
                     <header class="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant pb-4">
                         <div>
-                            <h2 class="text-lg font-bold text-primary">Kredensial & Pengaturan Tripay Payment Gateway</h2>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">Kelola Merchant Code, API Key, dan Private Key Tripay secara terpusat dari Superadmin.</p>
+                            <h2 class="text-lg font-bold text-primary">{{ t('Kredensial & Pengaturan Tripay Payment Gateway') }}</h2>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Kelola Merchant Code, API Key, dan Private Key Tripay secara terpusat dari Superadmin.') }}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <AppBadge :tone="props.tripay?.has_api_key && props.tripay?.has_private_key ? 'success' : 'warning'">
-                                {{ props.tripay?.has_api_key && props.tripay?.has_private_key ? 'Kredensial Aktif' : 'Kredensial Belum Lengkap' }}
+                                {{ props.tripay?.has_api_key && props.tripay?.has_private_key ? t('Kredensial Aktif') : t('Kredensial Belum Lengkap') }}
                             </AppBadge>
-                            <AppBadge tone="neutral">Mode: {{ (props.tripay?.mode || 'sandbox').toUpperCase() }}</AppBadge>
+                            <AppBadge tone="neutral">{{ t('Mode:') }} {{ (props.tripay?.mode || 'sandbox').toUpperCase() }}</AppBadge>
                         </div>
                     </header>
 
                     <form @submit.prevent="submitTripay" class="space-y-6">
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                            <div><SmartSelect v-model="tripayForm.mode" label="Mode Lingkungan" :options="tripayModeOptions" required /></div>
-                            <div><AppInput v-model="tripayForm.merchant_code" label="Merchant Code" placeholder="Masukkan kode" required /></div>
-                            <div><AppInput v-model="tripayForm.api_key" label="API Key" type="password" :placeholder="props.tripay?.has_api_key ? 'Tersimpan' : 'DEV-...' " /></div>
-                            <div><AppInput v-model="tripayForm.private_key" label="Private Key" type="password" :placeholder="props.tripay?.has_private_key ? 'Tersimpan' : 'Masukkan private key' " /></div>
-                            <div class="sm:col-span-2"><SmartSelect v-model="tripayForm.default_method" label="Metode Pembayaran Default" :options="tripayMethodOptions" required /></div>
+                            <div><SmartSelect v-model="tripayForm.mode" :label="t('Mode Lingkungan')" :options="tripayModeOptions" required /></div>
+                            <div><AppInput v-model="tripayForm.merchant_code" :label="t('Merchant Code')" :placeholder="t('Masukkan kode')" required /></div>
+                            <div><AppInput v-model="tripayForm.api_key" :label="t('API Key')" type="password" :placeholder="props.tripay?.has_api_key ? 'Tersimpan' : 'DEV-...' " /></div>
+                            <div><AppInput v-model="tripayForm.private_key" :label="t('Private Key')" type="password" :placeholder="props.tripay?.has_private_key ? 'Tersimpan' : 'Masukkan private key' " /></div>
+                            <div class="sm:col-span-2"><SmartSelect v-model="tripayForm.default_method" :label="t('Metode Pembayaran Default')" :options="tripayMethodOptions" required /></div>
                         </div>
 
                         <div class="flex flex-wrap items-center justify-between gap-4 border-t border-outline-variant pt-4">
                             <AppButton type="button" variant="secondary" :disabled="tripayTesting" @click="testTripayConnection">
                                 <AppIcon name="network_check" class="mr-1" />
-                                <span>{{ tripayTesting ? 'Menguji Koneksi...' : 'Uji Koneksi Tripay API' }}</span>
+                                <span>{{ tripayTesting ? t('Menguji Koneksi...') : t('Uji Koneksi Tripay API') }}</span>
                             </AppButton>
-                            <AppButton type="submit" variant="primary" :disabled="tripayForm.processing">Simpan Kredensial Tripay</AppButton>
+                            <AppButton type="submit" variant="primary" :disabled="tripayForm.processing">{{ t('Simpan Kredensial Tripay') }}</AppButton>
                         </div>
                     </form>
 
@@ -362,32 +364,32 @@ const gatewayTabs = [
                 <AppCard>
                     <header class="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant pb-4">
                         <div>
-                            <h2 class="text-lg font-bold text-primary">Kredensial & Pengaturan Xendit Payment Gateway</h2>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">Kelola Secret Key, Public Key, dan Verification Token Xendit secara terpusat dari Superadmin.</p>
+                            <h2 class="text-lg font-bold text-primary">{{ t('Kredensial & Pengaturan Xendit Payment Gateway') }}</h2>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Kelola Secret Key, Public Key, dan Verification Token Xendit secara terpusat dari Superadmin.') }}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <AppBadge :tone="props.xendit?.has_secret_key ? 'success' : 'warning'">
-                                {{ props.xendit?.has_secret_key ? 'Kredensial Aktif' : 'Kredensial Belum Lengkap' }}
+                                {{ props.xendit?.has_secret_key ? t('Kredensial Aktif') : t('Kredensial Belum Lengkap') }}
                             </AppBadge>
-                            <AppBadge tone="neutral">Mode: {{ (props.xendit?.mode || 'sandbox').toUpperCase() }}</AppBadge>
+                            <AppBadge tone="neutral">{{ t('Mode:') }} {{ (props.xendit?.mode || 'sandbox').toUpperCase() }}</AppBadge>
                         </div>
                     </header>
 
                     <form @submit.prevent="submitXendit" class="space-y-6">
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                            <div><SmartSelect v-model="xenditForm.mode" label="Mode Lingkungan" :options="xenditModeOptions" required /></div>
-                            <div><AppInput v-model="xenditForm.public_key" label="Public Key (Optional)" placeholder="xnd_public_..." /></div>
-                            <div class="sm:col-span-2"><AppInput v-model="xenditForm.secret_key" label="Secret Key (API Key)" type="password" :placeholder="props.xendit?.has_secret_key ? 'Tersimpan' : 'xnd_...'" /></div>
-                            <div class="sm:col-span-2"><AppInput v-model="xenditForm.callback_token" label="Webhook Verification Token (x-callback-token)" type="password" placeholder="Masukkan token webhook" /></div>
-                            <div class="sm:col-span-2"><SmartSelect v-model="xenditForm.default_method" label="Metode Pembayaran Default" :options="xenditMethodOptions" required /></div>
+                            <div><SmartSelect v-model="xenditForm.mode" :label="t('Mode Lingkungan')" :options="xenditModeOptions" required /></div>
+                            <div><AppInput v-model="xenditForm.public_key" :label="t('Public Key (Optional)')" placeholder="xnd_public_..." /></div>
+                            <div class="sm:col-span-2"><AppInput v-model="xenditForm.secret_key" :label="t('Secret Key (API Key)')" type="password" :placeholder="props.xendit?.has_secret_key ? 'Tersimpan' : 'xnd_...'" /></div>
+                            <div class="sm:col-span-2"><AppInput v-model="xenditForm.callback_token" :label="t('Webhook Verification Token (x-callback-token)')" type="password" :placeholder="t('Masukkan token webhook')" /></div>
+                            <div class="sm:col-span-2"><SmartSelect v-model="xenditForm.default_method" :label="t('Metode Pembayaran Default')" :options="xenditMethodOptions" required /></div>
                         </div>
 
                         <div class="flex flex-wrap items-center justify-between gap-4 border-t border-outline-variant pt-4">
                             <AppButton type="button" variant="secondary" :disabled="xenditTesting" @click="testXenditConnection">
                                 <AppIcon name="network_check" class="mr-1" />
-                                <span>{{ xenditTesting ? 'Menguji Koneksi...' : 'Uji Koneksi Xendit API' }}</span>
+                                <span>{{ xenditTesting ? t('Menguji Koneksi...') : t('Uji Koneksi Xendit API') }}</span>
                             </AppButton>
-                            <AppButton type="submit" variant="primary" :disabled="xenditForm.processing">Simpan Kredensial Xendit</AppButton>
+                            <AppButton type="submit" variant="primary" :disabled="xenditForm.processing">{{ t('Simpan Kredensial Xendit') }}</AppButton>
                         </div>
                     </form>
 

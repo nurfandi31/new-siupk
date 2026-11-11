@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -9,6 +11,9 @@ import AppInput from '../../../Components/AppInput.vue';
 import AppModal from '../../../Components/AppModal.vue';
 import SmartDataTable from '../../../Components/SmartDataTable.vue';
 import AuthenticatedLayout from '../../../Layouts/TenantAdminLayout.vue';
+import { useConfirm } from '../../../composables/useConfirm';
+
+const { confirm } = useConfirm();
 
 const props = defineProps({
     users: { type: Object, required: true },
@@ -19,13 +24,13 @@ const props = defineProps({
 });
 
 const columns = [
-    { key: 'name', label: 'Nama', sortable: true },
-    { key: 'username', label: 'Username' },
-    { key: 'email', label: 'Email' },
-    { key: 'role', label: 'Role / Peran' },
-    { key: 'tenure', label: 'Masa Jabatan' },
-    { key: 'status', label: 'Status' },
-    { key: 'last_login_at', label: 'Login Terakhir' },
+    { key: 'name', label: t('Nama'), sortable: true },
+    { key: 'username', label: t('Username') },
+    { key: 'email', label: t('Email') },
+    { key: 'role', label: t('Role / Peran') },
+    { key: 'tenure', label: t('Masa Jabatan') },
+    { key: 'status', label: t('Status') },
+    { key: 'last_login_at', label: t('Login Terakhir') },
 ];
 
 // Password Reset Modal State
@@ -54,28 +59,33 @@ function submitResetPassword() {
     });
 }
 
-function confirmDelete(user) {
-    if (confirm(`Apakah Anda yakin ingin menghapus pengguna "${user.name}"? Tindakan ini tidak dapat dibatalkan.`)) {
-        router.delete(`/access/users/${user.row_id}`, { preserveScroll: true });
-    }
+async function confirmDelete(user) {
+    const ok = await confirm({
+        title: t('Hapus Pengguna'),
+        message: `Akun "${user.name}" akan dihapus permanen beserta aksesnya. Tindakan ini tidak dapat dibatalkan.`,
+        confirmLabel: t('Ya, Hapus'),
+        variant: 'danger',
+    });
+    if (!ok) return;
+    router.delete(`/access/users/${user.row_id}`, { preserveScroll: true });
 }
 </script>
 
 <template>
-    <Head title="Manajemen Pengguna" />
+    <Head :title="t('Manajemen Pengguna')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">Manajemen Pengguna</h1>
-                    <p class="mt-1 text-sm text-on-surface-variant">Kelola akun staf, operator desa, dan penugasan peran (role) pada sistem.</p>
+                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">{{ t('Manajemen Pengguna') }}</h1>
+                    <p class="mt-1 text-sm text-on-surface-variant">{{ t('Kelola akun staf, operator desa, dan penugasan peran (role) pada sistem.') }}</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <Link href="/access/roles">
-                        <AppButton variant="secondary" icon="shield_person">Kelola Role</AppButton>
+                        <AppButton variant="secondary" icon="shield_person">{{ t('Kelola Role') }}</AppButton>
                     </Link>
                     <Link href="/access/users/create">
-                        <AppButton icon="person_add">Tambah Pengguna</AppButton>
+                        <AppButton icon="person_add">{{ t('Tambah Pengguna') }}</AppButton>
                     </Link>
                 </div>
             </header>
@@ -90,14 +100,14 @@ function confirmDelete(user) {
                         :per-page="perPage"
                         :sort="sort"
                         :direction="direction"
-                        search-placeholder="Cari pengguna..."
+                        :search-placeholder="t('Cari pengguna...')"
                         empty-title="Belum ada pengguna"
                         empty-description="Tambahkan pengguna staf atau operator untuk unit ini."
                     >
                         <template #cell-name="{ row }">
                             <div class="font-bold text-primary">
                                 {{ row.name }}
-                                <span v-if="row.is_self" class="ml-1.5 text-xs text-tertiary font-normal">(Anda)</span>
+                                <span v-if="row.is_self" class="ml-1.5 text-xs text-tertiary font-normal">{{ t('(Anda)') }}</span>
                             </div>
                         </template>
 
@@ -107,13 +117,13 @@ function confirmDelete(user) {
                                 <AppIcon v-if="row.role_code === 'admin'" name="lock" class="text-xs" />
                                 {{ row.role_name }}
                             </span>
-                            <span v-else class="text-xs italic text-on-surface-variant">Akses Penuh (Legacy)</span>
+                            <span v-else class="text-xs italic text-on-surface-variant">{{ t('Akses Penuh (Legacy)') }}</span>
                             <span v-if="row.role_code === 'anggota' && row.member_name" class="ml-1 text-xs text-on-surface-variant">· {{ row.member_name }}</span>
                         </template>
 
                         <template #cell-tenure="{ row }">
                             <span v-if="row.appointed_at || row.term_end_at" class="text-xs text-on-surface">
-                                {{ row.appointed_at || '—' }} s.d. {{ row.term_end_at || 'Sekarang' }}
+                                {{ row.appointed_at || '—' }} s.d. {{ row.term_end_at || t('Sekarang') }}
                             </span>
                             <span v-else class="text-xs text-on-surface-variant">—</span>
                         </template>
@@ -125,14 +135,14 @@ function confirmDelete(user) {
                         </template>
 
                         <template #cell-last_login_at="{ row }">
-                            <span class="text-xs text-on-surface-variant">{{ row.last_login_at || 'Belum pernah login' }}</span>
+                            <span class="text-xs text-on-surface-variant">{{ row.last_login_at || t('Belum pernah login') }}</span>
                         </template>
 
                         <template #actions="{ row }">
                             <div class="flex items-center justify-end gap-1">
-                                <AppButton variant="ghost" size="compact" icon="key" tooltip="Reset Password" @click="openResetModal(row)" />
+                                <AppButton variant="ghost" size="compact" icon="key" :tooltip="t('Reset Password')" @click="openResetModal(row)" />
                                 <Link :href="`/access/users/${row.row_id}/edit`">
-                                    <AppButton variant="ghost" size="compact" icon="edit" tooltip="Edit Pengguna" />
+                                    <AppButton variant="ghost" size="compact" icon="edit" :tooltip="t('Edit Pengguna')" />
                                 </Link>
                                 <AppButton
                                     v-if="!row.is_self"
@@ -140,7 +150,7 @@ function confirmDelete(user) {
                                     size="compact"
                                     icon="delete"
                                     tone="error"
-                                    tooltip="Hapus Pengguna"
+                                    :tooltip="t('Hapus Pengguna')"
                                     @click="confirmDelete(row)"
                                 />
                             </div>
@@ -152,12 +162,12 @@ function confirmDelete(user) {
             <AppModal v-model="resetModalOpen" :title="`Reset Password: ${resetTargetUser?.name ?? ''}`" size="md">
                 <form class="space-y-4" @submit.prevent="submitResetPassword">
                     <p class="text-sm text-on-surface-variant">Masukkan password baru untuk pengguna <strong>{{ resetTargetUser?.username }}</strong>.</p>
-                    <AppInput v-model="resetForm.password" label="Password Baru" type="password" required :error="resetForm.errors.password" />
-                    <AppInput v-model="resetForm.password_confirmation" label="Konfirmasi Password" type="password" required />
+                    <AppInput v-model="resetForm.password" :label="t('Password Baru')" type="password" required :error="resetForm.errors.password" />
+                    <AppInput v-model="resetForm.password_confirmation" :label="t('Konfirmasi Password')" type="password" required />
                 </form>
                 <template #footer>
-                    <AppButton variant="secondary" @click="resetModalOpen = false">Batal</AppButton>
-                    <AppButton :loading="resetForm.processing" icon="lock_reset" @click="submitResetPassword">Simpan Password</AppButton>
+                    <AppButton variant="secondary" @click="resetModalOpen = false">{{ t('Batal') }}</AppButton>
+                    <AppButton :loading="resetForm.processing" icon="lock_reset" @click="submitResetPassword">{{ t('Simpan Password') }}</AppButton>
                 </template>
             </AppModal>
         </div>

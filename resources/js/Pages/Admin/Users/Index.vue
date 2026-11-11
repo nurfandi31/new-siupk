@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router, useForm } from '@inertiajs/vue3';
 import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -24,26 +26,26 @@ const { confirm } = useConfirm();
 const toggleForm = useForm({});
 
 const columns = [
-    { key: 'name', label: 'Nama', sortable: true },
-    { key: 'username', label: 'Username' },
-    { key: 'email', label: 'Email' },
-    { key: 'tenant', label: 'Tenant' },
-    { key: 'status', label: 'Status', sortable: true },
-    { key: 'last_login_at', label: 'Login Terakhir' },
+    { key: 'name', label: t('Nama'), sortable: true },
+    { key: 'username', label: t('Username') },
+    { key: 'email', label: t('Email') },
+    { key: 'tenant', label: t('Tenant') },
+    { key: 'status', label: t('Status'), sortable: true },
+    { key: 'last_login_at', label: t('Login Terakhir') },
 ];
 
 const statusOptions = [
-    { value: '', label: 'Semua status' },
-    { value: 'active', label: 'Active' },
-    { value: 'suspended', label: 'Suspended' },
-    { value: 'inactive', label: 'Inactive' },
+    { value: '', label: t('Semua status') },
+    { value: 'active', label: t('Active') },
+    { value: 'suspended', label: t('Suspended') },
+    { value: 'inactive', label: t('Inactive') },
 ];
 
 const kpis = [
-    { label: 'Total User', icon: 'group', tone: 'primary' },
-    { label: 'User Aktif', icon: 'how_to_reg', tone: 'success' },
-    { label: 'User Nonaktif', icon: 'person_off', tone: 'error' },
-    { label: 'Tanpa Tenant', icon: 'person_search', tone: 'secondary' },
+    { label: t('Total User'), icon: 'group', tone: 'primary' },
+    { label: t('User Aktif'), icon: 'how_to_reg', tone: 'success' },
+    { label: t('User Nonaktif'), icon: 'person_off', tone: 'error' },
+    { label: t('Tanpa Tenant'), icon: 'person_search', tone: 'secondary' },
 ];
 
 function kpiValue(key) {
@@ -81,12 +83,12 @@ async function toggleStatus(user) {
 </script>
 
 <template>
-    <Head title="Pengguna Platform" />
+    <Head :title="t('Pengguna Platform')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <AdminPageHeader
-                title="Pengguna Platform"
-                subtitle="Cari dan kelola semua pengguna lintas tenant. Menonaktifkan akun langsung memblokir login user di seluruh aplikasi — perubahan role/detail tetap lewat halaman user tenant."
+                :title="t('Pengguna Platform')"
+                :subtitle="t('Cari dan kelola semua pengguna lintas tenant. Menonaktifkan akun langsung memblokir login user di seluruh aplikasi — perubahan role/detail tetap lewat halaman user tenant.')"
             />
 
             <!-- Ringkasan KPI -->
@@ -116,7 +118,7 @@ async function toggleStatus(user) {
                         <div class="min-w-40">
                             <SmartSelect
                                 :model-value="status"
-                                label="Status"
+                                :label="t('Status')"
                                 hide-label
                                 clearable
                                 :options="statusOptions"
@@ -126,7 +128,7 @@ async function toggleStatus(user) {
                         <div class="min-w-52">
                             <SmartSelect
                                 :model-value="tenant_id ? String(tenant_id) : ''"
-                                label="Tenant"
+                                :label="t('Tenant')"
                                 hide-label
                                 clearable
                                 searchable
@@ -138,7 +140,7 @@ async function toggleStatus(user) {
                     </template>
                     <template #cell-name="{ row }">
                         <span class="font-semibold text-primary">{{ row.name }}</span>
-                        <AppBadge v-if="row.is_superadmin" tone="primary-soft" class="ml-1.5">Superadmin</AppBadge>
+                        <AppBadge v-if="row.is_superadmin" tone="primary-soft" class="ml-1.5">{{ t('Superadmin') }}</AppBadge>
                     </template>
                     <template #cell-email="{ row }">
                         <span class="text-on-surface-variant">{{ row.email || '—' }}</span>
@@ -153,7 +155,7 @@ async function toggleStatus(user) {
                     </template>
                     <template #cell-last_login_at="{ row }">
                         <span v-if="row.last_login_at" class="whitespace-nowrap tabular-nums text-on-surface">{{ row.last_login_at }}</span>
-                        <span v-else class="text-outline">belum pernah</span>
+                        <span v-else class="text-outline">{{ t('belum pernah') }}</span>
                     </template>
                     <template #actions="{ row }">
                         <AppButton

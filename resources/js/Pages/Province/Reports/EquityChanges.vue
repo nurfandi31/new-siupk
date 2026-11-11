@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import AppCard from '../../../Components/AppCard.vue';
 import ReportPeriodFilter from '../../../Components/ReportPeriodFilter.vue';
@@ -44,13 +46,13 @@ const baseUrl = '/province/reports/equity-changes';
                     <table class="w-full text-left text-sm divide-y divide-outline-variant">
                         <thead>
                             <tr class="bg-surface-container-low text-xs font-bold uppercase">
-                                <th class="px-4 py-3">Komponen Ekuitas</th>
-                                <th class="px-4 py-3 text-right">Jumlah (Rp)</th>
+                                <th class="px-4 py-3">{{ t('Komponen Ekuitas') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Jumlah (Rp)') }}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td class="px-4 py-3">Ekuitas Awal Periode</td><td class="px-4 py-3 text-right">{{ money(report.opening_equity) }}</td></tr>
-                            <tr><td class="px-4 py-3">Laba Bersih Tahun / Periode Berjalan</td><td class="px-4 py-3 text-right">{{ money(report.net_income) }}</td></tr>
+                            <tr><td class="px-4 py-3">{{ t('Ekuitas Awal Periode') }}</td><td class="px-4 py-3 text-right">{{ money(report.opening_equity) }}</td></tr>
+                            <tr><td class="px-4 py-3">{{ t('Laba Bersih Tahun / Periode Berjalan') }}</td><td class="px-4 py-3 text-right">{{ money(report.net_income) }}</td></tr>
                             <tr class="font-bold bg-secondary-container text-on-secondary-container"><td class="px-4 py-3">TOTAL EKUITAS AKHIR PERIODE</td><td class="px-4 py-3 text-right">{{ money(report.ending_equity) }}</td></tr>
                         </tbody>
                     </table>

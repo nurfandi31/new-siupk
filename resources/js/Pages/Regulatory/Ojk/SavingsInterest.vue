@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -125,7 +127,7 @@ const yearOptions = computed(() => {
 
 const monthOptions = computed(() => {
     const opts: { value: string; label: string }[] = [
-        { value: 'all', label: 'Januari – Desember' },
+        { value: 'all', label: t('Januari – Desember') },
     ];
     const labels = props.monthLabels;
     for (let m = 1; m <= 12; m++) {
@@ -176,15 +178,15 @@ const pdfUrl = computed<string>(() => {
 </script>
 
 <template>
-    <Head title="Daftar Bunga Simpanan — OJK" />
+    <Head :title="t('Daftar Bunga Simpanan — OJK')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        OJK · Regulatory
+                        {{ t('OJK · Regulatory') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Daftar Bunga Simpanan</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Daftar Bunga Simpanan') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         {{ period.period_label ?? '' }} · per {{ period.as_of ?? '-' }}
                     </p>
@@ -196,7 +198,7 @@ const pdfUrl = computed<string>(() => {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -204,7 +206,7 @@ const pdfUrl = computed<string>(() => {
 
             <AppCard v-if="error" class="border border-error/30 bg-error-container/40 p-4">
                 <p class="text-sm text-error">
-                    <span class="font-bold">Gagal membangun laporan:</span> {{ error }}
+                    <span class="font-bold">{{ t('Gagal membangun laporan:') }}</span> {{ error }}
                 </p>
             </AppCard>
 
@@ -212,19 +214,19 @@ const pdfUrl = computed<string>(() => {
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div class="space-y-1.5">
                         <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">
-                            Tahun
+                            {{ t('Tahun') }}
                         </label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" hide-label @update:model-value="apply" />
                     </div>
                     <div class="space-y-1.5">
                         <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">
-                            Bulan
+                            {{ t('Bulan') }}
                         </label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" hide-label @update:model-value="apply" />
                     </div>
                     <div class="space-y-1.5">
                         <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">
-                            Tarif asumsi (p.a.)
+                            {{ t('Tarif asumsi (p.a.)') }}
                         </label>
                         <p class="ml-1 mt-2 text-lg font-semibold tabular-nums text-primary">
                             {{ ratePercent }}%
@@ -239,19 +241,19 @@ const pdfUrl = computed<string>(() => {
             <!-- KPI -->
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                 <AppCard class="p-4">
-                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">Saldo Awal</p>
+                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Saldo Awal') }}</p>
                     <p class="mt-1 text-xl font-bold tabular-nums">{{ fmt(totals.opening_balance) }}</p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">Saldo Akhir</p>
+                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Saldo Akhir') }}</p>
                     <p class="mt-1 text-xl font-bold tabular-nums">{{ fmt(totals.closing_balance) }}</p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">Saldo Rata-rata</p>
+                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Saldo Rata-rata') }}</p>
                     <p class="mt-1 text-xl font-bold tabular-nums">{{ fmt(totals.average_balance) }}</p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">Total Bunga (estimasi)</p>
+                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Total Bunga (estimasi)') }}</p>
                     <p class="mt-1 text-xl font-bold tabular-nums text-primary">
                         {{ fmt(totals.interest_estimated) }}
                     </p>
@@ -261,19 +263,19 @@ const pdfUrl = computed<string>(() => {
             <!-- Rekap per jenis -->
             <AppCard class="overflow-hidden p-0">
                 <div class="border-b border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm font-bold uppercase tracking-wider text-on-surface-variant">
-                    Rekap per Jenis Simpanan
+                    {{ t('Rekap per Jenis Simpanan') }}
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-lowest text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left">Jenis Simpanan</th>
-                                <th class="px-3 py-2 text-right">Akun</th>
-                                <th class="px-3 py-2 text-right">Saldo Awal</th>
-                                <th class="px-3 py-2 text-right">Saldo Akhir</th>
-                                <th class="px-3 py-2 text-right">Saldo Rata-rata</th>
-                                <th class="px-3 py-2 text-right">Rate</th>
-                                <th class="px-3 py-2 text-right">Bunga (estimasi)</th>
+                                <th class="px-3 py-2 text-left">{{ t('Jenis Simpanan') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Akun') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Saldo Awal') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Saldo Akhir') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Saldo Rata-rata') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Rate') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Bunga (estimasi)') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -304,27 +306,27 @@ const pdfUrl = computed<string>(() => {
             <!-- Rincian per akun -->
             <AppCard class="overflow-hidden p-0">
                 <div class="border-b border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm font-bold uppercase tracking-wider text-on-surface-variant">
-                    Rincian per Akun
+                    {{ t('Rincian per Akun') }}
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-lowest text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left w-16">No</th>
-                                <th class="px-3 py-2 text-left w-28">Kode</th>
-                                <th class="px-3 py-2 text-left">Nama Akun</th>
-                                <th class="px-3 py-2 text-left w-40">Jenis</th>
-                                <th class="px-3 py-2 text-right">Saldo Awal</th>
-                                <th class="px-3 py-2 text-right">Saldo Akhir</th>
-                                <th class="px-3 py-2 text-right">Saldo Rata-rata</th>
-                                <th class="px-3 py-2 text-right">Rate</th>
-                                <th class="px-3 py-2 text-right">Bunga</th>
+                                <th class="px-3 py-2 text-left w-16">{{ t('No') }}</th>
+                                <th class="px-3 py-2 text-left w-28">{{ t('Kode') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Nama Akun') }}</th>
+                                <th class="px-3 py-2 text-left w-40">{{ t('Jenis') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Saldo Awal') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Saldo Akhir') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Saldo Rata-rata') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Rate') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Bunga') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="!hasData">
                                 <td colspan="9" class="px-3 py-8 text-center text-on-surface-variant">
-                                    Belum ada data simpanan untuk periode ini.
+                                    {{ t('Belum ada data simpanan untuk periode ini.') }}
                                 </td>
                             </tr>
                             <tr v-for="(row, idx) in props.interest_rows" :key="`${row.code}-${idx}`" class="border-t border-outline-variant/20">
@@ -350,18 +352,18 @@ const pdfUrl = computed<string>(() => {
             <!-- Beban bunga dari jurnal (jika ada) -->
             <AppCard v-if="hasExpense" class="overflow-hidden p-0">
                 <div class="border-b border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm font-bold uppercase tracking-wider text-on-surface-variant">
-                    Beban Bunga Simpanan (dari Jurnal Akun 5.x Bunga Simpanan)
+                    {{ t('Beban Bunga Simpanan (dari Jurnal Akun 5.x Bunga Simpanan)') }}
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-lowest text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left w-16">No</th>
-                                <th class="px-3 py-2 text-left w-28">Kode</th>
-                                <th class="px-3 py-2 text-left">Nama Akun</th>
-                                <th class="px-3 py-2 text-right">Debit</th>
-                                <th class="px-3 py-2 text-right">Kredit</th>
-                                <th class="px-3 py-2 text-right">Net</th>
+                                <th class="px-3 py-2 text-left w-16">{{ t('No') }}</th>
+                                <th class="px-3 py-2 text-left w-28">{{ t('Kode') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Nama Akun') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Debit') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Kredit') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Net') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -376,7 +378,7 @@ const pdfUrl = computed<string>(() => {
                         </tbody>
                         <tfoot>
                             <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                <td colspan="3" class="px-3 py-2">Total Beban Bunga Simpanan</td>
+                                <td colspan="3" class="px-3 py-2">{{ t('Total Beban Bunga Simpanan') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ fmt(props.expense_total) }}</td>
                                 <td colspan="2"></td>
                             </tr>

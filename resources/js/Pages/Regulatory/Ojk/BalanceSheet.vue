@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -79,19 +81,19 @@ const pdfUrl = computed(() => {
 </script>
 
 <template>
-    <Head title="Neraca OJK" />
+    <Head :title="t('Neraca OJK')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Laporan OJK · Neraca
+                        {{ t('Laporan OJK · Neraca') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Laporan Posisi Keuangan (Neraca)</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Laporan Posisi Keuangan (Neraca)') }}</h1>
                     <p class="text-sm text-on-surface-variant">{{ period.period_label }} · per {{ period.as_of }}</p>
                 </div>
                 <AppBadge :tone="balanced ? 'success' : 'error'">
-                    {{ balanced ? 'Aset = Liabilitas+Ekuitas' : 'Tidak seimbang' }}
+                    {{ balanced ? 'Aset = Liabilitas+Ekuitas' : t('Tidak seimbang') }}
                 </AppBadge>
             </div>
 
@@ -109,15 +111,15 @@ const pdfUrl = computed(() => {
                     <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                         <tr>
                             <th class="px-3 py-2 text-left w-12">{{ '{Huruf}' }}</th>
-                            <th class="px-3 py-2 text-left w-28">Kode</th>
-                            <th class="px-3 py-2 text-left">Nama Akun</th>
-                            <th class="px-3 py-2 text-right w-44">Saldo</th>
+                            <th class="px-3 py-2 text-left w-28">{{ t('Kode') }}</th>
+                            <th class="px-3 py-2 text-left">{{ t('Nama Akun') }}</th>
+                            <th class="px-3 py-2 text-right w-44">{{ t('Saldo') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="sections.length === 0">
                             <td colspan="4" class="px-3 py-8 text-center text-on-surface-variant">
-                                Belum ada data neraca.
+                                {{ t('Belum ada data neraca.') }}
                             </td>
                         </tr>
                         <template v-for="l1 in sections" :key="l1.code">
@@ -156,7 +158,7 @@ const pdfUrl = computed(() => {
                     </tbody>
                     <tfoot>
                         <tr class="border-t-2 border-outline bg-surface-container font-bold">
-                            <td class="px-3 py-2" colspan="3">Jumlah Liabilitas + Ekuitas</td>
+                            <td class="px-3 py-2" colspan="3">{{ t('Jumlah Liabilitas + Ekuitas') }}</td>
                             <td class="px-3 py-2 text-right tabular-nums">{{ fmt(totals.liabilities_equity) }}</td>
                         </tr>
                     </tfoot>
@@ -170,23 +172,23 @@ const pdfUrl = computed(() => {
             <!-- Rasio OJK -->
             <AppCard class="p-5">
                 <h3 class="mb-3 border-b border-outline-variant pb-2 text-base font-bold uppercase tracking-wide text-primary">
-                    Rasio Keuangan (Standar OJK)
+                    {{ t('Rasio Keuangan (Standar OJK)') }}
                 </h3>
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div class="rounded-lg border border-outline-variant/40 p-4">
-                        <p class="text-xs font-bold uppercase tracking-wider text-primary">Rasio Likuiditas</p>
-                        <p class="mt-1 text-xs text-on-surface-variant">Kas dan Setara Kas / Liabilitas Lancar</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-primary">{{ t('Rasio Likuiditas') }}</p>
+                        <p class="mt-1 text-xs text-on-surface-variant">{{ t('Kas dan Setara Kas / Liabilitas Lancar') }}</p>
                         <div class="mt-3 grid grid-cols-3 gap-2 text-sm">
                             <div>
-                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">Kas & Setara Kas</p>
+                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">{{ t('Kas & Setara Kas') }}</p>
                                 <p class="font-semibold tabular-nums">{{ fmt(kas_dan_setara_kas) }}</p>
                             </div>
                             <div>
-                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">Liabilitas Lancar</p>
+                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">{{ t('Liabilitas Lancar') }}</p>
                                 <p class="font-semibold tabular-nums">{{ fmt(liabilitas_lancar) }}</p>
                             </div>
                             <div>
-                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">Rasio</p>
+                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">{{ t('Rasio') }}</p>
                                 <p class="font-bold text-primary tabular-nums">
                                     {{ rasio_likuiditas !== null ? rasio_likuiditas.toFixed(2) + '%' : '—' }}
                                 </p>
@@ -194,19 +196,19 @@ const pdfUrl = computed(() => {
                         </div>
                     </div>
                     <div class="rounded-lg border border-outline-variant/40 p-4">
-                        <p class="text-xs font-bold uppercase tracking-wider text-primary">Rasio Solvabilitas</p>
-                        <p class="mt-1 text-xs text-on-surface-variant">Total Aset / Total Liabilitas</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-primary">{{ t('Rasio Solvabilitas') }}</p>
+                        <p class="mt-1 text-xs text-on-surface-variant">{{ t('Total Aset / Total Liabilitas') }}</p>
                         <div class="mt-3 grid grid-cols-3 gap-2 text-sm">
                             <div>
-                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">Total Aset</p>
+                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">{{ t('Total Aset') }}</p>
                                 <p class="font-semibold tabular-nums">{{ fmt(totals.assets) }}</p>
                             </div>
                             <div>
-                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">Total Liabilitas</p>
+                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">{{ t('Total Liabilitas') }}</p>
                                 <p class="font-semibold tabular-nums">{{ fmt(totals.liabilities) }}</p>
                             </div>
                             <div>
-                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">Rasio</p>
+                                <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">{{ t('Rasio') }}</p>
                                 <p class="font-bold text-primary tabular-nums">
                                     {{ rasio_solvabilitas !== null ? rasio_solvabilitas.toFixed(2) + '%' : '—' }}
                                 </p>
@@ -220,7 +222,7 @@ const pdfUrl = computed(() => {
                 <a :href="pdfUrl" target="_blank" class="inline-flex">
                     <AppButton variant="outline">
                         <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                        Cetak PDF
+                        {{ t('Cetak PDF') }}
                     </AppButton>
                 </a>
             </div>

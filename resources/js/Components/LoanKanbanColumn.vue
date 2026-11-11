@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import AppBadge from './AppBadge.vue';
 import AppIcon from './AppIcon.vue';
 
@@ -56,8 +58,8 @@ const badgeTone = {
                 class="flex h-32 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-outline-variant/70 bg-surface-container-lowest/60 px-4 text-center text-xs text-on-surface-variant"
             >
                 <AppIcon name="drag_indicator" class="text-2xl text-outline" />
-                <p class="font-medium">Belum ada pinjaman</p>
-                <p class="text-[11px] leading-snug text-on-surface-variant/80">Tarik kartu ke kolom ini untuk pindah tahap.</p>
+                <p class="font-medium">{{ t('Belum ada pinjaman') }}</p>
+                <p class="text-[11px] leading-snug text-on-surface-variant/80">{{ t('Tarik kartu ke kolom ini untuk pindah tahap.') }}</p>
             </div>
         </div>
     </section>

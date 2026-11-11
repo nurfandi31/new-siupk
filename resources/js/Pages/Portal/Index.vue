@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../../i18n';
+const { t } = useI18n();
 import { computed, ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import AppBadge from '../../Components/AppBadge.vue';
@@ -29,61 +31,61 @@ const detailOpen = computed({
 const selectedLoan = ref(null);
 
 const stats = computed(() => [
-    { label: 'Total Pinjaman', value: String(props.loanSummary.total || 0), icon: 'receipt_long', tone: 'primary' },
-    { label: 'Nominal Disalurkan', value: money(props.loanSummary.total_disbursed), icon: 'payments', tone: 'success' },
-    { label: 'Pinjaman Aktif', value: String(props.loanSummary.active_count || 0), icon: 'schedule', tone: 'warning' },
+    { label: t('Total Pinjaman'), value: String(props.loanSummary.total || 0), icon: 'receipt_long', tone: 'primary' },
+    { label: t('Nominal Disalurkan'), value: money(props.loanSummary.total_disbursed), icon: 'payments', tone: 'success' },
+    { label: t('Pinjaman Aktif'), value: String(props.loanSummary.active_count || 0), icon: 'schedule', tone: 'warning' },
 ]);
 
 const loanStatus = {
-    draft: { label: 'Proposal', tone: 'neutral' },
-    verified: { label: 'Verifikasi', tone: 'warning' },
-    waiting: { label: 'Menunggu Pencairan', tone: 'warning' },
-    approved: { label: 'Disetujui', tone: 'warning' },
-    active: { label: 'Aktif', tone: 'success' },
-    disbursed: { label: 'Aktif', tone: 'success' },
-    completed: { label: 'Lunas', tone: 'primary' },
-    rescheduled: { label: 'Reschedule', tone: 'neutral' },
-    cancelled: { label: 'Batal', tone: 'error' },
-    written_off: { label: 'Dihapus', tone: 'error' },
+    draft: { label: t('Proposal'), tone: 'neutral' },
+    verified: { label: t('Verifikasi'), tone: 'warning' },
+    waiting: { label: t('Menunggu Pencairan'), tone: 'warning' },
+    approved: { label: t('Disetujui'), tone: 'warning' },
+    active: { label: t('Aktif'), tone: 'success' },
+    disbursed: { label: t('Aktif'), tone: 'success' },
+    completed: { label: t('Lunas'), tone: 'primary' },
+    rescheduled: { label: t('Reschedule'), tone: 'neutral' },
+    cancelled: { label: t('Batal'), tone: 'error' },
+    written_off: { label: t('Dihapus'), tone: 'error' },
 };
 const positionLabels = { chair: 'Ketua', secretary: 'Sekretaris', treasurer: 'Bendahara' };
 
 const loanColumns = [
-    { key: 'loan_number', label: 'Nomor', class: 'w-36' },
-    { key: 'disbursed_at', label: 'Tanggal Cair', class: 'w-32' },
-    { key: 'status', label: 'Status', class: 'w-36' },
-    { key: 'principal_amount', label: 'Pokok', class: 'w-32 text-right' },
-    { key: 'term_months', label: 'Tenor', class: 'w-20' },
-    { key: 'paid', label: 'Sudah Dibayar', class: 'w-36 text-right' },
-    { key: 'arrears', label: 'Kondisi', class: 'w-36' },
-    { key: 'detail', label: 'Detail', class: 'w-20' },
+    { key: 'loan_number', label: t('Nomor'), class: 'w-36' },
+    { key: 'disbursed_at', label: t('Tanggal Cair'), class: 'w-32' },
+    { key: 'status', label: t('Status'), class: 'w-36' },
+    { key: 'principal_amount', label: t('Pokok'), class: 'w-32 text-right' },
+    { key: 'term_months', label: t('Tenor'), class: 'w-20' },
+    { key: 'paid', label: t('Sudah Dibayar'), class: 'w-36 text-right' },
+    { key: 'arrears', label: t('Kondisi'), class: 'w-36' },
+    { key: 'detail', label: t('Detail'), class: 'w-20' },
 ];
 function formatDate(value) {
     if (!value) return '—';
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' });
 }
 </script>
 
 <template>
-    <Head title="Portal Saya" />
+    <Head :title="t('Portal Saya')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header class="flex items-start gap-4">
                 <AppIcon name="account_circle" tone="primary" :container-size="12" container-shape="pill" />
                 <div>
-                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">Portal Saya</h1>
-                    <p class="mt-1 text-sm text-on-surface-variant">Ringkasan data keanggotaan dan pinjaman Anda.</p>
+                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">{{ t('Portal Saya') }}</h1>
+                    <p class="mt-1 text-sm text-on-surface-variant">{{ t('Ringkasan data keanggotaan dan pinjaman Anda.') }}</p>
                 </div>
             </header>
 
             <AppCard>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                    <div><p class="text-xs font-bold uppercase text-on-surface-variant">Nama</p><p class="mt-1 font-semibold text-primary">{{ profile.name || '—' }}</p></div>
-                    <div><p class="text-xs font-bold uppercase text-on-surface-variant">Nomor Anggota</p><p class="mt-1 font-semibold">{{ profile.member_number || '—' }}</p></div>
-                    <div><p class="text-xs font-bold uppercase text-on-surface-variant">Status</p><AppBadge class="mt-2" :tone="profile.status === 'active' ? 'success' : 'neutral'">{{ profile.status === 'active' ? 'Aktif' : (profile.status || '—') }}</AppBadge></div>
-                    <div><p class="text-xs font-bold uppercase text-on-surface-variant">Bergabung</p><p class="mt-1 font-semibold">{{ formatDate(profile.registered_at) }}</p></div>
-                    <div><p class="text-xs font-bold uppercase text-on-surface-variant">Unit Organisasi</p><p class="mt-1 font-semibold">{{ profile.organization_unit || '—' }}</p></div>
+                    <div><p class="text-xs font-bold uppercase text-on-surface-variant">{{ t('Nama') }}</p><p class="mt-1 font-semibold text-primary">{{ profile.name || '—' }}</p></div>
+                    <div><p class="text-xs font-bold uppercase text-on-surface-variant">{{ t('Nomor Anggota') }}</p><p class="mt-1 font-semibold">{{ profile.member_number || '—' }}</p></div>
+                    <div><p class="text-xs font-bold uppercase text-on-surface-variant">{{ t('Status') }}</p><AppBadge class="mt-2" :tone="profile.status === 'active' ? 'success' : 'neutral'">{{ profile.status === 'active' ? 'Aktif' : (profile.status || '—') }}</AppBadge></div>
+                    <div><p class="text-xs font-bold uppercase text-on-surface-variant">{{ t('Bergabung') }}</p><p class="mt-1 font-semibold">{{ formatDate(profile.registered_at) }}</p></div>
+                    <div><p class="text-xs font-bold uppercase text-on-surface-variant">{{ t('Unit Organisasi') }}</p><p class="mt-1 font-semibold">{{ profile.organization_unit || '—' }}</p></div>
                 </div>
             </AppCard>
 
@@ -98,7 +100,7 @@ function formatDate(value) {
 
             <AppCard>
                 <template #header>
-                    <h2 class="font-bold text-primary">Riwayat Pinjaman</h2>
+                    <h2 class="font-bold text-primary">{{ t('Riwayat Pinjaman') }}</h2>
                 </template>
                 <div class="lg:px-6 lg:-mx-6">
                     <SmartDataTable
@@ -110,7 +112,7 @@ function formatDate(value) {
                         :per-page="loans.per_page || 15"
                         :sort="loans.sort || 'disbursed_at'"
                         :direction="loans.direction || 'desc'"
-                        search-placeholder="Cari pinjaman..."
+                        :search-placeholder="t('Cari pinjaman...')"
                         empty-title="Belum ada pinjaman"
                         empty-description="Riwayat pinjaman Anda akan tampil di sini."
                     >
@@ -119,9 +121,9 @@ function formatDate(value) {
                         <template #cell-principal_amount="{ row }">{{ money(row.principal_amount) }}</template>
                         <template #cell-term_months="{ row }">{{ row.term_months }} bulan</template>
                         <template #cell-paid="{ row }">{{ money(row.paid) }}</template>
-                        <template #cell-arrears="{ row }"><AppBadge :tone="row.has_arrears ? 'warning' : 'success'">{{ row.has_arrears ? 'Ada tunggakan' : 'Lancar' }}</AppBadge></template>
+                        <template #cell-arrears="{ row }"><AppBadge :tone="row.has_arrears ? 'warning' : 'success'">{{ row.has_arrears ? t('Ada tunggakan') : t('Lancar') }}</AppBadge></template>
                         <template #cell-detail="{ row }">
-                            <AppButton variant="ghost" size="compact" icon="visibility" tooltip="Detail Angsuran" @click="selectedLoan = row" />
+                            <AppButton variant="ghost" size="compact" icon="visibility" :tooltip="t('Detail Angsuran')" @click="selectedLoan = row" />
                         </template>
                     </SmartDataTable>
                 </div>
@@ -130,15 +132,15 @@ function formatDate(value) {
             <AppModal v-model="detailOpen" :title="`Detail Pinjaman ${selectedLoan?.loan_number || selectedLoan?.id || ''}`" size="full">
                 <div class="space-y-6">
                     <dl class="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-                        <div><dt class="text-on-surface-variant">Pokok</dt><dd class="font-semibold">{{ money(selectedLoan?.principal_amount) }}</dd></div>
-                        <div><dt class="text-on-surface-variant">Sisa Pokok</dt><dd class="font-semibold">{{ money((selectedLoan?.principal_due || 0) - (selectedLoan?.principal_paid || 0)) }}</dd></div>
-                        <div><dt class="text-on-surface-variant">Sisa Jasa</dt><dd class="font-semibold">{{ money((selectedLoan?.interest_due || 0) - (selectedLoan?.interest_paid || 0)) }}</dd></div>
-                        <div><dt class="text-on-surface-variant">Sisa Denda</dt><dd class="font-semibold">{{ money((selectedLoan?.penalty_due || 0) - (selectedLoan?.penalty_paid || 0)) }}</dd></div>
+                        <div><dt class="text-on-surface-variant">{{ t('Pokok') }}</dt><dd class="font-semibold">{{ money(selectedLoan?.principal_amount) }}</dd></div>
+                        <div><dt class="text-on-surface-variant">{{ t('Sisa Pokok') }}</dt><dd class="font-semibold">{{ money((selectedLoan?.principal_due || 0) - (selectedLoan?.principal_paid || 0)) }}</dd></div>
+                        <div><dt class="text-on-surface-variant">{{ t('Sisa Jasa') }}</dt><dd class="font-semibold">{{ money((selectedLoan?.interest_due || 0) - (selectedLoan?.interest_paid || 0)) }}</dd></div>
+                        <div><dt class="text-on-surface-variant">{{ t('Sisa Denda') }}</dt><dd class="font-semibold">{{ money((selectedLoan?.penalty_due || 0) - (selectedLoan?.penalty_paid || 0)) }}</dd></div>
                     </dl>
                     <div class="overflow-x-auto rounded-xl bg-surface-container-low">
                         <table class="w-full min-w-[32rem] text-left text-xs sm:min-w-[42rem] sm:text-sm">
                             <thead class="bg-surface-container-high text-xs uppercase text-on-surface-variant">
-                                <tr><th class="px-4 py-3">Angsuran</th><th class="px-4 py-3">Jatuh Tempo</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Dibayar Pada</th><th class="px-4 py-3 text-right">Pokok</th><th class="px-4 py-3 text-right">Jasa</th><th class="px-4 py-3 text-right">Denda</th><th class="px-4 py-3 text-right">Sisa</th></tr>
+                                <tr><th class="px-4 py-3">{{ t('Angsuran') }}</th><th class="px-4 py-3">{{ t('Jatuh Tempo') }}</th><th class="px-4 py-3">{{ t('Status') }}</th><th class="px-4 py-3">{{ t('Dibayar Pada') }}</th><th class="px-4 py-3 text-right">{{ t('Pokok') }}</th><th class="px-4 py-3 text-right">{{ t('Jasa') }}</th><th class="px-4 py-3 text-right">{{ t('Denda') }}</th><th class="px-4 py-3 text-right">{{ t('Sisa') }}</th></tr>
                             </thead>
                             <tbody>
                                 <tr v-for="installment in selectedLoan?.installments || []" :key="installment.installment_number" class="border-t border-outline-variant">
@@ -155,24 +157,24 @@ function formatDate(value) {
                         </table>
                     </div>
                     <section>
-                        <h3 class="text-sm font-bold uppercase text-on-surface-variant">Daftar Pemanfaat</h3>
+                        <h3 class="text-sm font-bold uppercase text-on-surface-variant">{{ t('Daftar Pemanfaat') }}</h3>
                         <AppEmptyState
                             v-if="!selectedLoan?.beneficiaries?.length"
                             icon="group"
-                            title="Tidak ada data pemanfaat"
+                            :title="t('Tidak ada data pemanfaat')"
                             class="mt-3"
                         />
                         <div v-else class="mt-3 overflow-x-auto rounded-xl border border-outline-variant">
                             <table class="w-full text-left text-sm">
                                 <thead class="bg-surface-container-low text-xs uppercase text-on-surface-variant">
-                                    <tr><th class="px-4 py-3">Nama</th><th class="px-4 py-3 text-right">Bagian</th></tr>
+                                    <tr><th class="px-4 py-3">{{ t('Nama') }}</th><th class="px-4 py-3 text-right">{{ t('Bagian') }}</th></tr>
                                 </thead>
                                 <tbody class="divide-y divide-outline-variant">
                                     <tr v-for="beneficiary in selectedLoan.beneficiaries" :key="beneficiary.member_row_id">
                                         <td class="px-4 py-3">
                                             <div class="flex items-center gap-2">
                                                 <span class="font-semibold">{{ beneficiary.name }}</span>
-                                                <AppBadge v-if="beneficiary.is_self" tone="primary">Anda</AppBadge>
+                                                <AppBadge v-if="beneficiary.is_self" tone="primary">{{ t('Anda') }}</AppBadge>
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-right">{{ beneficiary.is_self ? money(beneficiary.allocated_amount) : '—' }}</td>
@@ -182,22 +184,22 @@ function formatDate(value) {
                         </div>
                     </section>
                 </div>
-                <template #footer><AppButton variant="secondary" @click="detailOpen = false">Tutup</AppButton></template>
+                <template #footer><AppButton variant="secondary" @click="detailOpen = false">{{ t('Tutup') }}</AppButton></template>
             </AppModal>
 
             <AppCard>
-                <template #header><h2 class="font-bold text-primary">Riwayat Pengurus</h2></template>
+                <template #header><h2 class="font-bold text-primary">{{ t('Riwayat Pengurus') }}</h2></template>
                 <ul v-if="officers.length" class="space-y-3">
                     <li v-for="officer in officers" :key="`${officer.group_row_id}-${officer.position}-${officer.started_at}`" class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface-container-low p-4">
                         <div><p class="font-semibold">{{ officer.group_name || '—' }}</p><p class="text-xs text-on-surface-variant">{{ positionLabels[officer.position] || officer.position }} · {{ formatDate(officer.started_at) }} s.d. {{ formatDate(officer.ended_at) }}</p></div>
-                        <AppBadge :tone="officer.ended_at ? 'neutral' : 'success'">{{ officer.ended_at ? 'Selesai' : 'Aktif' }}</AppBadge>
+                        <AppBadge :tone="officer.ended_at ? 'neutral' : 'success'">{{ officer.ended_at ? t('Selesai') : t('Aktif') }}</AppBadge>
                     </li>
                 </ul>
-                <AppEmptyState v-else icon="groups" title="Belum ada riwayat pengurus" description="Riwayat kepengurusan kelompok akan tampil di sini." />
+                <AppEmptyState v-else icon="groups" :title="t('Belum ada riwayat pengurus')" :description="t('Riwayat kepengurusan kelompok akan tampil di sini.')" />
             </AppCard>
 
             <AppCard>
-                <template #header><h2 class="font-bold text-primary">Anggota Kelompok Yang Dipimpin</h2></template>
+                <template #header><h2 class="font-bold text-primary">{{ t('Anggota Kelompok Yang Dipimpin') }}</h2></template>
                 <div v-if="activeGroups.length" class="space-y-5">
                     <section v-for="group in activeGroups" :key="group.group_name">
                         <h3 class="text-sm font-bold uppercase text-on-surface-variant">{{ group.group_name }}</h3>
@@ -207,10 +209,10 @@ function formatDate(value) {
                                 <AppBadge :tone="member.status === 'active' ? 'success' : 'neutral'">{{ member.status === 'active' ? 'Aktif' : (member.status || '—') }}</AppBadge>
                             </li>
                         </ul>
-                        <AppEmptyState v-if="!group.members.length" icon="group" title="Belum ada anggota lain" description="Kelompok aktif ini belum memiliki anggota lain." />
+                        <AppEmptyState v-if="!group.members.length" icon="group" :title="t('Belum ada anggota lain')" :description="t('Kelompok aktif ini belum memiliki anggota lain.')" />
                     </section>
                 </div>
-                <AppEmptyState v-else icon="groups" title="Tidak ada kepengurusan aktif" description="Daftar anggota kelompok hanya tampil saat Anda pengurus aktif." />
+                <AppEmptyState v-else icon="groups" :title="t('Tidak ada kepengurusan aktif')" :description="t('Daftar anggota kelompok hanya tampil saat Anda pengurus aktif.')" />
             </AppCard>
         </div>
     </AuthenticatedLayout>

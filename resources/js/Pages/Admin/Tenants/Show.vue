@@ -11,10 +11,12 @@ import AppIconButton from '../../../Components/AppIconButton.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
 import { useConfirm } from '../../../composables/useConfirm';
+import { useToast } from '../../../composables/useToast';
 import { useI18n } from '../../../i18n';
 
 const { t } = useI18n();
 const { confirm } = useConfirm();
+const toast = useToast();
 
 const props = defineProps({
     tenant: { type: Object, required: true },
@@ -180,14 +182,14 @@ async function autoLogin(domain = null, userId = null) {
 
         const data = await response.json();
         if (!response.ok || !data.redirect_url) {
-            alert(data.message || t('Gagal membuat sesi auto-login.'));
+            toast.error(data.message || t('Gagal membuat sesi auto-login.'));
             return;
         }
 
         window.open(data.redirect_url, '_blank');
     } catch (err) {
         console.error(err);
-        alert(t('Terjadi kesalahan saat memulai auto-login.'));
+        toast.error(t('Terjadi kesalahan saat memulai auto-login.'));
     } finally {
         impersonating.value = false;
         impersonatingDomain.value = null;

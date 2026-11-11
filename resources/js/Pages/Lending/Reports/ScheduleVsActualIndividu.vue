@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -128,7 +130,7 @@ const productOptions = computed(() => {
             });
         }
     }
-    return [{ value: 'all', label: 'Semua Produk' }, ...seen.values()];
+    return [{ value: 'all', label: t('Semua Produk') }, ...seen.values()];
 });
 
 const money = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
@@ -190,13 +192,13 @@ function statusClass(s: string): string {
 </script>
 
 <template>
-    <Head title="Rencana vs Realisasi — Pinjaman Individu" />
+    <Head :title="t('Rencana vs Realisasi — Pinjaman Individu')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan Piutang</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Rencana & Realisasi — Pinjaman Individu</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Piutang') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Rencana & Realisasi — Pinjaman Individu') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Bandingkan rencana angsuran vs realisasi per pinjaman individu —
                         {{ period.period_label }} — {{ identity.legal_name }}
@@ -207,51 +209,51 @@ function statusClass(s: string): string {
                         <AppButton variant="secondary" icon="picture_as_pdf" size="compact">PDF</AppButton>
                     </a>
                     <a :href="excelHref" rel="noopener">
-                        <AppButton variant="outline" icon="table_view" size="compact">Excel</AppButton>
+                        <AppButton variant="outline" icon="table_view" size="compact">{{ t('Excel') }}</AppButton>
                     </a>
                 </div>
             </div>
 
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                    <AppDatePicker v-model="selectedYear" mode="year" label="Tahun" />
-                    <SmartSelect v-model="selectedMonth" :options="monthOptions" label="Bulan" />
-                    <SmartSelect v-model="selectedProduct" :options="productOptions" label="Produk" />
+                    <AppDatePicker v-model="selectedYear" mode="year" :label="t('Tahun')" />
+                    <SmartSelect v-model="selectedMonth" :options="monthOptions" :label="t('Bulan')" />
+                    <SmartSelect v-model="selectedProduct" :options="productOptions" :label="t('Produk')" />
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Loan ID / Nomor</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Loan ID / Nomor') }}</label>
                         <input
                             v-model="selectedLoanId"
                             type="text"
-                            placeholder="Cari nomor pinjaman"
+                            :placeholder="t('Cari nomor pinjaman')"
                             class="block w-full rounded-xl border border-outline-variant bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
                     <div class="flex items-end">
-                        <AppButton type="button" class="!min-h-11 h-11 px-5" @click="apply">Tampilkan</AppButton>
+                        <AppButton type="button" class="!min-h-11 h-11 px-5" @click="apply">{{ t('Tampilkan') }}</AppButton>
                     </div>
                 </div>
             </AppCard>
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Rencana Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Rencana Pokok') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ formatMoney(totals.plan_principal) }}</p>
                     <p class="text-xs text-on-surface-variant">Rencana Jasa {{ formatMoney(totals.plan_interest) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Realisasi Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Realisasi Pokok') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ formatMoney(totals.actual_principal) }}</p>
                     <p class="text-xs text-on-surface-variant">Realisasi Jasa {{ formatMoney(totals.actual_interest) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">% Realisasi</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('% Realisasi') }}</p>
                     <p class="mt-2 text-xl font-bold" :class="totals.pct_realization >= 90 ? 'text-secondary' : 'text-warning'">
                         {{ totals.pct_realization }}%
                     </p>
                     <p class="text-xs text-on-surface-variant">{{ totals.realized_count }} dari {{ totals.installment_count }} angsuran</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Rata-rata Keterlambatan</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Rata-rata Keterlambatan') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ totals.avg_delay_days }} hari</p>
                     <p class="text-xs text-on-surface-variant">{{ totals.late_count }} angsuran terlambat</p>
                 </AppCard>
@@ -259,7 +261,7 @@ function statusClass(s: string): string {
 
             <div v-if="loans.length === 0">
                 <AppCard class="p-8 text-center">
-                    <p class="text-sm text-on-surface-variant">Tidak ada pinjaman individu aktif dengan angsuran jatuh tempo pada periode ini.</p>
+                    <p class="text-sm text-on-surface-variant">{{ t('Tidak ada pinjaman individu aktif dengan angsuran jatuh tempo pada periode ini.') }}</p>
                 </AppCard>
             </div>
 
@@ -297,18 +299,18 @@ function statusClass(s: string): string {
                         <table class="min-w-full text-sm">
                             <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                                 <tr>
-                                    <th class="px-3 py-2 text-left">No</th>
-                                    <th class="px-3 py-2 text-center">Tgl Jatuh Tempo</th>
-                                    <th class="px-3 py-2 text-center">Tgl Bayar</th>
-                                    <th class="px-3 py-2 text-center">Angsuran</th>
-                                    <th class="px-3 py-2 text-right">Rencana Pokok</th>
-                                    <th class="px-3 py-2 text-right">Realisasi Pokok</th>
-                                    <th class="px-3 py-2 text-right">Selisih Pokok</th>
-                                    <th class="px-3 py-2 text-right">Rencana Jasa</th>
-                                    <th class="px-3 py-2 text-right">Realisasi Jasa</th>
-                                    <th class="px-3 py-2 text-right">Selisih Jasa</th>
-                                    <th class="px-3 py-2 text-center">Telat (hari)</th>
-                                    <th class="px-3 py-2 text-center">Status</th>
+                                    <th class="px-3 py-2 text-left">{{ t('No') }}</th>
+                                    <th class="px-3 py-2 text-center">{{ t('Tgl Jatuh Tempo') }}</th>
+                                    <th class="px-3 py-2 text-center">{{ t('Tgl Bayar') }}</th>
+                                    <th class="px-3 py-2 text-center">{{ t('Angsuran') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Rencana Pokok') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Realisasi Pokok') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Selisih Pokok') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Rencana Jasa') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Realisasi Jasa') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Selisih Jasa') }}</th>
+                                    <th class="px-3 py-2 text-center">{{ t('Telat (hari)') }}</th>
+                                    <th class="px-3 py-2 text-center">{{ t('Status') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -375,14 +377,14 @@ function statusClass(s: string): string {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-right">Rencana Pokok</th>
-                                <th class="px-3 py-2 text-right">Realisasi Pokok</th>
-                                <th class="px-3 py-2 text-right">Gap Pokok</th>
-                                <th class="px-3 py-2 text-right">Rencana Jasa</th>
-                                <th class="px-3 py-2 text-right">Realisasi Jasa</th>
-                                <th class="px-3 py-2 text-right">Gap Jasa</th>
-                                <th class="px-3 py-2 text-center">% Realisasi</th>
-                                <th class="px-3 py-2 text-center">Telat</th>
+                                <th class="px-3 py-2 text-right">{{ t('Rencana Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Realisasi Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Gap Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Rencana Jasa') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Realisasi Jasa') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Gap Jasa') }}</th>
+                                <th class="px-3 py-2 text-center">{{ t('% Realisasi') }}</th>
+                                <th class="px-3 py-2 text-center">{{ t('Telat') }}</th>
                             </tr>
                         </thead>
                         <tbody>

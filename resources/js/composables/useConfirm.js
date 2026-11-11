@@ -1,5 +1,14 @@
 import { reactive } from 'vue';
 
+const defaultIcon = {
+    danger: 'warning',
+    error: 'warning',
+    warning: 'notification_important',
+    success: 'check_circle',
+    info: 'info',
+    primary: 'help',
+};
+
 const state = reactive({
     open: false,
     title: 'Konfirmasi',
@@ -11,9 +20,27 @@ const state = reactive({
     _resolve: null,
 });
 
-function confirm({ title = 'Konfirmasi', message, confirmLabel = 'Hapus', cancelLabel = 'Batal', variant = 'danger', icon = 'warning' } = {}) {
+function confirm({
+    title = 'Konfirmasi',
+    message,
+    confirmLabel,
+    confirmText,
+    cancelLabel = 'Batal',
+    cancelText,
+    variant = 'danger',
+    icon = null,
+} = {}) {
     return new Promise((resolve) => {
-        Object.assign(state, { open: true, title, message, confirmLabel, cancelLabel, variant, icon, _resolve: resolve });
+        Object.assign(state, {
+            open: true,
+            title,
+            message,
+            confirmLabel: confirmLabel || confirmText || 'Hapus',
+            cancelLabel: cancelText != null ? cancelText : cancelLabel,
+            variant,
+            icon: icon || defaultIcon[variant] || 'help',
+            _resolve: resolve,
+        });
     });
 }
 

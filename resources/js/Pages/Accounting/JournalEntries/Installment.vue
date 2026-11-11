@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, ref, watch } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -25,7 +27,6 @@ const pagePath = '/accounting/journal-entries/installment';
 const form = useForm({
     transaction_date: props.today,
     loan_id: '',
-    installment_row_id: '',
     installment_number: '',
     principal_amount: '',
     interest_amount: '',
@@ -49,7 +50,7 @@ const autoInstallment = computed(() => {
     return candidates[0] ?? null;
 });
 
-const selectedInstallment = computed(() => availableInstallments.value.find((i) => i.value === Number(form.installment_row_id)) ?? null);
+const selectedInstallment = computed(() => availableInstallments.value.find((i) => i.value === Number(form.installment_number)) ?? null);
 
 function applyInstallmentDefaults(target) {
     if (! target) return;
@@ -58,7 +59,6 @@ function applyInstallmentDefaults(target) {
 }
 
 watch(() => form.loan_id, () => {
-    form.installment_row_id = '';
     form.installment_number = '';
     form.principal_amount = '';
     form.interest_amount = '';
@@ -69,7 +69,6 @@ watch(() => form.loan_id, () => {
 
 watch(() => form.transaction_date, () => {
     if (autoInstallment.value) {
-        form.installment_row_id = autoInstallment.value.value;
         form.installment_number = autoInstallment.value.value;
         applyInstallmentDefaults(autoInstallment.value);
     }
@@ -137,7 +136,7 @@ function submit() {
     form.post(pagePath, {
         preserveScroll: true,
         onSuccess: () => {
-            form.reset('principal_amount', 'interest_amount', 'penalty_amount', 'cash_account_row_id', 'installment_row_id', 'reference', 'description');
+            form.reset('principal_amount', 'interest_amount', 'penalty_amount', 'cash_account_row_id', 'installment_number', 'reference', 'description');
             form.transaction_date = props.today;
         },
     });
@@ -314,12 +313,12 @@ function balanceAllocationRemainder(field) {
 </script>
 
 <template>
-    <Head title="Jurnal Angsuran" />
+    <Head :title="t('Jurnal Angsuran')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header>
-                <h1 class="text-2xl font-bold text-primary sm:text-3xl">Input Jurnal Angsuran</h1>
-                <p class="mt-1 text-on-surface-variant">Catat pembayaran angsuran pinjaman dengan akun debit kas dan kredit piutang/jasa/denda.</p>
+                <h1 class="text-2xl font-bold text-primary sm:text-3xl">{{ t('Input Jurnal Angsuran') }}</h1>
+                <p class="mt-1 text-on-surface-variant">{{ t('Catat pembayaran angsuran pinjaman dengan akun debit kas dan kredit piutang/jasa/denda.') }}</p>
             </header>
 
             <AppCard v-if="flashEntry" ref="successCardRef">
@@ -344,7 +343,7 @@ function balanceAllocationRemainder(field) {
                         class="shrink-0"
                     >
                         <AppButton type="button" variant="secondary" icon="print" size="compact">
-                            Cetak Bukti
+                            {{ t('Cetak Bukti') }}
                         </AppButton>
                     </a>
                 </div>
@@ -353,27 +352,27 @@ function balanceAllocationRemainder(field) {
                     <div class="rounded-xl border border-secondary/30 bg-secondary-container/40 p-4">
                         <div class="mb-3 flex items-center gap-2">
                             <AppIcon name="arrow_downward" class="text-secondary" />
-                            <p class="text-xs font-bold uppercase tracking-wider text-secondary">Akun Bertambah (Debit)</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-secondary">{{ t('Akun Bertambah (Debit)') }}</p>
                         </div>
                         <ul class="space-y-2">
                             <li v-for="line in debitedLines" :key="`d-${line.account_code}`" class="rounded-lg bg-surface-container-lowest p-3">
                                 <p class="text-sm font-bold text-primary">{{ line.account_code }} · {{ line.account_name }}</p>
                                 <p class="mt-1 text-base font-bold text-secondary">{{ currency(line.debit) }}</p>
                             </li>
-                            <li v-if="!debitedLines.length" class="text-sm text-on-surface-variant">Tidak ada akun debit.</li>
+                            <li v-if="!debitedLines.length" class="text-sm text-on-surface-variant">{{ t('Tidak ada akun debit.') }}</li>
                         </ul>
                     </div>
                     <div class="rounded-xl border border-error/30 bg-error-container/40 p-4">
                         <div class="mb-3 flex items-center gap-2">
                             <AppIcon name="arrow_outward" class="text-error" />
-                            <p class="text-xs font-bold uppercase tracking-wider text-error">Akun Berkurang (Kredit)</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-error">{{ t('Akun Berkurang (Kredit)') }}</p>
                         </div>
                         <ul class="space-y-2">
                             <li v-for="line in creditedLines" :key="`c-${line.account_code}`" class="rounded-lg bg-surface-container-lowest p-3">
                                 <p class="text-sm font-bold text-primary">{{ line.account_code }} · {{ line.account_name }}</p>
                                 <p class="mt-1 text-base font-bold text-error">{{ currency(line.credit) }}</p>
                             </li>
-                            <li v-if="!creditedLines.length" class="text-sm text-on-surface-variant">Tidak ada akun kredit.</li>
+                            <li v-if="!creditedLines.length" class="text-sm text-on-surface-variant">{{ t('Tidak ada akun kredit.') }}</li>
                         </ul>
                     </div>
                 </div>
@@ -381,79 +380,79 @@ function balanceAllocationRemainder(field) {
 
             <AppCard>
                 <form class="space-y-5" @submit.prevent="submit">
-                    <SmartSelect v-model="form.loan_id" :options="props.loanOptions" label="Pinjaman" placeholder="Cari pinjaman..." required searchable search-placeholder="Cari pinjaman..." hint="Loan dengan status aktif atau sudah dicairkan" />
+                    <SmartSelect v-model="form.loan_id" :options="props.loanOptions" :label="t('Pinjaman')" :placeholder="t('Cari pinjaman...')" required searchable :search-placeholder="t('Cari pinjaman...')" :hint="t('Loan dengan status aktif atau sudah dicairkan')" />
 
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <AppDatePicker v-model="form.transaction_date" label="Tanggal Angsuran" required :error="form.errors.transaction_date" />
-                        <AppInput :model-value="installmentLabel" label="Angsuran ke-N" readonly hint="Otomatis dari tanggal; pilih pinjaman untuk melihat daftar" />
+                        <AppDatePicker v-model="form.transaction_date" :label="t('Tanggal Angsuran')" required :error="form.errors.transaction_date" />
+                        <AppInput :model-value="installmentLabel" :label="t('Angsuran ke-N')" readonly :hint="t('Otomatis dari tanggal; pilih pinjaman untuk melihat daftar')" />
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <AppCurrencyInput v-model="form.principal_amount" label="Pokok" icon="payments" :min="1" required :error="form.errors.principal_amount" placeholder="0" />
-                        <AppCurrencyInput v-model="form.interest_amount" label="Jasa" icon="payments" :min="0" required :error="form.errors.interest_amount" placeholder="0" />
+                        <AppCurrencyInput v-model="form.principal_amount" :label="t('Pokok')" icon="payments" :min="1" required :error="form.errors.principal_amount" placeholder="0" />
+                        <AppCurrencyInput v-model="form.interest_amount" :label="t('Jasa')" icon="payments" :min="0" required :error="form.errors.interest_amount" placeholder="0" />
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <AppCurrencyInput v-model="form.penalty_amount" label="Denda" icon="payments" :min="0" :error="form.errors.penalty_amount" placeholder="0" />
-                        <AppInput :model-value="currency(totalAmount)" label="Total (Pokok + Jasa + Denda)" readonly icon="calculate" />
+                        <AppCurrencyInput v-model="form.penalty_amount" :label="t('Denda')" icon="payments" :min="0" :error="form.errors.penalty_amount" placeholder="0" />
+                        <AppInput :model-value="currency(totalAmount)" :label="t('Total (Pokok + Jasa + Denda)')" readonly icon="calculate" />
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <SmartSelect v-model="form.reference" :options="availablePeminjam" label="Penyetor" :placeholder="form.loan_id ? 'Pilih peminjam' : 'Pilih pinjaman dulu'" :disabled="!form.loan_id" required :error="form.errors.reference" searchable search-placeholder="Cari peminjam..." />
-                        <SmartSelect v-model="form.cash_account_row_id" :options="props.cashAccounts" label="Tujuan (Akun Debit)" placeholder="Pilih akun kas" required :error="form.errors.cash_account_row_id" />
+                        <SmartSelect v-model="form.reference" :options="availablePeminjam" :label="t('Penyetor')" :placeholder="form.loan_id ? 'Pilih peminjam' : 'Pilih pinjaman dulu'" :disabled="!form.loan_id" required :error="form.errors.reference" searchable :search-placeholder="t('Cari peminjam...')" />
+                        <SmartSelect v-model="form.cash_account_row_id" :options="props.cashAccounts" :label="t('Tujuan (Akun Debit)')" :placeholder="t('Pilih akun kas')" required :error="form.errors.cash_account_row_id" />
                     </div>
 
                     <input type="hidden" :value="form.description">
 
                     <div class="flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant pt-4">
                         <div class="flex flex-wrap gap-2">
-                            <AppButton variant="secondary" icon="groups" type="button" :disabled="!selectedLoan" @click="openGroupModal">Detail Kelompok</AppButton>
-                            <AppButton variant="secondary" icon="history" type="button" :disabled="!selectedLoan" @click="openHistoryModal">Riwayat Angsuran</AppButton>
-                            <AppButton variant="secondary" icon="person" type="button" :disabled="!selectedLoan" @click="openAllocationModal">Catatan Per-Anggota</AppButton>
+                            <AppButton variant="secondary" icon="groups" type="button" :disabled="!selectedLoan" @click="openGroupModal">{{ t('Detail Kelompok') }}</AppButton>
+                            <AppButton variant="secondary" icon="history" type="button" :disabled="!selectedLoan" @click="openHistoryModal">{{ t('Riwayat Angsuran') }}</AppButton>
+                            <AppButton variant="secondary" icon="person" type="button" :disabled="!selectedLoan" @click="openAllocationModal">{{ t('Catatan Per-Anggota') }}</AppButton>
                         </div>
                         <div class="flex gap-2">
-                            <a :href="pagePath"><AppButton variant="secondary" type="button">Reset</AppButton></a>
-                            <AppButton type="submit" :loading="form.processing" :disabled="form.processing" icon="save">Catat Jurnal Angsuran</AppButton>
+                            <a :href="pagePath"><AppButton variant="secondary" type="button">{{ t('Reset') }}</AppButton></a>
+                            <AppButton type="submit" :loading="form.processing" :disabled="form.processing" icon="save">{{ t('Catat Jurnal Angsuran') }}</AppButton>
                         </div>
                     </div>
                 </form>
             </AppCard>
 
-            <AppModal v-model="groupModalOpen" title="Detail Kelompok" size="lg">
-                <div v-if="groupLoading" class="py-8 text-center text-on-surface-variant">Memuat…</div>
+            <AppModal v-model="groupModalOpen" :title="t('Detail Kelompok')" size="lg">
+                <div v-if="groupLoading" class="py-8 text-center text-on-surface-variant">{{ t('Memuat…') }}</div>
                 <div v-else-if="groupDetail?.group" class="space-y-5">
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <div><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Kode</p><p class="mt-1 font-bold text-primary">{{ groupDetail.group.code }}</p></div>
-                        <div><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Nama Kelompok</p><p class="mt-1 font-bold text-primary">{{ groupDetail.group.name }}</p></div>
-                        <div><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jumlah Anggota</p><p class="mt-1 font-bold text-primary">{{ groupDetail.group.member_count }} orang</p></div>
-                        <div v-if="groupDetail.group.phone"><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Telepon</p><p class="mt-1 font-bold text-primary">{{ groupDetail.group.phone }}</p></div>
-                        <div v-if="groupDetail.group.address" class="sm:col-span-2"><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Alamat</p><p class="mt-1 font-bold text-primary">{{ groupDetail.group.address }}</p></div>
+                        <div><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Kode') }}</p><p class="mt-1 font-bold text-primary">{{ groupDetail.group.code }}</p></div>
+                        <div><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Nama Kelompok') }}</p><p class="mt-1 font-bold text-primary">{{ groupDetail.group.name }}</p></div>
+                        <div><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Anggota') }}</p><p class="mt-1 font-bold text-primary">{{ groupDetail.group.member_count }} orang</p></div>
+                        <div v-if="groupDetail.group.phone"><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Telepon') }}</p><p class="mt-1 font-bold text-primary">{{ groupDetail.group.phone }}</p></div>
+                        <div v-if="groupDetail.group.address" class="sm:col-span-2"><p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Alamat') }}</p><p class="mt-1 font-bold text-primary">{{ groupDetail.group.address }}</p></div>
                     </div>
                     <div>
-                        <h3 class="mb-3 text-sm font-bold uppercase tracking-wider text-primary">Daftar Anggota</h3>
+                        <h3 class="mb-3 text-sm font-bold uppercase tracking-wider text-primary">{{ t('Daftar Anggota') }}</h3>
                         <ul v-if="groupDetail.members?.length" class="divide-y divide-outline-variant rounded-lg border border-outline-variant">
                             <li v-for="m in groupDetail.members" :key="m.row_id" class="flex items-center justify-between p-3 text-sm">
                                 <span class="font-bold text-primary">#{{ m.row_id }} · {{ m.full_name }}</span>
                                 <span class="text-on-surface-variant">{{ m.status }}</span>
                             </li>
                         </ul>
-                        <p v-else class="text-sm text-on-surface-variant">Belum ada anggota terdaftar.</p>
+                        <p v-else class="text-sm text-on-surface-variant">{{ t('Belum ada anggota terdaftar.') }}</p>
                     </div>
                 </div>
-                <div v-else class="py-8 text-center text-on-surface-variant">Kelompok tidak ditemukan untuk pinjaman ini.</div>
+                <div v-else class="py-8 text-center text-on-surface-variant">{{ t('Kelompok tidak ditemukan untuk pinjaman ini.') }}</div>
             </AppModal>
 
-            <AppModal v-model="historyModalOpen" title="Riwayat Angsuran" size="full">
-                <div v-if="historyLoading" class="py-8 text-center text-on-surface-variant">Memuat…</div>
+            <AppModal v-model="historyModalOpen" :title="t('Riwayat Angsuran')" size="full">
+                <div v-if="historyLoading" class="py-8 text-center text-on-surface-variant">{{ t('Memuat…') }}</div>
                 <div v-else-if="historyRows.length" class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wider text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left">Tanggal</th>
-                                <th class="px-3 py-2 text-left">No. Jurnal</th>
-                                <th class="px-3 py-2 text-left">Angsuran</th>
-                                <th class="px-3 py-2 text-left">Keterangan</th>
-                                <th class="px-3 py-2 text-right">Catatan Per-Anggota</th>
+                                <th class="px-3 py-2 text-left">{{ t('Tanggal') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('No. Jurnal') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Angsuran') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Keterangan') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Catatan Per-Anggota') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -469,28 +468,28 @@ function balanceAllocationRemainder(field) {
                                             <p class="text-on-surface-variant">Pokok {{ currency(t.principal_paid) }} · Jasa {{ currency(t.interest_paid) }}<span v-if="t.penalty_paid > 0"> · Denda {{ currency(t.penalty_paid) }}</span></p>
                                         </li>
                                     </ul>
-                                    <span v-else class="text-xs text-on-surface-variant">Tidak ada catatan.</span>
+                                    <span v-else class="text-xs text-on-surface-variant">{{ t('Tidak ada catatan.') }}</span>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <div v-else class="py-8 text-center text-on-surface-variant">Belum ada jurnal angsuran terposting untuk pinjaman ini.</div>
+                <div v-else class="py-8 text-center text-on-surface-variant">{{ t('Belum ada jurnal angsuran terposting untuk pinjaman ini.') }}</div>
             </AppModal>
 
-            <AppModal v-model="allocationModalOpen" title="Catatan Angsuran Per-Anggota" size="lg">
-                <div v-if="allocationLoading" class="py-8 text-center text-on-surface-variant">Memuat…</div>
+            <AppModal v-model="allocationModalOpen" :title="t('Catatan Angsuran Per-Anggota')" size="lg">
+                <div v-if="allocationLoading" class="py-8 text-center text-on-surface-variant">{{ t('Memuat…') }}</div>
                 <div v-else-if="allocationMembers.length" class="space-y-4">
-                    <p class="text-sm text-on-surface-variant">Atur nominal Pokok, Jasa, dan Denda per anggota. Nilai awal dihitung proporsional sesuai alokasi pinjaman masing-masing.</p>
+                    <p class="text-sm text-on-surface-variant">{{ t('Atur nominal Pokok, Jasa, dan Denda per anggota. Nilai awal dihitung proporsional sesuai alokasi pinjaman masing-masing.') }}</p>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead class="bg-surface-container-low text-xs uppercase tracking-wider text-on-surface-variant">
                                 <tr>
-                                    <th class="px-3 py-2 text-left">Anggota</th>
-                                    <th class="px-3 py-2 text-right">Alokasi</th>
-                                    <th class="px-3 py-2 text-right">Pokok</th>
-                                    <th class="px-3 py-2 text-right">Jasa</th>
-                                    <th class="px-3 py-2 text-right">Denda</th>
+                                    <th class="px-3 py-2 text-left">{{ t('Anggota') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Alokasi') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Pokok') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Jasa') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Denda') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -504,7 +503,7 @@ function balanceAllocationRemainder(field) {
                             </tbody>
                             <tfoot class="border-t-2 border-outline-variant bg-surface-container-low text-xs">
                                 <tr>
-                                    <td class="px-3 py-2 font-bold uppercase text-on-surface-variant">Total</td>
+                                    <td class="px-3 py-2 font-bold uppercase text-on-surface-variant">{{ t('Total') }}</td>
                                     <td></td>
                                     <td class="px-3 py-2 text-right font-bold" :class="allocationMismatch.principal ? 'text-error' : 'text-primary'">{{ currency(allocationTotals.principal) }}<span v-if="allocationMismatch.principal" class="ml-1 text-error">≠</span></td>
                                     <td class="px-3 py-2 text-right font-bold" :class="allocationMismatch.interest ? 'text-error' : 'text-primary'">{{ currency(allocationTotals.interest) }}<span v-if="allocationMismatch.interest" class="ml-1 text-error">≠</span></td>
@@ -514,22 +513,22 @@ function balanceAllocationRemainder(field) {
                         </table>
                     </div>
                     <div v-if="allocationSelisih.hasDiff" class="rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-sm">
-                        <p class="mb-1 font-bold text-on-surface-variant">Selisih dengan form angsuran kelompok:</p>
+                        <p class="mb-1 font-bold text-on-surface-variant">{{ t('Selisih dengan form angsuran kelompok:') }}</p>
                         <ul class="space-y-0.5">
                             <li v-if="allocationSelisih.diffPrincipal !== 0" :class="allocationSelisih.diffPrincipal > 0 ? 'text-tertiary' : 'text-error'">Pokok: <span class="font-semibold">{{ selisihLabel(allocationSelisih.diffPrincipal) }}</span></li>
                             <li v-if="allocationSelisih.diffInterest !== 0" :class="allocationSelisih.diffInterest > 0 ? 'text-tertiary' : 'text-error'">Jasa: <span class="font-semibold">{{ selisihLabel(allocationSelisih.diffInterest) }}</span></li>
                             <li v-if="allocationSelisih.diffPenalty !== 0" :class="allocationSelisih.diffPenalty > 0 ? 'text-tertiary' : 'text-error'">Denda: <span class="font-semibold">{{ selisihLabel(allocationSelisih.diffPenalty) }}</span></li>
                         </ul>
-                        <p class="mt-1 text-xs text-on-surface-variant">Saat diterapkan, nominal pada form angsuran kelompok akan otomatis diperbarui sesuai total di atas.</p>
+                        <p class="mt-1 text-xs text-on-surface-variant">{{ t('Saat diterapkan, nominal pada form angsuran kelompok akan otomatis diperbarui sesuai total di atas.') }}</p>
                     </div>
                     <div class="flex flex-wrap justify-end gap-2">
-                        <AppButton variant="secondary" type="button" icon="balance" @click="() => { balanceAllocationRemainder('principal_paid'); balanceAllocationRemainder('interest_paid'); balanceAllocationRemainder('penalty_paid'); }">Ratakan Selisih</AppButton>
+                        <AppButton variant="secondary" type="button" icon="balance" @click="() => { balanceAllocationRemainder('principal_paid'); balanceAllocationRemainder('interest_paid'); balanceAllocationRemainder('penalty_paid'); }">{{ t('Ratakan Selisih') }}</AppButton>
                     </div>
                 </div>
-                <div v-else class="py-8 text-center text-on-surface-variant">Pinjaman ini tidak terkait kelompok. Catatan per-anggota tidak tersedia.</div>
+                <div v-else class="py-8 text-center text-on-surface-variant">{{ t('Pinjaman ini tidak terkait kelompok. Catatan per-anggota tidak tersedia.') }}</div>
                 <template #footer>
-                    <AppButton variant="secondary" type="button" @click="allocationModalOpen = false">Batal</AppButton>
-                    <AppButton type="button" icon="check" @click="() => { applyAllocationToForm(); allocationModalOpen = false; }">Terapkan ke Form</AppButton>
+                    <AppButton variant="secondary" type="button" @click="allocationModalOpen = false">{{ t('Batal') }}</AppButton>
+                    <AppButton type="button" icon="check" @click="() => { applyAllocationToForm(); allocationModalOpen = false; }">{{ t('Terapkan ke Form') }}</AppButton>
                 </template>
             </AppModal>
         </div>

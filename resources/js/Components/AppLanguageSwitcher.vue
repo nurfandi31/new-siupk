@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { router } from '@inertiajs/vue3';
 import AppIcon from './AppIcon.vue';
 import { useI18n } from '../i18n';
 
@@ -45,8 +46,15 @@ const triggerClass = computed(() => {
 });
 
 function choose(code) {
+    const changed = code !== locale.value;
     setLocale(code);
     open.value = false;
+
+    // Sebagian label disusun saat setup (mis. kolom tabel & menu), jadi muat
+    // ulang halaman agar seluruh UI langsung memakai bahasa yang dipilih.
+    if (changed) {
+        router.reload({ preserveScroll: true, preserveState: false });
+    }
 }
 
 function onDocumentPointerDown(event) {

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AppBadge from '../../Components/AppBadge.vue';
@@ -50,7 +52,7 @@ function applyFilter() {
                         <SmartSelect
                             v-model="selectedMonth"
                             :options="monthOptions"
-                            label="Bulan"
+                            :label="t('Bulan')"
                             value-key="value"
                             label-key="label"
                             hide-label
@@ -62,7 +64,7 @@ function applyFilter() {
                         <SmartSelect
                             v-model="selectedYear"
                             :options="yearOptions"
-                            label="Tahun"
+                            :label="t('Tahun')"
                             value-key="value"
                             label-key="label"
                             hide-label
@@ -75,7 +77,7 @@ function applyFilter() {
                         target="_blank"
                         class="inline-flex items-center"
                     >
-                        <AppButton variant="primary" icon="picture_as_pdf">Cetak Paket 5 Laporan (PDF)</AppButton>
+                        <AppButton variant="primary" icon="picture_as_pdf">{{ t('Cetak Paket 5 Laporan (PDF)') }}</AppButton>
                     </a>
                 </div>
             </div>
@@ -84,7 +86,7 @@ function applyFilter() {
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard class="relative overflow-hidden">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-semibold text-on-surface-variant">Total Kas & Bank</span>
+                        <span class="text-sm font-semibold text-on-surface-variant">{{ t('Total Kas & Bank') }}</span>
                         <AppIcon name="account_balance_wallet" tone="success" :container-size="9" />
                     </div>
                     <p class="mt-3 text-2xl font-bold text-primary">{{ money(metrics.summary.total_cash) }}</p>
@@ -93,7 +95,7 @@ function applyFilter() {
 
                 <AppCard class="relative overflow-hidden">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-semibold text-on-surface-variant">Pinjaman Aktif (Pokok)</span>
+                        <span class="text-sm font-semibold text-on-surface-variant">{{ t('Pinjaman Aktif (Pokok)') }}</span>
                         <AppIcon name="credit_score" tone="info" :container-size="9" />
                     </div>
                     <p class="mt-3 text-2xl font-bold text-primary">{{ money(metrics.summary.active_loan_principal) }}</p>
@@ -102,16 +104,16 @@ function applyFilter() {
 
                 <AppCard class="relative overflow-hidden">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-semibold text-on-surface-variant">Laba Bersih YTD</span>
+                        <span class="text-sm font-semibold text-on-surface-variant">{{ t('Laba Bersih YTD') }}</span>
                         <AppIcon name="trending_up" tone="warning" :container-size="9" />
                     </div>
                     <p class="mt-3 text-2xl font-bold text-primary">{{ money(metrics.summary.net_income_ytd) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">Hasil Usaha Konsolidasi</p>
+                    <p class="mt-1 text-xs text-on-surface-variant">{{ t('Hasil Usaha Konsolidasi') }}</p>
                 </AppCard>
 
                 <AppCard class="relative overflow-hidden">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-semibold text-on-surface-variant">Cakupan Wilayah</span>
+                        <span class="text-sm font-semibold text-on-surface-variant">{{ t('Cakupan Wilayah') }}</span>
                         <AppIcon name="map" tone="primary" :container-size="9" />
                     </div>
                     <p class="mt-3 text-2xl font-bold text-primary">{{ metrics.summary.total_regencies }} Kabupaten</p>
@@ -123,24 +125,24 @@ function applyFilter() {
             <AppCard>
                 <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                     <div>
-                        <h2 class="font-bold text-primary">Paket Laporan Keuangan Konsolidasi (5 Standar Finansial)</h2>
-                        <p class="text-xs text-on-surface-variant">Buka per-halaman atau langsung download Paket 5 Laporan Keuangan lengkap dalam bentuk PDF.</p>
+                        <h2 class="font-bold text-primary">{{ t('Paket Laporan Keuangan Konsolidasi (5 Standar Finansial)') }}</h2>
+                        <p class="text-xs text-on-surface-variant">{{ t('Buka per-halaman atau langsung download Paket 5 Laporan Keuangan lengkap dalam bentuk PDF.') }}</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <Link :href="`/province/reports/pack?year=${selectedYear}&month=${selectedMonth || ''}`">
-                            <AppButton variant="primary" icon="layers">Paket 5 Laporan</AppButton>
+                            <AppButton variant="primary" icon="layers">{{ t('Paket 5 Laporan') }}</AppButton>
                         </Link>
                         <Link :href="`/province/reports/balance-sheet?year=${selectedYear}&month=${selectedMonth || ''}`">
-                            <AppButton variant="secondary" icon="account_balance">Neraca</AppButton>
+                            <AppButton variant="secondary" icon="account_balance">{{ t('Neraca') }}</AppButton>
                         </Link>
                         <Link :href="`/province/reports/income-statement?year=${selectedYear}&month=${selectedMonth || ''}`">
-                            <AppButton variant="secondary" icon="trending_up">Laba Rugi</AppButton>
+                            <AppButton variant="secondary" icon="trending_up">{{ t('Laba Rugi') }}</AppButton>
                         </Link>
                         <Link :href="`/province/reports/cash-flow?year=${selectedYear}&month=${selectedMonth || ''}`">
-                            <AppButton variant="secondary" icon="payments">Arus Kas</AppButton>
+                            <AppButton variant="secondary" icon="payments">{{ t('Arus Kas') }}</AppButton>
                         </Link>
                         <Link :href="`/province/reports/equity-changes?year=${selectedYear}&month=${selectedMonth || ''}`">
-                            <AppButton variant="secondary" icon="balance">Perubahan Ekuitas</AppButton>
+                            <AppButton variant="secondary" icon="balance">{{ t('Perubahan Ekuitas') }}</AppButton>
                         </Link>
                         <Link :href="`/province/reports/calk?year=${selectedYear}&month=${selectedMonth || ''}`">
                             <AppButton variant="secondary" icon="description">CALK</AppButton>
@@ -152,17 +154,17 @@ function applyFilter() {
             <!-- Table Recap per Regency -->
             <AppCard :padded="false">
                 <div class="border-b border-outline-variant px-6 py-4">
-                    <h2 class="font-bold text-primary">Rekapitulasi Kinerja per Kabupaten</h2>
+                    <h2 class="font-bold text-primary">{{ t('Rekapitulasi Kinerja per Kabupaten') }}</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead class="bg-surface-container-low text-xs text-on-surface-variant uppercase">
                             <tr>
-                                <th class="px-6 py-3">Nama Kabupaten</th>
-                                <th class="px-6 py-3 text-right">Jumlah Kecamatan</th>
-                                <th class="px-6 py-3 text-right">Kas & Bank</th>
-                                <th class="px-6 py-3 text-right">Pinjaman Aktif</th>
-                                <th class="px-6 py-3 text-right">Total Pokok</th>
+                                <th class="px-6 py-3">{{ t('Nama Kabupaten') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Jumlah Kecamatan') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Kas & Bank') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Pinjaman Aktif') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Total Pokok') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
@@ -175,7 +177,7 @@ function applyFilter() {
                             </tr>
                             <tr v-if="!metrics.regency_recap.length">
                                 <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">
-                                    Belum ada data kabupaten terdaftar pada provinsi ini.
+                                    {{ t('Belum ada data kabupaten terdaftar pada provinsi ini.') }}
                                 </td>
                             </tr>
                         </tbody>

@@ -8,7 +8,12 @@ const state = reactive({
     timer: null,
     remainingTime: 4500,
     startTime: 0,
+    duration: 4500,
+    // Penanda unik agar transisi & progress bar ikut restart setiap toast baru.
+    token: 0,
 });
+
+let sequence = 0;
 
 function normalize(value) {
     if (value == null || value === '') return { message: '', title: '' };
@@ -32,7 +37,9 @@ function show(tone = 'success', value, { duration = 4500 } = {}) {
     state.title = title;
     state.visible = true;
     state.remainingTime = duration;
+    state.duration = duration;
     state.startTime = Date.now();
+    state.token = ++sequence;
 
     if (duration > 0) {
         state.timer = setTimeout(() => {

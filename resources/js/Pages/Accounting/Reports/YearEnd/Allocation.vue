@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../../i18n';
+const { t } = useI18n();
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppBadge from '../../../../Components/AppBadge.vue';
@@ -52,15 +54,15 @@ function saveNotes() {
 </script>
 
 <template>
-    <Head title="Alokasi Laba Tutup Buku" />
+    <Head :title="t('Alokasi Laba Tutup Buku')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Pelaporan · Tutup Buku
+                        {{ t('Pelaporan · Tutup Buku') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Alokasi Laba</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Alokasi Laba') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         Tahun Buku {{ year }} · Simulasi alokasi surplus laba
                     </p>
@@ -81,7 +83,7 @@ function saveNotes() {
                     <div class="grid w-full flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
                             <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                                Tahun Buku
+                                {{ t('Tahun Buku') }}
                             </label>
                             <select
                                 class="w-full rounded-xl border border-outline-variant bg-surface px-3 py-2 text-sm"
@@ -95,7 +97,7 @@ function saveNotes() {
                         </div>
                         <div>
                             <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                                Total Surplus (Laba Ditahan)
+                                {{ t('Total Surplus (Laba Ditahan)') }}
                             </label>
                             <input
                                 readonly
@@ -109,17 +111,17 @@ function saveNotes() {
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Surplus</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Surplus') }}</p>
                     <p class="mt-2 text-xl font-bold" :class="summary.total_surplus < 0 ? 'text-error' : 'text-primary'">
                         {{ money.format(summary.total_surplus) }}
                     </p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Dialokasikan</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Dialokasikan') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ money.format(summary.total_allocated) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Persentase Teralokasi</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Persentase Teralokasi') }}</p>
                     <p class="mt-2 text-xl font-bold" :class="summary.pct_allocated < 99.9 ? 'text-error' : 'text-primary'">
                         {{ summary.pct_allocated.toFixed(2) }}%
                     </p>
@@ -131,11 +133,11 @@ function saveNotes() {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left w-12">No</th>
-                                <th class="px-3 py-2 text-left">Uraian</th>
-                                <th class="px-3 py-2 text-right w-32">Persentase (%)</th>
-                                <th class="px-3 py-2 text-right w-40">Nominal (Rp)</th>
-                                <th class="px-3 py-2 text-left w-64">Keterangan</th>
+                                <th class="px-3 py-2 text-left w-12">{{ t('No') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Uraian') }}</th>
+                                <th class="px-3 py-2 text-right w-32">{{ t('Persentase (%)') }}</th>
+                                <th class="px-3 py-2 text-right w-40">{{ t('Nominal (Rp)') }}</th>
+                                <th class="px-3 py-2 text-left w-64">{{ t('Keterangan') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -144,7 +146,7 @@ function saveNotes() {
                                 <td class="px-3 py-2 font-medium">
                                     {{ line.label }}
                                     <span v-if="line.key === 'ditahan'" class="ml-1 text-xs italic text-on-surface-variant">
-                                        (sisa)
+                                        {{ t('(sisa)') }}
                                     </span>
                                 </td>
                                 <td class="px-3 py-2 text-right tabular-nums">
@@ -158,13 +160,13 @@ function saveNotes() {
                         </tbody>
                         <tfoot>
                             <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                <td colspan="2" class="px-3 py-2">Total Dialokasikan</td>
+                                <td colspan="2" class="px-3 py-2">{{ t('Total Dialokasikan') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ totals.pct_allocated.toFixed(2) }}%</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.allocated) }}</td>
                                 <td class="px-3 py-2"></td>
                             </tr>
                             <tr class="bg-surface-container font-bold">
-                                <td colspan="2" class="px-3 py-2">Sisa (belum dialokasikan)</td>
+                                <td colspan="2" class="px-3 py-2">{{ t('Sisa (belum dialokasikan)') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">
                                     {{ (100 - totals.pct_allocated).toFixed(2) }}%
                                 </td>
@@ -180,27 +182,27 @@ function saveNotes() {
 
             <AppCard class="p-5">
                 <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-                    Akun Tujuan (referensi jurnal alokasi)
+                    {{ t('Akun Tujuan (referensi jurnal alokasi)') }}
                 </h2>
                 <ul class="space-y-2 text-sm">
                     <li v-for="(acc, key) in account_targets" :key="key" class="flex justify-between">
                         <span class="text-on-surface-variant">{{ key }}:</span>
-                        <span class="font-medium">{{ acc.code }} · {{ acc.name || '(tidak ada)' }}</span>
+                        <span class="font-medium">{{ acc.code }} · {{ acc.name || t('(tidak ada)') }}</span>
                     </li>
                 </ul>
             </AppCard>
 
             <AppCard class="p-5">
-                <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">Catatan manajemen</h2>
+                <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Catatan manajemen') }}</h2>
                 <form class="space-y-3" @submit.prevent="saveNotes">
                     <AppTextarea
                         v-model="pctForm.notes"
-                        label="Catatan proses / kebijakan alokasi"
+                        :label="t('Catatan proses / kebijakan alokasi')"
                         :error="pctForm.errors.notes"
-                        placeholder="Masukkan catatan"
+                        :placeholder="t('Masukkan catatan')"
                     />
                     <div class="flex justify-end">
-                        <AppButton type="submit" icon="save" :loading="pctForm.processing">Simpan catatan</AppButton>
+                        <AppButton type="submit" icon="save" :loading="pctForm.processing">{{ t('Simpan catatan') }}</AppButton>
                     </div>
                 </form>
             </AppCard>

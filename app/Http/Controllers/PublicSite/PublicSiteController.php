@@ -13,6 +13,7 @@ use App\Http\Requests\PublicSite\SiteMessageRequest;
 use App\Tenancy\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -49,8 +50,10 @@ final class PublicSiteController
         $site['recent_pages'] = $this->resolveRecentPages();
         $site['contact'] = $this->resolveContactInfo();
 
-        if ($this->isDemoHost($request)) {
-            $site['demo'] = $this->resolveDemoData();
+        if ($this->isDemoTenant($site)) {
+            $site['demo'] = [
+                'login_url' => url('/login'),
+            ];
         }
 
         return Inertia::render('PublicSite/TenantHome', $site);
@@ -114,27 +117,14 @@ final class PublicSiteController
         ];
     }
 
-    private function isDemoHost(Request $request): bool
-    {
-        $host = strtolower(trim(explode(':', trim((string) $request->getHost()))[0]));
-
-        return $host === 'demo.siupknext.test';
-    }
-
     /**
-     * Public credentials seeded for the bundled `demo` tenant. Surfaced on the
-     * demo landing so visitors can sign in with one click; rotate by changing
-     * the demo tenant password in the database.
-     *
-     * @return array<string, string>
+     * @param  array<string, mixed>  $site
      */
-    private function resolveDemoData(): array
+    private function isDemoTenant(array $site): bool
     {
-        return [
-            'username' => 'admin',
-            'password' => 'password',
-            'login_url' => '/login?demo=1',
-        ];
+        $demoCode = trim((string) config('tenancy.demo_tenant_code', 'demo'));
+
+        return $demoCode !== '' && (string) ($site['tenant']['code'] ?? '') === $demoCode;
     }
 
     /**
@@ -471,6 +461,174 @@ final class PublicSiteController
                 'is_training_mode' => $tenant->isTraining(),
             ],
             'settings' => $this->resolveSettings(),
+            'stats' => $this->resolveTenantStats($tenant->row_id),
+        ];
+    }
+
+    /**
+     * Angka landing page diambil langsung dari basis data tenant (bukan dummy)
+     * agar publik melihat kondisi riil koperasi/BUMDesma saat ini.
+     *
+     * @return array<string, int|float|null>
+     */
+    private function resolveTenantStats(int $tenantId): array
+    {
+        $today = now()->toDateString();
+        $db = DB::connection('tenant');
+
+        $membersActive = (int) $db->table('members')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->count();
+
+        $groupsActive = (int) $db->table('groups')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->count();
+
+        $loansActive = (int) $db->table('loans')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('status', ['active', 'disbursed'])
+            ->count();
+
+        $loansPending = (int) $db->table('loans')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('status', ['draft', 'verified', 'waiting'])
+            ->count();
+
+        $loansTotal = (int) $db->table('loans')
+            ->where('tenant_id', $tenantId)
+            ->count();
+
+        $memberLoansActive = (int) $db->table('loans')
+            ->where('tenant_id', $tenantId)
+            ->where('legacy_source', 'member_loan')
+            ->whereIn('status', ['active', 'disbursed'])
+            ->count();
+        $groupLoansActive = (int) $db->table('loans')
+            ->where('tenant_id', $tenantId)
+            ->where(function ($query): void {
+                $query->whereNull('legacy_source')->orWhere('legacy_source', '!=', 'member_loan');
+            })
+            ->whereIn('status', ['active', 'disbursed'])
+            ->count();
+        $memberLoansTotal = (int) $db->table('loans')
+            ->where('tenant_id', $tenantId)
+            ->where('legacy_source', 'member_loan')
+            ->count();
+        $groupLoansTotal = (int) $db->table('loans')
+            ->where('tenant_id', $tenantId)
+            ->where(function ($query): void {
+                $query->whereNull('legacy_source')->orWhere('legacy_source', '!=', 'member_loan');
+            })
+            ->count();
+
+        $activeLoanIds = $db->table('loans')
+            ->where('tenant_id', $tenantId)
+            ->whereIn('status', ['active', 'disbursed'])
+            ->pluck('row_id')
+            ->all();
+
+        $outstanding = 0.0;
+        if ($activeLoanIds !== []) {
+            $outstandingRow = $db->table('loan_installments')
+                ->where('tenant_id', $tenantId)
+                ->whereIn('loan_row_id', $activeLoanIds)
+                ->selectRaw('COALESCE(SUM(CASE WHEN principal_due > principal_paid THEN principal_due - principal_paid ELSE 0 END), 0) AS total')
+                ->first();
+            $outstanding = (float) ($outstandingRow->total ?? 0);
+        }
+
+        // Kolektabilitas dihitung hanya dari angsuran yang sudah jatuh tempo.
+        $dueAggregate = $db->table('loan_installments')
+            ->where('tenant_id', $tenantId)
+            ->whereNotNull('due_date')
+            ->where('due_date', '<=', $today)
+            ->selectRaw('COALESCE(SUM(principal_due + interest_due), 0) AS due_total')
+            ->selectRaw('COALESCE(SUM(CASE WHEN principal_paid > principal_due THEN principal_due ELSE principal_paid END + CASE WHEN interest_paid > interest_due THEN interest_due ELSE interest_paid END), 0) AS paid_total')
+            ->first();
+
+        $dueTotal = (float) ($dueAggregate->due_total ?? 0);
+        $paidTotal = (float) ($dueAggregate->paid_total ?? 0);
+        $collectionRate = $dueTotal > 0
+            ? round(min(100.0, ($paidTotal / $dueTotal) * 100), 1)
+            : null;
+
+        // Ketepatan waktu dihitung dari kelompok angsuran yang sudah lunas.
+        $paidRows = $db->table('loan_installments')
+            ->where('tenant_id', $tenantId)
+            ->whereNotNull('paid_at')
+            ->where(function ($query): void {
+                $query->where('principal_paid', '>', 0)->orWhere('interest_paid', '>', 0);
+            })
+            ->get(['loan_row_id', 'installment_number', 'due_date', 'paid_at', 'principal_due', 'principal_paid', 'interest_due', 'interest_paid']);
+
+        $paidGroups = $paidRows->groupBy(fn ($row): string => $row->loan_row_id.':'.$row->installment_number);
+        $onTime = 0;
+        $completedGroups = 0;
+        foreach ($paidGroups as $rows) {
+            $principalDue = (float) $rows->sum(fn ($row): float => (float) $row->principal_due);
+            $principalPaid = (float) $rows->sum(fn ($row): float => (float) $row->principal_paid);
+            $interestDue = (float) $rows->sum(fn ($row): float => (float) $row->interest_due);
+            $interestPaid = (float) $rows->sum(fn ($row): float => (float) $row->interest_paid);
+
+            if ($principalPaid + $interestPaid <= 0.005) {
+                continue;
+            }
+            if ($principalPaid + 0.005 < $principalDue || $interestPaid + 0.005 < $interestDue) {
+                continue;
+            }
+
+            $completedGroups++;
+            $paidAt = (string) $rows->max('paid_at');
+            $dueDate = (string) $rows->min('due_date');
+            if ($paidAt !== '' && $dueDate !== '' && substr($paidAt, 0, 10) <= $dueDate) {
+                $onTime++;
+            }
+        }
+        $punctualityRate = $completedGroups > 0
+            ? round(($onTime / $completedGroups) * 100, 1)
+            : null;
+
+        // Porsi & rata-rata nominal berdasarkan pinjaman yang sudah dicairkan.
+        $disbursed = $db->table('loans')
+            ->where('tenant_id', $tenantId)
+            ->whereNotNull('disbursed_at')
+            ->selectRaw("COALESCE(SUM(CASE WHEN legacy_source = 'member_loan' THEN principal_amount ELSE 0 END), 0) AS member_total")
+            ->selectRaw("COALESCE(SUM(CASE WHEN legacy_source = 'member_loan' THEN 0 ELSE principal_amount END), 0) AS group_total")
+            ->selectRaw("COALESCE(SUM(CASE WHEN legacy_source = 'member_loan' THEN 1 ELSE 0 END), 0) AS member_count")
+            ->selectRaw("COALESCE(SUM(CASE WHEN legacy_source = 'member_loan' THEN 0 ELSE 1 END), 0) AS group_count")
+            ->first();
+
+        $memberDisbursed = (float) ($disbursed->member_total ?? 0);
+        $groupDisbursed = (float) ($disbursed->group_total ?? 0);
+        $memberLoanCount = (int) ($disbursed->member_count ?? 0);
+        $groupLoanCount = (int) ($disbursed->group_count ?? 0);
+        $disbursedTotal = $memberDisbursed + $groupDisbursed;
+
+        return [
+            'members_active' => $membersActive,
+            'groups_active' => $groupsActive,
+            'loans_active' => $loansActive,
+            'loans_pending' => $loansPending,
+            'loans_total' => $loansTotal,
+            'outstanding_principal' => round($outstanding, 2),
+            'collection_rate' => $collectionRate,
+            'punctuality_rate' => $punctualityRate,
+            'group_share' => $disbursedTotal > 0 ? round(($groupDisbursed / $disbursedTotal) * 100, 1) : null,
+            'member_share' => $disbursedTotal > 0 ? round(($memberDisbursed / $disbursedTotal) * 100, 1) : null,
+            'group_average_principal' => $groupLoanCount > 0 ? round($groupDisbursed / $groupLoanCount, 2) : 0.0,
+            'member_average_principal' => $memberLoanCount > 0 ? round($memberDisbursed / $memberLoanCount, 2) : 0.0,
+            'group_loans_active' => $groupLoansActive,
+            'member_loans_active' => $memberLoansActive,
+            'group_loans_total' => $groupLoansTotal,
+            'member_loans_total' => $memberLoansTotal,
+            'assets_total' => (int) $db->table('assets')->where('tenant_id', $tenantId)->count(),
+            'documents_total' => (int) $db->table('documents')->where('tenant_id', $tenantId)->count(),
+            'loan_products_total' => (int) $db->table('loan_products')->where('tenant_id', $tenantId)->count(),
+            'roles_total' => (int) $db->table('roles')->where('tenant_id', $tenantId)->count(),
+            'fiscal_periods_total' => (int) $db->table('fiscal_periods')->where('tenant_id', $tenantId)->count(),
+            'installments_total' => (int) $db->table('loan_installments')->where('tenant_id', $tenantId)->count(),
         ];
     }
 

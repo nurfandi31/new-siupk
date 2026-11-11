@@ -41,8 +41,12 @@ final readonly class TenantRegistrationService
         private SavingsModuleManager $savingsModules,
     ) {}
 
-    public function register(array $data): Tenant
+    /**
+     * @return array{tenant: Tenant, login_password: ?string}
+     */
+    public function register(array $data): array
     {
+        $initialPassword = null;
         [$tenant, $placement, $shard] = DB::connection('platform')->transaction(function () use ($data): array {
             $shard = DatabaseShard::query()->where('status', 'active')->orderBy('row_id')->firstOrFail();
             $tenant = Tenant::query()->create([
@@ -80,7 +84,13 @@ final readonly class TenantRegistrationService
 
             // One login account per role: the tenant is ready to use without
             // manually entering a first user when it is registered.
-            $this->loginAccounts->ensureDefaults($tenant);
+            $accounts = $this->loginAccounts->ensureDefaults($tenant);
+            foreach ($accounts as $account) {
+                if (! empty($account['initial_password'])) {
+                    $initialPassword = (string) $account['initial_password'];
+                    break;
+                }
+            }
 
             // Modul simpanan opsional: tabel dibuat hanya jika lokasi memilih
             // untuk memakai simpanan saat pendaftaran.
@@ -91,7 +101,10 @@ final readonly class TenantRegistrationService
             $tenant->forceFill(['status' => 'active', 'provisioned_at' => now()])->save();
             $this->registry->sync($tenant);
 
-            return $tenant->fresh();
+            return [
+                'tenant' => $tenant->fresh(),
+                'login_password' => $initialPassword,
+            ];
         } catch (\Throwable $exception) {
             $tenant->forceFill(['status' => 'provisioning_failed'])->saveQuietly();
             throw new RuntimeException('Tenant provisioning failed.', previous: $exception);

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -23,8 +25,8 @@ const props = defineProps({
 });
 
 const moneyFmt = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
-const dateFmt = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-const dateTimeFmt = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+const dateFmt = new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' });
+const dateTimeFmt = new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
 function fMoney(value) { if (value === null || value === undefined || value === '') return '—'; return moneyFmt.format(Number(value)); }
 function fDate(value) { if (!value) return '—'; const d = new Date(value); return Number.isNaN(d.getTime()) ? '—' : dateFmt.format(d); }
@@ -76,11 +78,11 @@ const pageTone = computed(() => {
 });
 
 const pipeline = computed(() => [
-    { key: 'draft', label: 'Proposal', description: 'Pengajuan baru' },
-    { key: 'verified', label: 'Verifikasi', description: 'Hasil verifikasi lapangan' },
-    { key: 'waiting', label: 'Pencairan', description: 'Alokasi dana siap dicairkan' },
-    { key: 'disbursed', label: 'Aktif', description: 'Pinjaman berjalan & angsuran' },
-    { key: 'completed', label: 'Lunas', description: 'Validasi pelunasan' },
+    { key: 'draft', label: t('Proposal'), description: t('Pengajuan baru') },
+    { key: 'verified', label: t('Verifikasi'), description: t('Hasil verifikasi lapangan') },
+    { key: 'waiting', label: t('Pencairan'), description: t('Alokasi dana siap dicairkan') },
+    { key: 'disbursed', label: t('Aktif'), description: t('Pinjaman berjalan & angsuran') },
+    { key: 'completed', label: t('Lunas'), description: t('Validasi pelunasan') },
 ]);
 const stageKey = computed(() => {
     if (props.loan.status === 'completed') return 'completed';
@@ -149,10 +151,10 @@ const installmentMethodLabels = {
 };
 
 const installmentMethodMeta = {
-    flat: { tone: 'primary', icon: 'straighten', description: 'Bunga dihitung dari plafond awal.' },
-    annuity: { tone: 'tertiary', icon: 'all_inclusive', description: 'Angsuran tetap tiap periode.' },
-    effective: { tone: 'secondary', icon: 'trending_down', description: 'Bunga efektif dari sisa pokok.' },
-    declining: { tone: 'secondary', icon: 'trending_down', description: 'Bunga menurun sesuai sisa pokok.' },
+    flat: { tone: 'primary', icon: 'straighten', description: t('Bunga dihitung dari plafond awal.') },
+    annuity: { tone: 'tertiary', icon: 'all_inclusive', description: t('Angsuran tetap tiap periode.') },
+    effective: { tone: 'secondary', icon: 'trending_down', description: t('Bunga efektif dari sisa pokok.') },
+    declining: { tone: 'secondary', icon: 'trending_down', description: t('Bunga menurun sesuai sisa pokok.') },
 };
 
 // ===== Stat cards =====
@@ -176,7 +178,7 @@ const principalPaidRatio = principalAmount > 0
 const statCards = computed(() => [
     {
         key: 'principal',
-        label: 'Plafon Pinjaman',
+        label: t('Plafon Pinjaman'),
         eyebrow: props.loan.loan_number || `ID #${props.loan.row_id}`,
         icon: 'payments',
         iconBg: 'bg-primary-container/35 text-primary',
@@ -189,7 +191,7 @@ const statCards = computed(() => [
     },
     {
         key: 'remaining',
-        label: 'Sisa Pokok',
+        label: t('Sisa Pokok'),
         eyebrow: props.loan.principal_remaining > 0 ? 'Belum tertagih' : 'Selesai',
         icon: props.loan.principal_remaining > 0 ? 'account_balance_wallet' : 'task_alt',
         iconBg: props.loan.principal_remaining > 0
@@ -211,7 +213,7 @@ const statCards = computed(() => [
     },
     {
         key: 'installments',
-        label: 'Angsuran Lunas',
+        label: t('Angsuran Lunas'),
         eyebrow: totalInstallments > 0 ? `${totalInstallments} periode` : 'Belum dijadwalkan',
         icon: 'event_available',
         iconBg: 'bg-secondary-container/40 text-secondary',
@@ -231,7 +233,7 @@ const statCards = computed(() => [
     },
     {
         key: 'interest',
-        label: 'Jasa Terbayar',
+        label: t('Jasa Terbayar'),
         eyebrow: `Total jasa ${fMoney(totalInterestDue)}`,
         icon: 'percent',
         iconBg: 'bg-primary-container/35 text-primary',
@@ -253,8 +255,8 @@ const statCards = computed(() => [
     },
     {
         key: 'installment_method',
-        label: 'Metode Angsuran',
-        eyebrow: 'Sistem pembayaran',
+        label: t('Metode Angsuran'),
+        eyebrow: t('Sistem pembayaran'),
         icon: installmentMethodMeta[props.loan.installment_method]?.icon ?? 'calculate',
         iconBg: 'bg-tertiary-fixed/40 text-tertiary-deep',
         accent: 'tertiary',
@@ -268,29 +270,29 @@ const statCards = computed(() => [
 
 // ===== Identitas fields =====
 const borrowerIdentityFields = computed(() => [
-    { key: 'full_name', label: 'Nama Lengkap', value: props.loan.member?.full_name, hint: `ID Pinjaman: ${props.loan.loan_number || `#${props.loan.row_id}`}` },
-    { key: 'member_number', label: 'Nomor Anggota', value: props.loan.member?.member_number },
+    { key: 'full_name', label: t('Nama Lengkap'), value: props.loan.member?.full_name, hint: `ID Pinjaman: ${props.loan.loan_number || `#${props.loan.row_id}`}` },
+    { key: 'member_number', label: t('Nomor Anggota'), value: props.loan.member?.member_number },
     { key: 'nik', label: 'NIK', value: props.loan.member?.nik },
-    { key: 'village', label: 'Desa', value: props.loan.member?.village?.name },
-    { key: 'address', label: 'Alamat', value: props.loan.member?.address, span: 2 },
+    { key: 'village', label: t('Desa'), value: props.loan.member?.village?.name },
+    { key: 'address', label: t('Alamat'), value: props.loan.member?.address, span: 2 },
 ]);
 
 const loanIdentityFields = computed(() => [
-    { key: 'proposed_at', label: 'Tanggal Pengajuan', value: fDate(props.loan.proposed_at) },
-    { key: 'verified_at', label: 'Tanggal Verifikasi', value: fDate(props.loan.verified_at) },
-    { key: 'approved_at', label: 'Tanggal Penetapan', value: fDate(props.loan.approved_at) },
-    { key: 'funded_at', label: 'Rencana Pencairan', value: fDate(props.loan.funded_at) },
-    { key: 'disbursed_at', label: 'Tanggal Cair', value: fDate(props.loan.disbursed_at) },
-    { key: 'completed_at', label: 'Tanggal Selesai', value: fDate(props.loan.completed_at) },
+    { key: 'proposed_at', label: t('Tanggal Pengajuan'), value: fDate(props.loan.proposed_at) },
+    { key: 'verified_at', label: t('Tanggal Verifikasi'), value: fDate(props.loan.verified_at) },
+    { key: 'approved_at', label: t('Tanggal Penetapan'), value: fDate(props.loan.approved_at) },
+    { key: 'funded_at', label: t('Rencana Pencairan'), value: fDate(props.loan.funded_at) },
+    { key: 'disbursed_at', label: t('Tanggal Cair'), value: fDate(props.loan.disbursed_at) },
+    { key: 'completed_at', label: t('Tanggal Selesai'), value: fDate(props.loan.completed_at) },
 ]);
 
 // ===== Forms & modals =====
 // Pilihan sistem angsuran (sama dengan SIUPK: dropdown dinamis di server, fallback di klien).
 const FREQUENCY_OPTIONS = [
-    { value: 'monthly', label: 'Bulanan' },
-    { value: 'weekly', label: 'Mingguan' },
-    { value: 'biweekly', label: 'Dua Mingguan' },
-    { value: 'at_maturity', label: 'Sekaligus (Jatuh Tempo)' },
+    { value: 'monthly', label: t('Bulanan') },
+    { value: 'weekly', label: t('Mingguan') },
+    { value: 'biweekly', label: t('Dua Mingguan') },
+    { value: 'at_maturity', label: t('Sekaligus (Jatuh Tempo)') },
 ];
 
 // ===== Forms (form inline di tab Aksi, bukan popup) =====
@@ -418,11 +420,11 @@ function submitReschedule() {
 // ===== Tabs =====
 const activeTab = ref('overview');
 const detailTabs = computed(() => [
-    { key: 'overview', label: 'Ringkasan', icon: 'dashboard' },
-    ...(props.loan.installments?.length ? [{ key: 'schedule', label: 'Jadwal Angsuran', icon: 'calendar_month', badge: props.loan.installments.length }] : []),
-    ...(props.loan.payments?.length ? [{ key: 'payments', label: 'Pembayaran', icon: 'receipt_long', badge: props.loan.payments.length }] : []),
-    ...(props.loan.status_histories?.length ? [{ key: 'history', label: 'Riwayat Status', icon: 'history', badge: props.loan.status_histories.length }] : []),
-    ...(hasAnyAction.value ? [{ key: 'actions', label: 'Aksi', icon: 'bolt' }] : []),
+    { key: 'overview', label: t('Ringkasan'), icon: 'dashboard' },
+    ...(props.loan.installments?.length ? [{ key: 'schedule', label: t('Jadwal Angsuran'), icon: 'calendar_month', badge: props.loan.installments.length }] : []),
+    ...(props.loan.payments?.length ? [{ key: 'payments', label: t('Pembayaran'), icon: 'receipt_long', badge: props.loan.payments.length }] : []),
+    ...(props.loan.status_histories?.length ? [{ key: 'history', label: t('Riwayat Status'), icon: 'history', badge: props.loan.status_histories.length }] : []),
+    ...(hasAnyAction.value ? [{ key: 'actions', label: t('Aksi'), icon: 'bolt' }] : []),
 ]);
 
 // ===== Navigation =====
@@ -491,10 +493,10 @@ const STAGE_INDIVIDUAL_DISBURSEMENT = ['waiting', 'approved', 'active', 'disburs
 const STAGE_INDIVIDUAL_SETTLEMENT = ['completed', 'written_off'];
 
 const STAGE_META = {
-    individual_proposal: { label: 'Proposal', description: 'Dokumen yang disiapkan pada tahap pengajuan proposal.', tone: 'warning' },
-    individual_verification: { label: 'Verifikasi', description: 'Dokumen verifikasi lapangan.', tone: 'primary' },
-    individual_disbursement: { label: 'Pencairan', description: 'Dokumen tahap pencairan & penyaluran.', tone: 'success' },
-    individual_settlement: { label: 'Penyelesaian', description: 'Dokumen setelah pinjaman selesai.', tone: 'neutral' },
+    individual_proposal: { label: t('Proposal'), description: t('Dokumen yang disiapkan pada tahap pengajuan proposal.'), tone: 'warning' },
+    individual_verification: { label: t('Verifikasi'), description: t('Dokumen verifikasi lapangan.'), tone: 'primary' },
+    individual_disbursement: { label: t('Pencairan'), description: t('Dokumen tahap pencairan & penyaluran.'), tone: 'success' },
+    individual_settlement: { label: t('Penyelesaian'), description: t('Dokumen setelah pinjaman selesai.'), tone: 'neutral' },
 };
 const STAGE_KEYS = ['individual_proposal', 'individual_verification', 'individual_disbursement', 'individual_settlement'];
 
@@ -542,39 +544,39 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
 </script>
 
 <template>
-    <Head title="Detail Pinjaman Individu" />
+    <Head :title="t('Detail Pinjaman Individu')" />
     <AuthenticatedLayout>
         <div class="mx-auto w-full max-w-7xl space-y-5 pb-12">
             <!-- COMPACT HEADER BAR (plain flex, seperti Loans/Show.vue) -->
             <div class="flex flex-wrap items-center justify-between gap-3">
-                <nav class="flex items-center gap-2 text-xs text-on-surface-variant" aria-label="Breadcrumb">
+                <nav class="flex items-center gap-2 text-xs text-on-surface-variant" :aria-label="t('Breadcrumb')">
                     <Link :href="backUrl">
-                        <AppButton type="button" variant="secondary" icon="arrow_back" size="compact">Kembali ke Daftar</AppButton>
+                        <AppButton type="button" variant="secondary" icon="arrow_back" size="compact">{{ t('Kembali ke Daftar') }}</AppButton>
                     </Link>
                 </nav>
                 <div class="flex flex-wrap items-center gap-2">
                     <a v-if="card_url" :href="card_url" target="_blank" rel="noopener">
                         <AppButton variant="secondary" icon="credit_card" size="compact">
-                            <span class="hidden sm:inline">Kartu Angsuran</span>
-                            <span class="sm:hidden">Kartu</span>
+                            <span class="hidden sm:inline">{{ t('Kartu Angsuran') }}</span>
+                            <span class="sm:hidden">{{ t('Kartu') }}</span>
                         </AppButton>
                     </a>
                     <a v-if="settlement_letter_url" :href="settlement_letter_url" target="_blank" rel="noopener">
                         <AppButton variant="secondary" icon="verified" size="compact">
-                            <span class="hidden md:inline">Surat Keterangan Lunas</span>
+                            <span class="hidden md:inline">{{ t('Surat Keterangan Lunas') }}</span>
                             <span class="md:hidden">SKL</span>
                         </AppButton>
                     </a>
                     <AppButton v-if="canPrintDocument" type="button" variant="secondary" icon="description" size="compact" @click="documentModalOpen = true">
-                        <span class="hidden sm:inline">Cetak Dokumen</span>
-                        <span class="sm:hidden">Cetak</span>
+                        <span class="hidden sm:inline">{{ t('Cetak Dokumen') }}</span>
+                        <span class="sm:hidden">{{ t('Cetak') }}</span>
                         <span v-if="availableDocuments.length" class="ml-1 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">{{ availableDocuments.length }}</span>
                     </AppButton>
                 </div>
             </div>
 
             <!-- ============== RINGKASAN PINJAMAN (REDESAIN) ============== -->
-            <section aria-label="Ringkasan metrik pinjaman" class="space-y-3">
+            <section :aria-label="t('Ringkasan metrik pinjaman')" class="space-y-3">
                 <!-- Header section -->
                 <div class="flex flex-wrap items-center justify-between gap-2 px-0.5">
                     <div class="flex min-w-0 items-center gap-2">
@@ -582,8 +584,8 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             <AppIcon name="space_dashboard" class="text-base" />
                         </span>
                         <div class="min-w-0 leading-tight">
-                            <h2 class="truncate text-sm font-bold tracking-tight text-on-surface">Ringkasan Pinjaman</h2>
-                            <p class="truncate text-[11px] text-on-surface-variant">Snapshot metrik utama pinjaman</p>
+                            <h2 class="truncate text-sm font-bold tracking-tight text-on-surface">{{ t('Ringkasan Pinjaman') }}</h2>
+                            <p class="truncate text-[11px] text-on-surface-variant">{{ t('Snapshot metrik utama pinjaman') }}</p>
                         </div>
                     </div>
                     <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-container/30 px-2.5 py-1 text-[11px] font-bold text-primary">
@@ -601,13 +603,13 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         <!-- Zona 1: Header + identitas -->
                         <header class="flex items-start justify-between gap-3">
                             <div class="min-w-0 flex-1">
-                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">Plafon Pinjaman</p>
+                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">{{ t('Plafon Pinjaman') }}</p>
                                 <p class="mt-0.5 truncate text-base font-extrabold tracking-tight text-on-surface sm:text-lg" :title="loan.loan_number || `#${loan.row_id}`">
                                     {{ loan.loan_number || `#${loan.row_id}` }}
                                 </p>
                                 <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
                                     <AppBadge :tone="statusVariant">{{ statusLabel }}</AppBadge>
-                                    <AppBadge tone="primary-soft">Individu</AppBadge>
+                                    <AppBadge tone="primary-soft">{{ t('Individu') }}</AppBadge>
                                     <span v-if="loan.member?.full_name" class="hidden min-w-0 items-center gap-1 text-[11px] font-semibold text-on-surface sm:inline-flex">
                                         <AppIcon name="person" class="text-[13px] leading-none text-primary" />
                                         <span class="truncate" :title="loan.member.full_name">{{ loan.member.full_name }}</span>
@@ -621,7 +623,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
 
                         <!-- Zona 2: Nilai utama (dipisah border tipis atas) -->
                         <div class="mt-4 border-t border-outline-variant/40 pt-4">
-                            <p class="text-[10px] font-semibold uppercase tracking-widest text-on-surface-variant">Nilai Pokok Disepakati</p>
+                            <p class="text-[10px] font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Nilai Pokok Disepakati') }}</p>
                             <p class="mt-1 text-2xl font-extrabold tabular-nums tracking-tight text-on-surface sm:text-3xl lg:text-4xl">
                                 {{ fMoney(loanAmount) }}
                             </p>
@@ -633,15 +635,15 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         <!-- Zona 3: Spec strip bawah (auto ke bawah) -->
                         <dl class="mt-auto grid grid-cols-3 gap-1.5 pt-4 sm:gap-2">
                             <div class="min-w-0 rounded-lg bg-surface-container-low px-2 py-2 sm:px-2.5">
-                                <dt class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">Produk</dt>
+                                <dt class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">{{ t('Produk') }}</dt>
                                 <dd class="mt-0.5 truncate text-[11px] font-bold text-on-surface" :title="loan.product?.name">{{ loan.product?.name ?? '—' }}</dd>
                             </div>
                             <div class="min-w-0 rounded-lg bg-surface-container-low px-2 py-2 sm:px-2.5">
-                                <dt class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">Jangka</dt>
+                                <dt class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">{{ t('Jangka') }}</dt>
                                 <dd class="mt-0.5 text-[11px] font-bold text-on-surface">{{ termMonths }} bulan</dd>
                             </div>
                             <div class="min-w-0 rounded-lg bg-surface-container-low px-2 py-2 sm:px-2.5">
-                                <dt class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">Tingkat Jasa</dt>
+                                <dt class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">{{ t('Tingkat Jasa') }}</dt>
                                 <dd class="mt-0.5 text-[11px] font-bold tabular-nums text-on-surface">{{ percent(serviceRate) }}</dd>
                             </div>
                         </dl>
@@ -651,7 +653,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                     <article class="relative flex h-full flex-col overflow-hidden rounded-2xl bg-surface-container-lowest p-4 shadow-md transition hover:-translate-y-0.5 sm:p-5">
                         <header class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
-                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">Sisa Pokok</p>
+                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">{{ t('Sisa Pokok') }}</p>
                                 <p class="mt-0.5 text-[11px] font-semibold text-on-surface-variant/80">{{ principalRemaining > 0 ? 'Belum tertagih' : 'Lunas' }}</p>
                             </div>
                             <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-tertiary-fixed/40 text-tertiary-deep">
@@ -684,7 +686,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                     <article class="relative flex h-full flex-col overflow-hidden rounded-2xl bg-surface-container-lowest p-4 shadow-md transition hover:-translate-y-0.5 sm:p-5">
                         <header class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
-                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">Angsuran Lunas</p>
+                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">{{ t('Angsuran Lunas') }}</p>
                                 <p class="mt-0.5 text-[11px] font-semibold text-on-surface-variant/80">{{ totalInstallments > 0 ? `${totalInstallments} periode` : 'Belum dijadwalkan' }}</p>
                             </div>
                             <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary-container/40 text-secondary">
@@ -701,7 +703,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
 
                         <div class="mt-2">
                             <div class="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">
-                                <span>Progress pelunasan</span>
+                                <span>{{ t('Progress pelunasan') }}</span>
                                 <span class="tabular-nums text-on-surface">{{ progressPercent }}%</span>
                             </div>
                             <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-container-high">
@@ -718,7 +720,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                     <article class="relative flex h-full flex-col overflow-hidden rounded-2xl bg-surface-container-lowest p-4 shadow-md transition hover:-translate-y-0.5 sm:p-5">
                         <header class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
-                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">Jasa Terbayar</p>
+                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">{{ t('Jasa Terbayar') }}</p>
                                 <p class="mt-0.5 text-[11px] font-semibold text-on-surface-variant/80">Total jasa {{ fMoney(totalInterestDue) }}</p>
                             </div>
                             <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-container/35 text-primary">
@@ -740,7 +742,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         </div>
 
                         <p class="mt-auto pt-3 text-[11px] leading-snug text-on-surface-variant">
-                            Akumulasi jasa yang sudah dibayar
+                            {{ t('Akumulasi jasa yang sudah dibayar') }}
                         </p>
                     </article>
 
@@ -748,8 +750,8 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                     <article class="relative flex h-full flex-col overflow-hidden rounded-2xl bg-surface-container-lowest p-4 shadow-md transition hover:-translate-y-0.5 sm:p-5">
                         <header class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
-                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">Metode Angsuran</p>
-                                <p class="mt-0.5 text-[11px] font-semibold text-on-surface-variant/80">Sistem pembayaran</p>
+                                <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">{{ t('Metode Angsuran') }}</p>
+                                <p class="mt-0.5 text-[11px] font-semibold text-on-surface-variant/80">{{ t('Sistem pembayaran') }}</p>
                             </div>
                             <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-tertiary-fixed/40 text-tertiary-deep">
                                 <AppIcon :name="installmentMethodMeta[props.loan.installment_method]?.icon ?? 'calculate'" class="text-[15px] leading-none" />
@@ -770,11 +772,11 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         <div class="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-3 text-[11px] text-on-surface-variant">
                             <span class="inline-flex items-center gap-1">
                                 <AppIcon name="autorenew" class="text-[12px] leading-none text-primary" />
-                                Pokok: {{ frequencyLabels[props.loan.principal_frequency] ?? (props.loan.principal_frequency || '—') }}
+                                {{ t('Pokok:') }} {{ frequencyLabels[props.loan.principal_frequency] ?? (props.loan.principal_frequency || '—') }}
                             </span>
                             <span class="inline-flex items-center gap-1">
                                 <AppIcon name="percent" class="text-[12px] leading-none text-tertiary" />
-                                Jasa: {{ frequencyLabels[props.loan.interest_frequency] ?? (props.loan.interest_frequency || '—') }}
+                                {{ t('Jasa:') }} {{ frequencyLabels[props.loan.interest_frequency] ?? (props.loan.interest_frequency || '—') }}
                             </span>
                             <span v-if="(props.loan.principal_grace_months ?? 0) > 0 || (props.loan.interest_grace_months ?? 0) > 0" class="inline-flex items-center gap-1">
                                 <AppIcon name="hourglass_empty" class="text-[12px] leading-none text-on-surface-variant" />
@@ -787,7 +789,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
 
             <!-- TAB BAR (segmented control, dibungkus card seperti Loans/Show.vue) -->
             <div class="-mx-1 rounded-2xl border border-outline-variant/60 bg-surface-container-lowest px-1.5 py-1.5 shadow-sm">
-                <nav class="flex flex-nowrap items-stretch gap-1.5" aria-label="Bagian detail pinjaman individu">
+                <nav class="flex flex-nowrap items-stretch gap-1.5" :aria-label="t('Bagian detail pinjaman individu')">
                     <button
                         v-for="tab in detailTabs"
                         :key="tab.key"
@@ -820,21 +822,21 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                                 <AppIcon name="edit_note" class="text-lg" />
                             </span>
                             <div>
-                                <h2 class="text-sm font-bold text-on-surface">Kelola Proposal</h2>
-                                <p class="text-[11px] text-on-surface-variant">Proposal masih bisa diubah atau dihapus selama belum masuk tahap alokasi dana.</p>
+                                <h2 class="text-sm font-bold text-on-surface">{{ t('Kelola Proposal') }}</h2>
+                                <p class="text-[11px] text-on-surface-variant">{{ t('Proposal masih bisa diubah atau dihapus selama belum masuk tahap alokasi dana.') }}</p>
                             </div>
                         </div>
-                        <AppBadge tone="primary-soft">Tahap Proposal</AppBadge>
+                        <AppBadge tone="primary-soft">{{ t('Tahap Proposal') }}</AppBadge>
                     </div>
                     <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-5">
                         <p class="max-w-2xl text-sm text-on-surface-variant">
-                            Ubah parameter pinjaman (plafon, jangka, sistem angsuran, atau catatan verifikasi) atau hapus proposal jika pendaftaran salah. Tindakan hapus bersifat permanen dan akan menghapus seluruh rancangan angsuran.
+                            {{ t('Ubah parameter pinjaman (plafon, jangka, sistem angsuran, atau catatan verifikasi) atau hapus proposal jika pendaftaran salah. Tindakan hapus bersifat permanen dan akan menghapus seluruh rancangan angsuran.') }}
                         </p>
                         <div class="flex flex-wrap items-center gap-2">
                             <Link v-if="canEditProposal" :href="editHref">
-                                <AppButton variant="secondary" icon="edit">Edit Proposal</AppButton>
+                                <AppButton variant="secondary" icon="edit">{{ t('Edit Proposal') }}</AppButton>
                             </Link>
-                            <AppButton v-if="canDeleteProposal" variant="danger" icon="delete_outline" @click="deleteOpen = true">Hapus Proposal</AppButton>
+                            <AppButton v-if="canDeleteProposal" variant="danger" icon="delete_outline" @click="deleteOpen = true">{{ t('Hapus Proposal') }}</AppButton>
                         </div>
                     </div>
                 </article>
@@ -849,10 +851,10 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             </span>
                             <div class="min-w-0 flex-1">
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <h2 class="text-base font-bold text-on-surface">Data Peminjam</h2>
-                                    <AppBadge tone="primary-soft">Anggota</AppBadge>
+                                    <h2 class="text-base font-bold text-on-surface">{{ t('Data Peminjam') }}</h2>
+                                    <AppBadge tone="primary-soft">{{ t('Anggota') }}</AppBadge>
                                 </div>
-                                <p class="mt-0.5 text-xs text-on-surface-variant">Informasi identitas anggota peminjam.</p>
+                                <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Informasi identitas anggota peminjam.') }}</p>
                             </div>
                             <!-- Avatar inisial (disembunyikan di mobile biar hemat ruang) -->
                             <div v-if="loan.member?.full_name" class="hidden size-12 shrink-0 items-center justify-center rounded-full bg-primary text-base font-extrabold text-on-primary sm:flex">
@@ -871,8 +873,8 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                                 <AppIcon name="event" class="text-xl" />
                             </span>
                             <div class="min-w-0">
-                                <h2 class="text-base font-bold text-on-surface">Timeline Pinjaman</h2>
-                                <p class="mt-0.5 text-xs text-on-surface-variant">Tanggal penting siklus pinjaman.</p>
+                                <h2 class="text-base font-bold text-on-surface">{{ t('Timeline Pinjaman') }}</h2>
+                                <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Tanggal penting siklus pinjaman.') }}</p>
                             </div>
                         </header>
                         <div class="px-4 py-4 sm:px-5">
@@ -887,7 +889,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                 <template #header>
                     <div class="flex flex-wrap items-center justify-between gap-2 px-4 pt-4 sm:px-6 sm:pt-6">
                         <div>
-                            <h2 class="text-base font-bold text-on-surface">Jadwal Angsuran</h2>
+                            <h2 class="text-base font-bold text-on-surface">{{ t('Jadwal Angsuran') }}</h2>
                             <p class="mt-0.5 text-xs text-on-surface-variant">{{ loan.installments?.length ?? 0 }} entri angsuran · Sisa pokok {{ fMoney(loan.principal_remaining) }}</p>
                         </div>
                     </div>
@@ -897,10 +899,10 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         <thead class="bg-surface-container-low text-xs font-bold uppercase tracking-widest text-on-surface-variant">
                             <tr>
                                 <th class="py-3 px-4">#</th>
-                                <th class="py-3 px-4">Jatuh Tempo</th>
-                                <th class="py-3 px-4 text-right">Pokok</th>
-                                <th class="py-3 px-4 text-right">Jasa</th>
-                                <th class="py-3 px-4 text-right">Status</th>
+                                <th class="py-3 px-4">{{ t('Jatuh Tempo') }}</th>
+                                <th class="py-3 px-4 text-right">{{ t('Pokok') }}</th>
+                                <th class="py-3 px-4 text-right">{{ t('Jasa') }}</th>
+                                <th class="py-3 px-4 text-right">{{ t('Status') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
@@ -914,7 +916,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                                 </td>
                             </tr>
                             <tr v-if="!installmentRows.length">
-                                <td colspan="5" class="py-6 px-4 text-center text-on-surface-variant">Belum ada jadwal angsuran.</td>
+                                <td colspan="5" class="py-6 px-4 text-center text-on-surface-variant">{{ t('Belum ada jadwal angsuran.') }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -925,7 +927,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
             <AppCard v-if="activeTab === 'payments'" :padded="false">
                 <template #header>
                     <div class="px-4 pt-4 sm:px-6 sm:pt-6">
-                        <h2 class="text-base font-bold text-on-surface">Tabel Pembayaran</h2>
+                        <h2 class="text-base font-bold text-on-surface">{{ t('Tabel Pembayaran') }}</h2>
                         <p class="mt-0.5 text-xs text-on-surface-variant">{{ paymentRows.length }} kali pembayaran tercatat.</p>
                     </div>
                 </template>
@@ -933,13 +935,13 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                     <table class="w-full min-w-[720px] text-left text-sm">
                         <thead class="bg-surface-container-low text-xs font-bold uppercase tracking-widest text-on-surface-variant">
                             <tr>
-                                <th class="py-3 px-4">Tanggal Pembayaran</th>
-                                <th class="py-3 px-4 text-right">Pokok</th>
-                                <th class="py-3 px-4 text-right">Jasa</th>
-                                <th class="py-3 px-4 text-right">Sum Pokok</th>
-                                <th class="py-3 px-4 text-right">Sum Jasa</th>
-                                <th class="py-3 px-4 text-right">Tunggakan Pokok</th>
-                                <th class="py-3 px-4 text-right">Tunggakan Jasa</th>
+                                <th class="py-3 px-4">{{ t('Tanggal Pembayaran') }}</th>
+                                <th class="py-3 px-4 text-right">{{ t('Pokok') }}</th>
+                                <th class="py-3 px-4 text-right">{{ t('Jasa') }}</th>
+                                <th class="py-3 px-4 text-right">{{ t('Sum Pokok') }}</th>
+                                <th class="py-3 px-4 text-right">{{ t('Sum Jasa') }}</th>
+                                <th class="py-3 px-4 text-right">{{ t('Tunggakan Pokok') }}</th>
+                                <th class="py-3 px-4 text-right">{{ t('Tunggakan Jasa') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
@@ -953,7 +955,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                                 <td class="py-3 px-4 text-right text-error">{{ fNumber(row.tunggakan_jasa) }}</td>
                             </tr>
                             <tr v-if="!paymentRows.length">
-                                <td colspan="7" class="py-6 px-4 text-center text-on-surface-variant">Belum ada pembayaran.</td>
+                                <td colspan="7" class="py-6 px-4 text-center text-on-surface-variant">{{ t('Belum ada pembayaran.') }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -964,8 +966,8 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
             <AppCard v-if="activeTab === 'history'" :padded="false">
                 <template #header>
                     <div class="px-4 pt-4 sm:px-6 sm:pt-6">
-                        <h2 class="text-base font-bold text-on-surface">Riwayat Status</h2>
-                        <p class="mt-0.5 text-xs text-on-surface-variant">Timeline perubahan status dan parameter audit.</p>
+                        <h2 class="text-base font-bold text-on-surface">{{ t('Riwayat Status') }}</h2>
+                        <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Timeline perubahan status dan parameter audit.') }}</p>
                     </div>
                 </template>
 
@@ -974,12 +976,12 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                     <table class="w-full min-w-[720px] text-left text-sm">
                         <thead class="bg-surface-container-low text-xs font-bold uppercase tracking-widest text-on-surface-variant">
                             <tr>
-                                <th class="py-3 px-4">Waktu</th>
-                                <th class="py-3 px-4">Perubahan</th>
-                                <th class="py-3 px-4">Nominal</th>
-                                <th class="py-3 px-4">Jangka · Jasa · Sistem</th>
-                                <th class="py-3 px-4">Catatan</th>
-                                <th class="py-3 px-4">Oleh</th>
+                                <th class="py-3 px-4">{{ t('Waktu') }}</th>
+                                <th class="py-3 px-4">{{ t('Perubahan') }}</th>
+                                <th class="py-3 px-4">{{ t('Nominal') }}</th>
+                                <th class="py-3 px-4">{{ t('Jangka · Jasa · Sistem') }}</th>
+                                <th class="py-3 px-4">{{ t('Catatan') }}</th>
+                                <th class="py-3 px-4">{{ t('Oleh') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
@@ -1002,7 +1004,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                                 <td class="py-3 px-4 text-on-surface">{{ h.changed_by_user_name || `#${h.changed_by_user_id}` }}</td>
                             </tr>
                             <tr v-if="!loan.status_histories?.length">
-                                <td colspan="6" class="py-6 px-4 text-center text-on-surface-variant">Belum ada perubahan status.</td>
+                                <td colspan="6" class="py-6 px-4 text-center text-on-surface-variant">{{ t('Belum ada perubahan status.') }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1018,60 +1020,60 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             <AppIcon name="verified" />
                         </span>
                         <div>
-                            <h3 class="text-base font-bold text-on-surface">Form Verifikasi</h3>
-                            <p class="text-xs text-on-surface-variant">Lengkapi tanggal, parameter pendanaan, dan catatan verifikasi.</p>
+                            <h3 class="text-base font-bold text-on-surface">{{ t('Form Verifikasi') }}</h3>
+                            <p class="text-xs text-on-surface-variant">{{ t('Lengkapi tanggal, parameter pendanaan, dan catatan verifikasi.') }}</p>
                         </div>
                     </div>
                     <form class="space-y-4 p-4 sm:p-6" @submit.prevent="submitVerify">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Tanggal Verifikasi</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Tanggal Verifikasi') }}</span>
                                 <input v-model="verifyForm.verified_at" type="date" required :max="today" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Nominal Verifikasi (Rp)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Nominal Verifikasi (Rp)') }}</span>
                                 <input v-model.number="verifyForm.verification_amount" type="number" min="0" step="1000" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Jangka (bulan)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Jangka (bulan)') }}</span>
                                 <input v-model.number="verifyForm.term_months" type="number" min="1" max="120" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Prosentase Jasa (%)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Prosentase Jasa (%)') }}</span>
                                 <input v-model.number="verifyForm.service_rate_total" type="number" min="0" max="5000" step="0.01" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Sistem Angs. Pokok</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Sistem Angs. Pokok') }}</span>
                                 <select v-model="verifyForm.principal_frequency" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                                     <option v-for="opt in FREQUENCY_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                                 </select>
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Sistem Angs. Jasa</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Sistem Angs. Jasa') }}</span>
                                 <select v-model="verifyForm.interest_frequency" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                                     <option v-for="opt in FREQUENCY_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                                 </select>
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Grace Pokok (bulan)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Grace Pokok (bulan)') }}</span>
                                 <input v-model.number="verifyForm.principal_grace_months" type="number" min="0" max="120" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Grace Jasa (bulan)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Grace Jasa (bulan)') }}</span>
                                 <input v-model.number="verifyForm.interest_grace_months" type="number" min="0" max="120" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                         </div>
                         <label class="block">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Catatan Verifikasi <span class="text-error">*</span></span>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Catatan Verifikasi') }} <span class="text-error">*</span></span>
                             <textarea v-model="verifyForm.verification_notes" rows="3" required minlength="3" maxlength="5000" class="mt-1 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none"></textarea>
                             <p v-if="verifyForm.errors.verification_notes" class="mt-1 text-xs text-error">{{ verifyForm.errors.verification_notes }}</p>
-                            <p class="mt-1 text-[10px] text-on-surface-variant">Wajib diisi untuk audit trail.</p>
+                            <p class="mt-1 text-[10px] text-on-surface-variant">{{ t('Wajib diisi untuk audit trail.') }}</p>
                         </label>
                         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-                            <Link :href="backUrl"><AppButton type="button" variant="secondary">Kembali</AppButton></Link>
+                            <Link :href="backUrl"><AppButton type="button" variant="secondary">{{ t('Kembali') }}</AppButton></Link>
                             <div class="flex flex-wrap items-center gap-2">
-                                <AppButton v-if="canReject" type="button" variant="danger" icon="block" @click="submitReject">Tidak Layak</AppButton>
-                                <AppButton type="submit" :loading="verifyProcessing" icon="check">Simpan & Verifikasi</AppButton>
+                                <AppButton v-if="canReject" type="button" variant="danger" icon="block" @click="submitReject">{{ t('Tidak Layak') }}</AppButton>
+                                <AppButton type="submit" :loading="verifyProcessing" icon="check">{{ t('Simpan & Verifikasi') }}</AppButton>
                             </div>
                         </div>
                     </form>
@@ -1084,66 +1086,66 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             <AppIcon name="fact_check" />
                         </span>
                         <div>
-                            <h3 class="text-base font-bold text-on-surface">Penetapan Alokasi</h3>
-                            <p class="text-xs text-on-surface-variant">Tetapkan tanggal persetujuan & parameter pinjaman final.</p>
+                            <h3 class="text-base font-bold text-on-surface">{{ t('Penetapan Alokasi') }}</h3>
+                            <p class="text-xs text-on-surface-variant">{{ t('Tetapkan tanggal persetujuan & parameter pinjaman final.') }}</p>
                         </div>
                     </div>
                     <form class="space-y-4 p-4 sm:p-6" @submit.prevent="submitApprove">
                         <div class="grid gap-4 sm:grid-cols-3">
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Tanggal Persetujuan</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Tanggal Persetujuan') }}</span>
                                 <input v-model="approveForm.approved_at" type="date" required class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Rencana Tanggal Cair</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Rencana Tanggal Cair') }}</span>
                                 <input v-model="approveForm.planned_disbursed_at" type="date" required class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Alokasi Rp (Final)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Alokasi Rp (Final)') }}</span>
                                 <input v-model.number="approveForm.allocation_amount" type="number" min="0" step="1000" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Jangka (bulan)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Jangka (bulan)') }}</span>
                                 <input v-model.number="approveForm.term_months" type="number" min="1" max="120" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Prosentase Jasa (%)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Prosentase Jasa (%)') }}</span>
                                 <input v-model.number="approveForm.service_rate_total" type="number" min="0" max="5000" step="0.01" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Nomor SPK (opsional)</span>
-                                <input v-model="approveForm.spk_no" type="text" maxlength="80" placeholder="Masukkan no. SPK" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Nomor SPK (opsional)') }}</span>
+                                <input v-model="approveForm.spk_no" type="text" maxlength="80" :placeholder="t('Masukkan no. SPK')" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Sistem Angs. Pokok</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Sistem Angs. Pokok') }}</span>
                                 <select v-model="approveForm.principal_frequency" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                                     <option v-for="opt in FREQUENCY_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                                 </select>
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Sistem Angs. Jasa</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Sistem Angs. Jasa') }}</span>
                                 <select v-model="approveForm.interest_frequency" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                                     <option v-for="opt in FREQUENCY_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                                 </select>
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Grace Pokok (bulan)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Grace Pokok (bulan)') }}</span>
                                 <input v-model.number="approveForm.principal_grace_months" type="number" min="0" max="120" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Grace Jasa (bulan)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Grace Jasa (bulan)') }}</span>
                                 <input v-model.number="approveForm.interest_grace_months" type="number" min="0" max="120" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                         </div>
                         <label class="block">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Catatan Alokasi</span>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Catatan Alokasi') }}</span>
                             <textarea v-model="approveForm.allocation_notes" rows="2" class="mt-1 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none"></textarea>
                         </label>
                         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-                            <Link :href="backUrl"><AppButton type="button" variant="secondary">Kembali</AppButton></Link>
+                            <Link :href="backUrl"><AppButton type="button" variant="secondary">{{ t('Kembali') }}</AppButton></Link>
                             <div class="flex flex-wrap items-center gap-2">
-                                <AppButton v-if="canRevert" type="button" variant="ghost" icon="undo" @click="submitRevert">Kembalikan ke Proposal</AppButton>
-                                <AppButton type="submit" :loading="approveProcessing" icon="assignment_turned_in">Simpan & Alokasikan</AppButton>
+                                <AppButton v-if="canRevert" type="button" variant="ghost" icon="undo" @click="submitRevert">{{ t('Kembalikan ke Proposal') }}</AppButton>
+                                <AppButton type="submit" :loading="approveProcessing" icon="assignment_turned_in">{{ t('Simpan & Alokasikan') }}</AppButton>
                             </div>
                         </div>
                     </form>
@@ -1156,41 +1158,41 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             <AppIcon name="payments" />
                         </span>
                         <div>
-                            <h3 class="text-base font-bold text-on-surface">Form Pencairan</h3>
-                            <p class="text-xs text-on-surface-variant">Catat tanggal dan akun sumber dana saat pinjaman dicairkan.</p>
+                            <h3 class="text-base font-bold text-on-surface">{{ t('Form Pencairan') }}</h3>
+                            <p class="text-xs text-on-surface-variant">{{ t('Catat tanggal dan akun sumber dana saat pinjaman dicairkan.') }}</p>
                         </div>
                     </div>
                     <form class="space-y-4 p-4 sm:p-6" @submit.prevent="submitDisburse">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Tanggal Cair</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Tanggal Cair') }}</span>
                                 <input v-model="disburseForm.disbursed_at" type="date" required class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Rekening Sumber Dana</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Rekening Sumber Dana') }}</span>
                                 <select v-model="disburseForm.disbursement_account_row_id" required class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
-                                    <option value="">Pilih rekening…</option>
+                                    <option value="">{{ t('Pilih rekening…') }}</option>
                                     <option v-for="acc in disbursementAccountOptions" :key="acc.value" :value="acc.value">{{ acc.label }}</option>
                                 </select>
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Nomor SPK (opsional)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Nomor SPK (opsional)') }}</span>
                                 <input v-model="disburseForm.spk_no" type="text" maxlength="80" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Waktu & Tempat Pencairan (opsional)</span>
-                                <input v-model="disburseForm.disbursement_slot" type="text" maxlength="120" placeholder="09:00 WIB · Tempat" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Waktu & Tempat Pencairan (opsional)') }}</span>
+                                <input v-model="disburseForm.disbursement_slot" type="text" maxlength="120" :placeholder="t('09:00 WIB · Tempat')" class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                         </div>
                         <label class="block">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Catatan Pencairan</span>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Catatan Pencairan') }}</span>
                             <textarea v-model="disburseForm.disbursement_notes" rows="2" class="mt-1 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none"></textarea>
                         </label>
                         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-                            <Link :href="backUrl"><AppButton type="button" variant="secondary">Kembali</AppButton></Link>
+                            <Link :href="backUrl"><AppButton type="button" variant="secondary">{{ t('Kembali') }}</AppButton></Link>
                             <div class="flex flex-wrap items-center gap-2">
-                                <AppButton v-if="canRevert" type="button" variant="ghost" icon="undo" @click="submitRevert">Kembalikan ke Proposal</AppButton>
-                                <AppButton type="submit" :loading="disburseProcessing" icon="payments">Catat Pencairan</AppButton>
+                                <AppButton v-if="canRevert" type="button" variant="ghost" icon="undo" @click="submitRevert">{{ t('Kembalikan ke Proposal') }}</AppButton>
+                                <AppButton type="submit" :loading="disburseProcessing" icon="payments">{{ t('Catat Pencairan') }}</AppButton>
                             </div>
                         </div>
                     </form>
@@ -1203,21 +1205,21 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             <AppIcon name="task_alt" />
                         </span>
                         <div>
-                            <h3 class="text-base font-bold text-on-surface">Validasi Pelunasan</h3>
-                            <p class="text-xs text-on-surface-variant">Konfirmasi tanggal pinjaman dilunasi seluruhnya.</p>
+                            <h3 class="text-base font-bold text-on-surface">{{ t('Validasi Pelunasan') }}</h3>
+                            <p class="text-xs text-on-surface-variant">{{ t('Konfirmasi tanggal pinjaman dilunasi seluruhnya.') }}</p>
                         </div>
                     </div>
                     <form class="space-y-4 p-4 sm:p-6" @submit.prevent="submitComplete">
                         <label class="block">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Tanggal Lunas</span>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Tanggal Lunas') }}</span>
                             <input v-model="completeForm.completed_at" type="date" required class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                         </label>
                         <label class="block">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Catatan</span>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Catatan') }}</span>
                             <textarea v-model="completeForm.notes" rows="2" maxlength="500" class="mt-1 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none"></textarea>
                         </label>
                         <div class="flex justify-end pt-1">
-                            <AppButton type="submit" :loading="completeProcessing" icon="task_alt">Tandai Lunas</AppButton>
+                            <AppButton type="submit" :loading="completeProcessing" icon="task_alt">{{ t('Tandai Lunas') }}</AppButton>
                         </div>
                     </form>
                 </div>
@@ -1229,21 +1231,21 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             <AppIcon name="delete_sweep" />
                         </span>
                         <div>
-                            <h3 class="text-base font-bold text-on-surface">Hapus Piutang</h3>
-                            <p class="text-xs text-on-surface-variant">Tandai pinjaman sebagai piutang yang dihapus (write-off).</p>
+                            <h3 class="text-base font-bold text-on-surface">{{ t('Hapus Piutang') }}</h3>
+                            <p class="text-xs text-on-surface-variant">{{ t('Tandai pinjaman sebagai piutang yang dihapus (write-off).') }}</p>
                         </div>
                     </div>
                     <form class="space-y-4 p-4 sm:p-6" @submit.prevent="submitWriteOff">
                         <label class="block">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Tanggal Penghapusan</span>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Tanggal Penghapusan') }}</span>
                             <input v-model="writeOffForm.written_off_at" type="date" required class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                         </label>
                         <label class="block">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Alasan Penghapusan</span>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Alasan Penghapusan') }}</span>
                             <textarea v-model="writeOffForm.reason" rows="3" required maxlength="500" class="mt-1 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none"></textarea>
                         </label>
                         <div class="flex justify-end pt-1">
-                            <AppButton type="submit" variant="danger" :loading="writeOffProcessing" icon="delete_sweep">Hapus Piutang</AppButton>
+                            <AppButton type="submit" variant="danger" :loading="writeOffProcessing" icon="delete_sweep">{{ t('Hapus Piutang') }}</AppButton>
                         </div>
                     </form>
                 </div>
@@ -1255,27 +1257,27 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             <AppIcon name="event_repeat" />
                         </span>
                         <div>
-                            <h3 class="text-base font-bold text-on-surface">Reschedule Pinjaman</h3>
-                            <p class="text-xs text-on-surface-variant">Sisa pokok akan dialihkan ke pinjaman baru dengan jangka waktu baru.</p>
+                            <h3 class="text-base font-bold text-on-surface">{{ t('Reschedule Pinjaman') }}</h3>
+                            <p class="text-xs text-on-surface-variant">{{ t('Sisa pokok akan dialihkan ke pinjaman baru dengan jangka waktu baru.') }}</p>
                         </div>
                     </div>
                     <form class="space-y-4 p-4 sm:p-6" @submit.prevent="submitReschedule">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Tanggal Reschedule</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Tanggal Reschedule') }}</span>
                                 <input v-model="rescheduleForm.rescheduled_at" type="date" required class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                             <label class="block">
-                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Jangka Baru (bulan)</span>
+                                <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Jangka Baru (bulan)') }}</span>
                                 <input v-model.number="rescheduleForm.term_months" type="number" min="1" max="120" required class="mt-1 h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none">
                             </label>
                         </div>
                         <label class="block">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Catatan Reschedule</span>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Catatan Reschedule') }}</span>
                             <textarea v-model="rescheduleForm.notes" rows="2" class="mt-1 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none"></textarea>
                         </label>
                         <div class="flex justify-end pt-1">
-                            <AppButton type="submit" :loading="rescheduleProcessing" icon="event_repeat">Reschedule</AppButton>
+                            <AppButton type="submit" :loading="rescheduleProcessing" icon="event_repeat">{{ t('Reschedule') }}</AppButton>
                         </div>
                     </form>
                 </div>
@@ -1287,17 +1289,17 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             <AppIcon name="block" />
                         </span>
                         <div>
-                            <h3 class="text-base font-bold text-on-surface">Tandai Tidak Layak</h3>
-                            <p class="text-xs text-on-surface-variant">Pinjaman akan ditandai sebagai Tidak Layak dan tidak dapat dicairkan.</p>
+                            <h3 class="text-base font-bold text-on-surface">{{ t('Tandai Tidak Layak') }}</h3>
+                            <p class="text-xs text-on-surface-variant">{{ t('Pinjaman akan ditandai sebagai Tidak Layak dan tidak dapat dicairkan.') }}</p>
                         </div>
                     </div>
                     <form class="space-y-4 p-4 sm:p-6" @submit.prevent="submitReject">
                         <label class="block">
-                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">Alasan Penolakan</span>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Alasan Penolakan') }}</span>
                             <textarea v-model="rejectForm.notes" rows="3" maxlength="5000" class="mt-1 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none"></textarea>
                         </label>
                         <div class="flex justify-end pt-1">
-                            <AppButton type="submit" variant="danger" :loading="rejectProcessing" icon="block">Tolak Pinjaman</AppButton>
+                            <AppButton type="submit" variant="danger" :loading="rejectProcessing" icon="block">{{ t('Tolak Pinjaman') }}</AppButton>
                         </div>
                     </form>
                 </div>
@@ -1309,14 +1311,14 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             <AppIcon name="undo" />
                         </span>
                         <div>
-                            <h3 class="text-base font-bold text-on-surface">Kembalikan ke Proposal</h3>
-                            <p class="text-xs text-on-surface-variant">Status pinjaman akan dikembalikan ke Proposal (Draft).</p>
+                            <h3 class="text-base font-bold text-on-surface">{{ t('Kembalikan ke Proposal') }}</h3>
+                            <p class="text-xs text-on-surface-variant">{{ t('Status pinjaman akan dikembalikan ke Proposal (Draft).') }}</p>
                         </div>
                     </div>
                     <div class="p-4 sm:p-6">
-                        <p class="text-sm text-on-surface-variant">Klik tombol di bawah untuk mengembalikan status pinjaman ke tahap proposal.</p>
+                        <p class="text-sm text-on-surface-variant">{{ t('Klik tombol di bawah untuk mengembalikan status pinjaman ke tahap proposal.') }}</p>
                         <div class="mt-4 flex justify-end">
-                            <AppButton type="button" :loading="revertProcessing" icon="undo" @click="submitRevert">Kembalikan ke Proposal</AppButton>
+                            <AppButton type="button" :loading="revertProcessing" icon="undo" @click="submitRevert">{{ t('Kembalikan ke Proposal') }}</AppButton>
                         </div>
                     </div>
                 </div>
@@ -1352,22 +1354,22 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
             </div>
 
             <!-- ============== MODAL CETAK DOKUMEN ============== -->
-            <AppModal v-model="documentModalOpen" :title="`Cetak Dokumen — ${loan.loan_number || `#${loan.row_id}`}`" size="fullscreen">
+            <AppModal v-model="documentModalOpen" :title="`Cetak Dokumen - ${loan.member?.full_name || loan.loan_number || `#${loan.row_id}`} - Loan ID. ${loan.id || loan.row_id}`" size="fullscreen">
                 <div class="-m-5 sm:-m-6 grid h-[calc(100vh-8rem)] grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] md:h-[calc(100vh-7rem)]">
                     <div class="flex min-h-0 flex-col border-b border-outline-variant md:border-b-0 md:border-r">
                         <div class="space-y-3 border-b border-outline-variant p-4">
                             <div class="flex flex-wrap items-center justify-between gap-2">
-                                <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Daftar Dokumen</p>
+                                <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Daftar Dokumen') }}</p>
                                 <span class="text-[10px] font-semibold text-on-surface-variant">{{ availableDocuments.length }} dokumen</span>
                             </div>
-                            <AppInput v-model="docSearch" type="search" icon="search" label="Cari dokumen" :hide-label="true" placeholder="Cari dokumen..." />
+                            <AppInput v-model="docSearch" type="search" icon="search" :label="t('Cari dokumen')" :hide-label="true" :placeholder="t('Cari dokumen...')" />
                         </div>
                         <div class="flex-1 overflow-y-auto p-3">
                             <div v-if="visibleStageKeys.length === 0" class="grid place-items-center px-2 py-8 text-center text-sm text-on-surface-variant">
                                 <div>
                                     <AppIcon name="search_off" class="text-3xl" />
-                                    <p class="mt-2 font-semibold">Tidak ada dokumen cocok</p>
-                                    <p class="mt-1 text-xs">Coba reset filter atau ubah kata kunci pencarian.</p>
+                                    <p class="mt-2 font-semibold">{{ t('Tidak ada dokumen cocok') }}</p>
+                                    <p class="mt-1 text-xs">{{ t('Coba reset filter atau ubah kata kunci pencarian.') }}</p>
                                 </div>
                             </div>
                             <div v-for="stage in visibleStageKeys" :key="stage" class="mb-4 last:mb-0">
@@ -1399,15 +1401,15 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                                 <p class="mt-0.5 text-[11px] text-on-surface-variant">PDF · Tahap {{ STAGE_META[activeDocument.stage].label }}</p>
                             </div>
                             <div class="flex shrink-0 items-center gap-1.5">
-                                <a :href="activeDocument.url" target="_blank" rel="noopener" class="inline-flex size-9 items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary" title="Buka di tab baru" aria-label="Buka di tab baru">
+                                <a :href="activeDocument.url" target="_blank" rel="noopener" class="inline-flex size-9 items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary" :title="t('Buka di tab baru')" :aria-label="t('Buka di tab baru')">
                                     <AppIcon name="open_in_new" />
                                 </a>
-                                <a :href="activeDocument.url" :download="`${activeDocument.key}.pdf`" class="inline-flex size-9 items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary" title="Unduh PDF" aria-label="Unduh PDF">
+                                <a :href="activeDocument.url" :download="`${activeDocument.key}.pdf`" class="inline-flex size-9 items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary" :title="t('Unduh PDF')" :aria-label="t('Unduh PDF')">
                                     <AppIcon name="download" />
                                 </a>
-                                <a :href="activeDocument.url" target="_blank" rel="noopener" onclick="setTimeout(() => this.contentWindow && this.contentWindow.print && this.contentWindow.print(), 1500);" class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-outline-variant bg-surface px-3 text-xs font-bold text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary" title="Cetak" aria-label="Cetak">
+                                <a :href="activeDocument.url" target="_blank" rel="noopener" onclick="setTimeout(() => this.contentWindow && this.contentWindow.print && this.contentWindow.print(), 1500);" class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-outline-variant bg-surface px-3 text-xs font-bold text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary" :title="t('Cetak')" :aria-label="t('Cetak')">
                                     <AppIcon name="print" class="text-base" />
-                                    <span class="hidden sm:inline">Cetak</span>
+                                    <span class="hidden sm:inline">{{ t('Cetak') }}</span>
                                 </a>
                             </div>
                         </div>
@@ -1422,15 +1424,15 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             <div v-else class="grid h-full place-items-center p-8 text-center text-on-surface-variant">
                                 <div>
                                     <AppIcon name="picture_as_pdf" class="text-5xl text-outline" />
-                                    <p class="mt-3 text-sm font-semibold">Pilih dokumen di daftar untuk preview</p>
-                                    <p class="mt-1 text-xs">atau klik tombol unduh/cetak untuk tindakan cepat.</p>
+                                    <p class="mt-3 text-sm font-semibold">{{ t('Pilih dokumen di daftar untuk preview') }}</p>
+                                    <p class="mt-1 text-xs">{{ t('atau klik tombol unduh/cetak untuk tindakan cepat.') }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <template #footer>
-                    <AppButton variant="secondary" @click="closeDocumentModal">Tutup</AppButton>
+                    <AppButton variant="secondary" @click="closeDocumentModal">{{ t('Tutup') }}</AppButton>
                 </template>
             </AppModal>
         </Teleport>

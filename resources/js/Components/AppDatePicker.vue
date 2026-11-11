@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../i18n';
+const { t } = useI18n();
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
 import { defaultPlaceholder } from '../composables/usePlaceholderText';
 import AppIcon from './AppIcon.vue';
@@ -28,7 +30,7 @@ const popupStyle = ref({});
 const generatedId = useId();
 const inputId = props.id || generatedId;
 const weekdays = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map((name) => t(name));
 const monthShort = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
 function isWeekend(date) {
@@ -74,8 +76,8 @@ const viewDate = ref(new Date(startDate().getFullYear(), startDate().getMonth(),
 const focusedDate = ref(startDate());
 const today = toIso(new Date());
 
-const dateFormatter = new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-const monthFormatter = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' });
+const dateFormatter = new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'long', year: 'numeric' });
+const monthFormatter = new Intl.DateTimeFormat(dateLocale(), { month: 'long', year: 'numeric' });
 
 const displayValue = computed(() => {
     if (props.mode === 'year') {
@@ -91,7 +93,7 @@ const displayValue = computed(() => {
     return date ? dateFormatter.format(date) : '';
 });
 
-const monthLabel = computed(() => new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(viewDate.value));
+const monthLabel = computed(() => new Intl.DateTimeFormat(dateLocale(), { month: 'long', year: 'numeric' }).format(viewDate.value));
 const yearLabel = computed(() => viewDate.value.getFullYear().toString());
 
 const days = computed(() => {
@@ -354,7 +356,7 @@ const todayActionLabel = computed(() => props.mode === 'year' ? 'Tahun ini' : pr
                     type="button"
                     tabindex="-1"
                     class="absolute right-1.5 grid h-7 w-7 place-items-center rounded-full text-outline transition hover:bg-surface-container-low hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary-container/20 active:scale-90"
-                    aria-label="Hapus tanggal"
+                    :aria-label="t('Hapus tanggal')"
                     @click.stop="clear"
                 >
                     <AppIcon name="close" class="text-base" />
@@ -384,13 +386,13 @@ const todayActionLabel = computed(() => props.mode === 'year' ? 'Tahun ini' : pr
                     >
                         <div class="mb-3 flex items-center justify-between gap-1">
                             <div class="flex items-center gap-0.5">
-                                <button type="button" class="rounded-lg p-1.5 text-outline transition-all duration-150 hover:bg-surface-container-low hover:text-primary active:scale-90" aria-label="Tahun sebelumnya" @click="moveView(0, -1)"><AppIcon name="keyboard_double_arrow_left" class="text-xl" /></button>
-                                <button v-if="mode === 'date'" type="button" class="rounded-lg p-1.5 text-outline transition-all duration-150 hover:bg-surface-container-low hover:text-primary active:scale-90" aria-label="Bulan sebelumnya" @click="moveView(-1)"><AppIcon name="chevron_left" class="text-xl" /></button>
+                                <button type="button" class="rounded-lg p-1.5 text-outline transition-all duration-150 hover:bg-surface-container-low hover:text-primary active:scale-90" :aria-label="t('Tahun sebelumnya')" @click="moveView(0, -1)"><AppIcon name="keyboard_double_arrow_left" class="text-xl" /></button>
+                                <button v-if="mode === 'date'" type="button" class="rounded-lg p-1.5 text-outline transition-all duration-150 hover:bg-surface-container-low hover:text-primary active:scale-90" :aria-label="t('Bulan sebelumnya')" @click="moveView(-1)"><AppIcon name="chevron_left" class="text-xl" /></button>
                             </div>
                             <p class="text-sm font-bold capitalize text-primary" aria-live="polite">{{ mode === 'year' ? yearRangeLabel : monthLabel }}</p>
                             <div class="flex items-center gap-0.5">
-                                <button v-if="mode === 'date'" type="button" class="rounded-lg p-1.5 text-outline transition-all duration-150 hover:bg-surface-container-low hover:text-primary active:scale-90" aria-label="Bulan berikutnya" @click="moveView(1)"><AppIcon name="chevron_right" class="text-xl" /></button>
-                                <button type="button" class="rounded-lg p-1.5 text-outline transition-all duration-150 hover:bg-surface-container-low hover:text-primary active:scale-90" aria-label="Tahun berikutnya" @click="moveView(0, 1)"><AppIcon name="keyboard_double_arrow_right" class="text-xl" /></button>
+                                <button v-if="mode === 'date'" type="button" class="rounded-lg p-1.5 text-outline transition-all duration-150 hover:bg-surface-container-low hover:text-primary active:scale-90" :aria-label="t('Bulan berikutnya')" @click="moveView(1)"><AppIcon name="chevron_right" class="text-xl" /></button>
+                                <button type="button" class="rounded-lg p-1.5 text-outline transition-all duration-150 hover:bg-surface-container-low hover:text-primary active:scale-90" :aria-label="t('Tahun berikutnya')" @click="moveView(0, 1)"><AppIcon name="keyboard_double_arrow_right" class="text-xl" /></button>
                             </div>
                         </div>
 
@@ -416,7 +418,7 @@ const todayActionLabel = computed(() => props.mode === 'year' ? 'Tahun ini' : pr
                         </Transition>
 
                         <div class="mt-3 flex items-center justify-between inset-divider pt-3 text-sm font-semibold">
-                            <button v-if="clearable && model" type="button" class="rounded-lg px-3 py-2 text-error transition-all duration-150 hover:bg-error-container active:scale-95" @click="clear">Hapus</button>
+                            <button v-if="clearable && model" type="button" class="rounded-lg px-3 py-2 text-error transition-all duration-150 hover:bg-error-container active:scale-95" @click="clear">{{ t('Hapus') }}</button>
                             <span v-else></span>
                             <button type="button" class="rounded-lg px-3 py-2 text-primary transition-all duration-150 hover:bg-surface-container-low active:scale-95" @click="selectToday">{{ todayActionLabel }}</button>
                         </div>

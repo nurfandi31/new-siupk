@@ -99,6 +99,8 @@ final class TenantProvisionAndRoleTest extends TestCase
         $roles = array_keys((array) config('permissions.roles', []));
         $this->assertNotEmpty($roles);
 
+        config(['tenancy.seed_users.password' => 'password']);
+
         app(TenantRegistrationService::class)->repair($this->testTenant);
 
         $defaultPassword = (string) config('tenancy.seed_users.password', 'password');

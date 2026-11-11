@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -42,18 +44,18 @@ const selectedYear = ref(String(props.filters.year));
 const selectedMonth = ref(String(props.filters.month));
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -90,13 +92,13 @@ const pdfUrl = computed(() => {
 </script>
 
 <template>
-    <Head title="Kelompok Aktif" />
+    <Head :title="t('Kelompok Aktif')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan Pinjaman</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Kelompok Aktif</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Pinjaman') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Kelompok Aktif') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Daftar kelompok yang memiliki pinjaman aktif per
                         <span class="font-semibold text-primary">{{ period_label }}</span>
@@ -107,7 +109,7 @@ const pdfUrl = computed(() => {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -117,11 +119,11 @@ const pdfUrl = computed(() => {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -130,19 +132,19 @@ const pdfUrl = computed(() => {
             <!-- Summary tiles -->
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jumlah Kelompok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Kelompok') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.count }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Anggota Aktif</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Anggota Aktif') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.member_total }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pinjaman Aktif</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pinjaman Aktif') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.active_loan_total }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Outstanding</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Outstanding') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.outstanding_total) }}</p>
                 </AppCard>
             </div>
@@ -152,16 +154,16 @@ const pdfUrl = computed(() => {
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                         <tr class="border-b border-outline-variant/30">
-                            <th class="p-3 text-left">No</th>
-                            <th class="p-3 text-left">Kode Kelompok</th>
-                            <th class="p-3 text-left">Nama Kelompok</th>
-                            <th class="p-3 text-left">Desa</th>
-                            <th class="p-3 text-left">Ketua</th>
-                            <th class="p-3 text-center">Aktivitas</th>
-                            <th class="p-3 text-center">Anggota</th>
-                            <th class="p-3 text-center">Pinjaman Aktif</th>
-                            <th class="p-3 text-right">Total Simpanan</th>
-                            <th class="p-3 text-right">Outstanding</th>
+                            <th class="p-3 text-left">{{ t('No') }}</th>
+                            <th class="p-3 text-left">{{ t('Kode Kelompok') }}</th>
+                            <th class="p-3 text-left">{{ t('Nama Kelompok') }}</th>
+                            <th class="p-3 text-left">{{ t('Desa') }}</th>
+                            <th class="p-3 text-left">{{ t('Ketua') }}</th>
+                            <th class="p-3 text-center">{{ t('Aktivitas') }}</th>
+                            <th class="p-3 text-center">{{ t('Anggota') }}</th>
+                            <th class="p-3 text-center">{{ t('Pinjaman Aktif') }}</th>
+                            <th class="p-3 text-right">{{ t('Total Simpanan') }}</th>
+                            <th class="p-3 text-right">{{ t('Outstanding') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-outline-variant/20">
@@ -172,8 +174,8 @@ const pdfUrl = computed(() => {
                             <td class="p-2.5">{{ row.village_name || '—' }}</td>
                             <td class="p-2.5">{{ row.ketua_name || '—' }}</td>
                             <td class="p-2.5 text-center">
-                                <AppBadge v-if="row.has_period_activity" tone="success-soft">Aktif</AppBadge>
-                                <AppBadge v-else tone="neutral">Nonaktif</AppBadge>
+                                <AppBadge v-if="row.has_period_activity" tone="success-soft">{{ t('Aktif') }}</AppBadge>
+                                <AppBadge v-else tone="neutral">{{ t('Nonaktif') }}</AppBadge>
                             </td>
                             <td class="p-2.5 text-center">{{ row.member_count }}</td>
                             <td class="p-2.5 text-center">{{ row.active_loan_count }}</td>
@@ -198,8 +200,8 @@ const pdfUrl = computed(() => {
             <AppCard v-if="rows.length === 0" class="p-8 text-center">
                 <AppEmptyState
                     icon="groups"
-                    title="Tidak ada kelompok aktif"
-                    description="Belum ada kelompok dengan pinjaman aktif pada periode ini."
+                    :title="t('Tidak ada kelompok aktif')"
+                    :description="t('Belum ada kelompok dengan pinjaman aktif pada periode ini.')"
                 />
             </AppCard>
         </div>

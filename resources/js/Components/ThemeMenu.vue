@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { onBeforeUnmount, ref, watch } from 'vue';
 import AppIcon from './AppIcon.vue';
 import { useTheme } from '../composables/useTheme';
@@ -50,11 +52,11 @@ onBeforeUnmount(() => {
                 v-if="model"
                 ref="panel"
                 role="menu"
-                aria-label="Pilih tema tampilan"
+                :aria-label="t('Pilih tema tampilan')"
                 class="fixed right-4 top-[4.5rem] z-50 w-64 origin-top-right overflow-hidden rounded-2xl floating-shadow bg-surface-container-lowest ring-1 ring-outline-variant/40"
             >
                 <p class="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant inset-divider bg-surface-container-low/40">
-                    Tema tampilan
+                    {{ t('Tema tampilan') }}
                 </p>
                 <div class="p-1">
                     <button

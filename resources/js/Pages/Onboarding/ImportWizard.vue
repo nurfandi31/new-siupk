@@ -170,7 +170,7 @@ function blankAggregateLine() {
 
 const aggregateForm = useForm({
     transaction_date: '',
-    description: 'Penyesuaian saldo awal migrasi (jurnal agregat Jan-Mei)',
+    description: t('Penyesuaian saldo awal migrasi (jurnal agregat Jan-Mei)'),
     lines: [blankAggregateLine(), blankAggregateLine()],
 });
 
@@ -342,7 +342,7 @@ const uploadLoans = () => {
                                     <td class="px-4 py-2 text-right">
                                         <AppCurrencyInput
                                             v-model="line.debit"
-                                            label="Debit"
+                                            :label="t('Debit')"
                                             hide-label
                                             :min="0"
                                             :step="0.01"
@@ -352,7 +352,7 @@ const uploadLoans = () => {
                                     <td class="px-4 py-2 text-right">
                                         <AppCurrencyInput
                                             v-model="line.credit"
-                                            label="Kredit"
+                                            :label="t('Kredit')"
                                             hide-label
                                             :min="0"
                                             :step="0.01"
@@ -597,7 +597,7 @@ const uploadLoans = () => {
                                     <td class="px-4 py-2 text-right">
                                         <AppCurrencyInput
                                             v-model="line.debit"
-                                            label="Debit"
+                                            :label="t('Debit')"
                                             hide-label
                                             :min="0"
                                             :step="0.01"
@@ -607,7 +607,7 @@ const uploadLoans = () => {
                                     <td class="px-4 py-2 text-right">
                                         <AppCurrencyInput
                                             v-model="line.credit"
-                                            label="Kredit"
+                                            :label="t('Kredit')"
                                             hide-label
                                             :min="0"
                                             :step="0.01"
@@ -707,7 +707,7 @@ const uploadLoans = () => {
                                     <td class="px-3 py-2 text-right">
                                         <AppCurrencyInput
                                             v-model="line.debit"
-                                            label="Debit"
+                                            :label="t('Debit')"
                                             hide-label
                                             :min="0"
                                             :step="0.01"
@@ -717,7 +717,7 @@ const uploadLoans = () => {
                                     <td class="px-3 py-2 text-right">
                                         <AppCurrencyInput
                                             v-model="line.credit"
-                                            label="Kredit"
+                                            :label="t('Kredit')"
                                             hide-label
                                             :min="0"
                                             :step="0.01"

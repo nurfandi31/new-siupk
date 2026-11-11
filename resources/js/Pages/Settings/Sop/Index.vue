@@ -1,13 +1,19 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { onBeforeUnmount, ref, watch } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppIcon from '../../../Components/AppIcon.vue';
 import AppInput from '../../../Components/AppInput.vue';
+import ImageAdjuster from '../../../Components/ImageAdjuster.vue';
 import AuthenticatedLayout from '../../../Layouts/TenantAdminLayout.vue';
 import { useConfirm } from '../../../composables/useConfirm';
+import { useRemoteImageFile } from '../../../composables/useRemoteImageFile';
+import { useToast } from '../../../composables/useToast';
 
 const { confirm } = useConfirm();
+const toast = useToast();
 
 const props = defineProps({
     kolek: {
@@ -53,16 +59,23 @@ function submitKolek() {
 const logoForm = useForm({ logo: null });
 const logoPreview = ref(props.logoUrl);
 const logoDragOver = ref(false);
+const logoCropOpen = ref(false);
+const logoSourceFile = ref(null);
 
 watch(
     () => props.logoUrl,
     (url) => {
-        if (url) logoPreview.value = url;
+        if (!url) return;
+        if (logoPreview.value && logoPreview.value.startsWith('blob:')) {
+            URL.revokeObjectURL(logoPreview.value);
+        }
+        logoPreview.value = url;
     },
 );
 
 function onLogoChange(event) {
     setLogoFile(event.target.files?.[0] ?? null);
+    event.target.value = '';
 }
 
 function onLogoDrop(event) {
@@ -73,11 +86,33 @@ function onLogoDrop(event) {
 
 function setLogoFile(file) {
     if (!file || !file.type.startsWith('image/')) return;
+    logoSourceFile.value = file;
+    logoCropOpen.value = true;
+}
+
+function applyCroppedLogo(file) {
     if (logoPreview.value && logoPreview.value.startsWith('blob:')) {
         URL.revokeObjectURL(logoPreview.value);
     }
     logoForm.logo = file;
     logoPreview.value = URL.createObjectURL(file);
+}
+
+const { loading: logoAdjusting, toFile: logoToFile } = useRemoteImageFile();
+
+async function adjustCurrentLogo() {
+    if (logoForm.logo) {
+        logoCropOpen.value = true;
+        return;
+    }
+
+    const file = await logoToFile(props.logoUrl, 'logo.png', 'image/png');
+    if (!file) {
+        toast.error('Gagal memuat logo saat ini. Silakan pilih file logo dari perangkat Anda.');
+        return;
+    }
+    logoSourceFile.value = file;
+    logoCropOpen.value = true;
 }
 
 onBeforeUnmount(() => {
@@ -98,9 +133,9 @@ function submitLogo() {
 
 async function destroyLogo() {
     const ok = await confirm({
-        title: 'Hapus Logo Lembaga',
-        message: 'Seluruh kop dokumen dan laporan tidak akan menampilkan logo lagi. Lanjutkan?',
-        confirmLabel: 'Ya, Hapus Logo',
+        title: t('Hapus Logo Lembaga'),
+        message: t('Seluruh kop dokumen dan laporan tidak akan menampilkan logo lagi. Lanjutkan?'),
+        confirmLabel: t('Ya, Hapus Logo'),
         variant: 'danger',
     });
     if (!ok) return;
@@ -108,24 +143,28 @@ async function destroyLogo() {
     router.delete('/settings/sop/logo', {
         preserveScroll: true,
         onSuccess: () => {
+            if (logoPreview.value && logoPreview.value.startsWith('blob:')) {
+                URL.revokeObjectURL(logoPreview.value);
+            }
             logoPreview.value = null;
+            logoForm.reset();
         },
     });
 }
 </script>
 
 <template>
-    <Head title="SOP Lembaga" />
+    <Head :title="t('SOP Lembaga')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-5xl space-y-5 pb-12">
             <!-- Header -->
             <header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-primary sm:text-3xl">SOP Lembaga</h1>
-                    <p class="mt-1 text-sm text-on-surface-variant">Logo, kolektabilitas, dan rujukan pengaturan simpanan.</p>
+                    <h1 class="text-2xl font-bold tracking-tight text-primary sm:text-3xl">{{ t('SOP Lembaga') }}</h1>
+                    <p class="mt-1 text-sm text-on-surface-variant">{{ t('Logo, kolektabilitas, dan rujukan pengaturan simpanan.') }}</p>
                 </div>
                 <AppButton variant="secondary" size="compact" icon="arrow_back" @click="router.visit('/settings')">
-                    Kembali
+                    {{ t('Kembali') }}
                 </AppButton>
             </header>
 
@@ -134,19 +173,30 @@ async function destroyLogo() {
                 <div class="flex items-center justify-between gap-3 border-b border-outline-variant bg-outline-variant/40 px-5 py-3">
                     <div class="flex items-center gap-2 text-sm font-bold text-primary">
                         <AppIcon name="image" tone="primary" :container-size="9" />
-                        Logo Lembaga
+                        {{ t('Logo Lembaga') }}
                     </div>
-                    <span class="text-xs text-on-surface-variant">Kop dokumen &amp; PDF</span>
+                    <span class="text-xs text-on-surface-variant">{{ t('Kop dokumen & PDF') }}</span>
                 </div>
 
                 <div class="grid gap-5 p-5 sm:grid-cols-[10rem_1fr] sm:items-center sm:p-6">
                     <div class="flex justify-center">
-                        <div class="grid size-36 place-items-center overflow-hidden rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container-lowest shadow-inner">
-                            <img v-if="logoPreview" :src="logoPreview" alt="Logo Lembaga" class="size-full object-contain" />
+                        <div class="relative grid size-36 place-items-center overflow-hidden rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container-lowest shadow-inner">
+                            <img v-if="logoPreview" :src="logoPreview" :alt="t('Logo Lembaga')" class="size-full object-contain" />
                             <div v-else class="text-center">
                                 <AppIcon name="image" class="text-4xl text-on-surface-variant" />
-                                <p class="mt-1 text-xs text-on-surface-variant">Belum ada logo</p>
+                                <p class="mt-1 text-xs text-on-surface-variant">{{ t('Belum ada logo') }}</p>
                             </div>
+                            <button
+                                v-if="logoPreview"
+                                type="button"
+                                class="absolute bottom-1.5 right-1.5 grid size-8 place-items-center rounded-full bg-surface-container-lowest/95 text-primary shadow ring-1 ring-outline-variant transition hover:bg-surface-container disabled:opacity-60"
+                                :disabled="logoAdjusting"
+                                :title="t('Sesuaikan logo')"
+                                :aria-label="t('Sesuaikan posisi dan ukuran logo')"
+                                @click="adjustCurrentLogo"
+                            >
+                                <AppIcon :name="logoAdjusting ? 'progress_activity' : 'tune'" class="text-base" :class="logoAdjusting && 'animate-spin'" />
+                            </button>
                         </div>
                     </div>
 
@@ -163,33 +213,60 @@ async function destroyLogo() {
                                 <AppIcon name="cloud_upload" class="text-xl" />
                             </span>
                             <span class="min-w-0">
-                                <span class="block text-sm font-bold text-primary">Tarik gambar atau klik untuk pilih</span>
-                                <span class="mt-0.5 block text-xs text-on-surface-variant">PNG, JPG, WebP &bull; maks 2 MB</span>
+                                <span class="block text-sm font-bold text-primary">{{ t('Tarik gambar atau klik untuk pilih') }}</span>
+                                <span class="mt-0.5 block text-xs text-on-surface-variant">{{ t('PNG, JPG, WebP • maks 2 MB • posisi & ukuran bisa diatur') }}</span>
                             </span>
                         </label>
                         <p v-if="logoForm.errors.logo" class="text-sm text-error">{{ logoForm.errors.logo }}</p>
 
+                        <div v-if="logoForm.logo" class="flex items-center gap-2 text-sm text-on-surface-variant">
+                            <AppIcon name="image" class="shrink-0 text-base text-outline" />
+                            <span class="min-w-0 flex-1 truncate">{{ logoForm.logo.name }}</span>
+                            <button
+                                type="button"
+                                class="shrink-0 rounded-lg px-2 py-1 text-xs font-bold text-primary transition hover:bg-surface-container-low"
+                                @click="logoCropOpen = true"
+                            >
+                                {{ t('Atur ulang') }}
+                            </button>
+                        </div>
+
                         <div class="flex flex-wrap justify-end gap-2">
-                            <AppButton v-if="logoPreview" type="button" variant="danger" size="compact" icon="delete" :disabled="logoForm.processing" @click="destroyLogo">
-                                Hapus
+                            <AppButton v-if="props.logoUrl" type="button" variant="danger" size="compact" icon="delete" :disabled="logoForm.processing" @click="destroyLogo">
+                                {{ t('Hapus') }}
                             </AppButton>
                             <AppButton type="submit" size="compact" icon="upload" :loading="logoForm.processing" :disabled="!logoForm.logo || logoForm.processing">
-                                Unggah Logo
+                                {{ t('Unggah Logo') }}
                             </AppButton>
                         </div>
                     </form>
                 </div>
             </section>
 
+            <ImageAdjuster
+                v-model="logoCropOpen"
+                :file="logoSourceFile"
+                :title="t('Sesuaikan Logo Lembaga')"
+                :subtitle="t('Geser logo di dalam kotak untuk mengatur posisi, lalu perbesar atau perkecil agar pas.')"
+                :aspect="1"
+                fit="contain"
+                :output-size="512"
+                output-type="image/png"
+                output-name="logo.png"
+                :confirm-label="t('Gunakan Logo')"
+                checkerboard
+                @confirm="applyCroppedLogo"
+            />
+
             <!-- Kolektabilitas -->
             <section class="overflow-hidden rounded-2xl bg-surface-container-lowest shadow-sm ring-1 ring-outline-variant/40">
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant bg-outline-variant/40 px-5 py-3">
                     <div class="flex items-center gap-2 text-sm font-bold text-primary">
                         <AppIcon name="rule" tone="primary" :container-size="9" />
-                        Kolektabilitas
+                        {{ t('Kolektabilitas') }}
                     </div>
                     <AppButton form="kolek-form" type="submit" size="compact" icon="save" :loading="kolekForm.processing" :disabled="kolekForm.processing">
-                        Simpan
+                        {{ t('Simpan') }}
                     </AppButton>
                 </div>
 
@@ -200,16 +277,16 @@ async function destroyLogo() {
                     </div>
 
                     <p v-if="Object.keys(kolekForm.errors).length" class="rounded-lg bg-error-container/40 px-3 py-2 text-xs font-semibold text-error">
-                        Periksa kembali isian kolektabilitas.
+                        {{ t('Periksa kembali isian kolektabilitas.') }}
                     </p>
 
                     <div class="overflow-x-auto">
                         <div class="min-w-[40rem] space-y-2">
                             <div class="grid grid-cols-[3rem_minmax(0,1fr)_6rem_7rem_7rem] items-center gap-2 px-1 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
-                                <span>Tingkat</span>
-                                <span>Nama Kolek</span>
-                                <span>Durasi</span>
-                                <span>Satuan</span>
+                                <span>{{ t('Tingkat') }}</span>
+                                <span>{{ t('Nama Kolek') }}</span>
+                                <span>{{ t('Durasi') }}</span>
+                                <span>{{ t('Satuan') }}</span>
                                 <span>CKPN (%)</span>
                             </div>
 
@@ -221,14 +298,14 @@ async function destroyLogo() {
                                 <span class="grid size-8 place-items-center rounded-lg bg-primary-container/40 text-sm font-bold text-primary">{{ idx + 1 }}</span>
                                 <AppInput
                                     v-model="row.nama"
-                                    label="Nama kolek"
+                                    :label="t('Nama kolek')"
                                     hide-label
                                     size="compact"
                                     :placeholder="levelPlaceholders[idx] ?? 'Nama kolek'"
                                 />
                                 <AppInput
                                     v-model="row.durasi"
-                                    label="Durasi"
+                                    :label="t('Durasi')"
                                     hide-label
                                     type="number"
                                     step="0.01"
@@ -240,8 +317,8 @@ async function destroyLogo() {
                                     v-model="row.satuan"
                                     class="h-9 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-2 text-sm text-primary focus:border-primary-container focus:outline-none focus:ring-2 focus:ring-primary-container/10"
                                 >
-                                    <option value="hari">Hari</option>
-                                    <option value="bulan">Bulan</option>
+                                    <option value="hari">{{ t('Hari') }}</option>
+                                    <option value="bulan">{{ t('Bulan') }}</option>
                                 </select>
                                 <AppInput
                                     v-model="row.prosentase"
@@ -266,17 +343,17 @@ async function destroyLogo() {
                     <div class="flex items-start gap-3">
                         <AppIcon name="savings" tone="primary" :container-size="9" />
                         <div>
-                            <p class="text-sm font-bold text-primary">Sistem Simpanan</p>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">Bunga, pajak, biaya, dan jenis simpanan diatur di Pengaturan &rsaquo; Sistem Simpanan.</p>
+                            <p class="text-sm font-bold text-primary">{{ t('Sistem Simpanan') }}</p>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Bunga, pajak, biaya, dan jenis simpanan diatur di Pengaturan &rsaquo; Sistem Simpanan.') }}</p>
                         </div>
                     </div>
                     <AppButton variant="secondary" size="compact" icon="arrow_forward" class="shrink-0" @click="router.visit('/settings?tab=savings')">
-                        Buka
+                        {{ t('Buka') }}
                     </AppButton>
                 </div>
             </section>
 
-            <p class="text-center text-xs text-on-surface-variant">Asuransi, redaksi SPK, dan CALK menyusul.</p>
+            <p class="text-center text-xs text-on-surface-variant">{{ t('Asuransi, redaksi SPK, dan CALK menyusul.') }}</p>
         </div>
     </AuthenticatedLayout>
 </template>

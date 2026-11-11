@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -133,7 +135,7 @@ const yearOptions = computed(() => {
 
 const monthOptions = computed(() => {
     const opts: { value: string; label: string }[] = [
-        { value: 'all', label: 'Januari – Desember' },
+        { value: 'all', label: t('Januari – Desember') },
     ];
     const labels = props.monthLabels;
     for (let m = 1; m <= 12; m++) {
@@ -187,27 +189,27 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
 </script>
 
 <template>
-    <Head title="Simpanan & Piutang (SMPN) — OJK" />
+    <Head :title="t('Simpanan & Piutang (SMPN) — OJK')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        OJK · Regulatory
+                        {{ t('OJK · Regulatory') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Simpanan &amp; Piutang (SMPN)</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Simpanan & Piutang (SMPN)') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         {{ periodLabel }} · per {{ period.as_of ?? '-' }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
                     <AppBadge :tone="hasData ? 'success' : 'warning'">
-                        {{ hasData ? 'Data tersedia' : 'Belum ada data' }}
+                        {{ hasData ? t('Data tersedia') : t('Belum ada data') }}
                     </AppBadge>
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -215,7 +217,7 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
 
             <AppCard v-if="error" class="border border-error/30 bg-error-container/40 p-4">
                 <p class="text-sm text-error">
-                    <span class="font-bold">Gagal membangun laporan:</span> {{ error }}
+                    <span class="font-bold">{{ t('Gagal membangun laporan:') }}</span> {{ error }}
                 </p>
             </AppCard>
 
@@ -223,13 +225,13 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div class="space-y-1.5">
                         <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">
-                            Tahun
+                            {{ t('Tahun') }}
                         </label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" hide-label @update:model-value="apply" />
                     </div>
                     <div class="space-y-1.5">
                         <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">
-                            Bulan
+                            {{ t('Bulan') }}
                         </label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" hide-label @update:model-value="apply" />
                     </div>
@@ -239,15 +241,15 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
             <!-- KPI ringkas -->
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <AppCard class="p-4">
-                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">Total Simpanan (Pasiva)</p>
+                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Total Simpanan (Pasiva)') }}</p>
                     <p class="mt-1 text-2xl font-bold tabular-nums text-primary">{{ fmt(totals.savings) }}</p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">Total Piutang (Aktiva)</p>
+                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Total Piutang (Aktiva)') }}</p>
                     <p class="mt-1 text-2xl font-bold tabular-nums text-primary">{{ fmt(totals.receivables) }}</p>
                 </AppCard>
                 <AppCard class="p-4">
-                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">Rasio Piutang / Simpanan</p>
+                    <p class="text-xs uppercase tracking-wider text-on-surface-variant">{{ t('Rasio Piutang / Simpanan') }}</p>
                     <p class="mt-1 text-2xl font-bold tabular-nums text-primary">
                         {{ Number(ratio.piutang_to_simpanan).toFixed(2) }}%
                     </p>
@@ -257,7 +259,7 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
             <!-- Tabel dua sisi -->
             <AppCard class="overflow-hidden p-0">
                 <div class="flex items-center justify-between border-b border-outline-variant/40 bg-surface-container-low px-4 py-3">
-                    <h2 class="text-base font-bold text-on-surface">Rekapitulasi Pasiva vs Aktiva</h2>
+                    <h2 class="text-base font-bold text-on-surface">{{ t('Rekapitulasi Pasiva vs Aktiva') }}</h2>
                     <p class="text-xs text-on-surface-variant">
                         Per {{ period.as_of ?? '-' }}
                     </p>
@@ -266,13 +268,13 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
                     <!-- Pasiva -->
                     <div>
                         <div class="bg-primary px-4 py-2 text-sm font-bold uppercase tracking-wider text-on-primary">
-                            Sisi PASIVA — Simpanan
+                            {{ t('Sisi PASIVA — Simpanan') }}
                         </div>
                         <table class="w-full text-sm">
                             <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                                 <tr>
-                                    <th class="px-3 py-2 text-left">Jenis Simpanan</th>
-                                    <th class="px-3 py-2 text-right">Saldo</th>
+                                    <th class="px-3 py-2 text-left">{{ t('Jenis Simpanan') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Saldo') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -285,7 +287,7 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
                             </tbody>
                             <tfoot>
                                 <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                    <td class="px-3 py-2">Total Simpanan</td>
+                                    <td class="px-3 py-2">{{ t('Total Simpanan') }}</td>
                                     <td class="px-3 py-2 text-right tabular-nums text-primary">
                                         {{ fmt(totals.savings) }}
                                     </td>
@@ -297,13 +299,13 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
                     <!-- Aktiva -->
                     <div>
                         <div class="bg-secondary px-4 py-2 text-sm font-bold uppercase tracking-wider text-on-primary">
-                            Sisi AKTIVA — Piutang
+                            {{ t('Sisi AKTIVA — Piutang') }}
                         </div>
                         <table class="w-full text-sm">
                             <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                                 <tr>
-                                    <th class="px-3 py-2 text-left">Jenis Piutang</th>
-                                    <th class="px-3 py-2 text-right">Saldo</th>
+                                    <th class="px-3 py-2 text-left">{{ t('Jenis Piutang') }}</th>
+                                    <th class="px-3 py-2 text-right">{{ t('Saldo') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -316,7 +318,7 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
                             </tbody>
                             <tfoot>
                                 <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                    <td class="px-3 py-2">Total Piutang</td>
+                                    <td class="px-3 py-2">{{ t('Total Piutang') }}</td>
                                     <td class="px-3 py-2 text-right tabular-nums text-primary">
                                         {{ fmt(totals.receivables) }}
                                     </td>
@@ -328,7 +330,7 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
 
                 <div class="border-t border-outline-variant/40 bg-surface-container-lowest px-4 py-3 text-sm">
                     <div class="flex flex-wrap items-center justify-between gap-2">
-                        <span><b>Selisih (Simpanan − Piutang):</b> {{ fmt(totals.selisih) }}</span>
+                        <span><b>{{ t('Selisih (Simpanan − Piutang):') }}</b> {{ fmt(totals.selisih) }}</span>
                         <span class="text-on-surface-variant">
                             Rasio Piutang Pokok / Simpanan: <b>{{ Number(ratio.pokok_to_simpanan).toFixed(2) }}%</b>
                         </span>

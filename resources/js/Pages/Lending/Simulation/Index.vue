@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import { computed, reactive, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -57,7 +59,7 @@ const productOptions = computed(() => {
             return scope === 'member' || scope === 'both';
         });
     return [
-        { value: '', label: 'Kustom / Input Manual' },
+        { value: '', label: t('Kustom / Input Manual') },
         ...filtered.map((p) => ({
             value: p.code,
             label: `${p.name} (${p.code})`,
@@ -67,9 +69,9 @@ const productOptions = computed(() => {
 });
 
 const borrowerTypeOptions = [
-    { value: 'all', label: 'Semua', description: 'Kelompok & Individu' },
-    { value: 'kelompok', label: 'Kelompok', description: 'Hanya kelompok' },
-    { value: 'individu', label: 'Individu', description: 'Hanya individu' },
+    { value: 'all', label: t('Semua'), description: t('Kelompok & Individu') },
+    { value: 'kelompok', label: t('Kelompok'), description: t('Hanya kelompok') },
+    { value: 'individu', label: t('Individu'), description: t('Hanya individu') },
 ];
 
 const quickBorrowerTypes = computed(() => borrowerTypeOptions);
@@ -119,13 +121,13 @@ const FREQUENCY_MONTHS = {
 };
 
 const graceOptions = [
-    { value: 0, label: 'Tanpa Penundaan' },
-    { value: 1, label: 'M1 — Ditunda 1 bulan' },
-    { value: 2, label: 'M2 — Pokok ditunda 2 bulan' },
-    { value: 3, label: 'M3 — Pokok ditunda 3 bulan' },
-    { value: 6, label: 'M6 — Pokok ditunda 6 bulan' },
-    { value: 12, label: 'M12 — Pokok ditunda 12 bulan' },
-    { value: 24, label: 'M24 — Pokok ditunda 24 bulan' },
+    { value: 0, label: t('Tanpa Penundaan') },
+    { value: 1, label: t('M1 — Ditunda 1 bulan') },
+    { value: 2, label: t('M2 — Pokok ditunda 2 bulan') },
+    { value: 3, label: t('M3 — Pokok ditunda 3 bulan') },
+    { value: 6, label: t('M6 — Pokok ditunda 6 bulan') },
+    { value: 12, label: t('M12 — Pokok ditunda 12 bulan') },
+    { value: 24, label: t('M24 — Pokok ditunda 24 bulan') },
 ];
 
 const PRINCIPAL_PRESETS = [
@@ -449,8 +451,8 @@ const sectionCompletion = computed(() => ({
 const formAccordionItems = computed(() => [
     {
         key: 'identity',
-        title: 'Identitas Peminjam',
-        subtitle: 'Siapa yang akan meminjam',
+        title: t('Identitas Peminjam'),
+        subtitle: t('Siapa yang akan meminjam'),
         icon: 'person',
         badge: sectionCompletion.value.identity ? '✓' : null,
         defaultOpen: true,
@@ -458,8 +460,8 @@ const formAccordionItems = computed(() => [
     },
     {
         key: 'plafon',
-        title: 'Plafon & Tenor',
-        subtitle: 'Besaran pinjaman dan jangka waktu',
+        title: t('Plafon & Tenor'),
+        subtitle: t('Besaran pinjaman dan jangka waktu'),
         icon: 'payments',
         badge: sectionCompletion.value.schedule ? '✓' : null,
         defaultOpen: false,
@@ -467,8 +469,8 @@ const formAccordionItems = computed(() => [
     },
     {
         key: 'scheme',
-        title: 'Skema Bunga',
-        subtitle: 'Metode perhitungan & pembulatan',
+        title: t('Skema Bunga'),
+        subtitle: t('Metode perhitungan & pembulatan'),
         icon: 'percent',
         badge: sectionCompletion.value.scheme ? '✓' : null,
         defaultOpen: false,
@@ -538,7 +540,7 @@ function formatNumber(value) {
 </script>
 
 <template>
-    <Head title="Simulasi Pinjaman" />
+    <Head :title="t('Simulasi Pinjaman')" />
     <AuthenticatedLayout>
         <div class="mx-auto w-full max-w-7xl space-y-3 sm:space-y-4">
             <!-- ============ PAGE HEADER (tanpa card wrapper) ============ -->
@@ -546,15 +548,15 @@ function formatNumber(value) {
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-2">
                         <h1 class="text-lg font-extrabold tracking-tight text-on-surface sm:text-2xl lg:text-[26px]">
-                            Simulasi Pinjaman
+                            {{ t('Simulasi Pinjaman') }}
                         </h1>
                         <AppBadge tone="primary-soft">
                             <AppIcon name="bolt" class="text-xs" />
-                            Real-time
+                            {{ t('Real-time') }}
                         </AppBadge>
                     </div>
                     <p class="mt-1 max-w-3xl text-xs text-on-surface-variant sm:text-sm">
-                        Kalkulator simulasi perhitungan skema angsuran pokok dan jasa pinjaman secara instan dan presisi.
+                        {{ t('Kalkulator simulasi perhitungan skema angsuran pokok dan jasa pinjaman secara instan dan presisi.') }}
                     </p>
                 </div>
 
@@ -566,8 +568,8 @@ function formatNumber(value) {
                         class="flex-1 justify-center sm:flex-none"
                         @click="resetForm"
                     >
-                        <span class="hidden sm:inline">Reset</span>
-                        <span class="sr-only sm:hidden">Reset</span>
+                        <span class="hidden sm:inline">{{ t('Reset') }}</span>
+                        <span class="sr-only sm:hidden">{{ t('Reset') }}</span>
                     </AppButton>
                     <AppButton
                         :icon="copied ? 'check_circle' : 'content_copy'"
@@ -576,8 +578,8 @@ function formatNumber(value) {
                         class="flex-1 justify-center sm:flex-none"
                         @click="copySummary"
                     >
-                        <span class="hidden sm:inline">{{ copied ? 'Tersalin!' : 'Salin' }}</span>
-                        <span class="sr-only sm:hidden">Salin ringkasan</span>
+                        <span class="hidden sm:inline">{{ copied ? t('Tersalin!') : t('Salin') }}</span>
+                        <span class="sr-only sm:hidden">{{ t('Salin ringkasan') }}</span>
                     </AppButton>
                     <AppButton
                         icon="picture_as_pdf"
@@ -586,7 +588,7 @@ function formatNumber(value) {
                         class="flex-1 justify-center sm:flex-none"
                         @click="openPdf"
                     >
-                        <span>Unduh PDF</span>
+                        <span>{{ t('Unduh PDF') }}</span>
                     </AppButton>
                 </div>
             </div>
@@ -605,7 +607,7 @@ function formatNumber(value) {
                         ]"
                     >
                         <AppIcon name="tune" class="text-base" />
-                        Parameter
+                        {{ t('Parameter') }}
                     </button>
                     <button
                         type="button"
@@ -618,7 +620,7 @@ function formatNumber(value) {
                         ]"
                     >
                         <AppIcon name="analytics" class="text-base" />
-                        Hasil
+                        {{ t('Hasil') }}
                     </button>
                 </div>
             </div>
@@ -638,7 +640,7 @@ function formatNumber(value) {
                             <div class="space-y-3 text-on-surface sm:space-y-3.5">
                                 <SmartSelect
                                     v-model="form.selectedProduct"
-                                    label="Template Produk"
+                                    :label="t('Template Produk')"
                                     :options="productOptions"
                                     size="default"
                                     @update:model-value="onProductChange"
@@ -646,14 +648,14 @@ function formatNumber(value) {
 
                                 <AppInput
                                     v-model="form.borrower_name"
-                                    label="Nama Peminjam / Kelompok"
-                                    placeholder="Masukkan nama"
+                                    :label="t('Nama Peminjam / Kelompok')"
+                                    :placeholder="t('Masukkan nama')"
                                     icon="person"
                                 />
 
                                 <div>
                                     <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant sm:text-[11px]">
-                                        Tipe Peminjam
+                                        {{ t('Tipe Peminjam') }}
                                     </label>
                                     <div class="grid grid-cols-3 gap-1.5">
                                         <button
@@ -683,7 +685,7 @@ function formatNumber(value) {
                                 <div>
                                     <AppCurrencyInput
                                         v-model="form.principal_amount"
-                                        label="Plafon Pinjaman"
+                                        :label="t('Plafon Pinjaman')"
                                         icon="payments"
                                         :step="500000"
                                         required
@@ -709,12 +711,12 @@ function formatNumber(value) {
                                 <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                                     <SmartSelect
                                         v-model="form.principal_grace_months"
-                                        label="Grace Period Pokok"
+                                        :label="t('Grace Period Pokok')"
                                         :options="graceOptions"
                                     />
                                     <SmartSelect
                                         v-model="form.interest_grace_months"
-                                        label="Grace Period Jasa"
+                                        :label="t('Grace Period Jasa')"
                                         :options="graceOptions"
                                     />
                                 </div>
@@ -723,7 +725,7 @@ function formatNumber(value) {
                                 <div>
                                     <AppInput
                                         v-model="form.term_months"
-                                        label="Tenor (Bulan)"
+                                        :label="t('Tenor (Bulan)')"
                                         type="number"
                                         min="1"
                                         max="120"
@@ -750,7 +752,7 @@ function formatNumber(value) {
 
                                 <AppDatePicker
                                     v-model="form.start_date"
-                                    label="Tanggal Mulai / Pencairan"
+                                    :label="t('Tanggal Mulai / Pencairan')"
                                 />
                             </div>
                         </template>
@@ -761,7 +763,7 @@ function formatNumber(value) {
                                 <!-- Metode -->
                                 <div>
                                     <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant sm:text-[11px]">
-                                        Sistem Perhitungan
+                                        {{ t('Sistem Perhitungan') }}
                                     </label>
                                     <div class="grid grid-cols-3 gap-1.5">
                                         <button
@@ -794,7 +796,7 @@ function formatNumber(value) {
                                 <div>
                                     <div class="mb-1.5 flex items-center justify-between">
                                         <label class="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant sm:text-[11px]">
-                                            Suku Bunga
+                                            {{ t('Suku Bunga') }}
                                         </label>
                                         <div class="inline-flex rounded-lg bg-surface-container p-0.5 text-[10px] font-medium sm:text-[11px]">
                                             <button
@@ -850,19 +852,19 @@ function formatNumber(value) {
                                 <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                                     <SmartSelect
                                         v-model="form.principal_frequency"
-                                        label="Frekuensi Pokok"
+                                        :label="t('Frekuensi Pokok')"
                                         :options="frequencyOptions"
                                     />
                                     <SmartSelect
                                         v-model="form.interest_frequency"
-                                        label="Frekuensi Jasa"
+                                        :label="t('Frekuensi Jasa')"
                                         :options="frequencyOptions"
                                     />
                                 </div>
 
                                 <SmartSelect
                                     v-model="form.rounding_step"
-                                    label="Pembulatan Angsuran"
+                                    :label="t('Pembulatan Angsuran')"
                                     :options="roundingOptions"
                                 />
                             </div>
@@ -885,8 +887,8 @@ function formatNumber(value) {
                                 <AppIcon name="schema" class="text-sm sm:text-base" />
                             </span>
                             <div class="min-w-0 flex-1">
-                                <h2 class="text-xs font-bold text-on-surface sm:text-sm">Skema Aktif</h2>
-                                <p class="text-[10px] text-on-surface-variant sm:text-[11px]">Ringkasan finansial, parameter &amp; proporsi</p>
+                                <h2 class="text-xs font-bold text-on-surface sm:text-sm">{{ t('Skema Aktif') }}</h2>
+                                <p class="text-[10px] text-on-surface-variant sm:text-[11px]">{{ t('Ringkasan finansial, parameter & proporsi') }}</p>
                             </div>
                             <AppBadge tone="primary-soft" class="shrink-0 whitespace-nowrap">
                                 {{ methodShort }} • {{ safeSchedule.length }}x
@@ -898,18 +900,18 @@ function formatNumber(value) {
                             <dl class="grid grid-cols-2 gap-x-3 gap-y-2 rounded-lg bg-surface-container-lowest/50 px-3 py-2.5 sm:grid-cols-4 sm:gap-x-4">
                                 <div class="min-w-0">
                                     <dt class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                                        Plafon Pokok
+                                        {{ t('Plafon Pokok') }}
                                     </dt>
                                     <dd class="truncate text-xs font-extrabold tabular-nums text-primary sm:text-sm">
                                         {{ money(safeSummary.principal_amount) }}
                                     </dd>
                                     <dd class="text-[9px] text-on-surface-variant sm:text-[10px]">
-                                        Pinjaman awal
+                                        {{ t('Pinjaman awal') }}
                                     </dd>
                                 </div>
                                 <div class="min-w-0">
                                     <dt class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                                        Total Jasa
+                                        {{ t('Total Jasa') }}
                                     </dt>
                                     <dd class="truncate text-xs font-extrabold tabular-nums text-secondary sm:text-sm">
                                         {{ money(safeSummary.total_interest) }}
@@ -920,18 +922,18 @@ function formatNumber(value) {
                                 </div>
                                 <div class="min-w-0">
                                     <dt class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                                        Total Pengembalian
+                                        {{ t('Total Pengembalian') }}
                                     </dt>
                                     <dd class="truncate text-xs font-extrabold tabular-nums text-tertiary sm:text-sm">
                                         {{ money(safeSummary.total_payment) }}
                                     </dd>
                                     <dd class="text-[9px] text-on-surface-variant sm:text-[10px]">
-                                        Pokok + Jasa
+                                        {{ t('Pokok + Jasa') }}
                                     </dd>
                                 </div>
                                 <div class="min-w-0">
                                     <dt class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                                        Est. Angsuran
+                                        {{ t('Est. Angsuran') }}
                                     </dt>
                                     <dd class="truncate text-xs font-extrabold tabular-nums text-on-surface sm:text-sm">
                                         {{ money(safeSummary.estimated_monthly) }}
@@ -948,7 +950,7 @@ function formatNumber(value) {
                                 <dl class="grid grid-cols-2 gap-x-3 gap-y-2.5 text-sm md:col-span-3">
                                     <div class="min-w-0">
                                         <dt class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                                            Sistem
+                                            {{ t('Sistem') }}
                                         </dt>
                                         <dd class="truncate text-xs font-bold text-on-surface sm:text-sm">
                                             {{ methodLabel }}
@@ -959,7 +961,7 @@ function formatNumber(value) {
                                     </div>
                                     <div class="min-w-0">
                                         <dt class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                                            Bunga / Bulan
+                                            {{ t('Bunga / Bulan') }}
                                         </dt>
                                         <dd class="truncate text-xs font-bold text-on-surface sm:text-sm">
                                             {{ safeSummary.interest_rate_monthly.toFixed(2) }}%
@@ -970,7 +972,7 @@ function formatNumber(value) {
                                     </div>
                                     <div class="min-w-0">
                                         <dt class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                                            Tenor
+                                            {{ t('Tenor') }}
                                         </dt>
                                         <dd class="truncate text-xs font-bold text-on-surface sm:text-sm">
                                             {{ form.term_months }} bulan
@@ -981,13 +983,13 @@ function formatNumber(value) {
                                     </div>
                                     <div class="min-w-0">
                                         <dt class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                                            Pembulatan
+                                            {{ t('Pembulatan') }}
                                         </dt>
                                         <dd class="truncate text-xs font-bold text-on-surface sm:text-sm">
                                             {{ form.rounding_step > 0 ? `Rp ${formatNumber(form.rounding_step)}` : 'Tanpa' }}
                                         </dd>
                                         <dd class="truncate text-[10px] text-on-surface-variant">
-                                            Pokok: {{ props.frequencyOptions.find(o => o.value === form.principal_frequency)?.label || 'Bulanan' }}
+                                            {{ t('Pokok:') }} {{ props.frequencyOptions.find(o => o.value === form.principal_frequency)?.label || 'Bulanan' }}
                                         </dd>
                                     </div>
                                 </dl>
@@ -1025,7 +1027,7 @@ function formatNumber(value) {
                                             />
                                         </svg>
                                         <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                            <span class="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">Total</span>
+                                            <span class="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total') }}</span>
                                             <span class="text-[10px] font-extrabold text-on-surface tabular-nums sm:text-[11px]">
                                                 {{ money(safeSummary.total_payment) }}
                                             </span>
@@ -1034,12 +1036,12 @@ function formatNumber(value) {
                                     <div class="flex items-center gap-3 text-[10px] sm:gap-4 sm:text-[11px] md:flex-col md:items-start md:gap-1 md:ml-0">
                                         <div class="flex items-center gap-1.5">
                                             <span class="size-2 shrink-0 rounded-full bg-primary"></span>
-                                            <span class="text-on-surface-variant">Pokok</span>
+                                            <span class="text-on-surface-variant">{{ t('Pokok') }}</span>
                                             <span class="font-bold tabular-nums text-on-surface">{{ principalPct }}%</span>
                                         </div>
                                         <div class="flex items-center gap-1.5">
                                             <span class="size-2 shrink-0 rounded-full bg-secondary"></span>
-                                            <span class="text-on-surface-variant">Jasa</span>
+                                            <span class="text-on-surface-variant">{{ t('Jasa') }}</span>
                                             <span class="font-bold tabular-nums text-on-surface">{{ interestPct }}%</span>
                                         </div>
                                     </div>
@@ -1055,18 +1057,18 @@ function formatNumber(value) {
                                 <AppIcon name="table_chart" class="text-sm sm:text-base" />
                             </span>
                             <div class="min-w-0 flex-1">
-                                <h2 class="text-xs font-bold text-on-surface sm:text-sm">Proyeksi Jadwal Angsuran</h2>
+                                <h2 class="text-xs font-bold text-on-surface sm:text-sm">{{ t('Proyeksi Jadwal Angsuran') }}</h2>
                                 <p class="text-[10px] text-on-surface-variant sm:text-[11px]">{{ safeSchedule.length }} periode pembayaran</p>
                             </div>
                             <div class="hidden gap-1.5 sm:flex sm:items-center">
                                 <span class="rounded bg-surface-container px-1.5 py-0.5 text-[9px] font-bold uppercase text-on-surface-variant">
-                                    Pokok
+                                    {{ t('Pokok') }}
                                 </span>
                                 <span class="rounded bg-secondary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-secondary">
-                                    Jasa
+                                    {{ t('Jasa') }}
                                 </span>
                                 <span class="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary">
-                                    Total
+                                    {{ t('Total') }}
                                 </span>
                             </div>
                         </header>
@@ -1075,12 +1077,12 @@ function formatNumber(value) {
                             <table class="w-full min-w-[640px] text-left text-[11px] sm:text-xs">
                                 <thead class="sticky top-0 z-10 border-b border-outline-variant bg-surface-container text-[9px] font-bold uppercase tracking-wider text-on-surface-variant sm:text-[10px]">
                                     <tr>
-                                        <th class="px-2 py-1.5 text-center w-10 sm:px-3 sm:py-2">Ke</th>
-                                        <th class="px-2 py-1.5 sm:px-3 sm:py-2">Jatuh Tempo</th>
-                                        <th class="px-2 py-1.5 text-right sm:px-3 sm:py-2">Pokok</th>
-                                        <th class="px-2 py-1.5 text-right sm:px-3 sm:py-2">Jasa</th>
-                                        <th class="px-2 py-1.5 text-right text-primary sm:px-3 sm:py-2">Total</th>
-                                        <th class="px-2 py-1.5 text-right sm:px-3 sm:py-2">Sisa Pokok</th>
+                                        <th class="px-2 py-1.5 text-center w-10 sm:px-3 sm:py-2">{{ t('Ke') }}</th>
+                                        <th class="px-2 py-1.5 sm:px-3 sm:py-2">{{ t('Jatuh Tempo') }}</th>
+                                        <th class="px-2 py-1.5 text-right sm:px-3 sm:py-2">{{ t('Pokok') }}</th>
+                                        <th class="px-2 py-1.5 text-right sm:px-3 sm:py-2">{{ t('Jasa') }}</th>
+                                        <th class="px-2 py-1.5 text-right text-primary sm:px-3 sm:py-2">{{ t('Total') }}</th>
+                                        <th class="px-2 py-1.5 text-right sm:px-3 sm:py-2">{{ t('Sisa Pokok') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-outline-variant/60 bg-surface">
@@ -1127,7 +1129,7 @@ function formatNumber(value) {
                                             {{ money(safeSummary.total_payment) }}
                                         </td>
                                         <td class="px-2 py-1.5 text-right tabular-nums text-on-surface-variant sm:px-3 sm:py-2">
-                                            Rp 0
+                                            {{ t('Rp 0') }}
                                         </td>
                                     </tr>
                                 </tfoot>

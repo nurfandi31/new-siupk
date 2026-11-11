@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link } from '@inertiajs/vue3';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -20,11 +22,11 @@ defineProps({
 
 const columns = [
     { key: 'nik', label: 'NIK', sortable: true },
-    { key: 'name', label: 'Nama Anggota', sortable: true },
-    { key: 'village', label: 'Desa' },
-    { key: 'phone', label: 'No. HP', sortable: true },
-    { key: 'registered_at', label: 'Terdaftar', sortable: true },
-    { key: 'status', label: 'Status', sortable: true },
+    { key: 'name', label: t('Nama Anggota'), sortable: true },
+    { key: 'village', label: t('Desa') },
+    { key: 'phone', label: t('No. HP'), sortable: true },
+    { key: 'registered_at', label: t('Terdaftar'), sortable: true },
+    { key: 'status', label: t('Status'), sortable: true },
 ];
 
 const csvColumns = ['nik', 'nama', 'jenis_kelamin', 'alamat', 'desa', 'no_hp', 'status'];
@@ -32,26 +34,26 @@ const statusLabels = { active: 'Aktif', exited: 'Keluar', deceased: 'Meninggal' 
 </script>
 
 <template>
-    <Head title="Anggota" />
+    <Head :title="t('Anggota')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Anggota</h1>
-                    <p class="mt-1 text-on-surface-variant">Kelola data anggota tenant.</p>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Anggota') }}</h1>
+                    <p class="mt-1 text-on-surface-variant">{{ t('Kelola data anggota tenant.') }}</p>
                 </div>
                 <div v-if="can('members.manage')" class="flex flex-wrap items-center gap-2">
                     <CsvImportExport
                         export-url="/master-data/members/export"
                         import-url="/master-data/members/import"
                         :columns="csvColumns"
-                        title="Impor Anggota"
+                        :title="t('Impor Anggota')"
                         hint="Kolom minimal. jenis_kelamin: L/P. desa = nama desa aktif. NIK duplikat dilewati."
                     />
-                    <Link href="/master-data/members/create"><AppButton icon="add">Tambah Anggota</AppButton></Link>
+                    <Link href="/master-data/members/create"><AppButton icon="add">{{ t('Tambah Anggota') }}</AppButton></Link>
                 </div>
             </header>
-            <AppCard :padded="false"><SmartDataTable :rows="members.data" :columns="columns" :pagination="members" url="/master-data/members" :search="search" :per-page="perPage" :sort="sort" :direction="direction" search-label="Cari anggota" search-placeholder="Cari anggota..." empty-title="Belum ada anggota" empty-description="Tambahkan anggota untuk mulai mengelola data anggota." row-href="/master-data/members/{row_id}"><template #cell-name="{ row }">
+            <AppCard :padded="false"><SmartDataTable :rows="members.data" :columns="columns" :pagination="members" url="/master-data/members" :search="search" :per-page="perPage" :sort="sort" :direction="direction" search-label="Cari anggota" :search-placeholder="t('Cari anggota...')" empty-title="Belum ada anggota" empty-description="Tambahkan anggota untuk mulai mengelola data anggota." row-href="/master-data/members/{row_id}"><template #cell-name="{ row }">
                             <Link :href="`/master-data/members/${row.row_id}`" class="font-semibold text-primary hover:underline">
                                 {{ row.name }}
                             </Link>

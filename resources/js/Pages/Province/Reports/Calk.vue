@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import AppCard from '../../../Components/AppCard.vue';
 import ReportPeriodFilter from '../../../Components/ReportPeriodFilter.vue';
@@ -20,7 +22,7 @@ const baseUrl = '/province/reports/calk';
         <div class="space-y-6">
             <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Catatan Atas Laporan Keuangan (CALK)</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Catatan Atas Laporan Keuangan (CALK)') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Penjelasan dan Catatan Konsolidasi Keuangan Provinsi {{ province_name }} ({{ report.period?.period_label }}).
                     </p>
@@ -40,15 +42,15 @@ const baseUrl = '/province/reports/calk';
                 </div>
                 <div class="space-y-4 text-sm text-on-surface">
                     <div>
-                        <h3 class="font-bold text-primary">1. Gambaran Umum Entitas</h3>
+                        <h3 class="font-bold text-primary">{{ t('1. Gambaran Umum Entitas') }}</h3>
                         <p class="mt-1 text-on-surface-variant">{{ report.general_notes }}</p>
                     </div>
                     <div>
-                        <h3 class="font-bold text-primary">2. Kebijakan Akuntansi</h3>
+                        <h3 class="font-bold text-primary">{{ t('2. Kebijakan Akuntansi') }}</h3>
                         <p class="mt-1 text-on-surface-variant">{{ report.accounting_policies }}</p>
                     </div>
                     <div>
-                        <h3 class="font-bold text-primary">3. Cakupan Konsolidasi</h3>
+                        <h3 class="font-bold text-primary">{{ t('3. Cakupan Konsolidasi') }}</h3>
                         <p class="mt-1 text-on-surface-variant">Laporan ini mencakup {{ report.tenants_count }} Unit Pengelola Kegiatan se-Provinsi.</p>
                     </div>
                 </div>

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 defineOptions({ inheritAttrs: false });
 
 import { ref, useId, watch } from 'vue';
@@ -220,10 +222,10 @@ watch(model, () => {
                 @keydown.down.prevent="adjust(-step)"
             >
             <div v-if="showStepper && !readonly" class="absolute right-1.5 top-1/2 flex h-9 -translate-y-1/2 items-center gap-1">
-                <button v-if="!readonly" type="button" tabindex="-1" class="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-low focus:bg-surface-container-low focus:outline-none" aria-label="Kurangi nilai" @click="adjust(-step)">
+                <button v-if="!readonly" type="button" tabindex="-1" class="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-low focus:bg-surface-container-low focus:outline-none" :aria-label="t('Kurangi nilai')" @click="adjust(-step)">
                     <AppIcon name="remove" class="text-base" />
                 </button>
-                <button v-if="!readonly" type="button" tabindex="-1" class="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-low focus:bg-surface-container-low focus:outline-none" aria-label="Tambah nilai" @click="adjust(step)">
+                <button v-if="!readonly" type="button" tabindex="-1" class="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition hover:bg-surface-container-low focus:bg-surface-container-low focus:outline-none" :aria-label="t('Tambah nilai')" @click="adjust(step)">
                     <AppIcon name="add" class="text-base" />
                 </button>
             </div>

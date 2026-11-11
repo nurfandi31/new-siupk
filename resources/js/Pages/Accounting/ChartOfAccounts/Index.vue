@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -34,9 +36,9 @@ watch(
 );
 
 const statusOptions = [
-    { value: 'all', label: 'Semua status' },
-    { value: 'active', label: 'Aktif' },
-    { value: 'inactive', label: 'Nonaktif' },
+    { value: 'all', label: t('Semua status') },
+    { value: 'active', label: t('Aktif') },
+    { value: 'inactive', label: t('Nonaktif') },
 ];
 
 function apply() {
@@ -65,27 +67,27 @@ watch([type, status], () => {
 </script>
 
 <template>
-    <Head title="Bagan Akun" />
+    <Head :title="t('Bagan Akun')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Bagan Akun</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Bagan Akun') }}</h1>
                     <p class="mt-1 text-on-surface-variant">
-                        Tampilan saja. Tambah/ubah/hapus akun hanya lewat persetujuan pusat.
+                        {{ t('Tampilan saja. Tambah/ubah/hapus akun hanya lewat persetujuan pusat.') }}
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-3 text-sm">
                     <div class="rounded-xl bg-surface-container-low px-3 py-2">
-                        <span class="text-on-surface-variant">Total</span>
+                        <span class="text-on-surface-variant">{{ t('Total') }}</span>
                         <span class="ml-2 font-bold text-primary">{{ counts.total }}</span>
                     </div>
                     <div class="rounded-xl bg-surface-container-low px-3 py-2">
-                        <span class="text-on-surface-variant">Aktif</span>
+                        <span class="text-on-surface-variant">{{ t('Aktif') }}</span>
                         <span class="ml-2 font-bold text-primary">{{ counts.active }}</span>
                     </div>
                     <div class="rounded-xl bg-surface-container-low px-3 py-2">
-                        <span class="text-on-surface-variant">Bisa di-post</span>
+                        <span class="text-on-surface-variant">{{ t('Bisa di-post') }}</span>
                         <span class="ml-2 font-bold text-primary">{{ counts.postable }}</span>
                     </div>
                 </div>
@@ -93,9 +95,9 @@ watch([type, status], () => {
 
             <AppCard>
                 <div class="grid gap-3 sm:grid-cols-3">
-                    <AppInput v-model="q" label="Cari" placeholder="Cari akun..." />
-                    <SmartSelect v-model="type" label="Jenis" :options="type_options" />
-                    <SmartSelect v-model="status" label="Status" :options="statusOptions" />
+                    <AppInput v-model="q" :label="t('Cari')" :placeholder="t('Cari akun...')" />
+                    <SmartSelect v-model="type" :label="t('Jenis')" :options="type_options" />
+                    <SmartSelect v-model="status" :label="t('Status')" :options="statusOptions" />
                 </div>
             </AppCard>
 
@@ -104,20 +106,20 @@ watch([type, status], () => {
                     <table class="min-w-full text-sm">
                         <thead class="sticky top-0 bg-surface-container-low text-left text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-4 py-3 font-semibold">Kode</th>
-                                <th class="px-4 py-3 font-semibold">Nama</th>
-                                <th class="px-4 py-3 font-semibold">Jenis</th>
-                                <th class="px-4 py-3 font-semibold">Saldo normal</th>
-                                <th class="px-4 py-3 font-semibold">Posting</th>
-                                <th class="px-4 py-3 font-semibold">Status</th>
-                                <th class="px-4 py-3 font-semibold">Tgl Ditambah</th>
-                                <th class="px-4 py-3 font-semibold">Tgl Nonaktif</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Kode') }}</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Nama') }}</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Jenis') }}</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Saldo normal') }}</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Posting') }}</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Status') }}</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Tgl Ditambah') }}</th>
+                                <th class="px-4 py-3 font-semibold">{{ t('Tgl Nonaktif') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="rows.length === 0">
                                 <td colspan="8" class="px-4 py-10 text-center text-on-surface-variant">
-                                    Tidak ada akun yang cocok.
+                                    {{ t('Tidak ada akun yang cocok.') }}
                                 </td>
                             </tr>
                             <tr
@@ -142,12 +144,12 @@ watch([type, status], () => {
                                 </td>
                                 <td class="px-4 py-2.5">
                                     <AppBadge :tone="row.is_postable ? 'success' : 'neutral'">
-                                        {{ row.is_postable ? 'Ya' : 'Header' }}
+                                        {{ row.is_postable ? t('Ya') : t('Header') }}
                                     </AppBadge>
                                 </td>
                                 <td class="px-4 py-2.5">
                                     <AppBadge :tone="row.is_active ? 'success' : 'warning'">
-                                        {{ row.is_active ? 'Aktif' : 'Nonaktif' }}
+                                        {{ row.is_active ? t('Aktif') : t('Nonaktif') }}
                                     </AppBadge>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-2.5 font-mono text-xs">
@@ -165,7 +167,7 @@ watch([type, status], () => {
                 </div>
                 <p class="border-t border-outline-variant/20 px-4 py-3 text-xs text-on-surface-variant">
                     {{ rows.length }} baris ditampilkan
-                    <span v-if="filters.q || filters.type || filters.status !== 'all'"> (terfilter)</span>.
+                    <span v-if="filters.q || filters.type || filters.status !== 'all'"> {{ t('(terfilter)') }}</span>.
                 </p>
             </AppCard>
         </div>

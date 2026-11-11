@@ -13,6 +13,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Demo Tenant
+    |--------------------------------------------------------------------------
+    |
+    | Kode tenant yang landing page-nya menampilkan kartu akses sandbox.
+    | Tidak ada kredensial yang diekspos; kartu hanya mengarah ke /login.
+    |
+    */
+    'demo_tenant_code' => env('TENANCY_DEMO_TENANT', 'demo'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Example Credential Store
     |--------------------------------------------------------------------------
     |
@@ -47,6 +58,10 @@ return [
 
     'seed_users' => [
         'enabled' => (bool) env('TENANCY_SEED_USERS', true),
-        'password' => (string) env('TENANCY_SEED_USERS_PASSWORD', 'password'),
+
+        // Kosongkan untuk membiarkan sistem membuat password acak per provisioning.
+        // Password acak ditampilkan sekali kepada superadmin yang mendaftarkan
+        // tenant dan tidak pernah disimpan dalam bentuk plaintext.
+        'password' => (string) env('TENANCY_SEED_USERS_PASSWORD', ''),
     ],
 ];

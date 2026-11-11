@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../../i18n';
+const { t } = useI18n();
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppButton from '../../../../Components/AppButton.vue';
@@ -59,15 +61,15 @@ function save() {
 </script>
 
 <template>
-    <Head title="CALK Tutup Buku" />
+    <Head :title="t('CALK Tutup Buku')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Pelaporan · Tutup Buku
+                        {{ t('Pelaporan · Tutup Buku') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Catatan Atas Laporan Keuangan — Tutup Buku</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Catatan Atas Laporan Keuangan — Tutup Buku') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         Tahun Buku {{ year }} · khusus pelaporan tutup buku akhir tahun
                     </p>
@@ -86,7 +88,7 @@ function save() {
                 <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                            Tahun Buku
+                            {{ t('Tahun Buku') }}
                         </label>
                         <select
                             class="w-full rounded-xl border border-outline-variant bg-surface px-3 py-2 text-sm"
@@ -100,7 +102,7 @@ function save() {
                     </div>
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                            Periode
+                            {{ t('Periode') }}
                         </label>
                         <input
                             readonly
@@ -112,7 +114,7 @@ function save() {
             </AppCard>
 
             <AppCard class="p-5">
-                <h2 class="text-sm font-bold uppercase tracking-wide text-on-surface-variant">Identitas entitas</h2>
+                <h2 class="text-sm font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Identitas entitas') }}</h2>
                 <p class="mt-2 text-lg font-bold text-primary">{{ identity.legal_name }}</p>
                 <p v-if="identity.address" class="text-sm text-on-surface-variant">{{ identity.address }}</p>
                 <p v-if="identity.registration_number || identity.tax_number" class="mt-1 text-xs text-on-surface-variant">
@@ -136,7 +138,7 @@ function save() {
 
             <AppCard class="p-5">
                 <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-                    Kebijakan Akuntansi (ringkas)
+                    {{ t('Kebijakan Akuntansi (ringkas)') }}
                 </h2>
                 <ol class="list-decimal space-y-2 pl-5 text-sm text-on-surface">
                     <li v-for="(p, i) in policies" :key="i">{{ p }}</li>
@@ -145,23 +147,23 @@ function save() {
 
             <AppCard class="p-5">
                 <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-                    Ringkasan Jurnal Tutup Buku
+                    {{ t('Ringkasan Jurnal Tutup Buku') }}
                 </h2>
                 <ul class="space-y-1 text-sm">
-                    <li>Jumlah entry: <strong>{{ closing_journal_summary.entries }}</strong></li>
-                    <li>Total pendapatan ditutup: <strong>{{ formatMoney(closing_journal_summary.revenue) }}</strong></li>
-                    <li>Total beban ditutup: <strong>{{ formatMoney(closing_journal_summary.expense) }}</strong></li>
-                    <li>Surplus/(Defisit) ditutup: <strong>{{ formatMoney(closing_journal_summary.surplus) }}</strong></li>
-                    <li>Status: <strong>{{ closing_journal_summary.balanced ? 'Debit = Kredit (seimbang)' : 'Tidak seimbang' }}</strong></li>
+                    <li>{{ t('Jumlah entry:') }} <strong>{{ closing_journal_summary.entries }}</strong></li>
+                    <li>{{ t('Total pendapatan ditutup:') }} <strong>{{ formatMoney(closing_journal_summary.revenue) }}</strong></li>
+                    <li>{{ t('Total beban ditutup:') }} <strong>{{ formatMoney(closing_journal_summary.expense) }}</strong></li>
+                    <li>{{ t('Surplus/(Defisit) ditutup:') }} <strong>{{ formatMoney(closing_journal_summary.surplus) }}</strong></li>
+                    <li>{{ t('Status:') }} <strong>{{ closing_journal_summary.balanced ? 'Debit = Kredit (seimbang)' : t('Tidak seimbang') }}</strong></li>
                 </ul>
             </AppCard>
 
             <AppCard class="p-5">
                 <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-                    Ringkasan Alokasi Laba
+                    {{ t('Ringkasan Alokasi Laba') }}
                 </h2>
                 <ul class="space-y-1 text-sm">
-                    <li>Total Surplus: <strong>{{ formatMoney(allocation_summary.surplus) }}</strong></li>
+                    <li>{{ t('Total Surplus:') }} <strong>{{ formatMoney(allocation_summary.surplus) }}</strong></li>
                     <li v-for="line in allocation_summary.lines" :key="line.key">
                         {{ line.label }} ({{ line.percentage.toFixed(2) }}%):
                         <strong>{{ formatMoney(line.amount) }}</strong>
@@ -175,7 +177,7 @@ function save() {
 
             <AppCard class="p-5">
                 <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-                    Catatan per Bab
+                    {{ t('Catatan per Bab') }}
                 </h2>
                 <form v-if="allowEdit" class="space-y-4" @submit.prevent="save">
                     <div v-for="chapter in chapters" :key="chapter.key" class="space-y-2">
@@ -185,11 +187,11 @@ function save() {
                         <AppTextarea
                             v-model="form.notes[chapter.key]"
                             :error="form.errors[`notes.${chapter.key}`]"
-                            placeholder="Tulis catatan..."
+                            :placeholder="t('Tulis catatan...')"
                         />
                     </div>
                     <div class="flex justify-end">
-                        <AppButton type="submit" icon="save" :loading="form.processing">Simpan catatan</AppButton>
+                        <AppButton type="submit" icon="save" :loading="form.processing">{{ t('Simpan catatan') }}</AppButton>
                     </div>
                 </form>
                 <div v-else class="space-y-4">

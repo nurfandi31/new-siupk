@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -31,17 +33,17 @@ function sectionTotalLabel(l1) {
 </script>
 
 <template>
-    <Head title="Neraca" />
+    <Head :title="t('Neraca')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Neraca</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Neraca') }}</h1>
                     <p class="text-sm text-on-surface-variant">{{ period.period_label }} · per {{ period.as_of }}</p>
                 </div>
                 <AppBadge :tone="balanced ? 'success' : 'error'">
-                    {{ balanced ? 'Aset = Liabilitas+Ekuitas' : 'Tidak seimbang' }}
+                    {{ balanced ? 'Aset = Liabilitas+Ekuitas' : t('Tidak seimbang') }}
                 </AppBadge>
             </div>
 
@@ -59,14 +61,14 @@ function sectionTotalLabel(l1) {
                 <table class="min-w-full text-sm">
                     <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                         <tr>
-                            <th class="px-3 py-2 text-left w-28">Kode</th>
-                            <th class="px-3 py-2 text-left">Nama Akun</th>
-                            <th class="px-3 py-2 text-right w-40">Saldo</th>
+                            <th class="px-3 py-2 text-left w-28">{{ t('Kode') }}</th>
+                            <th class="px-3 py-2 text-left">{{ t('Nama Akun') }}</th>
+                            <th class="px-3 py-2 text-right w-40">{{ t('Saldo') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="sections.length === 0">
-                            <td colspan="3" class="px-3 py-8 text-center text-on-surface-variant">Belum ada data neraca.</td>
+                            <td colspan="3" class="px-3 py-8 text-center text-on-surface-variant">{{ t('Belum ada data neraca.') }}</td>
                         </tr>
                         <template v-for="l1 in sections" :key="l1.code">
                             <tr class="bg-primary text-on-primary">
@@ -99,7 +101,7 @@ function sectionTotalLabel(l1) {
                     </tbody>
                     <tfoot>
                         <tr class="border-t-2 border-outline bg-surface-container font-bold">
-                            <td class="px-3 py-2" colspan="2">Jumlah Liabilitas + Ekuitas</td>
+                            <td class="px-3 py-2" colspan="2">{{ t('Jumlah Liabilitas + Ekuitas') }}</td>
                             <td class="px-3 py-2 text-right tabular-nums">{{ fmt(totals.liabilities_equity) }}</td>
                         </tr>
                     </tfoot>

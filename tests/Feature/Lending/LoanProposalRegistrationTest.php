@@ -337,10 +337,28 @@ final class LoanProposalRegistrationTest extends TestCase
     {
         $sppId = (int) DB::connection('tenant')->table('loan_products')->where('code', 'spp')->value('row_id');
 
+        // Aturan eligibility menolak pinjaman aktif ganda pada kelompok/anggota yang sama,
+        // jadi setiap skenario tab memakai kelompok & pemanfaat tersendiri.
+        $groups = [$this->group];
+        $beneficiaries = [$this->beneficiaries[0]];
+        for ($i = 1; $i <= 4; $i++) {
+            $groups[] = Group::query()->create([
+                'code' => 'KLP-00'.($i + 1),
+                'name' => 'Kelompok Uji '.($i + 1),
+                'status' => 'active',
+                'organization_unit_row_id' => 1,
+            ]);
+            $beneficiaries[] = $this->createMember(
+                'Pemanfaat Uji '.($i + 1),
+                '32730102030401'.str_pad((string) ($i + 10), 2, '0', STR_PAD_LEFT),
+                'ANG-UJI-'.($i + 1),
+            );
+        }
+
         // 1. Proposal (status draft)
         $loan1 = app(LoanService::class)->createProposal([
             'loan_product_id' => $sppId,
-            'group_id' => $this->group->row_id,
+            'group_id' => $groups[0]->row_id,
             'proposed_at' => '2026-07-20',
             'principal_amount' => 1000000,
             'service_rate_total' => 9.0,
@@ -351,13 +369,13 @@ final class LoanProposalRegistrationTest extends TestCase
             'chair_id' => $this->chair->row_id,
             'secretary_id' => $this->secretary->row_id,
             'treasurer_id' => $this->treasurer->row_id,
-            'beneficiary_ids' => [$this->beneficiaries[0]->row_id],
+            'beneficiary_ids' => [$beneficiaries[0]->row_id],
         ], (int) $this->user->row_id);
 
         // 2. Verifikasi (status verified)
         $loan2 = app(LoanService::class)->createProposal([
             'loan_product_id' => $sppId,
-            'group_id' => $this->group->row_id,
+            'group_id' => $groups[1]->row_id,
             'proposed_at' => '2026-07-20',
             'principal_amount' => 2000000,
             'service_rate_total' => 9.0,
@@ -368,14 +386,14 @@ final class LoanProposalRegistrationTest extends TestCase
             'chair_id' => $this->chair->row_id,
             'secretary_id' => $this->secretary->row_id,
             'treasurer_id' => $this->treasurer->row_id,
-            'beneficiary_ids' => [$this->beneficiaries[0]->row_id],
+            'beneficiary_ids' => [$beneficiaries[1]->row_id],
         ], (int) $this->user->row_id);
         $loan2->update(['status' => 'verified']);
 
         // 3. Waiting (status waiting)
         $loan3 = app(LoanService::class)->createProposal([
             'loan_product_id' => $sppId,
-            'group_id' => $this->group->row_id,
+            'group_id' => $groups[2]->row_id,
             'proposed_at' => '2026-07-20',
             'principal_amount' => 3000000,
             'service_rate_total' => 9.0,
@@ -386,14 +404,14 @@ final class LoanProposalRegistrationTest extends TestCase
             'chair_id' => $this->chair->row_id,
             'secretary_id' => $this->secretary->row_id,
             'treasurer_id' => $this->treasurer->row_id,
-            'beneficiary_ids' => [$this->beneficiaries[0]->row_id],
+            'beneficiary_ids' => [$beneficiaries[2]->row_id],
         ], (int) $this->user->row_id);
         $loan3->update(['status' => 'waiting']);
 
         // 4. Aktif (status active / disbursed, installments principal_due > principal_paid)
         $loan4 = app(LoanService::class)->createProposal([
             'loan_product_id' => $sppId,
-            'group_id' => $this->group->row_id,
+            'group_id' => $groups[3]->row_id,
             'proposed_at' => '2026-07-20',
             'principal_amount' => 4000000,
             'service_rate_total' => 9.0,
@@ -404,14 +422,14 @@ final class LoanProposalRegistrationTest extends TestCase
             'chair_id' => $this->chair->row_id,
             'secretary_id' => $this->secretary->row_id,
             'treasurer_id' => $this->treasurer->row_id,
-            'beneficiary_ids' => [$this->beneficiaries[0]->row_id],
+            'beneficiary_ids' => [$beneficiaries[3]->row_id],
         ], (int) $this->user->row_id);
         $loan4->update(['status' => 'active']);
 
         // 5. Lunas (status active / disbursed / completed, installments principal_due = principal_paid)
         $loan5 = app(LoanService::class)->createProposal([
             'loan_product_id' => $sppId,
-            'group_id' => $this->group->row_id,
+            'group_id' => $groups[4]->row_id,
             'proposed_at' => '2026-07-20',
             'principal_amount' => 5000000,
             'service_rate_total' => 9.0,
@@ -422,7 +440,7 @@ final class LoanProposalRegistrationTest extends TestCase
             'chair_id' => $this->chair->row_id,
             'secretary_id' => $this->secretary->row_id,
             'treasurer_id' => $this->treasurer->row_id,
-            'beneficiary_ids' => [$this->beneficiaries[0]->row_id],
+            'beneficiary_ids' => [$beneficiaries[4]->row_id],
         ], (int) $this->user->row_id);
         $loan5->update(['status' => 'active']);
         DB::connection('tenant')->table('loan_installments')

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AppBadge from '../../Components/AppBadge.vue';
@@ -52,7 +54,7 @@ function resetTenantFilter() {
                 <div>
                     <h1 class="text-2xl font-bold text-primary">Dashboard Kabupaten {{ regency_name }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Rekapitulasi dan monitoring keuangan gabungan seluruh kecamatan (UPK DBM).
+                        {{ t('Rekapitulasi dan monitoring keuangan gabungan seluruh kecamatan (UPK DBM).') }}
                     </p>
                 </div>
 
@@ -62,7 +64,7 @@ function resetTenantFilter() {
                         <SmartSelect
                             v-model="selectedMonth"
                             :options="monthOptions"
-                            label="Bulan"
+                            :label="t('Bulan')"
                             value-key="value"
                             label-key="label"
                             hide-label
@@ -74,7 +76,7 @@ function resetTenantFilter() {
                         <SmartSelect
                             v-model="selectedYear"
                             :options="yearOptions"
-                            label="Tahun"
+                            :label="t('Tahun')"
                             value-key="value"
                             label-key="label"
                             hide-label
@@ -82,7 +84,7 @@ function resetTenantFilter() {
                         />
                     </div>
 
-                    <AppButton variant="secondary" icon="refresh" @click="applyFilter">Muat Ulang</AppButton>
+                    <AppButton variant="secondary" icon="refresh" @click="applyFilter">{{ t('Muat Ulang') }}</AppButton>
                 </div>
             </div>
 
@@ -91,7 +93,7 @@ function resetTenantFilter() {
                 <!-- Total Perputaran Dana -->
                 <AppCard class="relative overflow-hidden">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-semibold text-on-surface-variant">Perputaran Dana (YTD)</span>
+                        <span class="text-sm font-semibold text-on-surface-variant">{{ t('Perputaran Dana (YTD)') }}</span>
                         <AppIcon name="sync_alt" tone="primary" :container-size="9" />
                     </div>
                     <p class="mt-3 text-2xl font-bold text-primary">{{ money(metrics.summary.total_turnover) }}</p>
@@ -101,30 +103,30 @@ function resetTenantFilter() {
                 <!-- Akumulasi Aset Gabungan -->
                 <AppCard class="relative overflow-hidden">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-semibold text-on-surface-variant">Akumulasi Aset Gabungan</span>
+                        <span class="text-sm font-semibold text-on-surface-variant">{{ t('Akumulasi Aset Gabungan') }}</span>
                         <AppIcon name="account_balance" tone="success" :container-size="9" />
                     </div>
                     <p class="mt-3 text-2xl font-bold text-primary">{{ money(metrics.summary.total_assets) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">Kas, Bank, Piutang, & Investasi Gabungan</p>
+                    <p class="mt-1 text-xs text-on-surface-variant">{{ t('Kas, Bank, Piutang, & Investasi Gabungan') }}</p>
                 </AppCard>
 
                 <!-- Rasio NPL Rata-rata Kabupaten -->
                 <AppCard class="relative overflow-hidden">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-semibold text-on-surface-variant">Rasio NPL Rata-rata</span>
+                        <span class="text-sm font-semibold text-on-surface-variant">{{ t('Rasio NPL Rata-rata') }}</span>
                         <AppIcon name="health_and_safety" :tone="metrics.summary.npl_tone || 'success'" :container-size="9" />
                     </div>
                     <div class="mt-3 flex items-center justify-between gap-2">
                         <p class="text-2xl font-bold text-primary">{{ Number(metrics.summary.avg_npl_ratio || 0).toFixed(1) }}%</p>
                         <AppBadge :tone="metrics.summary.npl_tone || 'success'">{{ metrics.summary.npl_status }}</AppBadge>
                     </div>
-                    <p class="mt-1 text-xs text-on-surface-variant">Tunggakan Pokok: {{ money(metrics.summary.total_tunggakan_pokok) }}</p>
+                    <p class="mt-1 text-xs text-on-surface-variant">{{ t('Tunggakan Pokok:') }} {{ money(metrics.summary.total_tunggakan_pokok) }}</p>
                 </AppCard>
 
                 <!-- Laba Bersih YTD -->
                 <AppCard class="relative overflow-hidden">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-semibold text-on-surface-variant">Kas & Bank Saat Ini</span>
+                        <span class="text-sm font-semibold text-on-surface-variant">{{ t('Kas & Bank Saat Ini') }}</span>
                         <AppIcon name="account_balance_wallet" tone="primary" :container-size="9" />
                     </div>
                     <p class="mt-3 text-2xl font-bold text-primary">{{ money(metrics.summary.total_cash) }}</p>
@@ -147,21 +149,21 @@ function resetTenantFilter() {
             <AppCard>
                 <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                     <div>
-                        <h2 class="font-bold text-primary">Laporan Keuangan Konsolidasi</h2>
-                        <p class="text-xs text-on-surface-variant">Buka laporan detail gabungan seluruh kecamatan atau filter per kecamatan.</p>
+                        <h2 class="font-bold text-primary">{{ t('Laporan Keuangan Konsolidasi') }}</h2>
+                        <p class="text-xs text-on-surface-variant">{{ t('Buka laporan detail gabungan seluruh kecamatan atau filter per kecamatan.') }}</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <Link :href="`/regency/reports/balance-sheet?year=${selectedYear}&month=${selectedMonth || ''}`">
-                            <AppButton variant="secondary" icon="account_balance">Neraca</AppButton>
+                            <AppButton variant="secondary" icon="account_balance">{{ t('Neraca') }}</AppButton>
                         </Link>
                         <Link :href="`/regency/reports/income-statement?year=${selectedYear}&month=${selectedMonth || ''}`">
-                            <AppButton variant="secondary" icon="trending_up">Laba Rugi</AppButton>
+                            <AppButton variant="secondary" icon="trending_up">{{ t('Laba Rugi') }}</AppButton>
                         </Link>
                         <Link :href="`/regency/reports/general-ledger?year=${selectedYear}&month=${selectedMonth || ''}`">
-                            <AppButton variant="secondary" icon="menu_book">Buku Besar</AppButton>
+                            <AppButton variant="secondary" icon="menu_book">{{ t('Buku Besar') }}</AppButton>
                         </Link>
                         <Link :href="`/regency/reports/cash-flow?year=${selectedYear}&month=${selectedMonth || ''}`">
-                            <AppButton variant="secondary" icon="payments">Arus Kas</AppButton>
+                            <AppButton variant="secondary" icon="payments">{{ t('Arus Kas') }}</AppButton>
                         </Link>
                         <Link :href="`/regency/reports/calk?year=${selectedYear}&month=${selectedMonth || ''}`">
                             <AppButton variant="secondary" icon="description">CALK</AppButton>
@@ -174,14 +176,14 @@ function resetTenantFilter() {
             <AppCard :padded="false">
                 <div class="flex items-center justify-between border-b border-outline-variant px-6 py-4">
                     <div>
-                        <h2 class="font-bold text-primary">Rekapitulasi Kinerja per Kecamatan</h2>
+                        <h2 class="font-bold text-primary">{{ t('Rekapitulasi Kinerja per Kecamatan') }}</h2>
                         <p class="text-xs text-on-surface-variant mt-0.5">
-                            Daftar detail performa keuangan masing-masing kecamatan.
+                            {{ t('Daftar detail performa keuangan masing-masing kecamatan.') }}
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
                         <AppBadge v-if="selectedTenantId" tone="primary-soft">
-                            Filter Aktif
+                            {{ t('Filter Aktif') }}
                         </AppBadge>
                         <AppButton
                             v-if="selectedTenantId"
@@ -190,7 +192,7 @@ function resetTenantFilter() {
                             icon="close"
                             @click="resetTenantFilter"
                         >
-                            Reset Filter Peta
+                            {{ t('Reset Filter Peta') }}
                         </AppButton>
                     </div>
                 </div>
@@ -198,17 +200,17 @@ function resetTenantFilter() {
                     <table class="w-full text-left text-sm">
                         <thead class="bg-surface-container-low text-xs text-on-surface-variant uppercase">
                             <tr>
-                                <th class="px-6 py-3">Kode</th>
-                                <th class="px-6 py-3">Nama Kecamatan</th>
-                                <th class="px-6 py-3 text-right">Perputaran Dana</th>
-                                <th class="px-6 py-3 text-right">Total Aset</th>
-                                <th class="px-6 py-3 text-right">Kas & Bank</th>
-                                <th class="px-6 py-3 text-right">Pinjaman Aktif</th>
-                                <th class="px-6 py-3 text-right">Sisa Pokok</th>
+                                <th class="px-6 py-3">{{ t('Kode') }}</th>
+                                <th class="px-6 py-3">{{ t('Nama Kecamatan') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Perputaran Dana') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Total Aset') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Kas & Bank') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Pinjaman Aktif') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Sisa Pokok') }}</th>
                                 <th class="px-6 py-3 text-right">NPL</th>
-                                <th class="px-6 py-3 text-right">Kelompok</th>
-                                <th class="px-6 py-3 text-right">Anggota</th>
-                                <th class="px-6 py-3 text-center">Aksi</th>
+                                <th class="px-6 py-3 text-right">{{ t('Kelompok') }}</th>
+                                <th class="px-6 py-3 text-right">{{ t('Anggota') }}</th>
+                                <th class="px-6 py-3 text-center">{{ t('Aksi') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
@@ -238,13 +240,13 @@ function resetTenantFilter() {
                                 <td class="px-6 py-3 text-right">{{ kec.members_count }}</td>
                                 <td class="px-6 py-3 text-center">
                                     <Link :href="`/regency/reports/balance-sheet?tenant_id=${kec.tenant_id}&year=${selectedYear}&month=${selectedMonth || ''}`" class="text-xs font-semibold text-primary hover:underline">
-                                        Lihat Neraca →
+                                        {{ t('Lihat Neraca →') }}
                                     </Link>
                                 </td>
                             </tr>
                             <tr v-if="!metrics.kecamatans.length">
                                 <td colspan="10" class="px-6 py-8 text-center text-on-surface-variant">
-                                    Belum ada kecamatan yang terdaftar pada database shard kabupaten ini.
+                                    {{ t('Belum ada kecamatan yang terdaftar pada database shard kabupaten ini.') }}
                                 </td>
                             </tr>
                         </tbody>

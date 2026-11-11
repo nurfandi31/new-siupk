@@ -339,7 +339,7 @@ async function deleteProduct(product) {
                     :disabled="Boolean(editingProduct && editingProduct.accounts_count > 0)"
                     :hint="editingProduct && editingProduct.accounts_count > 0 ? t('Kode tidak dapat diubah karena sudah dipakai rekening.') : null"
                 />
-                <AppInput v-model="productForm.name" :label="t('Nama Jenis')" :error="productForm.errors.name" placeholder="Simpanan Pendidikan" />
+                <AppInput v-model="productForm.name" :label="t('Nama Jenis')" :error="productForm.errors.name" :placeholder="t('Simpanan Pendidikan')" />
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
                 <SmartSelect v-model="productForm.category" :label="t('Kategori')" :options="categoryOptions" :error="productForm.errors.category" />

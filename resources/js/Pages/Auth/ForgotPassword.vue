@@ -1,9 +1,12 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { Head, Link, usePage, useForm } from '@inertiajs/vue3';
 import AppButton from '../../Components/AppButton.vue';
 import AppCard from '../../Components/AppCard.vue';
 import AppIcon from '../../Components/AppIcon.vue';
 import AppInput from '../../Components/AppInput.vue';
+import AppLanguageSwitcher from '../../Components/AppLanguageSwitcher.vue';
 
 const form = useForm({ identifier: '' });
 const { props: flash } = usePage();
@@ -16,21 +19,24 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Lupa Password - siupk Next" />
+    <Head :title="t('Lupa Password - siupk Next')" />
 
-    <main class="flex min-h-screen items-center justify-center bg-surface p-6 font-sans text-on-surface sm:p-12">
+    <main class="relative flex min-h-screen items-center justify-center bg-surface p-6 font-sans text-on-surface sm:p-12">
+        <div class="absolute right-4 top-4 z-30 sm:right-6 sm:top-6">
+            <AppLanguageSwitcher align="right" tone="surface" />
+        </div>
         <div class="w-full max-w-md space-y-6">
             <header class="space-y-2 text-center">
                 <Link
                     href="/"
                     class="mx-auto grid size-12 place-items-center rounded-2xl bg-primary-container text-on-primary shadow-md"
-                    aria-label="Kembali ke beranda"
+                    :aria-label="t('Kembali ke beranda')"
                 >
                     <AppIcon name="account_balance" class="text-3xl" />
                 </Link>
-                <h1 class="text-3xl font-black tracking-tight text-primary">Lupa Password</h1>
+                <h1 class="text-3xl font-black tracking-tight text-primary">{{ t('Lupa Password') }}</h1>
                 <p class="text-sm text-on-surface-variant">
-                    Masukkan username, email, atau nomor WhatsApp terdaftar untuk menerima kode OTP.
+                    {{ t('Masukkan username, email, atau nomor WhatsApp terdaftar untuk menerima kode OTP.') }}
                 </p>
             </header>
 
@@ -46,7 +52,7 @@ function submit() {
 
                     <AppInput
                         v-model="form.identifier"
-                        label="Username, Email, atau No. WhatsApp"
+                        :label="t('Username, Email, atau No. WhatsApp')"
                         icon="person"
                         autocomplete="username"
                         placeholder="08xxxxxxxxxx"
@@ -63,7 +69,7 @@ function submit() {
                         :loading="form.processing"
                         icon="send"
                     >
-                        Kirim Kode OTP
+                        {{ t('Kirim Kode OTP') }}
                     </AppButton>
 
                     <Link
@@ -71,7 +77,7 @@ function submit() {
                         class="inline-flex items-center justify-center gap-1.5 text-sm font-bold text-primary hover:underline"
                     >
                         <AppIcon name="arrow_back" class="text-base" />
-                        Kembali ke halaman masuk
+                        {{ t('Kembali ke halaman masuk') }}
                     </Link>
                 </form>
             </AppCard>

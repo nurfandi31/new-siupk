@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue';
 import { defaultPlaceholder } from '../composables/usePlaceholderText';
 import AppIcon from './AppIcon.vue';
@@ -268,7 +270,7 @@ watch(() => props.modelValue, (value) => {
                 v-if="clearable && selectedLabel"
                 type="button"
                 :class="['absolute top-1/2 z-10 flex -translate-y-1/2 items-center justify-center rounded-full text-outline transition-all duration-150 hover:bg-surface-container-low hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary-container/20 active:scale-90', size === 'compact' ? 'right-7 h-5 w-5' : 'right-7 h-7 w-7']"
-                aria-label="Hapus pilihan"
+                :aria-label="t('Hapus pilihan')"
                 @click="clear"
             >
                 <AppIcon :name="'close'" :class="size === 'compact' ? '!text-base leading-none' : '!text-base leading-none'" />
@@ -294,11 +296,11 @@ watch(() => props.modelValue, (value) => {
                     >
                         <div v-if="searchable" class="relative mb-2 shrink-0 bg-surface-container-lowest pb-1">
                             <AppIcon name="search" class="pointer-events-none absolute left-3 top-2.5 text-base text-on-surface-variant" />
-                            <input ref="searchInput" v-model="search" type="search" class="h-9 w-full rounded-lg border border-outline-variant pl-9 pr-8 text-sm text-primary placeholder:text-on-surface-variant focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Cari..." @input="onSearch" @keydown="onKeydown">
+                            <input ref="searchInput" v-model="search" type="search" class="h-9 w-full rounded-lg border border-outline-variant pl-9 pr-8 text-sm text-primary placeholder:text-on-surface-variant focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" :placeholder="t('Cari...')" @input="onSearch" @keydown="onKeydown">
                             <button v-if="search" type="button" class="absolute right-2 top-1.5 rounded-full p-1 text-on-surface-variant transition-all duration-150 hover:text-primary active:scale-90" @click="search = ''; onSearch()"><AppIcon name="close" class="text-sm" /></button>
                         </div>
                         <div class="min-h-0 flex-1 overflow-y-auto">
-                            <div v-if="loading" class="px-3 py-4 text-center text-sm text-on-surface-variant">Memuat...</div>
+                            <div v-if="loading" class="px-3 py-4 text-center text-sm text-on-surface-variant">{{ t('Memuat...') }}</div>
                             <template v-else>
                                 <template v-for="(row, rowIndex) in visibleRows" :key="row.kind === 'header' ? `h-${row.label}-${rowIndex}` : String(row.option[valueKey])">
                                     <div
@@ -336,7 +338,7 @@ watch(() => props.modelValue, (value) => {
                                     </button>
                                 </template>
                                 <button v-if="!visibleOptions.length && emptyActionLabel && search.trim()" type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-3 text-left text-sm font-semibold text-primary transition-colors hover:bg-surface-container-low focus:bg-surface-container-low focus:outline-none" @click="runEmptyAction"><AppIcon name="person_add" class="text-xl" />{{ emptyActionLabel }}</button>
-                                <div v-else-if="!visibleOptions.length" class="px-3 py-4 text-center text-sm text-on-surface-variant">Tidak ada opsi.</div>
+                                <div v-else-if="!visibleOptions.length" class="px-3 py-4 text-center text-sm text-on-surface-variant">{{ t('Tidak ada opsi.') }}</div>
                             </template>
                         </div>
                     </div>

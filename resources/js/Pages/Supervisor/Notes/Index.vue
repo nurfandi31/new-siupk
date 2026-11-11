@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -65,7 +67,7 @@ const selectedCategory = ref<string>(props.filters.category === 'all' || props.f
 const selectedStatus = ref<string>(props.filters.status === 'all' || props.filters.status === '' ? '' : props.filters.status);
 
 const categoryOptions = computed(() => [
-    { value: '', label: 'Semua Kategori' },
+    { value: '', label: t('Semua Kategori') },
     ...Object.entries(props.categories).map(([value, label]) => ({ value, label })),
 ]);
 
@@ -113,7 +115,7 @@ function formatDateTime(value: string | null): string {
     try {
         const d = new Date(value);
         if (Number.isNaN(d.getTime())) return value;
-        return d.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+        return d.toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' });
     } catch {
         return value;
     }
@@ -121,15 +123,15 @@ function formatDateTime(value: string | null): string {
 </script>
 
 <template>
-    <Head title="Catatan Pengawas" />
+    <Head :title="t('Catatan Pengawas')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Pengawas
+                        {{ t('Pengawas') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Catatan Pengawas</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Catatan Pengawas') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         {{ period.period_label }} · Catatan & rekomendasi kinerja lembaga
                     </p>
@@ -140,39 +142,39 @@ function formatDateTime(value: string | null): string {
                     icon="add"
                     size="compact"
                 >
-                    Catatan Baru
+                    {{ t('Catatan Baru') }}
                 </AppButton>
             </div>
 
             <AppCard v-if="error" class="border border-error/30 bg-error-container/40 p-4">
                 <p class="text-sm text-error">
-                    <span class="font-bold">Gagal memuat data:</span> {{ error }}
+                    <span class="font-bold">{{ t('Gagal memuat data:') }}</span> {{ error }}
                 </p>
             </AppCard>
 
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                    <AppDatePicker v-model="selectedYear" label="Tahun" mode="year" required />
+                    <AppDatePicker v-model="selectedYear" :label="t('Tahun')" mode="year" required />
                     <AppDatePicker
                         v-model="selectedMonth"
-                        label="Bulan"
+                        :label="t('Bulan')"
                         mode="month"
                         clearable
-                        placeholder="Semua bulan"
+                        :placeholder="t('Semua bulan')"
                     />
                     <AppSelect
                         v-model="selectedCategory"
-                        label="Kategori"
+                        :label="t('Kategori')"
                         :options="categoryOptions"
                     />
                     <AppSelect
                         v-model="selectedStatus"
-                        label="Status"
+                        :label="t('Status')"
                         :options="statusOptions"
                     />
                     <div class="flex items-end">
                         <AppButton type="button" class="w-full" icon="filter_alt" @click="applyFilters">
-                            Terapkan
+                            {{ t('Terapkan') }}
                         </AppButton>
                     </div>
                 </div>
@@ -183,19 +185,19 @@ function formatDateTime(value: string | null): string {
                     <div>
                         <p class="font-bold text-primary">{{ totalCount }} catatan</p>
                         <p class="text-xs text-on-surface-variant">
-                            Daftar catatan pengawas sesuai filter
+                            {{ t('Daftar catatan pengawas sesuai filter') }}
                         </p>
                     </div>
                 </div>
 
                 <div v-if="notes.length === 0">
                     <AppEmptyState
-                        title="Belum ada catatan"
-                        description="Catatan pengawas akan tampil di sini setelah dibuat."
+                        :title="t('Belum ada catatan')"
+                        :description="t('Catatan pengawas akan tampil di sini setelah dibuat.')"
                         icon="rate_review"
                     >
                         <AppButton tag="a" href="/supervisor/notes/create" icon="add" variant="primary">
-                            Buat Catatan Pertama
+                            {{ t('Buat Catatan Pertama') }}
                         </AppButton>
                     </AppEmptyState>
                 </div>
@@ -205,13 +207,13 @@ function formatDateTime(value: string | null): string {
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
                                 <th class="px-3 py-2 text-left w-12">#</th>
-                                <th class="px-3 py-2 text-left">Periode</th>
-                                <th class="px-3 py-2 text-left">Kategori</th>
-                                <th class="px-3 py-2 text-left">Judul</th>
-                                <th class="px-3 py-2 text-left w-40">Status</th>
-                                <th class="px-3 py-2 text-left w-44">Pengawas</th>
-                                <th class="px-3 py-2 text-left w-44">Tgl. Submit</th>
-                                <th class="px-3 py-2 text-right w-32">Aksi</th>
+                                <th class="px-3 py-2 text-left">{{ t('Periode') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Kategori') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Judul') }}</th>
+                                <th class="px-3 py-2 text-left w-40">{{ t('Status') }}</th>
+                                <th class="px-3 py-2 text-left w-44">{{ t('Pengawas') }}</th>
+                                <th class="px-3 py-2 text-left w-44">{{ t('Tgl. Submit') }}</th>
+                                <th class="px-3 py-2 text-right w-32">{{ t('Aksi') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -257,14 +259,14 @@ function formatDateTime(value: string | null): string {
                                             :href="showHref(n)"
                                             class="rounded-md border border-outline-variant px-2 py-1 text-xs hover:bg-surface-container-low"
                                         >
-                                            Lihat
+                                            {{ t('Lihat') }}
                                         </a>
                                         <a
                                             v-if="n.status === 'draft'"
                                             :href="editHref(n)"
                                             class="rounded-md border border-outline-variant px-2 py-1 text-xs hover:bg-surface-container-low"
                                         >
-                                            Edit
+                                            {{ t('Edit') }}
                                         </a>
                                     </div>
                                 </td>
@@ -288,7 +290,7 @@ function formatDateTime(value: string | null): string {
                             class="rounded-md border border-outline-variant px-3 py-1 text-xs font-semibold hover:bg-surface-container-low"
                             @click="router.get('/supervisor/notes', { ...filters, month: filters.month ?? 'all', page: paginator.page - 1 }, { preserveScroll: true })"
                         >
-                            Sebelumnya
+                            {{ t('Sebelumnya') }}
                         </button>
                         <button
                             v-if="paginator.page < paginator.last_page"
@@ -296,7 +298,7 @@ function formatDateTime(value: string | null): string {
                             class="rounded-md border border-outline-variant px-3 py-1 text-xs font-semibold hover:bg-surface-container-low"
                             @click="router.get('/supervisor/notes', { ...filters, month: filters.month ?? 'all', page: paginator.page + 1 }, { preserveScroll: true })"
                         >
-                            Berikutnya
+                            {{ t('Berikutnya') }}
                         </button>
                     </div>
                 </div>
@@ -305,13 +307,13 @@ function formatDateTime(value: string | null): string {
             <AppCard class="p-5">
                 <div class="mb-3 flex items-center justify-between">
                     <h2 class="text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-                        Laporan disetujui pengawas
+                        {{ t('Laporan disetujui pengawas') }}
                     </h2>
                     <span class="text-xs text-on-surface-variant">{{ reports.length }} laporan</span>
                 </div>
 
                 <div v-if="reports.length === 0" class="rounded-lg border border-dashed border-outline-variant p-4 text-center text-sm text-on-surface-variant">
-                    Belum ada laporan yang ditandai disetujui pengawas.
+                    {{ t('Belum ada laporan yang ditandai disetujui pengawas.') }}
                 </div>
 
                 <ul v-else class="divide-y divide-outline-variant/30">

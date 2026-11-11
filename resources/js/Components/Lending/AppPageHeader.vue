@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import AppIcon from '../AppIcon.vue';
 
 defineProps({
@@ -25,7 +27,7 @@ defineProps({
         ></div>
 
         <div class="relative px-5 py-5 sm:px-7 sm:py-6">
-            <nav v-if="breadcrumbs.length" class="flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant" aria-label="Breadcrumb">
+            <nav v-if="breadcrumbs.length" class="flex flex-wrap items-center gap-1.5 text-xs text-on-surface-variant" :aria-label="t('Breadcrumb')">
                 <template v-for="(crumb, idx) in breadcrumbs" :key="idx">
                     <Link
                         v-if="crumb.href && idx < breadcrumbs.length - 1"

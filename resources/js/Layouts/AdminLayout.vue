@@ -40,22 +40,24 @@ function navLabel(label) {
     return t(label);
 }
 
-const navigation = [
-    { label: 'Beranda', icon: 'dashboard', href: '/admin', exact: true },
-    { label: 'Tenant', icon: 'domain', href: '/admin/tenants', exact: true },
-    { label: 'Tambah Tenant', icon: 'domain_add', href: '/admin/tenants/create', exact: true },
-    { label: 'Plan', icon: 'workspace_premium', href: '/admin/plans' },
-    { label: 'Invoice', icon: 'receipt_long', href: '/admin/invoices' },
-    { label: 'Pendapatan', icon: 'monitoring', href: '/admin/revenue' },
-    { label: 'Log Audit', icon: 'history', href: '/admin/audit-logs' },
-    { label: 'Pengguna Platform', icon: 'group', href: '/admin/users' },
-    { label: 'Shard & Cutover', icon: 'storage', href: '/admin/shards' },
-    { label: 'WhatsApp', icon: 'chat', href: '/admin/whatsapp' },
-    { label: 'Platform Settings', icon: 'tune', href: '/admin/settings' },
-    { label: 'Payment Gateway', icon: 'payments', href: '/admin/payment-gateways' },
-    { label: 'AI Assistant', icon: 'smart_toy', href: '/admin/ai-assistant' },
-    { label: 'Migrasi Data', icon: 'transform', href: '/admin/migration' },
-];
+const navigation = computed(() =>
+    [
+        { label: t('Beranda'), icon: 'dashboard', href: '/admin', exact: true },
+        { label: t('Tambah Tenant'), icon: 'domain_add', href: '/admin/tenants/create', exact: true },
+        { label: t('Tenant'), icon: 'domain', href: '/admin/tenants', exact: true },
+        { label: t('Plan'), icon: 'workspace_premium', href: '/admin/plans' },
+        { label: t('Invoice'), icon: 'receipt_long', href: '/admin/invoices' },
+        { label: t('Pendapatan'), icon: 'monitoring', href: '/admin/revenue' },
+        { label: t('Log Audit'), icon: 'history', href: '/admin/audit-logs' },
+        { label: t('Pengguna Platform'), icon: 'group', href: '/admin/users' },
+        { label: t('Shard & Cutover'), icon: 'storage', href: '/admin/shards' },
+        { label: t('WhatsApp'), icon: 'chat', href: '/admin/whatsapp' },
+        { label: t('Platform Settings'), icon: 'tune', href: '/admin/settings' },
+        { label: t('Payment Gateway'), icon: 'payments', href: '/admin/payment-gateways' },
+        { label: t('AI Assistant'), icon: 'smart_toy', href: '/admin/ai-assistant', requiresAssistant: true },
+        { label: t('Migrasi Data'), icon: 'transform', href: '/admin/migration' },
+    ].filter((item) => !item.requiresAssistant || page.props.assistant?.available !== false),
+);
 
 function isActive(item) {
     if (!item.href) return false;
@@ -154,7 +156,7 @@ function logout() {
                 </div>
                 <div class="min-w-0 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && 'lg:hidden'">
                     <p class="truncate font-bold leading-none text-white">{{ t('Platform Admin') }}</p>
-                    <p class="mt-1 truncate text-[10px] font-semibold uppercase tracking-widest text-zinc-400">siupk Next</p>
+                    <p class="mt-1 truncate text-[10px] font-semibold uppercase tracking-widest text-zinc-400">{{ t('siupk Next') }}</p>
                 </div>
             </div>
 
@@ -235,7 +237,7 @@ function logout() {
                 >
                     <span class="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'Admin'" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'A' }}</span></span>
                     <span class="hidden min-w-0 flex-col leading-tight sm:flex">
-                        <span class="truncate text-xs font-bold text-primary">{{ user?.name || 'Superadmin' }}</span>
+                        <span class="truncate text-xs font-bold text-primary">{{ user?.name || t('Superadmin') }}</span>
                         <span class="truncate text-[10px] font-medium text-on-surface-variant">{{ t('Superadmin Platform') }}</span>
                     </span>
                 </Link>
@@ -262,7 +264,7 @@ function logout() {
 
         <AppModal v-model="logoutOpen" :title="t('Keluar dari Panel Admin?')" size="sm">
             <p class="text-sm text-on-surface-variant">
-                {{ t('Sesi') }} <span class="font-semibold text-primary">{{ user?.name || 'Admin' }}</span> {{ t('akan diakhiri. Lanjutkan?') }}
+                {{ t('Sesi') }} <span class="font-semibold text-primary">{{ user?.name || t('Admin') }}</span> {{ t('akan diakhiri. Lanjutkan?') }}
             </p>
             <template #footer>
                 <AppButton variant="secondary" :disabled="logoutForm.processing" @click="logoutOpen = false">{{ t('Batal') }}</AppButton>

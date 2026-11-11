@@ -9,6 +9,7 @@ use App\Domain\Membership\Models\OrganizationProfile;
 use App\Domain\Savings\Services\SavingsModuleManager;
 use App\Services\OfflineAccessService;
 use App\Tenancy\TenantContext;
+use Enpii\Assistant\Services\Tools\ToolRegistry;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Throwable;
@@ -144,10 +145,15 @@ final class HandleInertiaRequests extends Middleware
 
     private function resolveAssistant(Request $request): array
     {
-        $enabled = $request->user() !== null
+        // Paket enpii/assistant bersifat opsional. Bila tidak terpasang,
+        // widget & menu disembunyikan agar UI tidak memanggil route yang tiada.
+        $available = class_exists(ToolRegistry::class);
+        $enabled = $available
+            && $request->user() !== null
             && app(PermissionChecker::class)->allows($request->user(), 'assistant.use');
 
         return [
+            'available' => $available,
             'enabled' => $enabled,
             'public_url' => $enabled ? url('/') : null,
         ];

@@ -95,18 +95,40 @@ final class LoanInstallmentJournalRequest extends FormRequest
                 );
             }
 
-            // Mirror SIUPK: jika installment_row_id ditentukan, validasi
-            // bahwa nominal tidak melebihi sisa tagihan angsuran tsb.
+            // Mirror SIUPK: jika installment_row_id / installment_number ditentukan,
+            // validasi bahwa nominal tidak melebihi sisa tagihan angsuran tsb.
+            // Untuk jadwal split (baris principal & interest terpisah), sisa
+            // dihitung dari total kelompok nomor angsuran, bukan satu baris saja.
             $installmentRowId = (int) $this->input('installment_row_id', 0);
-            if ($installmentRowId > 0) {
+            $installmentNumber = (int) $this->input('installment_number', 0);
+            if ($installmentRowId > 0 || $installmentNumber > 0) {
                 $tenantId = app(TenantContext::class)->id();
-                $inst = LoanInstallment::query()
+                $query = LoanInstallment::query()
                     ->where('tenant_id', $tenantId)
-                    ->where('row_id', $installmentRowId)
-                    ->first(['row_id', 'principal_due', 'principal_paid', 'interest_due', 'interest_paid']);
-                if ($inst) {
-                    $remainingP = round((float) $inst->principal_due - (float) $inst->principal_paid, 2);
-                    $remainingI = round((float) $inst->interest_due - (float) $inst->interest_paid, 2);
+                    ->where('loan_row_id', (int) $this->input('loan_id'));
+
+                $number = null;
+                if ($installmentRowId > 0) {
+                    $number = LoanInstallment::query()
+                        ->where('tenant_id', $tenantId)
+                        ->where('row_id', $installmentRowId)
+                        ->value('installment_number');
+                    if ($number === null) {
+                        $query->whereRaw('1 = 0');
+                    } else {
+                        $query->where('installment_number', (int) $number);
+                    }
+                } else {
+                    $query->where('installment_number', $installmentNumber);
+                }
+
+                $rows = $query->get(['principal_due', 'principal_paid', 'interest_due', 'interest_paid']);
+                if ($rows->isNotEmpty()) {
+                    $remainingP = (float) $rows->sum(fn ($row) => (float) $row->principal_due - (float) $row->principal_paid);
+                    $remainingI = (float) $rows->sum(fn ($row) => (float) $row->interest_due - (float) $row->interest_paid);
+                    $remainingP = round(max(0.0, $remainingP), 2);
+                    $remainingI = round(max(0.0, $remainingI), 2);
+
                     if ($principalAmount > $remainingP + 0.005) {
                         $validator->errors()->add(
                             'principal_amount',

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { useId } from 'vue';
 import AppIcon from './AppIcon.vue';
 
@@ -41,7 +43,7 @@ const switchId = props.id || useId();
         >
             <span class="flex min-w-0 items-center gap-3">
                 <AppIcon v-if="icon" :name="icon" class="shrink-0 text-lg text-outline" />
-                <span class="truncate text-sm font-medium text-primary">{{ model ? (description || 'Aktif') : (description || 'Nonaktif') }}</span>
+                <span class="truncate text-sm font-medium text-primary">{{ model ? (description || t('Aktif')) : (description || t('Nonaktif')) }}</span>
             </span>
             <span class="relative inline-flex shrink-0">
                 <input :id="switchId" v-model="model" type="checkbox" role="switch" class="peer sr-only" :disabled="disabled">

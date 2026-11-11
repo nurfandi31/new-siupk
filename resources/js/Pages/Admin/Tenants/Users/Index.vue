@@ -7,9 +7,11 @@ import AppCard from '../../../../Components/AppCard.vue';
 import AppIconButton from '../../../../Components/AppIconButton.vue';
 import SmartDataTable from '../../../../Components/SmartDataTable.vue';
 import AdminLayout from '../../../../Layouts/AdminLayout.vue';
+import { useToast } from '../../../../composables/useToast';
 import { useI18n } from '../../../../i18n';
 
 const { t } = useI18n();
+const toast = useToast();
 
 const props = defineProps({
     tenant: { type: Object, required: true },
@@ -41,26 +43,26 @@ async function autoLoginUser(user) {
 
         const data = await response.json();
         if (!response.ok || !data.redirect_url) {
-            alert(data.message || t('Gagal membuat sesi auto-login.'));
+            toast.error(data.message || t('Gagal membuat sesi auto-login.'));
             return;
         }
 
         window.open(data.redirect_url, '_blank');
     } catch (err) {
         console.error(err);
-        alert(t('Terjadi kesalahan saat memulai auto-login.'));
+        toast.error(t('Terjadi kesalahan saat memulai auto-login.'));
     } finally {
         impersonatingUserId.value = null;
     }
 }
 
 const columns = [
-    { key: 'name', label: 'Nama', sortable: true },
-    { key: 'username', label: 'Username' },
-    { key: 'email', label: 'Email' },
-    { key: 'role', label: 'Role' },
-    { key: 'status', label: 'Status' },
-    { key: 'last_login_at', label: 'Login terakhir' },
+    { key: 'name', label: t('Nama'), sortable: true },
+    { key: 'username', label: t('Username') },
+    { key: 'email', label: t('Email') },
+    { key: 'role', label: t('Role') },
+    { key: 'status', label: t('Status') },
+    { key: 'last_login_at', label: t('Login terakhir') },
 ];
 </script>
 
@@ -113,7 +115,7 @@ const columns = [
                                 :aria-label="t('Auto login sebagai user ini')"
                                 @click="autoLoginUser(row)"
                             >
-                                Auto Login
+                                {{ t('Auto Login') }}
                             </AppButton>
                             <Link :href="`/admin/tenants/${tenant.row_id}/users/${row.row_id}/edit`">
                                 <AppButton variant="ghost" size="compact" icon="edit">{{ t('Edit') }}</AppButton>

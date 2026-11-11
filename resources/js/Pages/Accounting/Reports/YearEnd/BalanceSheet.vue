@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppBadge from '../../../../Components/AppBadge.vue';
@@ -49,15 +51,15 @@ const pdfHref = computed(() => {
 </script>
 
 <template>
-    <Head title="Neraca Tutup Buku" />
+    <Head :title="t('Neraca Tutup Buku')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Pelaporan · Tutup Buku
+                        {{ t('Pelaporan · Tutup Buku') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Neraca Tutup Buku</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Neraca Tutup Buku') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         Posisi per {{ as_of }} · Tahun Buku {{ year }}
                     </p>
@@ -65,7 +67,7 @@ const pdfHref = computed(() => {
                 <div class="flex flex-wrap items-center gap-2">
                     <AppBadge tone="warning">PREVIEW / SIMULASI</AppBadge>
                     <AppBadge :tone="balanced ? 'success' : 'error'">
-                        {{ balanced ? 'Aset = Liabilitas+Ekuitas' : 'Tidak seimbang' }}
+                        {{ balanced ? 'Aset = Liabilitas+Ekuitas' : t('Tidak seimbang') }}
                     </AppBadge>
                     <a :href="pdfHref" target="_blank" rel="noopener">
                         <AppButton variant="secondary" icon="picture_as_pdf" size="compact">PDF</AppButton>
@@ -77,7 +79,7 @@ const pdfHref = computed(() => {
                 <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                            Tahun Buku
+                            {{ t('Tahun Buku') }}
                         </label>
                         <select
                             class="w-full rounded-xl border border-outline-variant bg-surface px-3 py-2 text-sm"
@@ -91,7 +93,7 @@ const pdfHref = computed(() => {
                     </div>
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                            Tanggal As-of
+                            {{ t('Tanggal As-of') }}
                         </label>
                         <input
                             readonly
@@ -101,7 +103,7 @@ const pdfHref = computed(() => {
                     </div>
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                            Laba Tahun Berjalan (sudah dipindah)
+                            {{ t('Laba Tahun Berjalan (sudah dipindah)') }}
                         </label>
                         <input
                             readonly
@@ -114,15 +116,15 @@ const pdfHref = computed(() => {
 
             <div class="grid gap-3 sm:grid-cols-3">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Aktiva</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Aktiva') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ money.format(totals.assets) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Pasiva</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Pasiva') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ money.format(totals.liabilities_equity) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Selisih</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Selisih') }}</p>
                     <p
                         class="mt-2 text-xl font-bold"
                         :class="Math.abs(totals.assets - totals.liabilities_equity) < 0.01 ? 'text-primary' : 'text-error'"
@@ -136,15 +138,15 @@ const pdfHref = computed(() => {
                 <table class="min-w-full text-sm">
                     <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                         <tr>
-                            <th class="px-3 py-2 text-left w-28">Kode</th>
-                            <th class="px-3 py-2 text-left">Nama Akun</th>
-                            <th class="px-3 py-2 text-right w-40">Saldo</th>
+                            <th class="px-3 py-2 text-left w-28">{{ t('Kode') }}</th>
+                            <th class="px-3 py-2 text-left">{{ t('Nama Akun') }}</th>
+                            <th class="px-3 py-2 text-right w-40">{{ t('Saldo') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="sections.length === 0">
                             <td colspan="3" class="px-3 py-8 text-center text-on-surface-variant">
-                                Belum ada data neraca.
+                                {{ t('Belum ada data neraca.') }}
                             </td>
                         </tr>
                         <template v-for="l1 in sections" :key="l1.code">
@@ -178,7 +180,7 @@ const pdfHref = computed(() => {
                     </tbody>
                     <tfoot>
                         <tr class="border-t-2 border-outline bg-surface-container font-bold">
-                            <td class="px-3 py-2" colspan="2">Jumlah Liabilitas + Ekuitas</td>
+                            <td class="px-3 py-2" colspan="2">{{ t('Jumlah Liabilitas + Ekuitas') }}</td>
                             <td class="px-3 py-2 text-right tabular-nums">
                                 {{ money.format(totals.liabilities_equity) }}
                             </td>
@@ -198,7 +200,7 @@ const pdfHref = computed(() => {
                     <strong class="text-on-surface">Catatan:</strong> Neraca ini adalah PREVIEW/SIMULASI yang
                     ditampilkan SETELAH jurnal tutup buku diposting. Akun nominal (pendapatan &amp; beban) sudah
                     dinolkan dan laba tahun berjalan sudah direklas ke Laba Ditahan. Posisi akhir sesuai Neraca
-                    posisi 31 Desember {{ year }}.
+                    posisi {{ t('31 Desember') }} {{ year }}.
                 </p>
             </AppCard>
         </div>

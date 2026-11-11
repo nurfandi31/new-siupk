@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -60,19 +62,19 @@ const selectedStatus = ref(props.filters.status ?? 'all');
 const selectedCreditorType = ref(props.filters.creditor_type ?? 'all');
 
 const monthOptions = [
-    { value: 'all', label: 'Semua bulan' },
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: 'all', label: t('Semua bulan') },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -85,20 +87,20 @@ const yearOptions = computed(() => {
 });
 
 const statusOptions = [
-    { value: 'all', label: 'Semua Status' },
-    { value: 'active', label: 'Aktif' },
-    { value: 'paid', label: 'Lunas' },
-    { value: 'written_off', label: 'Dihapusbukukan' },
-    { value: 'restructured', label: 'Restrukturisasi' },
+    { value: 'all', label: t('Semua Status') },
+    { value: 'active', label: t('Aktif') },
+    { value: 'paid', label: t('Lunas') },
+    { value: 'written_off', label: t('Dihapusbukukan') },
+    { value: 'restructured', label: t('Restrukturisasi') },
 ];
 
 const creditorTypeOptions = [
-    { value: 'all', label: 'Semua Kreditur' },
-    { value: 'bank', label: 'Bank Umum' },
-    { value: 'lembaga_keuangan', label: 'Lembaga Keuangan' },
-    { value: 'donor', label: 'Donor / Hibah' },
-    { value: 'pemerintah', label: 'Pemerintah' },
-    { value: 'lainnya', label: 'Lainnya' },
+    { value: 'all', label: t('Semua Kreditur') },
+    { value: 'bank', label: t('Bank Umum') },
+    { value: 'lembaga_keuangan', label: t('Lembaga Keuangan') },
+    { value: 'donor', label: t('Donor / Hibah') },
+    { value: 'pemerintah', label: t('Pemerintah') },
+    { value: 'lainnya', label: t('Lainnya') },
 ];
 
 const money = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
@@ -131,7 +133,7 @@ const pdfUrl = computed(() => {
 function formatDate(value: string | null): string {
     if (!value) return '—';
     try {
-        return new Date(value).toLocaleDateString('id-ID', {
+        return new Date(value).toLocaleDateString(dateLocale(), {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
@@ -147,15 +149,15 @@ function badgeTone(tone: string): string {
 </script>
 
 <template>
-    <Head title="DRPY — Pinjaman Diterima (OJK)" />
+    <Head :title="t('DRPY — Pinjaman Diterima (OJK)')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Laporan OJK · DRPY
+                        {{ t('Laporan OJK · DRPY') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Rincian Pinjaman Diterima</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Rincian Pinjaman Diterima') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Daftar pinjaman dari pihak ketiga yang diterima pada periode
                         <span class="font-semibold text-primary">{{ period_label }}</span>
@@ -166,7 +168,7 @@ function badgeTone(tone: string): string {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -176,19 +178,19 @@ function badgeTone(tone: string): string {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Status</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Status') }}</label>
                         <SmartSelect v-model="selectedStatus" :options="statusOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Jenis Kreditur</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Jenis Kreditur') }}</label>
                         <SmartSelect v-model="selectedCreditorType" :options="creditorTypeOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -197,19 +199,19 @@ function badgeTone(tone: string): string {
             <!-- Summary tiles -->
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jumlah Pinjaman</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Pinjaman') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.count }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Pokok') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.principal_total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Sisa Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Sisa Pokok') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.principal_remaining_total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Status</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Status') }}</p>
                     <div class="mt-2 flex flex-wrap gap-2 text-xs">
                         <AppBadge tone="success">{{ totals.active_count }} Aktif</AppBadge>
                         <AppBadge tone="neutral">{{ totals.paid_count }} Lunas</AppBadge>
@@ -223,17 +225,17 @@ function badgeTone(tone: string): string {
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                         <tr class="border-b border-outline-variant/30">
-                            <th class="p-3 text-center w-12">No</th>
-                            <th class="p-3 text-left">Kreditur</th>
-                            <th class="p-3 text-left">No. Kontrak</th>
-                            <th class="p-3 text-center">Tgl Kontrak</th>
-                            <th class="p-3 text-right">Pokok</th>
-                            <th class="p-3 text-right">Sisa Pokok</th>
-                            <th class="p-3 text-center">Bunga</th>
-                            <th class="p-3 text-center">Tenor</th>
-                            <th class="p-3 text-center">Jatuh Tempo</th>
-                            <th class="p-3 text-center">Status</th>
-                            <th class="p-3 text-left">Tujuan</th>
+                            <th class="p-3 text-center w-12">{{ t('No') }}</th>
+                            <th class="p-3 text-left">{{ t('Kreditur') }}</th>
+                            <th class="p-3 text-left">{{ t('No. Kontrak') }}</th>
+                            <th class="p-3 text-center">{{ t('Tgl Kontrak') }}</th>
+                            <th class="p-3 text-right">{{ t('Pokok') }}</th>
+                            <th class="p-3 text-right">{{ t('Sisa Pokok') }}</th>
+                            <th class="p-3 text-center">{{ t('Bunga') }}</th>
+                            <th class="p-3 text-center">{{ t('Tenor') }}</th>
+                            <th class="p-3 text-center">{{ t('Jatuh Tempo') }}</th>
+                            <th class="p-3 text-center">{{ t('Status') }}</th>
+                            <th class="p-3 text-left">{{ t('Tujuan') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-outline-variant/20">
@@ -272,8 +274,8 @@ function badgeTone(tone: string): string {
             <AppCard v-else class="p-8 text-center">
                 <AppEmptyState
                     icon="account_balance"
-                    title="Belum ada pinjaman diterima"
-                    description="Belum ada data pinjaman dari pihak ketiga pada periode ini."
+                    :title="t('Belum ada pinjaman diterima')"
+                    :description="t('Belum ada data pinjaman dari pihak ketiga pada periode ini.')"
                 />
             </AppCard>
         </div>

@@ -23,56 +23,56 @@ const activeSection = ref('');
 const showScrollTop = ref(false);
 
 const navLinks = [
-    { id: 'fitur', label: 'Fitur Unggulan' },
-    { id: 'alur', label: 'Alur Kerja' },
-    { id: 'statistik', label: 'Capaian' },
-    { id: 'faq', label: 'Tanya Jawab' },
+    { id: 'fitur', label: t('Fitur Unggulan') },
+    { id: 'alur', label: t('Alur Kerja') },
+    { id: 'statistik', label: t('Capaian') },
+    { id: 'faq', label: t('Tanya Jawab') },
 ];
 
 const features = [
     {
         code: '01',
         icon: 'account_balance',
-        title: 'Pengelolaan Dana Bergulir',
-        desc: 'Pinjaman kelompok, angsuran, dan kolektibilitas per pemanfaat.',
+        title: t('Pengelolaan Dana Bergulir'),
+        desc: t('Pinjaman kelompok, angsuran, dan kolektibilitas per pemanfaat.'),
     },
     {
         code: '02',
         icon: 'bar_chart',
-        title: 'Konsolidasi Keuangan Kabupaten',
-        desc: 'Portal pengawas untuk Dinas PMD & Inspektorat se-wilayah.',
+        title: t('Konsolidasi Keuangan Kabupaten'),
+        desc: t('Portal pengawas untuk Dinas PMD & Inspektorat se-wilayah.'),
     },
     {
         code: '03',
         icon: 'smart_toy',
-        title: 'AI Assistant & Regulasi',
-        desc: 'Analisis data, proyeksi keuangan, dan konsultasi SOP.',
+        title: t('AI Assistant & Regulasi'),
+        desc: t('Analisis data, proyeksi keuangan, dan konsultasi SOP.'),
     },
     {
         code: '04',
         icon: 'qr_code_2',
-        title: 'Tagihan Otomatis & QRIS',
-        desc: 'Pembayaran via QRIS dan Virtual Account bank nasional.',
+        title: t('Tagihan Otomatis & QRIS'),
+        desc: t('Pembayaran via QRIS dan Virtual Account bank nasional.'),
     },
     {
         code: '05',
         icon: 'chat',
-        title: 'Notifikasi WhatsApp',
-        desc: 'Slip pencairan, struk angsuran, dan pengingat jatuh tempo.',
+        title: t('Notifikasi WhatsApp'),
+        desc: t('Slip pencairan, struk angsuran, dan pengingat jatuh tempo.'),
     },
     {
         code: '06',
         icon: 'shield',
-        title: 'Keamanan & Isolasi Data',
-        desc: 'Basis data terisolasi per BUMDesma untuk kerahasiaan.',
+        title: t('Keamanan & Isolasi Data'),
+        desc: t('Basis data terisolasi per BUMDesma untuk kerahasiaan.'),
     },
 ];
 
 const stats = [
-    { label: 'Kecamatan / BUMDesma Siap Terlayani', target: 500, suffix: '+', icon: 'location_city' },
-    { label: 'Kelompok Pemanfaat Dikelola', target: 12500, suffix: '+', icon: 'groups', formatNumber: true },
-    { label: 'Posting Jurnal Otomatis', target: 100, suffix: '%', icon: 'receipt_long' },
-    { label: 'Akurasi Konsolidasi Laporan', target: 99.9, suffix: '%', icon: 'verified', isDecimal: true },
+    { label: t('Isolasi Basis Data per BUMDesma'), target: 100, suffix: '%', icon: 'shield' },
+    { label: t('Posting Jurnal Akuntansi Otomatis'), target: 100, suffix: '%', icon: 'receipt_long' },
+    { label: t('Jejak Audit Setiap Transaksi'), target: 100, suffix: '%', icon: 'fact_check' },
+    { label: t('Kepatuhan Standar SAK EP/ETAP'), target: 100, suffix: '%', icon: 'verified' },
 ];
 
 const statCounters = ref(stats.map(() => 0));
@@ -94,8 +94,8 @@ function formatStat(idx) {
 const steps = [
     {
         num: '01',
-        title: 'Registrasi & Alokasi Tenant',
-        desc: 'Pendaftaran BUMDesma LKD untuk mendapatkan alokasi basis data terisolasi yang aman dan siap pakai.',
+        title: t('Registrasi & Alokasi Tenant'),
+        desc: t('Pendaftaran BUMDesma LKD untuk mendapatkan alokasi basis data terisolasi yang aman dan siap pakai.'),
         icon: 'how_to_reg',
         role: 'Tim Teknis + Pengurus BUMDesma',
         duration: '1–3 hari kerja',
@@ -108,8 +108,8 @@ const steps = [
     },
     {
         num: '02',
-        title: 'Migrasi & Saldo Awal',
-        desc: 'Fasilitas Import Wizard pintar untuk memindahkan data master kelompok, anggota, dan saldo awal dari sistem sebelumnya.',
+        title: t('Migrasi & Saldo Awal'),
+        desc: t('Fasilitas Import Wizard pintar untuk memindahkan data master kelompok, anggota, dan saldo awal dari sistem sebelumnya.'),
         icon: 'database',
         role: 'Tim Teknis + Bendahara',
         duration: '3–7 hari kerja',
@@ -122,8 +122,8 @@ const steps = [
     },
     {
         num: '03',
-        title: 'Operasional Harian',
-        desc: 'Pencatatan pinjaman, pembayaran angsuran, kas/bank, dan jurnal akuntansi otomatis sesuai standar SAK Entitas Privat.',
+        title: t('Operasional Harian'),
+        desc: t('Pencatatan pinjaman, pembayaran angsuran, kas/bank, dan jurnal akuntansi otomatis sesuai standar SAK Entitas Privat.'),
         icon: 'monitoring',
         role: 'Operator BUMDesma (mandiri)',
         duration: 'Berjalan otomatis setiap hari',
@@ -136,8 +136,8 @@ const steps = [
     },
     {
         num: '04',
-        title: 'Laporan & Pengawasan Pemda',
-        desc: 'Penerbitan laporan resmi berkala untuk pertanggungjawaban musyawarah antar desa (MAD) dan monitoring dinas terkait.',
+        title: t('Laporan & Pengawasan Pemda'),
+        desc: t('Penerbitan laporan resmi berkala untuk pertanggungjawaban musyawarah antar desa (MAD) dan monitoring dinas terkait.'),
         icon: 'assessment',
         role: 'Pengurus + Dinas PMD/Inspektorat',
         duration: 'Bulanan & tahunan',
@@ -157,38 +157,38 @@ function setActiveStep(idx) {
 
 const trustLogos = [
     {
-        label: 'PP No. 11/2021',
-        sub: 'Regulasi BUMDesma',
+        label: t('PP No. 11/2021'),
+        sub: t('Regulasi BUMDesma'),
         icon: 'gavel',
-        desc: 'Pendirian & pengelolaan sesuai Peraturan Pemerintah.',
+        desc: t('Pendirian & pengelolaan sesuai Peraturan Pemerintah.'),
         tone: 'primary',
     },
     {
         label: 'SAK EP / ETAP',
-        sub: 'Standar Akuntansi',
+        sub: t('Standar Akuntansi'),
         icon: 'account_balance',
-        desc: 'Bagan akun entitas mikro & privat yang teruji.',
+        desc: t('Bagan akun entitas mikro & privat yang teruji.'),
         tone: 'secondary',
     },
     {
-        label: 'Database Sharding',
-        sub: 'Isolasi Tenant',
+        label: t('Database Sharding'),
+        sub: t('Isolasi Tenant'),
         icon: 'database',
-        desc: 'Ruang data independen & terenkripsi per kecamatan.',
+        desc: t('Ruang data independen & terenkripsi per kecamatan.'),
         tone: 'tertiary',
     },
     {
-        label: 'QRIS & VA Bank',
-        sub: 'Payment Gateway',
+        label: t('QRIS & VA Bank'),
+        sub: t('Payment Gateway'),
         icon: 'payments',
-        desc: 'QRIS nasional + Virtual Account multi-bank.',
+        desc: t('QRIS nasional + Virtual Account multi-bank.'),
         tone: 'secondary',
     },
     {
-        label: 'Ollama LLM',
-        sub: 'AI Lokal',
+        label: t('Ollama LLM'),
+        sub: t('AI Lokal'),
         icon: 'smart_toy',
-        desc: 'Asisten regulasi on-prem tanpa kirim data keluar.',
+        desc: t('Asisten regulasi on-prem tanpa kirim data keluar.'),
         tone: 'tertiary',
     },
 ];
@@ -404,7 +404,7 @@ onUnmounted(() => {
                             </svg>
                         </span>
                         <span class="hidden font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-primary-fixed-dim sm:inline">{{ t('Regulasi') }}</span>
-                        <span class="font-bold tracking-[0.05em]">PP No.&nbsp;11/2021</span>
+                        <span class="font-bold tracking-[0.05em]">{{ t('PP No. 11/2021') }}</span>
                     </div>
 
                     <!-- Placeholder tengah (kosong) -->
@@ -442,7 +442,7 @@ onUnmounted(() => {
                         <AppIcon name="account_balance" class="text-2xl" />
                     </div>
                     <div>
-                        <span class="block text-lg font-black tracking-tight text-primary">siupk <span class="bg-gradient-to-r from-secondary to-secondary-container bg-clip-text text-transparent">Next</span></span>
+                        <span class="block text-lg font-black tracking-tight text-primary">siupk <span class="bg-gradient-to-r from-secondary to-secondary-container bg-clip-text text-transparent">{{ t('Next') }}</span></span>
                         <span class="block text-[10px] font-bold uppercase tracking-[0.18em] text-outline">{{ t('BUMDesma LKD Platform') }}</span>
                     </div>
                 </a>
@@ -586,11 +586,11 @@ onUnmounted(() => {
                                             <span class="size-2.5 rounded-full bg-error/80" />
                                             <span class="size-2.5 rounded-full bg-amber-400/80" />
                                             <span class="size-2.5 rounded-full bg-secondary/80" />
-                                            <span class="ml-2 text-[11px] font-black tracking-tight text-primary">UPK · Compliance Console</span>
+                                            <span class="ml-2 text-[11px] font-black tracking-tight text-primary">{{ t('UPK · Compliance Console') }}</span>
                                         </div>
                                         <span class="inline-flex items-center gap-1.5 rounded-full bg-secondary/15 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-secondary">
                                             <span class="size-1.5 rounded-full bg-secondary animate-pulse" />
-                                            Live
+                                            {{ t('Live') }}
                                         </span>
                                     </div>
 
@@ -621,7 +621,7 @@ onUnmounted(() => {
                                                 <div class="flex items-center gap-3">
                                                     <AppIcon name="database" class="text-[18px] leading-none text-primary" />
                                                     <div class="leading-tight">
-                                                        <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-outline">Shard Database</p>
+                                                        <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-outline">{{ t('Shard Database') }}</p>
                                                         <p class="text-[13px] font-bold text-on-surface">{{ t('Isolasi per BUMDesma') }}</p>
                                                     </div>
                                                 </div>
@@ -673,10 +673,10 @@ onUnmounted(() => {
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
                     <div class="mb-6 flex flex-col items-start justify-between gap-3 sm:mb-7 sm:flex-row sm:items-end">
                         <div class="space-y-1.5">
-                            <p class="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">{{ t('Skala & Kualitas Operasional') }}</p>
+                            <p class="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">{{ t('Kualitas & Kepatuhan Operasional') }}</p>
                             <h2 class="text-xl sm:text-2xl font-black leading-tight tracking-tight text-on-surface sm:max-w-md">{{ t('Bukti Nyata, Bukan Sekedar Klaim') }}</h2>
                         </div>
-                        <p class="text-xs font-medium text-on-surface-variant sm:max-w-xs sm:text-right">{{ t('Angka-angka ini dihasilkan langsung dari konsolidasi data lintas BUMDesma yang aktif menggunakan sistem.') }}</p>
+                        <p class="text-xs font-medium text-on-surface-variant sm:max-w-xs sm:text-right">{{ t('Setiap transaksi diproses otomatis, terisolasi per BUMDesma, dan dapat ditelusuri kembali melalui jejak audit.') }}</p>
                     </div>
 
                     <!-- Bento grid: hero card (left, col-span-7) + duo cards (right, col-span-5 stacked) + akurasi banner full-width di bawah -->
@@ -702,7 +702,7 @@ onUnmounted(() => {
                                     </div>
                                     <div>
                                         <p class="text-[10px] font-semibold uppercase tracking-wider text-primary-fixed-dim">{{ t(stats[1].label) }}</p>
-                                        <p class="text-[9px] font-medium uppercase tracking-wider text-on-primary/70">{{ t('Kelompok aktif terdaftar') }}</p>
+                                        <p class="text-[9px] font-medium uppercase tracking-wider text-on-primary/70">{{ t('Tanpa entri jurnal manual ganda') }}</p>
                                     </div>
                                 </div>
 
@@ -712,7 +712,7 @@ onUnmounted(() => {
                                             {{ formatStat(1) }}
                                         </p>
                                     </div>
-                                    <p class="mt-2 text-xs font-medium text-primary-fixed-dim max-w-md">{{ t('Pemanfaat resmi yang tersebar di ratusan desa, tercatat dalam sistem pembukuan digital.') }}</p>
+                                    <p class="mt-2 text-xs font-medium text-primary-fixed-dim max-w-md">{{ t('Pencatatan angsuran, pencairan, dan penutupan buku langsung membentuk jurnal yang seimbang.') }}</p>
                                 </div>
 
                                 <!-- Mini bar chart decoration -->
@@ -735,8 +735,8 @@ onUnmounted(() => {
                                         <AppIcon :name="stats[0].icon" class="text-lg" />
                                     </div>
                                     <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 ring-1 ring-amber-200">
-                                        <AppIcon name="trending_up" class="text-[11px]" />
-                                        {{ t('Nasional') }}
+                                        <AppIcon name="shield" class="text-[11px]" />
+                                        {{ t('Per Tenant') }}
                                     </span>
                                 </div>
                                 <div>
@@ -779,7 +779,7 @@ onUnmounted(() => {
                                     <AppIcon :name="stats[3].icon" class="text-lg" />
                                 </div>
                                 <div>
-                                    <p class="text-[9px] font-bold uppercase tracking-wider text-amber-300">{{ t('Standar Akurasi') }}</p>
+                                    <p class="text-[9px] font-bold uppercase tracking-wider text-amber-300">{{ t('Kepatuhan Standar') }}</p>
                                     <p class="text-xs font-bold text-white">{{ t(stats[3].label) }}</p>
                                 </div>
                             </div>
@@ -1152,7 +1152,7 @@ onUnmounted(() => {
                                             <div class="grid size-6 place-items-center rounded-full bg-primary text-on-primary">
                                                 <AppIcon name="check" class="text-sm" />
                                             </div>
-                                            <p class="text-xs font-black uppercase tracking-wider text-primary">Deliverables</p>
+                                            <p class="text-xs font-black uppercase tracking-wider text-primary">{{ t('Deliverables') }}</p>
                                         </div>
                                         <ul class="grid gap-2 sm:grid-cols-2">
                                             <li
@@ -1405,8 +1405,8 @@ onUnmounted(() => {
                             <AppIcon name="account_balance" class="text-2xl" />
                         </div>
                         <div>
-                            <p class="text-base font-black tracking-tight text-primary">siupk <span class="text-secondary">Next</span></p>
-                            <p class="text-[11px] font-semibold uppercase tracking-wider text-outline">BUMDesma & LKD Financial Information System</p>
+                            <p class="text-base font-black tracking-tight text-primary">siupk <span class="text-secondary">{{ t('Next') }}</span></p>
+                            <p class="text-[11px] font-semibold uppercase tracking-wider text-outline">{{ t('BUMDesma & LKD Financial Information System') }}</p>
                         </div>
                     </div>
 
@@ -1419,7 +1419,7 @@ onUnmounted(() => {
                 </div>
 
                 <div class="pt-2 border-t border-outline-variant/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-outline">
-                    <p>&copy; 2026 siupk Next &mdash; BUMDesma & LKD Financial Information System.</p>
+                    <p>{{ t('© 2026 siupk Next — BUMDesma & LKD Financial Information System.') }}</p>
                     <p class="inline-flex items-center gap-1.5">
                         <AppIcon name="verified" class="text-sm text-secondary" />
                         <span>{{ t('Sesuai PP No. 11/2021 & SAK EP / ETAP') }}</span>

@@ -46,18 +46,18 @@ const month = ref(props.filters.month ?? now.getMonth() + 1);
 
 const monthOptions = [
     { value: 0, label: t('Sepanjang tahun') },
-    { value: 1, label: 'Januari' },
-    { value: 2, label: 'Februari' },
-    { value: 3, label: 'Maret' },
-    { value: 4, label: 'April' },
-    { value: 5, label: 'Mei' },
-    { value: 6, label: 'Juni' },
-    { value: 7, label: 'Juli' },
-    { value: 8, label: 'Agustus' },
-    { value: 9, label: 'September' },
-    { value: 10, label: 'Oktober' },
-    { value: 11, label: 'November' },
-    { value: 12, label: 'Desember' },
+    { value: 1, label: t('Januari') },
+    { value: 2, label: t('Februari') },
+    { value: 3, label: t('Maret') },
+    { value: 4, label: t('April') },
+    { value: 5, label: t('Mei') },
+    { value: 6, label: t('Juni') },
+    { value: 7, label: t('Juli') },
+    { value: 8, label: t('Agustus') },
+    { value: 9, label: t('September') },
+    { value: 10, label: t('Oktober') },
+    { value: 11, label: t('November') },
+    { value: 12, label: t('Desember') },
 ];
 
 const yearOptions = [
@@ -793,7 +793,7 @@ function typeTone(type) {
                                 :aria-label="t('Unduh Excel')"
                             >
                                 <AppIcon name="table_view" class="text-base" />
-                                <span class="hidden sm:inline">Excel</span>
+                                <span class="hidden sm:inline">{{ t('Excel') }}</span>
                             </a>
                             <button
                                 type="button"

@@ -155,7 +155,7 @@ final class LoanLifecycleTest extends TestCase
         self::assertSame(6000000.0, (float) $history->principal_amount);
     }
 
-    public function test_verify_validation_rejects_missing_date_only(): void
+    public function test_verify_validation_rejects_missing_date_and_notes(): void
     {
         $loan = $this->createProposal();
 
@@ -164,13 +164,12 @@ final class LoanLifecycleTest extends TestCase
                 'verified_at' => '',
                 'verification_notes' => '',
             ])
-            ->assertSessionHasErrors(['verified_at'])
-            ->assertSessionDoesntHaveErrors(['verification_notes']);
+            ->assertSessionHasErrors(['verified_at', 'verification_notes']);
 
         self::assertSame('draft', $loan->fresh()->status);
     }
 
-    public function test_verify_accepts_blank_notes(): void
+    public function test_verify_rejects_blank_notes(): void
     {
         $loan = $this->createProposal();
 
@@ -179,9 +178,9 @@ final class LoanLifecycleTest extends TestCase
                 'verified_at' => '2026-07-20',
                 'verification_notes' => '',
             ])
-            ->assertRedirect('/lending/loans/'.$loan->row_id);
+            ->assertSessionHasErrors(['verification_notes']);
 
-        self::assertSame('verified', $loan->fresh()->status);
+        self::assertSame('draft', $loan->fresh()->status);
     }
 
     public function test_approve_transitions_verified_to_waiting_and_updates_beneficiary_allocations(): void

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -65,18 +67,18 @@ const selectedYear = ref(String(props.filters.year));
 const selectedMonth = ref(String(props.filters.month));
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -110,7 +112,7 @@ const pdfUrl = computed(() => {
 function formatDate(value: string | null): string {
     if (!value) return '—';
     try {
-        return new Date(value).toLocaleDateString('id-ID', {
+        return new Date(value).toLocaleDateString(dateLocale(), {
             day: '2-digit',
             month: 'long',
             year: 'numeric',
@@ -122,15 +124,15 @@ function formatDate(value: string | null): string {
 </script>
 
 <template>
-    <Head title="Profil Kelembagaan OJK" />
+    <Head :title="t('Profil Kelembagaan OJK')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-5xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Laporan OJK · Profil
+                        {{ t('Laporan OJK · Profil') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Profil Kelembagaan</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Profil Kelembagaan') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Untuk periode yang berakhir pada {{ date_formatted }}
                     </p>
@@ -139,7 +141,7 @@ function formatDate(value: string | null): string {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -148,11 +150,11 @@ function formatDate(value: string | null): string {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -161,7 +163,7 @@ function formatDate(value: string | null): string {
             <AppCard class="p-6">
                 <div class="flex items-start gap-4">
                     <div v-if="identity.logo_url" class="flex-shrink-0">
-                        <img :src="identity.logo_url" alt="Logo Lembaga" class="h-20 w-20 object-contain" />
+                        <img :src="identity.logo_url" :alt="t('Logo Lembaga')" class="h-20 w-20 object-contain" />
                     </div>
                     <div class="flex-1">
                         <h2 class="text-2xl font-bold text-primary">{{ identity.legal_name }}</h2>
@@ -179,15 +181,15 @@ function formatDate(value: string | null): string {
             <!-- Statistik ringkas -->
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Unit Desa</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Unit Desa') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ statistics.units_count }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pengurus</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pengurus') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ statistics.pengurus_count }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Beroperasi Sejak</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Beroperasi Sejak') }}</p>
                     <p class="mt-2 text-lg font-bold text-primary">
                         {{ identity.operational_since_year ?? '—' }}
                     </p>
@@ -196,7 +198,7 @@ function formatDate(value: string | null): string {
                     </p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Periode Laporan</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Periode Laporan') }}</p>
                     <p class="mt-2 text-base font-bold text-primary">{{ period_label }}</p>
                 </AppCard>
             </div>
@@ -204,19 +206,19 @@ function formatDate(value: string | null): string {
             <!-- Identitas Lembaga -->
             <AppCard class="p-5">
                 <h3 class="mb-4 border-b border-outline-variant pb-2 text-base font-bold uppercase tracking-wide text-primary">
-                    1. Identitas Lembaga
+                    {{ t('1. Identitas Lembaga') }}
                 </h3>
                 <dl class="grid grid-cols-1 gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Nama Lembaga</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Nama Lembaga') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.legal_name }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Nama Singkat</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Nama Singkat') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.short_name ?? '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Nomor Registrasi / SK Kemenkumham</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Nomor Registrasi / SK Kemenkumham') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.registration_number || '—' }}</dd>
                     </div>
                     <div>
@@ -224,22 +226,22 @@ function formatDate(value: string | null): string {
                         <dd class="font-medium text-on-surface">{{ identity.tax_number || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">NIB / Nomor Izin Berusaha</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('NIB / Nomor Izin Berusaha') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.registration_number || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">No. Izin Operasional</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('No. Izin Operasional') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.registration_number || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Tanggal Izin / Mulai Operasi</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Tanggal Izin / Mulai Operasi') }}</dt>
                         <dd class="font-medium text-on-surface">
                             {{ formatDate(identity.operational_start_date) }}
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Jenis Lembaga Jasa Keuangan (LJK)</dt>
-                        <dd class="font-medium text-on-surface">BUMDesma Lembaga Keuangan Desa</dd>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Jenis Lembaga Jasa Keuangan (LJK)') }}</dt>
+                        <dd class="font-medium text-on-surface">{{ t('BUMDesma Lembaga Keuangan Desa') }}</dd>
                     </div>
                 </dl>
             </AppCard>
@@ -247,39 +249,39 @@ function formatDate(value: string | null): string {
             <!-- Alamat & Kontak -->
             <AppCard class="p-5">
                 <h3 class="mb-4 border-b border-outline-variant pb-2 text-base font-bold uppercase tracking-wide text-primary">
-                    2. Alamat Lengkap & Kontak
+                    {{ t('2. Alamat Lengkap & Kontak') }}
                 </h3>
                 <dl class="grid grid-cols-1 gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
                     <div class="sm:col-span-2">
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Alamat</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Alamat') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.address || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Kecamatan</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Kecamatan') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.district_name || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Kabupaten / Kota</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Kabupaten / Kota') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.regency_name || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Provinsi</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Provinsi') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.province_name || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Telepon</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Telepon') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.phone || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Email Utama</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Email Utama') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.email || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Email Cadangan</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Email Cadangan') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.contact_email_secondary || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Website</dt>
+                        <dt class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">{{ t('Website') }}</dt>
                         <dd class="font-medium text-on-surface">{{ identity.website || '—' }}</dd>
                     </div>
                 </dl>
@@ -288,20 +290,20 @@ function formatDate(value: string | null): string {
             <!-- Susunan Pengurus -->
             <AppCard class="p-5">
                 <h3 class="mb-4 border-b border-outline-variant pb-2 text-base font-bold uppercase tracking-wide text-primary">
-                    3. Susunan Pengurus
+                    {{ t('3. Susunan Pengurus') }}
                 </h3>
                 <table class="w-full text-sm">
                     <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                         <tr>
-                            <th class="px-3 py-2 text-left w-12">No</th>
-                            <th class="px-3 py-2 text-left">Nama</th>
-                            <th class="px-3 py-2 text-left">Jabatan</th>
+                            <th class="px-3 py-2 text-left w-12">{{ t('No') }}</th>
+                            <th class="px-3 py-2 text-left">{{ t('Nama') }}</th>
+                            <th class="px-3 py-2 text-left">{{ t('Jabatan') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="pengurus.length === 0">
                             <td colspan="3" class="px-3 py-6 text-center text-on-surface-variant">
-                                Belum ada data pengurus.
+                                {{ t('Belum ada data pengurus.') }}
                             </td>
                         </tr>
                         <tr v-for="(p, idx) in pengurus" :key="idx" class="border-t border-outline-variant/30">
@@ -316,22 +318,22 @@ function formatDate(value: string | null): string {
             <!-- Wilayah Kerja -->
             <AppCard class="p-5">
                 <h3 class="mb-4 border-b border-outline-variant pb-2 text-base font-bold uppercase tracking-wide text-primary">
-                    4. Wilayah Kerja & Unit Desa
+                    {{ t('4. Wilayah Kerja & Unit Desa') }}
                 </h3>
                 <table class="w-full text-sm">
                     <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                         <tr>
-                            <th class="px-3 py-2 text-left w-12">No</th>
-                            <th class="px-3 py-2 text-left">Kode</th>
-                            <th class="px-3 py-2 text-left">Nama Unit</th>
-                            <th class="px-3 py-2 text-left">Tipe</th>
-                            <th class="px-3 py-2 text-left">Alamat</th>
+                            <th class="px-3 py-2 text-left w-12">{{ t('No') }}</th>
+                            <th class="px-3 py-2 text-left">{{ t('Kode') }}</th>
+                            <th class="px-3 py-2 text-left">{{ t('Nama Unit') }}</th>
+                            <th class="px-3 py-2 text-left">{{ t('Tipe') }}</th>
+                            <th class="px-3 py-2 text-left">{{ t('Alamat') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="units.length === 0">
                             <td colspan="5" class="px-3 py-6 text-center text-on-surface-variant">
-                                Belum ada data unit desa.
+                                {{ t('Belum ada data unit desa.') }}
                             </td>
                         </tr>
                         <tr v-for="(u, idx) in units" :key="u.code" class="border-t border-outline-variant/30">
@@ -347,7 +349,7 @@ function formatDate(value: string | null): string {
 
             <AppCard class="p-5">
                 <h3 class="mb-3 text-base font-bold uppercase tracking-wide text-primary">
-                    5. Tanda Tangan Pengesahan
+                    {{ t('5. Tanda Tangan Pengesahan') }}
                 </h3>
                 <p class="mb-3 text-sm text-on-surface-variant">
                     Laporan ini disusun dan disahkan oleh pengurus pada tanggal {{ date_formatted }}.

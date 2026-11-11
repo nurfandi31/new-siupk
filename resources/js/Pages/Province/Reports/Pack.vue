@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -19,10 +21,10 @@ const activeTab = ref('balance');
 const baseUrl = '/province/reports/pack';
 
 const tabs = [
-    { key: 'balance', label: '1. Neraca Konsolidasi' },
-    { key: 'income', label: '2. Laba Rugi Konsolidasi' },
-    { key: 'cash', label: '3. Arus Kas' },
-    { key: 'equity', label: '4. Perubahan Ekuitas' },
+    { key: 'balance', label: t('1. Neraca Konsolidasi') },
+    { key: 'income', label: t('2. Laba Rugi Konsolidasi') },
+    { key: 'cash', label: t('3. Arus Kas') },
+    { key: 'equity', label: t('4. Perubahan Ekuitas') },
     { key: 'calk', label: '5. CALK' },
 ];
 </script>
@@ -33,7 +35,7 @@ const tabs = [
         <div class="space-y-6">
             <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Paket Laporan Keuangan Konsolidasi</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Paket Laporan Keuangan Konsolidasi') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         5 Laporan Keuangan Standar Provinsi {{ province_name }} ({{ pack.period?.period_label }}).
                     </p>
@@ -53,7 +55,7 @@ const tabs = [
                     v-model="activeTab"
                     :items="tabs"
                     variant="underline"
-                    aria-label="Tab paket laporan konsolidasi"
+                    :aria-label="t('Tab paket laporan konsolidasi')"
                 />
             </div>
 
@@ -66,9 +68,9 @@ const tabs = [
                     <table class="w-full min-w-[36rem] text-left text-xs sm:text-sm divide-y divide-outline-variant">
                         <thead>
                             <tr class="bg-surface-container-low text-xs font-bold uppercase">
-                                <th class="px-4 py-3">Kode</th>
-                                <th class="px-4 py-3">Nama Akun</th>
-                                <th class="px-4 py-3 text-right">Saldo (Rp)</th>
+                                <th class="px-4 py-3">{{ t('Kode') }}</th>
+                                <th class="px-4 py-3">{{ t('Nama Akun') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Saldo (Rp)') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -121,9 +123,9 @@ const tabs = [
                     <table class="w-full min-w-[36rem] text-left text-xs sm:text-sm divide-y divide-outline-variant">
                         <thead>
                             <tr class="bg-surface-container-low text-xs font-bold uppercase">
-                                <th class="px-4 py-3">Kode</th>
-                                <th class="px-4 py-3">Uraian</th>
-                                <th class="px-4 py-3 text-right">Jumlah (Rp)</th>
+                                <th class="px-4 py-3">{{ t('Kode') }}</th>
+                                <th class="px-4 py-3">{{ t('Uraian') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Jumlah (Rp)') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -159,15 +161,15 @@ const tabs = [
                     <table class="w-full min-w-[28rem] text-left text-xs sm:text-sm divide-y divide-outline-variant">
                         <thead>
                             <tr class="bg-surface-container-low text-xs font-bold uppercase">
-                                <th class="px-4 py-3">Aktivitas</th>
-                                <th class="px-4 py-3 text-right">Jumlah (Rp)</th>
+                                <th class="px-4 py-3">{{ t('Aktivitas') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Jumlah (Rp)') }}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td class="px-4 py-3">Arus Kas Aktivitas Operasional</td><td class="px-4 py-3 text-right">{{ money(pack.cash_flow.operating_activities) }}</td></tr>
-                            <tr><td class="px-4 py-3">Arus Kas Aktivitas Investasi</td><td class="px-4 py-3 text-right">{{ money(pack.cash_flow.investing_activities) }}</td></tr>
-                            <tr><td class="px-4 py-3">Arus Kas Aktivitas Pendanaan</td><td class="px-4 py-3 text-right">{{ money(pack.cash_flow.financing_activities) }}</td></tr>
-                            <tr class="font-bold bg-surface-container-low"><td class="px-4 py-3">Kenaikan / (Penurunan) Kas Bersih</td><td class="px-4 py-3 text-right">{{ money(pack.cash_flow.net_cash_change) }}</td></tr>
+                            <tr><td class="px-4 py-3">{{ t('Arus Kas Aktivitas Operasional') }}</td><td class="px-4 py-3 text-right">{{ money(pack.cash_flow.operating_activities) }}</td></tr>
+                            <tr><td class="px-4 py-3">{{ t('Arus Kas Aktivitas Investasi') }}</td><td class="px-4 py-3 text-right">{{ money(pack.cash_flow.investing_activities) }}</td></tr>
+                            <tr><td class="px-4 py-3">{{ t('Arus Kas Aktivitas Pendanaan') }}</td><td class="px-4 py-3 text-right">{{ money(pack.cash_flow.financing_activities) }}</td></tr>
+                            <tr class="font-bold bg-surface-container-low"><td class="px-4 py-3">{{ t('Kenaikan / (Penurunan) Kas Bersih') }}</td><td class="px-4 py-3 text-right">{{ money(pack.cash_flow.net_cash_change) }}</td></tr>
                             <tr class="font-bold bg-secondary-container text-on-secondary-container"><td class="px-4 py-3">SALDO KAS & BANK AKHIR PERIODE</td><td class="px-4 py-3 text-right">{{ money(pack.cash_flow.ending_cash) }}</td></tr>
                         </tbody>
                     </table>
@@ -183,13 +185,13 @@ const tabs = [
                     <table class="w-full min-w-[28rem] text-left text-xs sm:text-sm divide-y divide-outline-variant">
                         <thead>
                             <tr class="bg-surface-container-low text-xs font-bold uppercase">
-                                <th class="px-4 py-3">Komponen Ekuitas</th>
-                                <th class="px-4 py-3 text-right">Jumlah (Rp)</th>
+                                <th class="px-4 py-3">{{ t('Komponen Ekuitas') }}</th>
+                                <th class="px-4 py-3 text-right">{{ t('Jumlah (Rp)') }}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td class="px-4 py-3">Ekuitas Awal Periode</td><td class="px-4 py-3 text-right">{{ money(pack.equity_changes.opening_equity) }}</td></tr>
-                            <tr><td class="px-4 py-3">Laba Bersih Berjalan</td><td class="px-4 py-3 text-right">{{ money(pack.equity_changes.net_income) }}</td></tr>
+                            <tr><td class="px-4 py-3">{{ t('Ekuitas Awal Periode') }}</td><td class="px-4 py-3 text-right">{{ money(pack.equity_changes.opening_equity) }}</td></tr>
+                            <tr><td class="px-4 py-3">{{ t('Laba Bersih Berjalan') }}</td><td class="px-4 py-3 text-right">{{ money(pack.equity_changes.net_income) }}</td></tr>
                             <tr class="font-bold bg-secondary-container text-on-secondary-container"><td class="px-4 py-3">TOTAL EKUITAS AKHIR PERIODE</td><td class="px-4 py-3 text-right">{{ money(pack.equity_changes.ending_equity) }}</td></tr>
                         </tbody>
                     </table>
@@ -203,15 +205,15 @@ const tabs = [
                 </div>
                 <div class="space-y-4 text-sm text-on-surface">
                     <div>
-                        <h3 class="font-bold text-primary">1. Gambaran Umum</h3>
+                        <h3 class="font-bold text-primary">{{ t('1. Gambaran Umum') }}</h3>
                         <p class="mt-1 text-on-surface-variant">{{ pack.calk.general_notes }}</p>
                     </div>
                     <div>
-                        <h3 class="font-bold text-primary">2. Kebijakan Akuntansi</h3>
+                        <h3 class="font-bold text-primary">{{ t('2. Kebijakan Akuntansi') }}</h3>
                         <p class="mt-1 text-on-surface-variant">{{ pack.calk.accounting_policies }}</p>
                     </div>
                     <div>
-                        <h3 class="font-bold text-primary">3. Cakupan Konsolidasi</h3>
+                        <h3 class="font-bold text-primary">{{ t('3. Cakupan Konsolidasi') }}</h3>
                         <p class="mt-1 text-on-surface-variant">Laporan ini mencakup {{ pack.calk.tenants_count }} Unit Pengelola Kegiatan se-Provinsi.</p>
                     </div>
                 </div>

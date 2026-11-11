@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -46,18 +48,18 @@ const selectedYear = ref(String(props.filters.year));
 const selectedMonth = ref(String(props.filters.month));
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -109,13 +111,13 @@ function statusLabel(status: string): string {
 </script>
 
 <template>
-    <Head title="Pemanfaat Aktif" />
+    <Head :title="t('Pemanfaat Aktif')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan Pinjaman</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Pemanfaat Aktif</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Pinjaman') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Pemanfaat Aktif') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Daftar anggota yang memiliki pinjaman individu aktif per
                         <span class="font-semibold text-primary">{{ period_label }}</span>
@@ -126,7 +128,7 @@ function statusLabel(status: string): string {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -136,11 +138,11 @@ function statusLabel(status: string): string {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -149,19 +151,19 @@ function statusLabel(status: string): string {
             <!-- Summary tiles -->
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jumlah Pemanfaat</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Pemanfaat') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.count }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pinjaman Aktif</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pinjaman Aktif') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.loan_total }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Outstanding</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Outstanding') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.outstanding_total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Tunggakan Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Tunggakan Pokok') }}</p>
                     <p class="mt-2 text-2xl font-bold text-error">{{ formatMoney(totals.tunggakan_pokok_total) }}</p>
                 </AppCard>
             </div>
@@ -171,18 +173,18 @@ function statusLabel(status: string): string {
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                         <tr class="border-b border-outline-variant/30">
-                            <th class="p-3 text-left">No</th>
+                            <th class="p-3 text-left">{{ t('No') }}</th>
                             <th class="p-3 text-left">NIK</th>
-                            <th class="p-3 text-left">No. Anggota</th>
-                            <th class="p-3 text-left">Nama Anggota</th>
-                            <th class="p-3 text-left">Desa</th>
-                            <th class="p-3 text-left">Kelompok</th>
-                            <th class="p-3 text-center">Status</th>
-                            <th class="p-3 text-center">Pinj. Aktif</th>
-                            <th class="p-3 text-right">Simpanan</th>
-                            <th class="p-3 text-right">Outstanding</th>
-                            <th class="p-3 text-right">Tungg. Pokok</th>
-                            <th class="p-3 text-right">Tungg. Jasa</th>
+                            <th class="p-3 text-left">{{ t('No. Anggota') }}</th>
+                            <th class="p-3 text-left">{{ t('Nama Anggota') }}</th>
+                            <th class="p-3 text-left">{{ t('Desa') }}</th>
+                            <th class="p-3 text-left">{{ t('Kelompok') }}</th>
+                            <th class="p-3 text-center">{{ t('Status') }}</th>
+                            <th class="p-3 text-center">{{ t('Pinj. Aktif') }}</th>
+                            <th class="p-3 text-right">{{ t('Simpanan') }}</th>
+                            <th class="p-3 text-right">{{ t('Outstanding') }}</th>
+                            <th class="p-3 text-right">{{ t('Tungg. Pokok') }}</th>
+                            <th class="p-3 text-right">{{ t('Tungg. Jasa') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-outline-variant/20">
@@ -234,8 +236,8 @@ function statusLabel(status: string): string {
             <AppCard v-if="rows.length === 0" class="p-8 text-center">
                 <AppEmptyState
                     icon="person_off"
-                    title="Tidak ada pemanfaat aktif"
-                    description="Belum ada anggota dengan pinjaman individu aktif pada periode ini."
+                    :title="t('Tidak ada pemanfaat aktif')"
+                    :description="t('Belum ada anggota dengan pinjaman individu aktif pada periode ini.')"
                 />
             </AppCard>
         </div>

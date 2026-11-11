@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link } from '@inertiajs/vue3';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -19,13 +21,13 @@ defineProps({
 });
 
 const columns = [
-    { key: 'code', label: 'Kode', sortable: true },
-    { key: 'name', label: 'Nama Kelompok', sortable: true },
-    { key: 'village', label: 'Desa' },
-    { key: 'members_count', label: 'Anggota', sortable: true },
-    { key: 'chair', label: 'Ketua' },
-    { key: 'established_at', label: 'Berdiri', sortable: true },
-    { key: 'status', label: 'Status', sortable: true },
+    { key: 'code', label: t('Kode'), sortable: true },
+    { key: 'name', label: t('Nama Kelompok'), sortable: true },
+    { key: 'village', label: t('Desa') },
+    { key: 'members_count', label: t('Anggota'), sortable: true },
+    { key: 'chair', label: t('Ketua') },
+    { key: 'established_at', label: t('Berdiri'), sortable: true },
+    { key: 'status', label: t('Status'), sortable: true },
 ];
 
 const csvColumns = ['nama', 'desa', 'alamat', 'no_hp', 'tanggal_berdiri', 'status'];
@@ -33,25 +35,25 @@ const statusLabels = { active: 'Aktif', inactive: 'Tidak aktif' };
 </script>
 
 <template>
-    <Head title="Kelompok" />
+    <Head :title="t('Kelompok')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <div class="min-w-0">
-                    <h1 class="text-2xl font-bold leading-tight text-primary sm:text-3xl">Kelompok</h1>
-                    <p class="mt-1 text-sm text-on-surface-variant">Kelola data, anggota, dan pengurus kelompok.</p>
+                    <h1 class="text-2xl font-bold leading-tight text-primary sm:text-3xl">{{ t('Kelompok') }}</h1>
+                    <p class="mt-1 text-sm text-on-surface-variant">{{ t('Kelola data, anggota, dan pengurus kelompok.') }}</p>
                 </div>
                 <div v-if="can('groups.manage')" class="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                     <CsvImportExport
                         export-url="/master-data/groups/export"
                         import-url="/master-data/groups/import"
                         :columns="csvColumns"
-                        title="Impor Kelompok"
-                        hint="Import minimal: hanya shell kelompok. Anggota & pengurus dilengkapi lewat form edit. Duplikat nama+desa dilewati."
+                        :title="t('Impor Kelompok')"
+                        :hint="t('Import minimal: hanya shell kelompok. Anggota & pengurus dilengkapi lewat form edit. Duplikat nama+desa dilewati.')"
                     />
                     <Link href="/master-data/groups/create" class="contents">
                         <AppButton icon="add" class="w-full justify-center sm:w-auto">
-                            Tambah Kelompok
+                            {{ t('Tambah Kelompok') }}
                         </AppButton>
                     </Link>
                 </div>
@@ -68,7 +70,7 @@ const statusLabels = { active: 'Aktif', inactive: 'Tidak aktif' };
                     :direction="direction"
                     :row-href="(row) => `/master-data/groups/${row.row_id}`"
                     search-label="Cari kelompok"
-                    search-placeholder="Cari kelompok..."
+                    :search-placeholder="t('Cari kelompok...')"
                     empty-title="Belum ada kelompok"
                     empty-description="Tambahkan kelompok untuk mulai mengelola anggota dan pengurus."
                 >

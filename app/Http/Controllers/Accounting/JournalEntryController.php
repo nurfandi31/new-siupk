@@ -525,34 +525,9 @@ final class JournalEntryController
 
         $posted = $loanService->recordInstallmentPayment($data, $userId);
 
-        // Untuk individu: setelah recordInstallmentPayment (yang insert loan_installment_tracking),
-        // update loan_installments agar Sisa Pokok di dropdown akurat.
-        if ($isMemberLoan && ! empty($data['member_allocations']) && isset($data['installment_number'])) {
-            $principalAmount = (float) ($data['principal_amount'] ?? 0);
-            $interestAmount = (float) ($data['interest_amount'] ?? 0);
-            $penaltyAmount = (float) ($data['penalty_amount'] ?? 0);
-            DB::connection('tenant')
-                ->table('loan_installments')
-                ->where('tenant_id', app(TenantContext::class)->id())
-                ->where('loan_row_id', $loanRowId)
-                ->where('installment_number', (int) $data['installment_number'])
-                ->where('component', 'principal')
-                ->update([
-                    'principal_paid' => DB::raw('principal_paid + '.$principalAmount),
-                    'updated_at' => now(),
-                ]);
-            DB::connection('tenant')
-                ->table('loan_installments')
-                ->where('tenant_id', app(TenantContext::class)->id())
-                ->where('loan_row_id', $loanRowId)
-                ->where('installment_number', (int) $data['installment_number'])
-                ->where('component', 'interest')
-                ->update([
-                    'interest_paid' => DB::raw('interest_paid + '.$interestAmount),
-                    'penalty_paid' => DB::raw('penalty_paid + '.$penaltyAmount),
-                    'updated_at' => now(),
-                ]);
-        }
+        // Catatan: LoanService sudah meng-update loan_installments secara
+        // component-aware (baris split principal/interest maupun combined),
+        // sehingga tidak boleh ada penambahan nominal lagi di controller.
 
         $waMessage = null;
         try {

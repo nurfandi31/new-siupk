@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link } from '@inertiajs/vue3';
 import AdminPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -17,10 +19,10 @@ defineProps({
 });
 
 const columns = [
-    { key: 'name', label: 'Plan', sortable: true },
-    { key: 'price_amount', label: 'Harga' },
-    { key: 'billing_period', label: 'Periode' },
-    { key: 'is_active', label: 'Status' },
+    { key: 'name', label: t('Plan'), sortable: true },
+    { key: 'price_amount', label: t('Harga') },
+    { key: 'billing_period', label: t('Periode') },
+    { key: 'is_active', label: t('Status') },
 ];
 
 function money(value, currency = 'IDR') {
@@ -29,15 +31,15 @@ function money(value, currency = 'IDR') {
 </script>
 
 <template>
-    <Head title="Plan" />
+    <Head :title="t('Plan')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <AdminPageHeader
-                title="Paket Langganan"
-                subtitle="Definisikan plan SaaS, harga, dan periode penagihan untuk tenant."
+                :title="t('Paket Langganan')"
+                :subtitle="t('Definisikan plan SaaS, harga, dan periode penagihan untuk tenant.')"
             >
                 <template #actions>
-                    <Link href="/admin/plans/create"><AppButton icon="add">Tambah Plan</AppButton></Link>
+                    <Link href="/admin/plans/create"><AppButton icon="add">{{ t('Tambah Plan') }}</AppButton></Link>
                 </template>
             </AdminPageHeader>
 
@@ -70,12 +72,12 @@ function money(value, currency = 'IDR') {
                     </template>
                     <template #cell-is_active="{ row }">
                         <AppBadge :tone="row.is_active ? 'success' : 'neutral'">
-                            {{ row.is_active ? 'Aktif' : 'Nonaktif' }}
+                            {{ row.is_active ? t('Aktif') : t('Nonaktif') }}
                         </AppBadge>
                     </template>
                     <template #actions="{ row }">
                         <div class="flex items-center justify-end gap-1.5">
-                            <Link :href="`/admin/plans/${row.row_id}/edit`"><AppButton variant="ghost" size="compact" icon="edit">Edit</AppButton></Link>
+                            <Link :href="`/admin/plans/${row.row_id}/edit`"><AppButton variant="ghost" size="compact" icon="edit">{{ t('Edit') }}</AppButton></Link>
                         </div>
                     </template>
                 </SmartDataTable>

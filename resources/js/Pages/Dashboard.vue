@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../i18n';
+const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AppBadge from '../Components/AppBadge.vue';
@@ -38,7 +40,7 @@ function formatDate(value) {
     if (!value) return '—';
     const d = new Date(`${value}T00:00:00`);
     if (Number.isNaN(d.getTime())) return value;
-    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    return d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 const pipelineTotal = computed(() => props.pipeline.reduce((sum, row) => sum + Number(row.count || 0), 0));
@@ -215,7 +217,7 @@ function cardKpiTextClass(card) {
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head :title="t('Dashboard')" />
     <AuthenticatedLayout :unit-name="unitName">
         <div class="mx-auto w-full max-w-6xl space-y-4">
             <!-- 1) Header halaman standar (seperti halaman konten lain) -->
@@ -224,7 +226,7 @@ function cardKpiTextClass(card) {
                     <div class="flex items-center gap-2">
                         <AppIcon name="space_dashboard" class="text-2xl text-primary" />
                         <h1 class="truncate text-xl font-bold leading-tight text-primary sm:text-2xl">
-                            {{ unitName || 'Dashboard' }}
+                            {{ unitName || t('Dashboard') }}
                         </h1>
                     </div>
                     <p class="mt-1 text-xs text-on-surface-variant sm:text-sm">
@@ -285,7 +287,7 @@ function cardKpiTextClass(card) {
                             <AppIcon name="monitoring" tone="success" :container-size="10" container-shape="rounded" />
                             <h2 class="truncate text-base font-bold leading-none text-primary">Tren {{ trendSummary.months }} Bulan</h2>
                         </div>
-                        <Link href="/accounting/reports" class="shrink-0 text-xs font-bold text-primary hover:underline">Detail →</Link>
+                        <Link href="/accounting/reports" class="shrink-0 text-xs font-bold text-primary hover:underline">{{ t('Detail →') }}</Link>
                     </template>
 
                     <div v-if="trendSlices.length" class="flex items-center gap-6 px-6 py-6">
@@ -328,7 +330,7 @@ function cardKpiTextClass(card) {
                         </ul>
                     </div>
                     <div v-else class="py-8 text-center text-sm text-on-surface-variant">
-                        Belum ada data tren
+                        {{ t('Belum ada data tren') }}
                     </div>
                 </AppCard>
 
@@ -337,9 +339,9 @@ function cardKpiTextClass(card) {
                     <template #header>
                         <div class="flex items-center gap-2">
                             <AppIcon name="timeline" tone="success" :container-size="10" container-shape="rounded" />
-                            <h2 class="truncate text-base font-bold leading-none text-primary">Pipeline</h2>
+                            <h2 class="truncate text-base font-bold leading-none text-primary">{{ t('Pipeline') }}</h2>
                         </div>
-                        <Link href="/lending/loans" class="shrink-0 text-xs font-bold text-primary hover:underline">Lihat →</Link>
+                        <Link href="/lending/loans" class="shrink-0 text-xs font-bold text-primary hover:underline">{{ t('Lihat →') }}</Link>
                     </template>
                     <div class="grid grid-cols-2 divide-x divide-outline-variant/40 sm:grid-cols-4 lg:grid-cols-2">
                         <button
@@ -364,7 +366,7 @@ function cardKpiTextClass(card) {
                         </button>
                     </div>
                     <div v-if="!pipeline.length" class="py-8 text-center text-sm text-on-surface-variant">
-                        Belum ada pinjaman
+                        {{ t('Belum ada pinjaman') }}
                     </div>
                 </AppCard>
             </div>
@@ -376,21 +378,21 @@ function cardKpiTextClass(card) {
                     <template #header>
                         <div class="flex min-w-0 items-center gap-2">
                             <AppIcon name="receipt_long" tone="success" :container-size="10" container-shape="rounded" />
-                            <h2 class="truncate text-base font-bold leading-none text-primary">Jurnal Terbaru</h2>
+                            <h2 class="truncate text-base font-bold leading-none text-primary">{{ t('Jurnal Terbaru') }}</h2>
                             <span class="text-xs text-on-surface-variant">({{ recent_journals.length }})</span>
                         </div>
                         <Link href="/accounting/journal-entries/create" class="shrink-0">
-                            <AppButton variant="primary" icon="add">Buat</AppButton>
+                            <AppButton variant="primary" icon="add">{{ t('Buat') }}</AppButton>
                         </Link>
                     </template>
                     <div v-if="recent_journals.length" class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
                             <thead class="bg-surface-container-low text-xs uppercase tracking-wider text-on-surface-variant">
                                 <tr>
-                                    <th class="px-4 py-3 font-semibold">Tgl</th>
-                                    <th class="px-4 py-3 font-semibold">No / Uraian</th>
-                                    <th class="hidden px-4 py-3 font-semibold sm:table-cell">Sumber</th>
-                                    <th class="px-4 py-3 text-right font-semibold">Jumlah</th>
+                                    <th class="px-4 py-3 font-semibold">{{ t('Tgl') }}</th>
+                                    <th class="px-4 py-3 font-semibold">{{ t('No / Uraian') }}</th>
+                                    <th class="hidden px-4 py-3 font-semibold sm:table-cell">{{ t('Sumber') }}</th>
+                                    <th class="px-4 py-3 text-right font-semibold">{{ t('Jumlah') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -419,7 +421,7 @@ function cardKpiTextClass(card) {
                     <div v-else class="flex items-center justify-center px-4 py-10 text-center">
                         <div>
                             <AppIcon name="receipt_long" tone="neutral" :container-size="12" container-shape="rounded" />
-                            <p class="mt-2 text-sm font-semibold text-on-surface-variant">Belum ada jurnal posted</p>
+                            <p class="mt-2 text-sm font-semibold text-on-surface-variant">{{ t('Belum ada jurnal posted') }}</p>
                         </div>
                     </div>
                 </AppCard>
@@ -429,7 +431,7 @@ function cardKpiTextClass(card) {
                     <template #header>
                         <div class="flex min-w-0 items-center gap-2">
                             <AppIcon name="event_note" tone="tertiary" :container-size="10" container-shape="rounded" />
-                            <h2 class="truncate text-base font-bold leading-none text-primary">Jatuh Tempo</h2>
+                            <h2 class="truncate text-base font-bold leading-none text-primary">{{ t('Jatuh Tempo') }}</h2>
                         </div>
                         <AppBadge v-if="overdue_summary.count" tone="error">{{ overdue_summary.count }} lewat</AppBadge>
                     </template>
@@ -442,7 +444,7 @@ function cardKpiTextClass(card) {
                         >
                             <div class="min-w-0">
                                 <p class="truncate text-sm font-bold leading-tight text-primary">{{ item.borrower }}</p>
-                                <p class="truncate text-xs leading-tight text-on-surface-variant">{{ item.loan_number || 'Pinjaman' }} · {{ formatDate(item.due_date) }}</p>
+                                <p class="truncate text-xs leading-tight text-on-surface-variant">{{ item.loan_number || t('Pinjaman') }} · {{ formatDate(item.due_date) }}</p>
                             </div>
                             <p class="shrink-0 text-sm font-bold tabular-nums leading-tight" :class="item.overdue ? 'text-error' : 'text-primary'">
                                 {{ formatMoney(item.amount) }}
@@ -452,12 +454,12 @@ function cardKpiTextClass(card) {
                     <div v-else class="flex flex-1 items-center justify-center px-4 py-10 text-center">
                         <div>
                             <AppIcon name="event_available" tone="neutral" :container-size="12" container-shape="rounded" />
-                            <p class="mt-2 text-sm font-semibold text-on-surface-variant">Tidak ada 14 hari ke depan</p>
+                            <p class="mt-2 text-sm font-semibold text-on-surface-variant">{{ t('Tidak ada 14 hari ke depan') }}</p>
                         </div>
                     </div>
                     <div class="shrink-0 border-t border-outline-variant p-3">
                         <Link href="/accounting/journal-entries/installment" class="block">
-                            <AppButton variant="secondary" icon="payments" class="w-full">Catat angsuran</AppButton>
+                            <AppButton variant="secondary" icon="payments" class="w-full">{{ t('Catat angsuran') }}</AppButton>
                         </Link>
                     </div>
                 </AppCard>
@@ -467,10 +469,10 @@ function cardKpiTextClass(card) {
             <section class="flex items-center justify-between gap-3 rounded-lg border border-primary/20 bg-surface-container-low px-4 py-3">
                 <div class="flex min-w-0 items-center gap-2">
                     <AppIcon name="verified" tone="primary" :container-size="9" container-shape="rounded" class="shrink-0" />
-                    <p class="truncate text-sm text-on-surface-variant">KPI dihitung dari jurnal posted &amp; jadwal angsuran aktif</p>
+                    <p class="truncate text-sm text-on-surface-variant">{{ t('KPI dihitung dari jurnal posted & jadwal angsuran aktif') }}</p>
                 </div>
                 <Link href="/accounting/tax-estimate" class="shrink-0">
-                    <AppButton variant="ghost" icon-after="arrow_forward">Taksiran pajak</AppButton>
+                    <AppButton variant="ghost" icon-after="arrow_forward">{{ t('Taksiran pajak') }}</AppButton>
                 </Link>
             </section>
         </div>
@@ -515,11 +517,11 @@ function cardKpiTextClass(card) {
                     <table class="w-full text-left text-sm">
                         <thead class="bg-surface-container-low text-[10px] uppercase tracking-wider text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 font-semibold">Peminfaat</th>
-                                <th class="px-3 py-2 font-semibold">Tgl</th>
-                                <th class="px-3 py-2 text-right font-semibold">Nominal</th>
-                                <th class="px-3 py-2 text-right font-semibold">Sisa Pokok</th>
-                                <th class="px-3 py-2 text-right font-semibold">Aksi</th>
+                                <th class="px-3 py-2 font-semibold">{{ t('Peminfaat') }}</th>
+                                <th class="px-3 py-2 font-semibold">{{ t('Tgl') }}</th>
+                                <th class="px-3 py-2 text-right font-semibold">{{ t('Nominal') }}</th>
+                                <th class="px-3 py-2 text-right font-semibold">{{ t('Sisa Pokok') }}</th>
+                                <th class="px-3 py-2 text-right font-semibold">{{ t('Aksi') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -551,7 +553,7 @@ function cardKpiTextClass(card) {
                                     <span v-else class="text-[11px] text-on-surface-variant">—</span>
                                 </td>
                                 <td class="whitespace-nowrap px-3 py-2 text-right align-top">
-                                    <Link :href="`/lending/loans/${row.row_id}`" class="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-bold text-primary hover:bg-primary/10">Detail →</Link>
+                                    <Link :href="`/lending/loans/${row.row_id}`" class="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-bold text-primary hover:bg-primary/10">{{ t('Detail →') }}</Link>
                                 </td>
                             </tr>
                         </tbody>
@@ -560,7 +562,7 @@ function cardKpiTextClass(card) {
 
                 <div v-else class="rounded-lg border border-dashed border-outline-variant py-8 text-center">
                     <AppIcon name="inbox" tone="neutral" :container-size="14" container-shape="rounded" />
-                    <p class="mt-2 text-sm font-semibold text-on-surface-variant">Belum ada pinjaman</p>
+                    <p class="mt-2 text-sm font-semibold text-on-surface-variant">{{ t('Belum ada pinjaman') }}</p>
                     <p class="text-[11px] text-on-surface-variant">Tidak ada pinjaman {{ borrowerFilter === 'semua' ? '' : `(${borrowerFilter}) ` }}pada tahap {{ pipeline_modal.label }}.</p>
                 </div>
 
@@ -571,9 +573,9 @@ function cardKpiTextClass(card) {
 
             <template #footer>
                 <Link v-if="pipeline_modal_key" :href="`/lending/loans?tab=${pipeline_modal_key}`">
-                    <AppButton variant="secondary" icon="open_in_new">Lihat semua di Tahapan Perguliran</AppButton>
+                    <AppButton variant="secondary" icon="open_in_new">{{ t('Lihat semua di Tahapan Perguliran') }}</AppButton>
                 </Link>
-                <AppButton variant="primary" @click="closePipeline">Tutup</AppButton>
+                <AppButton variant="primary" @click="closePipeline">{{ t('Tutup') }}</AppButton>
             </template>
         </AppModal>
     </AuthenticatedLayout>

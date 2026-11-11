@@ -15,6 +15,8 @@ const props = defineProps({
     recent_posts: { type: Array, default: () => [] },
     recent_pages: { type: Array, default: () => [] },
     contact: { type: Object, default: () => ({}) },
+    stats: { type: Object, default: () => ({}) },
+    demo: { type: Object, default: null },
 });
 
 const page = usePage();
@@ -104,61 +106,80 @@ const heroDescription = computed(
 );
 
 const navAnchors = [
-    { id: 'layanan', label: 'Layanan' },
-    { id: 'produk', label: 'Produk' },
-    { id: 'alur', label: 'Alur' },
-    { id: 'berita', label: 'Berita' },
-    { id: 'halaman', label: 'Halaman' },
-    { id: 'kontak', label: 'Kontak' },
+    { id: 'layanan', label: t('Layanan') },
+    { id: 'produk', label: t('Produk') },
+    { id: 'alur', label: t('Alur') },
+    { id: 'berita', label: t('Berita') },
+    { id: 'halaman', label: t('Halaman') },
+    { id: 'kontak', label: t('Kontak') },
 ];
 
-const stats = [
-    { label: 'Kecamatan / Wilayah Layanan Aktif', value: '500+', top: 'Wilayah', icon: 'map' },
-    { label: 'Kelompok Pemanfaat Aktif', value: '12.500+', top: 'Pemanfaat', icon: 'groups' },
-    { label: 'Akurasi Jurnal Otomatis', value: '100%', top: 'Akurasi', icon: 'verified' },
-    { label: 'Standar Akuntansi SAK EP', value: '99,9%', top: 'Kepatuhan', icon: 'shield' },
-];
+function formatNumber(value) {
+    return new Intl.NumberFormat(locale.value === 'en' ? 'en-US' : 'id-ID').format(Number(value) || 0);
+}
 
-const layananModul = [
-    { num: '01', icon: 'how_to_reg', title: 'Verifikasi Anggota', desc: 'Form digital, validasi NIK, dan lampiran dokumen otomatis untuk pengurus kelompok.', tone: 'indigo', tag: 'Onboarding', period: 'Real-time', stats: [
-        { value: '2.4K', label: 'Tervalidasi', highlight: true },
-        { value: '99,7%', label: 'Akurat', highlight: false },
-    ] },
-    { num: '02', icon: 'request_quote', title: 'Pengajuan Kredit', desc: 'Alur berjenjang dari kelompok hingga pengurus dengan berita acara otomatis.', tone: 'sky', tag: 'Workflow', period: '7 hari kerja', stats: [
-        { value: '850+', label: 'Pengajuan/bln', highlight: true },
-        { value: '< 3 hari', label: 'Rata-rata', highlight: false },
-    ] },
-    { num: '03', icon: 'account_balance_wallet', title: 'Pencairan & Angsuran', desc: 'Jadwal angsuran, kolektabilitas, dan tanda terima digital real-time.', tone: 'amber', tag: 'Transaksi', period: 'H+1 pencairan', stats: [
-        { value: 'Rp 8,5M', label: 'Outstanding', highlight: true },
-        { value: '98,4%', label: 'Kolektabilitas', highlight: false },
-    ] },
-    { num: '04', icon: 'fact_check', title: 'Berita Acara', desc: 'Template BA tersinkronisasi dengan format kecamatan dan kabupaten.', tone: 'rose', tag: 'Dokumen', period: 'Otomatis', stats: [
-        { value: '12+', label: 'Template', highlight: true },
-        { value: '100%', label: 'Tersinkron', highlight: false },
-    ] },
-    { num: '05', icon: 'analytics', title: 'Laporan Keuangan', desc: 'Neraca, laba-rugi, arus kas, dan CALK otomatis sesuai standar.', tone: 'teal', tag: 'Reporting', period: 'Bulanan', stats: [
-        { value: '24+', label: 'Laporan', highlight: true },
-        { value: 'SAK EP', label: 'Standar', highlight: false },
-    ] },
-    { num: '06', icon: 'inventory_2', title: 'Aset & Inventaris', desc: 'Manajemen aset tetap, inventaris, dan penyusutan otomatis.', tone: 'violet', tag: 'Aset', period: 'Update mingguan', stats: [
-        { value: '320+', label: 'Item aset', highlight: true },
-        { value: 'Auto', label: 'Penyusutan', highlight: false },
-    ] },
-];
+function formatPercent(value) {
+    if (value === null || value === undefined) return '—';
+    return `${new Intl.NumberFormat(locale.value === 'en' ? 'en-US' : 'id-ID', { maximumFractionDigits: 1 }).format(Number(value))}%`;
+}
 
-const produkCards = [
+function formatCompactCurrency(value) {
+    const amount = Number(value) || 0;
+    const fmt = new Intl.NumberFormat(locale.value === 'en' ? 'en-US' : 'id-ID', { maximumFractionDigits: 1 });
+    if (amount >= 1_000_000_000_000) return `Rp ${fmt.format(amount / 1_000_000_000_000)} T`;
+    if (amount >= 1_000_000_000) return `Rp ${fmt.format(amount / 1_000_000_000)} M`;
+    if (amount >= 1_000_000) return `Rp ${fmt.format(amount / 1_000_000)} ${locale.value === 'en' ? 'M' : 'jt'}`;
+    if (amount >= 1_000) return `Rp ${fmt.format(amount / 1_000)} ${locale.value === 'en' ? 'K' : 'rb'}`;
+    return `Rp ${fmt.format(amount)}`;
+}
+
+const stats = computed(() => [
+    { label: t('Anggota Aktif Terdaftar'), value: formatNumber(props.stats?.members_active), top: 'Anggota', icon: 'groups' },
+    { label: t('Kelompok Pemanfaat Aktif'), value: formatNumber(props.stats?.groups_active), top: 'Kelompok', icon: 'groups_2' },
+    { label: t('Pinjaman Aktif Berjalan'), value: formatNumber(props.stats?.loans_active), top: 'Pinjaman', icon: 'account_balance_wallet' },
+    { label: t('Kolektabilitas Angsuran Jatuh Tempo'), value: formatPercent(props.stats?.collection_rate), top: 'Kolektabilitas', icon: 'verified' },
+]);
+
+const layananModul = computed(() => [
+    { num: '01', icon: 'how_to_reg', title: t('Verifikasi Anggota'), desc: t('Form digital, validasi NIK, dan lampiran dokumen otomatis untuk pengurus kelompok.'), tone: 'indigo', tag: 'Onboarding', period: 'Real-time', stats: [
+        { value: formatNumber(props.stats?.members_active), label: t('Anggota aktif'), highlight: true },
+        { value: formatNumber(props.stats?.groups_active), label: t('Kelompok'), highlight: false },
+    ] },
+    { num: '02', icon: 'request_quote', title: t('Pengajuan Kredit'), desc: t('Alur berjenjang dari kelompok hingga pengurus dengan berita acara otomatis.'), tone: 'sky', tag: 'Workflow', period: 'Sesuai SOP', stats: [
+        { value: formatNumber(props.stats?.loans_pending), label: t('Menunggu'), highlight: true },
+        { value: formatNumber(props.stats?.loan_products_total), label: t('Produk'), highlight: false },
+    ] },
+    { num: '03', icon: 'account_balance_wallet', title: t('Pencairan & Angsuran'), desc: t('Jadwal angsuran, kolektabilitas, dan tanda terima digital real-time.'), tone: 'amber', tag: 'Transaksi', period: 'Real-time', stats: [
+        { value: formatCompactCurrency(props.stats?.outstanding_principal), label: t('Outstanding'), highlight: true },
+        { value: formatPercent(props.stats?.collection_rate), label: t('Kolektabilitas'), highlight: false },
+    ] },
+    { num: '04', icon: 'fact_check', title: t('Berita Acara'), desc: t('Template BA tersinkronisasi dengan format kecamatan dan kabupaten.'), tone: 'rose', tag: 'Dokumen', period: 'Otomatis', stats: [
+        { value: formatNumber(props.stats?.documents_total), label: t('Dokumen'), highlight: true },
+        { value: formatNumber(props.stats?.installments_total), label: t('Angsuran'), highlight: false },
+    ] },
+    { num: '05', icon: 'analytics', title: t('Laporan Keuangan'), desc: t('Neraca, laba-rugi, arus kas, dan CALK otomatis sesuai standar.'), tone: 'teal', tag: 'Reporting', period: 'Bulanan', stats: [
+        { value: formatNumber(props.stats?.fiscal_periods_total), label: t('Periode'), highlight: true },
+        { value: 'SAK EP', label: t('Standar'), highlight: false },
+    ] },
+    { num: '06', icon: 'inventory_2', title: t('Aset & Inventaris'), desc: t('Manajemen aset tetap, inventaris, dan penyusutan otomatis.'), tone: 'violet', tag: 'Aset', period: 'Update berkala', stats: [
+        { value: formatNumber(props.stats?.assets_total), label: t('Item aset'), highlight: true },
+        { value: 'Auto', label: t('Penyusutan'), highlight: false },
+    ] },
+]);
+
+const produkCards = computed(() => [
     {
         key: 'kelompok',
         icon: 'groups',
         tone: 'indigo',
         headline: 'Solidaritas & gotong-royong',
         ringkasan: 'Pinjaman untuk satu kelompok usaha/masyarakat beranggotakan 5–20 orang.',
-        desc: 'Skema penyaluran dimana pengurus kelompok bersama anggotanya bertanggung jawab secara kolektif atas kelancaran angsuran. Cocok untuk anggota yang baru memulai usaha.',
+        desc: t('Skema penyaluran dimana pengurus kelompok bersama anggotanya bertanggung jawab secara kolektif atas kelancaran angsuran. Cocok untuk anggota yang baru memulai usaha.'),
         stats: [
-            { label: 'Porsi penyaluran', value: '68%', icon: 'pie_chart' },
-            { label: 'Kolektabilitas', value: '98,4%', icon: 'trending_up' },
-            { label: 'Tepat waktu', value: '96,2%', icon: 'schedule' },
-            { label: 'Rata-rata nominal', value: 'Rp 8,5 jt', icon: 'payments' },
+            { label: t('Porsi penyaluran'), value: formatPercent(props.stats?.group_share), icon: 'pie_chart' },
+            { label: t('Pinjaman aktif'), value: formatNumber(props.stats?.group_loans_active), icon: 'trending_up' },
+            { label: t('Rata-rata nominal'), value: formatCompactCurrency(props.stats?.group_average_principal), icon: 'payments' },
+            { label: t('Total pinjaman'), value: formatNumber(props.stats?.group_loans_total), icon: 'receipt_long' },
         ],
         manfaat: [
             'Risiko gagal bayar lebih rendah',
@@ -181,12 +202,12 @@ const produkCards = [
         tone: 'amber',
         headline: 'Fleksibel & personal',
         ringkasan: 'Pinjaman untuk peminjam perorangan dengan plafon lebih besar.',
-        desc: 'Skema penyaluran kepada peminjam perorangan dengan analisis profil risiko yang lebih ketat. Cocok untuk anggota yang butuh plafon lebih besar dan sudah memiliki catatan usaha.',
+        desc: t('Skema penyaluran kepada peminjam perorangan dengan analisis profil risiko yang lebih ketat. Cocok untuk anggota yang butuh plafon lebih besar dan sudah memiliki catatan usaha.'),
         stats: [
-            { label: 'Porsi penyaluran', value: '32%', icon: 'pie_chart' },
-            { label: 'Kolektabilitas', value: '92,1%', icon: 'trending_up' },
-            { label: 'Tepat waktu', value: '88,5%', icon: 'schedule' },
-            { label: 'Rata-rata nominal', value: 'Rp 15,8 jt', icon: 'payments' },
+            { label: t('Porsi penyaluran'), value: formatPercent(props.stats?.member_share), icon: 'pie_chart' },
+            { label: t('Pinjaman aktif'), value: formatNumber(props.stats?.member_loans_active), icon: 'trending_up' },
+            { label: t('Rata-rata nominal'), value: formatCompactCurrency(props.stats?.member_average_principal), icon: 'payments' },
+            { label: t('Total pinjaman'), value: formatNumber(props.stats?.member_loans_total), icon: 'receipt_long' },
         ],
         manfaat: [
             'Plafon lebih tinggi per peminjam',
@@ -203,7 +224,7 @@ const produkCards = [
             'Rekomendasi pengurus',
         ],
     },
-];
+]);
 
 const toneStyles = {
     indigo: { ring: 'ring-emerald-600/30', bg: 'bg-emerald-50', text: 'text-emerald-800', grad: 'from-emerald-700 to-green-600', soft: 'from-emerald-700/10 to-green-600/10', icon: 'bg-emerald-700', accent: 'shadow-emerald-600/25', defaultTone: 'shadow-emerald-600/[0.08]', shadowRgb: 'rgba(16,185,129,0.18)' },
@@ -215,17 +236,17 @@ const toneStyles = {
 };
 
 const alur = [
-    { num: '01', title: 'Musyawarah Desa', desc: 'Verifikasi calon anggota dan rencana kebutuhan oleh pengurus & LKD desa.', role: 'Pengurus + LKD', duration: '1–3 hari', icon: 'groups_2' },
-    { num: '02', title: 'Verifikasi & SPK', desc: 'Pemeriksaan data, berita acara, dan penandatanganan perjanjian kredit.', role: 'Tim Teknis', duration: '2–5 hari', icon: 'task_alt' },
-    { num: '03', title: 'Penyaluran & Angsuran', desc: 'Pencairan, jadwal angsuran, dan monitoring kolektabilitas real-time.', role: 'Operator', duration: 'Otomatis', icon: 'sync_alt' },
-    { num: '04', title: 'Pelaporan', desc: 'Laporan keuangan, berita acara, dan dokumentasi tersimpan otomatis.', role: 'Pengurus + Dinas', duration: 'Bulanan', icon: 'analytics' },
+    { num: '01', title: t('Musyawarah Desa'), desc: t('Verifikasi calon anggota dan rencana kebutuhan oleh pengurus & LKD desa.'), role: 'Pengurus + LKD', duration: '1–3 hari', icon: 'groups_2' },
+    { num: '02', title: t('Verifikasi & SPK'), desc: t('Pemeriksaan data, berita acara, dan penandatanganan perjanjian kredit.'), role: 'Tim Teknis', duration: '2–5 hari', icon: 'task_alt' },
+    { num: '03', title: t('Penyaluran & Angsuran'), desc: t('Pencairan, jadwal angsuran, dan monitoring kolektabilitas real-time.'), role: 'Operator', duration: 'Otomatis', icon: 'sync_alt' },
+    { num: '04', title: t('Pelaporan'), desc: t('Laporan keuangan, berita acara, dan dokumentasi tersimpan otomatis.'), role: 'Pengurus + Dinas', duration: 'Bulanan', icon: 'analytics' },
 ];
 
 const regulasi = [
-    { label: 'PP No. 11/2021', sub: 'BUMDesma', desc: 'Pendirian & pengelolaan badan usaha milik desa sesuai regulasi.', tone: 'indigo', icon: 'policy' },
-    { label: 'SAK EP / ETAP', sub: 'Standar Akuntansi', desc: 'Bagan akun entitas mikro & privat yang berlaku nasional.', tone: 'sky', icon: 'menu_book' },
-    { label: 'Sharding DB', sub: 'Isolasi Tenant', desc: 'Ruang data independen per BUMDesma untuk keamanan.', tone: 'teal', icon: 'database' },
-    { label: 'QRIS & VA', sub: 'Payment Gateway', desc: 'Pembayaran nasional multi-bank yang aman & cepat.', tone: 'amber', icon: 'qr_code_2' },
+    { label: t('PP No. 11/2021'), sub: t('BUMDesma'), desc: t('Pendirian & pengelolaan badan usaha milik desa sesuai regulasi.'), tone: 'indigo', icon: 'policy' },
+    { label: 'SAK EP / ETAP', sub: t('Standar Akuntansi'), desc: t('Bagan akun entitas mikro & privat yang berlaku nasional.'), tone: 'sky', icon: 'menu_book' },
+    { label: t('Sharding DB'), sub: t('Isolasi Tenant'), desc: t('Ruang data independen per BUMDesma untuk keamanan.'), tone: 'teal', icon: 'database' },
+    { label: 'QRIS & VA', sub: t('Payment Gateway'), desc: t('Pembayaran nasional multi-bank yang aman & cepat.'), tone: 'amber', icon: 'qr_code_2' },
 ];
 
 let observerInstance = null;
@@ -1160,9 +1181,9 @@ onUnmounted(() => {
                                     <span v-if="contact.address" class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-[10.5px] font-bold text-sky-700 ring-1 ring-sky-200">
                                         <AppIcon name="place" class="text-xs" />{{ contact.address }}
                                     </span>
-                                    <a v-if="contact.social?.facebook" :href="contact.social.facebook" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10.5px] font-bold text-white transition hover:bg-sky-600" aria-label="Facebook">Facebook</a>
-                                    <a v-if="contact.social?.instagram" :href="contact.social.instagram" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10.5px] font-bold text-white transition hover:bg-rose-600" aria-label="Instagram">Instagram</a>
-                                    <a v-if="contact.social?.youtube" :href="contact.social.youtube" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10.5px] font-bold text-white transition hover:bg-red-600" aria-label="YouTube">YouTube</a>
+                                    <a v-if="contact.social?.facebook" :href="contact.social.facebook" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10.5px] font-bold text-white transition hover:bg-sky-600" :aria-label="t('Facebook')">{{ t('Facebook') }}</a>
+                                    <a v-if="contact.social?.instagram" :href="contact.social.instagram" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10.5px] font-bold text-white transition hover:bg-rose-600" :aria-label="t('Instagram')">{{ t('Instagram') }}</a>
+                                    <a v-if="contact.social?.youtube" :href="contact.social.youtube" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10.5px] font-bold text-white transition hover:bg-red-600" :aria-label="t('YouTube')">{{ t('YouTube') }}</a>
                                 </div>
 
                                 <!-- Form -->
@@ -1172,7 +1193,7 @@ onUnmounted(() => {
 
                                     <form class="space-y-2.5" @submit.prevent="submitMessage">
                                         <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
-                                            <label for="hp-website">Website</label>
+                                            <label for="hp-website">{{ t('Website') }}</label>
                                             <input id="hp-website" v-model="messageForm.website" type="text" tabindex="-1" autocomplete="off" />
                                         </div>
 
@@ -1183,8 +1204,8 @@ onUnmounted(() => {
                                                 <p v-if="messageForm.errors.name" class="ml-1 mt-0.5 text-[10.5px] text-error">{{ messageForm.errors.name }}</p>
                                             </div>
                                             <div>
-                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">Email</label>
-                                                <input v-model="messageForm.email" type="email" maxlength="255" placeholder="nama@email.com" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
+                                                <label class="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-wider text-slate-600">{{ t('Email') }}</label>
+                                                <input v-model="messageForm.email" type="email" maxlength="255" :placeholder="t('nama@email.com')" class="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-[12.5px] transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20" />
                                                 <p v-if="messageForm.errors.email" class="ml-1 mt-0.5 text-[10.5px] text-error">{{ messageForm.errors.email }}</p>
                                             </div>
                                         </div>
@@ -1223,7 +1244,7 @@ onUnmounted(() => {
                             </div>
 
                             <!-- ============ KANAN: AKUN DEMO CTA ============ -->
-                            <div class="reveal-item relative flex flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950 p-6 text-white shadow-xl shadow-emerald-900/30 ring-1 ring-white/10 sm:p-7">
+                            <div v-if="demo" class="reveal-item relative flex flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950 p-6 text-white shadow-xl shadow-emerald-900/30 ring-1 ring-white/10 sm:p-7">
                                 <!-- Glow -->
                                 <div class="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-emerald-500/30 blur-3xl" />
                                 <div class="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-sky-500/20 blur-3xl" />
@@ -1251,25 +1272,25 @@ onUnmounted(() => {
                                     </div>
 
                                     <p class="mt-3 text-[12.5px] leading-relaxed text-emerald-100/90">
-                                        {{ t('Coba setiap modul dengan akun demo publik — semua eksperimen terjadi di sandbox tanpa menyentuh data produksi.') }}
+                                        {{ t('Jelajahi modul melalui akun sandbox yang disediakan pengelola — seluruh percobaan tidak menyentuh data produksi.') }}
                                     </p>
 
                                     <!-- Quick stats -->
                                     <div class="mt-4 grid grid-cols-3 gap-2">
                                         <div class="rounded-xl bg-white/[0.06] p-3 ring-1 ring-white/10 backdrop-blur-sm">
-                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">{{ t('Modul') }}</p>
-                                            <p class="mt-1 text-[18px] font-black leading-none tracking-tight">4</p>
-                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">{{ t('inti') }}</p>
+                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">{{ t('Produk') }}</p>
+                                            <p class="mt-1 text-[18px] font-black leading-none tracking-tight">{{ formatNumber(props.stats?.loan_products_total) }}</p>
+                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">{{ t('pinjaman') }}</p>
                                         </div>
                                         <div class="rounded-xl bg-white/[0.06] p-3 ring-1 ring-white/10 backdrop-blur-sm">
-                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">{{ t('Laporan') }}</p>
-                                            <p class="mt-1 text-[18px] font-black leading-none tracking-tight">30+</p>
-                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">{{ t('PDF siap cetak') }}</p>
+                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">{{ t('Periode') }}</p>
+                                            <p class="mt-1 text-[18px] font-black leading-none tracking-tight">{{ formatNumber(props.stats?.fiscal_periods_total) }}</p>
+                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">{{ t('akuntansi') }}</p>
                                         </div>
                                         <div class="rounded-xl bg-white/[0.06] p-3 ring-1 ring-white/10 backdrop-blur-sm">
-                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">{{ t('Role') }}</p>
-                                            <p class="mt-1 text-[18px] font-black leading-none tracking-tight">5</p>
-                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">{{ t('sistem default') }}</p>
+                                            <p class="text-[9.5px] font-bold uppercase tracking-[0.16em] text-emerald-300">{{ t('Peran') }}</p>
+                                            <p class="mt-1 text-[18px] font-black leading-none tracking-tight">{{ formatNumber(props.stats?.roles_total) }}</p>
+                                            <p class="mt-0.5 text-[10px] text-emerald-100/70">{{ t('terdaftar') }}</p>
                                         </div>
                                     </div>
 
@@ -1363,7 +1384,7 @@ onUnmounted(() => {
                         <span v-else> · {{ t('Dikelola dengan SIUPK Next.') }}</span>
                     </p>
                     <p class="text-[9.5px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                        Powered by SIUPK Next
+                        {{ t('Powered by SIUPK Next') }}
                     </p>
                 </div>
             </div>

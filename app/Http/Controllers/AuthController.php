@@ -36,13 +36,7 @@ final class AuthController
             return redirect()->route('dashboard');
         }
 
-        $isDemo = $request->query('demo') === '1';
-
         return Inertia::render('Auth/Login', [
-            'demo' => $isDemo ? [
-                'username' => 'admin',
-                'password' => 'password',
-            ] : null,
             'centralLogin' => $this->platformHosts->isEnforcedPlatformHost($request->getHost()),
         ]);
     }

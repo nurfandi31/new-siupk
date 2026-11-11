@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { useConfirm } from '../../../composables/useConfirm';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -66,7 +68,7 @@ function toggleBlocking() {
 const { confirm: confirmAction } = useConfirm();
 
 async function voidInvoice() {
-    if (!await confirmAction({ title: 'Batalkan Invoice', message: 'Batalkan invoice ini? Tindakan ini tidak dapat dibatalkan.' })) return;
+    if (!await confirmAction({ title: t('Batalkan Invoice'), message: t('Batalkan invoice ini? Tindakan ini tidak dapat dibatalkan.') })) return;
     voidForm.post(`/admin/invoices/${props.invoice.row_id}/void`, { preserveScroll: true });
 }
 </script>
@@ -78,14 +80,14 @@ async function voidInvoice() {
             <header class="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
                 <div class="space-y-3">
                     <Link href="/admin/invoices" class="inline-flex items-center gap-1 text-sm font-semibold text-primary transition hover:text-primary-container">
-                        <AppIconButton name="arrow_back" size="sm" tone="primary" rounded="full" aria-label="Kembali" />
-                        <span>Daftar invoice</span>
+                        <AppIconButton name="arrow_back" size="sm" tone="primary" rounded="full" :aria-label="t('Kembali')" />
+                        <span>{{ t('Daftar invoice') }}</span>
                     </Link>
                     <div class="flex flex-wrap items-center gap-3">
                         <h1 class="text-2xl font-bold text-primary">{{ invoice.number }}</h1>
                         <AppBadge :tone="tone(invoice.status)">{{ invoice.status }}</AppBadge>
                         <span v-if="invoice.blocks_access" class="rounded bg-error/15 px-2 py-0.5 text-xs font-bold text-error">
-                            ⛔ Memblokir Akses Tenant
+                            {{ t('⛔ Memblokir Akses Tenant') }}
                         </span>
                     </div>
                     <p class="text-on-surface-variant">
@@ -99,7 +101,7 @@ async function voidInvoice() {
                     variant="danger"
                     :loading="voidForm.processing"
                     @click="voidInvoice"
-                >Void</AppButton>
+                >{{ t('Void') }}</AppButton>
             </header>
 
             <!-- Access Blocking Control Card -->
@@ -111,41 +113,41 @@ async function voidInvoice() {
                     <AppIcon :name="invoice.blocks_access ? 'block' : 'check_circle'" :class="invoice.blocks_access ? 'text-error' : 'text-on-surface-variant'" class="text-2xl" />
                     <div>
                         <h4 class="text-sm font-bold" :class="invoice.blocks_access ? 'text-error' : 'text-primary'">
-                            {{ invoice.blocks_access ? 'Opsi Blokir Akses: AKTIF' : 'Opsi Blokir Akses: Nonaktif' }}
+                            {{ invoice.blocks_access ? t('Opsi Blokir Akses: AKTIF') : t('Opsi Blokir Akses: Nonaktif') }}
                         </h4>
                         <p class="text-xs text-on-surface-variant">
-                            {{ invoice.blocks_access ? 'Akses pengguna tenant diblokir sampai invoice ini dilunasi.' : 'Tenant tetap dapat menggunakan aplikasi walau invoice ini belum dibayar.' }}
+                            {{ invoice.blocks_access ? t('Akses pengguna tenant diblokir sampai invoice ini dilunasi.') : t('Tenant tetap dapat menggunakan aplikasi walau invoice ini belum dibayar.') }}
                         </p>
                     </div>
                 </div>
                 <form v-if="invoice.is_open" @submit.prevent="toggleBlocking">
                     <AppButton size="compact" :variant="invoice.blocks_access ? 'secondary' : 'danger'" :loading="toggleBlockingForm.processing">
-                        {{ invoice.blocks_access ? 'Nonaktifkan Blokir' : 'Aktifkan Blokir Akses' }}
+                        {{ invoice.blocks_access ? t('Nonaktifkan Blokir') : t('Aktifkan Blokir Akses') }}
                     </AppButton>
                 </form>
             </div>
 
             <div class="grid gap-6 lg:grid-cols-3">
                 <AppCard class="lg:col-span-2">
-                    <h2 class="font-bold text-primary">Ringkasan</h2>
+                    <h2 class="font-bold text-primary">{{ t('Ringkasan') }}</h2>
                     <dl class="mt-4 grid gap-4 sm:grid-cols-2">
-                        <div><dt class="text-sm text-on-surface-variant">Nominal</dt><dd class="text-xl font-bold text-primary">{{ money(invoice.amount, invoice.currency) }}</dd></div>
-                        <div><dt class="text-sm text-on-surface-variant">Dibayar</dt><dd class="text-xl font-bold text-primary">{{ money(invoice.amount_paid, invoice.currency) }}</dd></div>
-                        <div><dt class="text-sm text-on-surface-variant">Sisa</dt><dd class="text-xl font-bold text-primary">{{ money(invoice.remaining, invoice.currency) }}</dd></div>
-                        <div><dt class="text-sm text-on-surface-variant">Keperluan</dt><dd class="font-semibold text-primary">{{ purposeLabels[invoice.purpose] || invoice.purpose || '—' }}</dd></div>
-                        <div><dt class="text-sm text-on-surface-variant">Diterbitkan</dt><dd class="font-semibold text-primary">{{ invoice.issued_at || '—' }}</dd></div>
-                        <div><dt class="text-sm text-on-surface-variant">Dibuat oleh</dt><dd class="font-semibold text-primary">{{ invoice.creator?.name || 'Sistem' }}</dd></div>
-                        <div v-if="invoice.description" class="sm:col-span-2"><dt class="text-sm text-on-surface-variant">Deskripsi</dt><dd class="text-primary">{{ invoice.description }}</dd></div>
-                        <div v-if="invoice.notes" class="sm:col-span-2"><dt class="text-sm text-on-surface-variant">Catatan internal</dt><dd class="whitespace-pre-line text-sm text-primary">{{ invoice.notes }}</dd></div>
+                        <div><dt class="text-sm text-on-surface-variant">{{ t('Nominal') }}</dt><dd class="text-xl font-bold text-primary">{{ money(invoice.amount, invoice.currency) }}</dd></div>
+                        <div><dt class="text-sm text-on-surface-variant">{{ t('Dibayar') }}</dt><dd class="text-xl font-bold text-primary">{{ money(invoice.amount_paid, invoice.currency) }}</dd></div>
+                        <div><dt class="text-sm text-on-surface-variant">{{ t('Sisa') }}</dt><dd class="text-xl font-bold text-primary">{{ money(invoice.remaining, invoice.currency) }}</dd></div>
+                        <div><dt class="text-sm text-on-surface-variant">{{ t('Keperluan') }}</dt><dd class="font-semibold text-primary">{{ purposeLabels[invoice.purpose] || invoice.purpose || '—' }}</dd></div>
+                        <div><dt class="text-sm text-on-surface-variant">{{ t('Diterbitkan') }}</dt><dd class="font-semibold text-primary">{{ invoice.issued_at || '—' }}</dd></div>
+                        <div><dt class="text-sm text-on-surface-variant">{{ t('Dibuat oleh') }}</dt><dd class="font-semibold text-primary">{{ invoice.creator?.name || t('Sistem') }}</dd></div>
+                        <div v-if="invoice.description" class="sm:col-span-2"><dt class="text-sm text-on-surface-variant">{{ t('Deskripsi') }}</dt><dd class="text-primary">{{ invoice.description }}</dd></div>
+                        <div v-if="invoice.notes" class="sm:col-span-2"><dt class="text-sm text-on-surface-variant">{{ t('Catatan internal') }}</dt><dd class="whitespace-pre-line text-sm text-primary">{{ invoice.notes }}</dd></div>
                     </dl>
                 </AppCard>
 
                 <AppCard v-if="invoice.is_open" class="space-y-4">
-                    <h2 class="font-bold text-primary">Catat Pembayaran Manual</h2>
+                    <h2 class="font-bold text-primary">{{ t('Catat Pembayaran Manual') }}</h2>
                     <form class="space-y-3" @submit.prevent="recordManual">
                         <AppCurrencyInput
                             v-model="manualForm.amount"
-                            label="Nominal"
+                            :label="t('Nominal')"
                             :min="0.01"
                             :step="0.01"
                             required
@@ -153,18 +155,18 @@ async function voidInvoice() {
                         />
                         <AppDatePicker
                             v-model="manualForm.paid_at"
-                            label="Tanggal bayar"
+                            :label="t('Tanggal bayar')"
                             required
                             :error="manualForm.errors.paid_at"
                         />
-                        <AppInput v-model="manualForm.reference" label="Nomor referensi / bukti" :error="manualForm.errors.reference" />
-                        <AppTextarea v-model="manualForm.notes" label="Catatan" :error="manualForm.errors.notes" />
-                        <AppButton type="submit" class="w-full" :loading="manualForm.processing" icon="check">Catat Lunas / Cicil</AppButton>
+                        <AppInput v-model="manualForm.reference" :label="t('Nomor referensi / bukti')" :error="manualForm.errors.reference" />
+                        <AppTextarea v-model="manualForm.notes" :label="t('Catatan')" :error="manualForm.errors.notes" />
+                        <AppButton type="submit" class="w-full" :loading="manualForm.processing" icon="check">{{ t('Catat Lunas / Cicil') }}</AppButton>
                     </form>
 
                     <div class="pt-4 border-t border-outline-variant">
                         <AppButton variant="secondary" class="w-full" :loading="tripayForm.processing" @click="initiateTripay">
-                            Generate Link Pembayaran Online
+                            {{ t('Generate Link Pembayaran Online') }}
                         </AppButton>
                     </div>
                 </AppCard>
@@ -172,16 +174,16 @@ async function voidInvoice() {
 
             <!-- Payments List -->
             <AppCard v-if="payments.length" class="space-y-4">
-                <h2 class="font-bold text-primary">Riwayat Pembayaran</h2>
+                <h2 class="font-bold text-primary">{{ t('Riwayat Pembayaran') }}</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead class="border-b border-outline-variant text-xs uppercase text-on-surface-variant">
                             <tr>
-                                <th class="py-2.5">Tanggal</th>
-                                <th class="py-2.5">Metode</th>
-                                <th class="py-2.5">Nominal</th>
-                                <th class="py-2.5">Status</th>
-                                <th class="py-2.5">Referensi</th>
+                                <th class="py-2.5">{{ t('Tanggal') }}</th>
+                                <th class="py-2.5">{{ t('Metode') }}</th>
+                                <th class="py-2.5">{{ t('Nominal') }}</th>
+                                <th class="py-2.5">{{ t('Status') }}</th>
+                                <th class="py-2.5">{{ t('Referensi') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/60">

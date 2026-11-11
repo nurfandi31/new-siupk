@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -81,9 +83,9 @@ const selectedDate = ref<string>(props.filters.as_of ?? props.as_of ?? new Date(
 const selectedScope = ref<string>(props.filters.scope ?? 'all');
 
 const scopeOptions = [
-    { value: 'all', label: 'Semua (Kelompok + Individu)' },
-    { value: 'group', label: 'Pinjaman Kelompok' },
-    { value: 'member', label: 'Pinjaman Individu' },
+    { value: 'all', label: t('Semua (Kelompok + Individu)') },
+    { value: 'group', label: t('Pinjaman Kelompok') },
+    { value: 'member', label: t('Pinjaman Individu') },
 ];
 
 const money = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
@@ -122,13 +124,13 @@ function kolekClass(k: string): string {
 </script>
 
 <template>
-    <Head title="Daftar Tunggakan" />
+    <Head :title="t('Daftar Tunggakan')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan Piutang</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Daftar Tunggakan</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Piutang') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Daftar Tunggakan') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Pinjaman aktif dengan angsuran lewat jatuh tempo — {{ period.period_label }} — {{ identity.legal_name }}
                     </p>
@@ -138,39 +140,39 @@ function kolekClass(k: string): string {
                         <AppButton variant="secondary" icon="picture_as_pdf" size="compact">PDF</AppButton>
                     </a>
                     <a :href="excelHref" rel="noopener">
-                        <AppButton variant="outline" icon="table_view" size="compact">Excel</AppButton>
+                        <AppButton variant="outline" icon="table_view" size="compact">{{ t('Excel') }}</AppButton>
                     </a>
                 </div>
             </div>
 
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    <AppDatePicker v-model="selectedDate" label="Posisi Tanggal" mode="date" />
-                    <SmartSelect v-model="selectedScope" :options="scopeOptions" label="Scope Pinjaman" />
+                    <AppDatePicker v-model="selectedDate" :label="t('Posisi Tanggal')" mode="date" />
+                    <SmartSelect v-model="selectedScope" :options="scopeOptions" :label="t('Scope Pinjaman')" />
                     <div class="flex items-end">
-                        <AppButton type="button" class="!min-h-11 h-11 px-5" @click="apply">Tampilkan</AppButton>
+                        <AppButton type="button" class="!min-h-11 h-11 px-5" @click="apply">{{ t('Tampilkan') }}</AppButton>
                     </div>
                 </div>
             </AppCard>
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pinjaman Menunggak</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pinjaman Menunggak') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ totals.loan_count }}</p>
                     <p class="text-xs text-on-surface-variant">{{ totals.overdue_installment_count }} angsuran lewat tempo</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Tunggakan</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Tunggakan') }}</p>
                     <p class="mt-2 text-xl font-bold text-error">{{ formatMoney(totals.overdue_amount) }}</p>
                     <p class="text-xs text-on-surface-variant">Pokok {{ formatMoney(totals.overdue_principal) }} · Bunga {{ formatMoney(totals.overdue_interest) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Rata-rata Keterlambatan</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Rata-rata Keterlambatan') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ totals.avg_days_overdue }} hari</p>
                     <p class="text-xs text-on-surface-variant">Maks: {{ totals.max_days_overdue }} hari</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Sisa Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Sisa Pokok') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ formatMoney(totals.principal_remaining) }}</p>
                     <p class="text-xs text-on-surface-variant">dari alokasi {{ formatMoney(totals.principal_disbursed) }}</p>
                 </AppCard>
@@ -178,16 +180,16 @@ function kolekClass(k: string): string {
 
             <AppCard class="overflow-hidden p-0">
                 <div class="border-b border-outline-variant/40 p-4">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant">Distribusi Kolektibilitas (Aging)</h2>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Distribusi Kolektibilitas (Aging)') }}</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left">Bucket</th>
-                                <th class="px-3 py-2 text-center">Jumlah Pinjaman</th>
-                                <th class="px-3 py-2 text-right">Sisa Pokok</th>
-                                <th class="px-3 py-2 text-right">Total Tunggakan</th>
+                                <th class="px-3 py-2 text-left">{{ t('Bucket') }}</th>
+                                <th class="px-3 py-2 text-center">{{ t('Jumlah Pinjaman') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Sisa Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Total Tunggakan') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -208,30 +210,30 @@ function kolekClass(k: string): string {
 
             <AppCard class="overflow-hidden p-0">
                 <div class="border-b border-outline-variant/40 p-4">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant">Rincian Tunggakan per Pinjaman</h2>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Rincian Tunggakan per Pinjaman') }}</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left">No</th>
-                                <th class="px-3 py-2 text-left">Pinjaman</th>
-                                <th class="px-3 py-2 text-left">Peminjam / Kelompok</th>
-                                <th class="px-3 py-2 text-left">Desa</th>
-                                <th class="px-3 py-2 text-right">Pokok Pinjaman</th>
-                                <th class="px-3 py-2 text-right">Sisa Pokok</th>
-                                <th class="px-3 py-2 text-right">Tunggakan Pokok</th>
-                                <th class="px-3 py-2 text-right">Tunggakan Bunga</th>
-                                <th class="px-3 py-2 text-right">Total Tunggakan</th>
+                                <th class="px-3 py-2 text-left">{{ t('No') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Pinjaman') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Peminjam / Kelompok') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Desa') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Pokok Pinjaman') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Sisa Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Tunggakan Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Tunggakan Bunga') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Total Tunggakan') }}</th>
                                 <th class="px-3 py-2 text-center"># Angsuran</th>
-                                <th class="px-3 py-2 text-center">Hari Telat</th>
-                                <th class="px-3 py-2 text-center">Kolektibilitas</th>
+                                <th class="px-3 py-2 text-center">{{ t('Hari Telat') }}</th>
+                                <th class="px-3 py-2 text-center">{{ t('Kolektibilitas') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="rows.length === 0">
                                 <td colspan="12" class="px-3 py-8 text-center text-on-surface-variant">
-                                    Tidak ada pinjaman menunggak pada posisi tanggal ini.
+                                    {{ t('Tidak ada pinjaman menunggak pada posisi tanggal ini.') }}
                                 </td>
                             </tr>
                             <tr

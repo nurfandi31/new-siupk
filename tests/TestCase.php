@@ -11,10 +11,12 @@ abstract class TestCase extends BaseTestCase
 {
     protected function tearDown(): void
     {
-        try {
-            DB::connection('platform')->disconnect();
-            DB::connection('tenant')->disconnect();
-        } catch (\Throwable) {
+        foreach (['platform', 'tenant', 'legacy'] as $connection) {
+            try {
+                DB::connection($connection)->disconnect();
+            } catch (\Throwable) {
+                // Connection may not be configured in this test.
+            }
         }
 
         parent::tearDown();

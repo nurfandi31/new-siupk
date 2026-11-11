@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { useConfirm } from '../../composables/useConfirm';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppBadge from '../../Components/AppBadge.vue';
@@ -23,7 +25,7 @@ function formatMoney(v) {
 const { confirm: confirmAction } = useConfirm();
 
 async function destroy() {
-    if (!await confirmAction({ title: 'Hapus Inventaris', message: `Hapus inventaris "${props.asset.name}"?` })) return;
+    if (!await confirmAction({ title: t('Hapus Inventaris'), message: `Hapus inventaris "${props.asset.name}"?` })) return;
     router.delete(`/accounting/assets/${props.asset.row_id}`);
 }
 </script>
@@ -44,19 +46,19 @@ async function destroy() {
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <Link href="/accounting/assets"><AppButton variant="ghost" icon="arrow_back">Daftar</AppButton></Link>
-                    <Link v-if="can('assets.manage')" :href="`/accounting/assets/${asset.row_id}/edit`"><AppButton icon="edit">Edit</AppButton></Link>
-                    <AppButton v-if="can('assets.manage')" variant="ghost" icon="delete" @click="destroy">Hapus</AppButton>
+                    <Link href="/accounting/assets"><AppButton variant="ghost" icon="arrow_back">{{ t('Daftar') }}</AppButton></Link>
+                    <Link v-if="can('assets.manage')" :href="`/accounting/assets/${asset.row_id}/edit`"><AppButton icon="edit">{{ t('Edit') }}</AppButton></Link>
+                    <AppButton v-if="can('assets.manage')" variant="ghost" icon="delete" @click="destroy">{{ t('Hapus') }}</AppButton>
                 </div>
             </header>
 
             <div class="grid gap-3 sm:grid-cols-3">
                 <div class="rounded-xl bg-surface-container-low px-4 py-3">
-                    <p class="text-xs text-on-surface-variant">Nilai perolehan</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Nilai perolehan') }}</p>
                     <p class="text-xl font-bold text-primary">{{ formatMoney(asset.acquisition) }}</p>
                 </div>
                 <div class="rounded-xl bg-surface-container-low px-4 py-3">
-                    <p class="text-xs text-on-surface-variant">Akumulasi susut</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Akumulasi susut') }}</p>
                     <p class="text-xl font-bold text-primary">{{ formatMoney(asset.accumulated_depreciation) }}</p>
                 </div>
                 <div class="rounded-xl bg-surface-container-low px-4 py-3">
@@ -66,18 +68,18 @@ async function destroy() {
             </div>
 
             <AppCard>
-                <h2 class="mb-4 text-sm font-bold uppercase tracking-wide text-primary">Detail</h2>
+                <h2 class="mb-4 text-sm font-bold uppercase tracking-wide text-primary">{{ t('Detail') }}</h2>
                 <dl class="grid gap-3 sm:grid-cols-2 text-sm">
                     <div>
-                        <dt class="text-on-surface-variant">Tgl beli</dt>
+                        <dt class="text-on-surface-variant">{{ t('Tgl beli') }}</dt>
                         <dd class="font-medium">{{ asset.purchased_at || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-on-surface-variant">Jumlah × harga</dt>
+                        <dt class="text-on-surface-variant">{{ t('Jumlah × harga') }}</dt>
                         <dd class="font-medium">{{ asset.quantity }} × {{ formatMoney(asset.unit_cost) }}</dd>
                     </div>
                     <div>
-                        <dt class="text-on-surface-variant">Umur ekonomis</dt>
+                        <dt class="text-on-surface-variant">{{ t('Umur ekonomis') }}</dt>
                         <dd class="font-medium">
                             {{ asset.useful_life_months ? `${asset.useful_life_months} bulan` : 'Tidak disusutkan' }}
                         </dd>
@@ -87,11 +89,11 @@ async function destroy() {
                         <dd class="font-medium">{{ asset.age_months }} bulan · susut/bln {{ formatMoney(asset.monthly_depreciation) }}</dd>
                     </div>
                     <div>
-                        <dt class="text-on-surface-variant">Unit / desa</dt>
+                        <dt class="text-on-surface-variant">{{ t('Unit / desa') }}</dt>
                         <dd class="font-medium">{{ asset.unit?.name || '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-on-surface-variant">Validasi status</dt>
+                        <dt class="text-on-surface-variant">{{ t('Validasi status') }}</dt>
                         <dd class="font-medium">{{ asset.validated_at || '—' }}</dd>
                     </div>
                 </dl>
@@ -99,10 +101,10 @@ async function destroy() {
 
             <AppCard :padded="false">
                 <div class="border-b border-outline-variant/20 px-4 py-3">
-                    <h2 class="text-sm font-bold uppercase tracking-wide text-primary">Riwayat status</h2>
+                    <h2 class="text-sm font-bold uppercase tracking-wide text-primary">{{ t('Riwayat status') }}</h2>
                 </div>
                 <div v-if="histories.length === 0" class="px-4 py-8 text-center text-sm text-on-surface-variant">
-                    Belum ada riwayat.
+                    {{ t('Belum ada riwayat.') }}
                 </div>
                 <ul v-else class="divide-y divide-outline-variant/20">
                     <li v-for="h in histories" :key="h.row_id" class="px-4 py-3 text-sm">

@@ -51,7 +51,7 @@ const props = defineProps({
                 </p>
                 <p class="mt-1.5 text-xs text-on-surface-variant">
                     {{ t('Dikelola dengan') }}
-                    <a href="/" class="font-semibold text-primary hover:underline">siupk Next</a>
+                    <a href="/" class="font-semibold text-primary hover:underline">{{ t('siupk Next') }}</a>
                     — {{ t('Sistem Informasi Dana Bergulir Masyarakat') }}
                 </p>
             </div>

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link } from '@inertiajs/vue3';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -18,21 +20,21 @@ const props = defineProps({
 });
 
 const columns = [
-    { key: 'code', label: 'Kode', sortable: true },
-    { key: 'name', label: 'Nama Desa', sortable: true },
-    { key: 'village_naming', label: 'Sebutan' },
-    { key: 'village_head_name', label: 'Kepala Desa/Lurah', sortable: true },
-    { key: 'is_active', label: 'Status' },
+    { key: 'code', label: t('Kode'), sortable: true },
+    { key: 'name', label: t('Nama Desa'), sortable: true },
+    { key: 'village_naming', label: t('Sebutan') },
+    { key: 'village_head_name', label: t('Kepala Desa/Lurah'), sortable: true },
+    { key: 'is_active', label: t('Status') },
 ];
 </script>
 
 <template>
-    <Head title="Daftar Desa" />
+    <Head :title="t('Daftar Desa')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-4 sm:space-y-6">
             <header>
-                <h1 class="text-2xl font-bold text-primary">Daftar Desa</h1>
-                <p class="mt-1 text-on-surface-variant">Data desa berasal dari kecamatan tenant.</p>
+                <h1 class="text-2xl font-bold text-primary">{{ t('Daftar Desa') }}</h1>
+                <p class="mt-1 text-on-surface-variant">{{ t('Data desa berasal dari kecamatan tenant.') }}</p>
             </header>
             <AppCard :padded="false">
                 <SmartDataTable
@@ -45,15 +47,15 @@ const columns = [
                         :sort="sort"
                         :direction="direction"
                         search-label="Cari desa"
-                        search-placeholder="Cari desa..."
+                        :search-placeholder="t('Cari desa...')"
                         empty-title="Belum ada desa"
                         empty-description="Desa akan dibuat otomatis saat tenant didaftarkan."
                     >
                         <template #cell-village_naming="{ row }">{{ row.village_naming?.village_name || '—' }}</template>
-                        <template #cell-is_active="{ row }"><AppBadge :tone="row.is_active ? 'success' : 'neutral'">{{ row.is_active ? 'Aktif' : 'Nonaktif' }}</AppBadge></template>
+                        <template #cell-is_active="{ row }"><AppBadge :tone="row.is_active ? 'success' : 'neutral'">{{ row.is_active ? t('Aktif') : t('Nonaktif') }}</AppBadge></template>
                         <template #actions="{ row }">
                             <Link v-if="can('villages.manage')" :href="`/master-data/villages/${row.row_id}/edit`">
-                                <AppButton variant="ghost" size="compact" icon="edit" aria-label="Edit desa">Edit</AppButton>
+                                <AppButton variant="ghost" size="compact" icon="edit" :aria-label="t('Edit desa')">{{ t('Edit') }}</AppButton>
                             </Link>
                         </template>
                     </SmartDataTable>

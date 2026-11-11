@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
@@ -98,10 +100,10 @@ onUnmounted(() => {
 
                 <!-- Welcome Text -->
                 <h1 class="text-2xl font-black tracking-tight text-white sm:text-3xl">
-                    Selamat Datang
+                    {{ t('Selamat Datang') }}
                 </h1>
                 <p class="mt-1 text-sm font-semibold tracking-wide text-emerald-400">
-                    siupk Next Desktop
+                    {{ t('siupk Next Desktop') }}
                 </p>
                 <p class="mt-0.5 text-xs text-slate-400 max-w-xs truncate">
                     {{ tenantName }}
@@ -124,7 +126,7 @@ onUnmounted(() => {
 
             <!-- Footer copyright / version -->
             <div class="absolute bottom-6 text-[11px] text-slate-400">
-                Sistem Informasi Dana Bergulir Masyarakat
+                {{ t('Sistem Informasi Dana Bergulir Masyarakat') }}
             </div>
         </div>
     </Transition>
@@ -156,7 +158,7 @@ onUnmounted(() => {
                 </div>
 
                 <h2 class="text-xl font-bold tracking-tight text-white">
-                    Sampai Jumpa!
+                    {{ t('Sampai Jumpa!') }}
                 </h2>
                 <p class="mt-1 text-xs text-slate-400">
                     {{ exitStatus }}
@@ -164,7 +166,7 @@ onUnmounted(() => {
 
                 <div class="mt-6 flex items-center gap-2 text-[11px] text-slate-400 font-medium">
                     <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                    <span>Menutup aplikasi dengan aman...</span>
+                    <span>{{ t('Menutup aplikasi dengan aman...') }}</span>
                 </div>
             </div>
         </div>

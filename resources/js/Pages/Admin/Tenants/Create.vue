@@ -136,6 +136,9 @@ function submit() {
                             <template v-if="props.seedPassword">
                                 {{ t('Password awal:') }} <code class="rounded bg-surface-container-low px-1 py-0.5 font-mono text-[11px] text-primary">{{ props.seedPassword }}</code>.
                             </template>
+                            <template v-else>
+                                {{ t('Password acak akan dibuat otomatis dan ditampilkan setelah tenant dibuat.') }}
+                            </template>
                             {{ t('Password dapat diubah lewat menu Users setelah tenant dibuat.') }}
                         </p>
                         <div class="mt-3 flex flex-wrap gap-2">

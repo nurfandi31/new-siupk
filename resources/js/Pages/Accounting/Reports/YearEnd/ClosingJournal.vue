@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppBadge from '../../../../Components/AppBadge.vue';
@@ -42,23 +44,23 @@ const pdfHref = computed(() => {
 </script>
 
 <template>
-    <Head title="Jurnal Tutup Buku" />
+    <Head :title="t('Jurnal Tutup Buku')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Pelaporan · Tutup Buku
+                        {{ t('Pelaporan · Tutup Buku') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Jurnal Tutup Buku</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Jurnal Tutup Buku') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        Tahun Buku {{ year }} · 31 Desember {{ year }}
+                        {{ t('Tahun Buku') }} {{ year }} · {{ t('31 Desember') }} {{ year }}
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <AppBadge tone="warning">PREVIEW / SIMULASI</AppBadge>
                     <AppBadge :tone="balanced ? 'success' : 'error'">
-                        {{ balanced ? 'Debit = Kredit' : 'Tidak seimbang' }}
+                        {{ balanced ? 'Debit = Kredit' : t('Tidak seimbang') }}
                     </AppBadge>
                     <a :href="pdfHref" target="_blank" rel="noopener">
                         <AppButton variant="secondary" icon="picture_as_pdf" size="compact">PDF</AppButton>
@@ -70,7 +72,7 @@ const pdfHref = computed(() => {
                 <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                            Tahun Buku
+                            {{ t('Tahun Buku') }}
                         </label>
                         <select
                             class="w-full rounded-xl border border-outline-variant bg-surface px-3 py-2 text-sm"
@@ -84,7 +86,7 @@ const pdfHref = computed(() => {
                     </div>
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                            Total Pendapatan
+                            {{ t('Total Pendapatan') }}
                         </label>
                         <input
                             readonly
@@ -94,7 +96,7 @@ const pdfHref = computed(() => {
                     </div>
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                            Total Beban
+                            {{ t('Total Beban') }}
                         </label>
                         <input
                             readonly
@@ -107,21 +109,21 @@ const pdfHref = computed(() => {
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Surplus/(Defisit)</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Surplus/(Defisit)') }}</p>
                     <p class="mt-2 text-xl font-bold" :class="totals.surplus < 0 ? 'text-error' : 'text-primary'">
                         {{ money.format(totals.surplus) }}
                     </p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Debit</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Debit') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ money.format(totals.debit) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Kredit</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Kredit') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ money.format(totals.credit) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jumlah Baris</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Baris') }}</p>
                     <p class="mt-2 text-xl font-bold">{{ row_count }}</p>
                 </AppCard>
             </div>
@@ -131,14 +133,14 @@ const pdfHref = computed(() => {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-left text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 w-12">No</th>
-                                <th class="px-3 py-2 w-28">Tanggal</th>
-                                <th class="px-3 py-2 w-32">Ref</th>
-                                <th class="px-3 py-2 w-24">Kode</th>
-                                <th class="px-3 py-2">Nama Akun</th>
-                                <th class="px-3 py-2">Keterangan</th>
-                                <th class="px-3 py-2 text-right w-32">Debit</th>
-                                <th class="px-3 py-2 text-right w-32">Kredit</th>
+                                <th class="px-3 py-2 w-12">{{ t('No') }}</th>
+                                <th class="px-3 py-2 w-28">{{ t('Tanggal') }}</th>
+                                <th class="px-3 py-2 w-32">{{ t('Ref') }}</th>
+                                <th class="px-3 py-2 w-24">{{ t('Kode') }}</th>
+                                <th class="px-3 py-2">{{ t('Nama Akun') }}</th>
+                                <th class="px-3 py-2">{{ t('Keterangan') }}</th>
+                                <th class="px-3 py-2 text-right w-32">{{ t('Debit') }}</th>
+                                <th class="px-3 py-2 text-right w-32">{{ t('Kredit') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -166,7 +168,7 @@ const pdfHref = computed(() => {
                         </tbody>
                         <tfoot>
                             <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                <td colspan="6" class="px-3 py-2">Total Jurnal Tutup Buku</td>
+                                <td colspan="6" class="px-3 py-2">{{ t('Total Jurnal Tutup Buku') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.debit) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(totals.credit) }}</td>
                             </tr>
@@ -177,7 +179,7 @@ const pdfHref = computed(() => {
 
             <AppCard class="p-5">
                 <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-                    Ringkasan Proses
+                    {{ t('Ringkasan Proses') }}
                 </h2>
                 <ol class="list-decimal space-y-2 pl-5 text-sm text-on-surface">
                     <li>
@@ -202,7 +204,7 @@ const pdfHref = computed(() => {
             <AppCard class="p-5">
                 <p class="text-xs text-on-surface-variant">
                     <strong class="text-on-surface">Catatan:</strong> Jurnal ini adalah PREVIEW/SIMULASI yang
-                    di-generate otomatis dari saldo akun nominal per 31 Desember {{ year }}. Jurnal sebenarnya akan
+                    di-generate otomatis dari saldo akun nominal per {{ t('31 Desember') }} {{ year }}. Jurnal sebenarnya akan
                     di-posting oleh modul Tutup Buku (PeriodClose) jika administrator menjalankan proses tutup tahun.
                 </p>
             </AppCard>

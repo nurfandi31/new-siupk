@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -35,9 +37,9 @@ const form = useForm({
 });
 
 const statusOptions = [
-    { value: 'active', label: 'Aktif (Dapat Login)' },
-    { value: 'suspended', label: 'Ditangguhkan (Akses Ditutup Sementara)' },
-    { value: 'inactive', label: 'Nonaktif' },
+    { value: 'active', label: t('Aktif (Dapat Login)') },
+    { value: 'suspended', label: t('Ditangguhkan (Akses Ditutup Sementara)') },
+    { value: 'inactive', label: t('Nonaktif') },
 ];
 
 const showVillageSelect = computed(() => form.is_village_user || form.role === 'village_operator');
@@ -92,31 +94,31 @@ function submit() {
                     {{ editing ? `Edit Pengguna: ${user.name}` : 'Tambah Pengguna Baru' }}
                 </h1>
                 <p class="mt-1 text-sm text-on-surface-variant">
-                    Atur identitas akun, hak akses peran (role), dan status pengguna.
+                    {{ t('Atur identitas akun, hak akses peran (role), dan status pengguna.') }}
                 </p>
             </header>
 
             <form class="space-y-6" @submit.prevent="submit">
-                <AppCard title="Informasi Akun">
+                <AppCard :title="t('Informasi Akun')">
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <AppInput v-model="form.name" label="Nama Lengkap" placeholder="Nama lengkap" required :error="form.errors.name" />
-                        <AppInput v-model="form.username" label="Username Login" placeholder="Masukkan username" required :error="form.errors.username" />
+                        <AppInput v-model="form.name" :label="t('Nama Lengkap')" :placeholder="t('Nama lengkap')" required :error="form.errors.name" />
+                        <AppInput v-model="form.username" :label="t('Username Login')" :placeholder="t('Masukkan username')" required :error="form.errors.username" />
                         <div class="sm:col-span-2">
-                            <AppInput v-model="form.email" label="Alamat Email (Opsional)" placeholder="Masukkan email" type="email" :error="form.errors.email" />
+                            <AppInput v-model="form.email" :label="t('Alamat Email (Opsional)')" :placeholder="t('Masukkan email')" type="email" :error="form.errors.email" />
                         </div>
                         <div class="sm:col-span-2">
-                            <AppInput v-model="form.phone" label="Nomor HP (WhatsApp)" icon="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" required :error="form.errors.phone" />
+                            <AppInput v-model="form.phone" :label="t('Nomor HP (WhatsApp)')" icon="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" required :error="form.errors.phone" />
                         </div>
 
                         <div v-if="showMemberSelect" class="border-t border-outline-variant pt-4">
                             <SmartSelect
                                 v-model="form.member_row_id"
-                                label="Anggota Terhubung"
+                                :label="t('Anggota Terhubung')"
                                 :options="memberOptions"
                                 searchable
                                 required
                                 clearable
-                                placeholder="Cari anggota..."
+                                :placeholder="t('Cari anggota...')"
                                 :loading="memberLoading"
                                 :error="form.errors.member_row_id"
                                 @search="searchMembers"
@@ -125,7 +127,7 @@ function submit() {
                     </div>
                 </AppCard>
 
-                <AppCard title="Keamanan & Password">
+                <AppCard :title="t('Keamanan & Password')">
                     <div class="grid gap-4 sm:grid-cols-2">
                         <AppInput
                             v-model="form.password"
@@ -136,44 +138,44 @@ function submit() {
                         />
                         <AppInput
                             v-model="form.password_confirmation"
-                            label="Konfirmasi Password"
+                            :label="t('Konfirmasi Password')"
                             type="password"
                             :required="!editing || Boolean(form.password)"
                         />
                     </div>
                 </AppCard>
 
-                <AppCard title="Peran & Status Akses">
+                <AppCard :title="t('Peran & Status Akses')">
                     <div class="space-y-4">
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <SmartSelect v-model="form.role" label="Peran (Role)" :options="roleOptions" :error="form.errors.role" />
-                            <SmartSelect v-model="form.status" label="Status Akun" :options="statusOptions" required :error="form.errors.status" />
+                            <SmartSelect v-model="form.role" :label="t('Peran (Role)')" :options="roleOptions" :error="form.errors.role" />
+                            <SmartSelect v-model="form.status" :label="t('Status Akun')" :options="statusOptions" required :error="form.errors.status" />
                         </div>
 
                         <div class="grid gap-4 sm:grid-cols-2 border-t border-outline-variant pt-4">
                             <AppDatePicker
                                 v-model="form.appointed_at"
-                                label="Mulai Menjabat"
+                                :label="t('Mulai Menjabat')"
                                 :error="form.errors.appointed_at"
                             />
                             <AppDatePicker
                                 v-model="form.term_end_at"
-                                label="Selesai Menjabat"
+                                :label="t('Selesai Menjabat')"
                                 :min="form.appointed_at || undefined"
                                 :error="form.errors.term_end_at"
                             />
                         </div>
 
                         <div class="border-t border-outline-variant pt-4 space-y-3">
-                            <AppCheckbox v-model="form.is_village_user" label="Tandai sebagai Operator Desa Khusus" />
-                            <p class="text-xs text-on-surface-variant">Operator desa hanya memiliki hak akses terbatas untuk menginput proposal dan data anggota di desa tertentu.</p>
+                            <AppCheckbox v-model="form.is_village_user" :label="t('Tandai sebagai Operator Desa Khusus')" />
+                            <p class="text-xs text-on-surface-variant">{{ t('Operator desa hanya memiliki hak akses terbatas untuk menginput proposal dan data anggota di desa tertentu.') }}</p>
                             <div v-if="showVillageSelect" class="pt-2">
                                 <SmartSelect
                                     v-model="form.village_row_id"
-                                    label="Pilih Desa Penugasan"
+                                    :label="t('Pilih Desa Penugasan')"
                                     :options="villageOptions"
                                     searchable
-                                    placeholder="Cari desa..."
+                                    :placeholder="t('Cari desa...')"
                                     :error="form.errors.village_row_id"
                                 />
                             </div>
@@ -183,10 +185,10 @@ function submit() {
 
                 <div class="flex items-center justify-end gap-3">
                     <Link href="/access/users">
-                        <AppButton variant="secondary" type="button">Batal</AppButton>
+                        <AppButton variant="secondary" type="button">{{ t('Batal') }}</AppButton>
                     </Link>
                     <AppButton type="submit" :loading="form.processing" icon="save">
-                        {{ editing ? 'Simpan Perubahan' : 'Buat Pengguna' }}
+                        {{ editing ? t('Simpan Perubahan') : t('Buat Pengguna') }}
                     </AppButton>
                 </div>
             </form>

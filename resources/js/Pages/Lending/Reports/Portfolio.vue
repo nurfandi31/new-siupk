@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -44,13 +46,13 @@ function formatDate(v) {
     if (!v) return '—';
     const d = new Date(v);
     if (Number.isNaN(d.getTime())) return '—';
-    return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
+    return new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
 }
 
 const filterOptions = [
-    { value: 'all', label: 'Semua aktif' },
-    { value: 'overdue', label: 'Tunggakan' },
-    { value: 'current', label: 'Lancar' },
+    { value: 'all', label: t('Semua aktif') },
+    { value: 'overdue', label: t('Tunggakan') },
+    { value: 'current', label: t('Lancar') },
 ];
 
 function apply() {
@@ -105,13 +107,13 @@ const villageSections = computed(() => {
 </script>
 
 <template>
-    <Head title="Portofolio Pinjaman" />
+    <Head :title="t('Portofolio Pinjaman')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Portofolio Pinjaman</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Portofolio Pinjaman') }}</h1>
                     <p class="text-sm text-on-surface-variant">{{ period.period_label }}</p>
                 </div>
                 <a :href="pdfHref" target="_blank" rel="noopener">
@@ -121,14 +123,14 @@ const villageSections = computed(() => {
 
             <AppCard class="p-4">
                 <div class="grid gap-3 sm:grid-cols-[200px_1fr_auto] sm:items-end">
-                    <AppDatePicker v-model="asOf" mode="date" label="Posisi per" />
+                    <AppDatePicker v-model="asOf" mode="date" :label="t('Posisi per')" />
                     <div>
-                        <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Filter</p>
+                        <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">{{ t('Filter') }}</p>
                         <AppFilterPill
                             v-model="filter"
                             :items="filterOptions"
                             variant="outline"
-                            aria-label="Filter status pinjaman"
+                            :aria-label="t('Filter status pinjaman')"
                         />
                     </div>
                 </div>
@@ -136,20 +138,20 @@ const villageSections = computed(() => {
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Pinjaman</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pinjaman') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.count }}</p>
                     <p class="mt-1 text-xs text-on-surface-variant">{{ totals.overdue_count }} tunggakan</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Sisa Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Sisa Pokok') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.principal_remaining) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Sisa Jasa</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Sisa Jasa') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.interest_remaining) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Nilai Tunggakan</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Nilai Tunggakan') }}</p>
                     <p class="mt-2 text-2xl font-bold" :class="totals.overdue_amount > 0 ? 'text-error' : 'text-primary'">
                         {{ formatMoney(totals.overdue_amount) }}
                     </p>
@@ -169,16 +171,16 @@ const villageSections = computed(() => {
 
             <AppCard v-if="by_village.length" class="overflow-hidden p-0">
                 <div class="border-b border-outline-variant px-4 py-3">
-                    <h2 class="text-sm font-bold text-primary">Kolektibilitas ringkas per desa</h2>
+                    <h2 class="text-sm font-bold text-primary">{{ t('Kolektibilitas ringkas per desa') }}</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left">Desa</th>
-                                <th class="px-3 py-2 text-right">Pinjaman</th>
-                                <th class="px-3 py-2 text-right">Sisa Pokok</th>
-                                <th class="px-3 py-2 text-right">Tunggakan</th>
+                                <th class="px-3 py-2 text-left">{{ t('Desa') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Pinjaman') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Sisa Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Tunggakan') }}</th>
                                 <th class="px-3 py-2 text-right"># Nunggak</th>
                             </tr>
                         </thead>
@@ -203,22 +205,22 @@ const villageSections = computed(() => {
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
                                 <th class="px-3 py-2 text-left">ID</th>
-                                <th class="px-3 py-2 text-left">Kelompok</th>
-                                <th class="px-3 py-2 text-left">Produk</th>
-                                <th class="px-3 py-2 text-left">Cair</th>
-                                <th class="px-3 py-2 text-right">Alokasi</th>
-                                <th class="px-3 py-2 text-right">Sisa Pokok</th>
-                                <th class="px-3 py-2 text-right">Sisa Jasa</th>
-                                <th class="px-3 py-2 text-right">Tungg. Pokok</th>
-                                <th class="px-3 py-2 text-right">Tungg. Jasa</th>
-                                <th class="px-3 py-2 text-center">Hari</th>
-                                <th class="px-3 py-2 text-left">Jatuh tempo</th>
+                                <th class="px-3 py-2 text-left">{{ t('Kelompok') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Produk') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Cair') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Alokasi') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Sisa Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Sisa Jasa') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Tungg. Pokok') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Tungg. Jasa') }}</th>
+                                <th class="px-3 py-2 text-center">{{ t('Hari') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Jatuh tempo') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="rows.length === 0">
                                 <td colspan="11" class="px-3 py-8 text-center text-on-surface-variant">
-                                    Tidak ada pinjaman aktif untuk filter ini.
+                                    {{ t('Tidak ada pinjaman aktif untuk filter ini.') }}
                                 </td>
                             </tr>
                             <template v-for="(section, sectionIndex) in villageSections" :key="section.village">

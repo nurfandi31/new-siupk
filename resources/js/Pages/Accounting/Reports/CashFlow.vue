@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -26,19 +28,19 @@ function formatMoney(v) {
 </script>
 
 <template>
-    <Head title="Arus Kas" />
+    <Head :title="t('Arus Kas')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Pelaporan</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Laporan Arus Kas</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Laporan Arus Kas') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         {{ period.period_label }} · metode langsung dari jurnal akun kas (1.1.01*)
                     </p>
                 </div>
                 <AppBadge :tone="reconciled ? 'success' : 'error'">
-                    {{ reconciled ? 'Rekonsiliasi OK' : 'Selisih vs saldo kas' }}
+                    {{ reconciled ? t('Rekonsiliasi OK') : t('Selisih vs saldo kas') }}
                 </AppBadge>
             </div>
 
@@ -54,11 +56,11 @@ function formatMoney(v) {
 
             <div class="grid gap-3 sm:grid-cols-3">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Saldo kas awal</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Saldo kas awal') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(opening_cash) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Perubahan bersih</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Perubahan bersih') }}</p>
                     <p
                         class="mt-2 text-2xl font-bold"
                         :class="net_change >= 0 ? 'text-primary' : 'text-error'"
@@ -67,7 +69,7 @@ function formatMoney(v) {
                     </p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Saldo kas akhir</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Saldo kas akhir') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(closing_cash) }}</p>
                     <p v-if="!reconciled" class="mt-1 text-xs text-error">
                         Implied {{ formatMoney(implied_closing) }}
@@ -80,13 +82,13 @@ function formatMoney(v) {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left">Uraian</th>
-                                <th class="px-3 py-2 text-right">Jumlah</th>
+                                <th class="px-3 py-2 text-left">{{ t('Uraian') }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Jumlah') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr class="border-t border-outline-variant/40 bg-surface-container-low font-semibold">
-                                <td class="px-3 py-2">Saldo kas awal periode</td>
+                                <td class="px-3 py-2">{{ t('Saldo kas awal periode') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(opening_cash) }}</td>
                             </tr>
 
@@ -95,7 +97,7 @@ function formatMoney(v) {
                                     <td class="px-3 py-2" colspan="2">{{ section.label }}</td>
                                 </tr>
                                 <tr v-if="section.lines.length === 0">
-                                    <td class="px-3 py-1.5 pl-6 text-on-surface-variant" colspan="2">Tidak ada mutasi</td>
+                                    <td class="px-3 py-1.5 pl-6 text-on-surface-variant" colspan="2">{{ t('Tidak ada mutasi') }}</td>
                                 </tr>
                                 <tr
                                     v-for="(line, idx) in section.lines"
@@ -127,7 +129,7 @@ function formatMoney(v) {
                             </template>
 
                             <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                <td class="px-3 py-2">Kenaikan (penurunan) bersih kas</td>
+                                <td class="px-3 py-2">{{ t('Kenaikan (penurunan) bersih kas') }}</td>
                                 <td
                                     class="px-3 py-2 text-right tabular-nums"
                                     :class="net_change < 0 ? 'text-error' : ''"
@@ -136,7 +138,7 @@ function formatMoney(v) {
                                 </td>
                             </tr>
                             <tr class="font-semibold">
-                                <td class="px-3 py-2">Saldo kas akhir periode</td>
+                                <td class="px-3 py-2">{{ t('Saldo kas akhir periode') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(closing_cash) }}</td>
                             </tr>
                         </tbody>
@@ -146,7 +148,7 @@ function formatMoney(v) {
                     Klasifikasi dari lawan akun kas di tiap jurnal (operasi / investasi / pendanaan).
                     Sumber pinjaman digabung ke operasi. Bukan salinan tabel mapping legacy.
                     <span v-if="cash_accounts.length">
-                        · Kas:
+                        {{ t('· Kas:') }}
                         <template v-for="(a, i) in cash_accounts" :key="a.row_id">
                             {{ a.code }}<span v-if="i < cash_accounts.length - 1">, </span>
                         </template>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -91,12 +93,12 @@ const props = defineProps<{
 /* -------------------------------------------------------------------------- */
 
 const KIND_TABS: Array<{ key: 'all' | SavingsKind; label: string }> = [
-    { key: 'all', label: 'Semua' },
-    { key: 'pokok', label: 'Simpanan Pokok' },
-    { key: 'wajib', label: 'Simpanan Wajib' },
-    { key: 'sukarela', label: 'Simpanan Sukarela' },
-    { key: 'berjangka', label: 'Simpanan Berjangka' },
-    { key: 'lainnya', label: 'Lainnya' },
+    { key: 'all', label: t('Semua') },
+    { key: 'pokok', label: t('Simpanan Pokok') },
+    { key: 'wajib', label: t('Simpanan Wajib') },
+    { key: 'sukarela', label: t('Simpanan Sukarela') },
+    { key: 'berjangka', label: t('Simpanan Berjangka') },
+    { key: 'lainnya', label: t('Lainnya') },
 ];
 
 const activeTab = ref<'all' | SavingsKind>('all');
@@ -144,15 +146,15 @@ function isEmptyKind(kind: SavingsKind): boolean {
 </script>
 
 <template>
-    <Head title="DRT — Daftar Rincian Tabungan (OJK)" />
+    <Head :title="t('DRT — Daftar Rincian Tabungan (OJK)')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Laporan OJK · DRT
+                        {{ t('Laporan OJK · DRT') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Daftar Rincian Tabungan</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Daftar Rincian Tabungan') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         {{ periodLabel }} · per {{ period.as_of ?? '-' }}
                     </p>
@@ -164,14 +166,14 @@ function isEmptyKind(kind: SavingsKind): boolean {
 
             <AppCard v-if="error" class="border border-error/30 bg-error-container/40 p-4">
                 <p class="text-sm text-error">
-                    <span class="font-bold">Gagal membangun laporan:</span> {{ error }}
+                    <span class="font-bold">{{ t('Gagal membangun laporan:') }}</span> {{ error }}
                 </p>
             </AppCard>
 
             <!-- Disclaimer OJK: modul simpanan belum tersedia penuh -->
             <AppCard class="border border-warning/30 bg-warning-container/30 p-4">
                 <p class="text-xs text-on-surface-variant">
-                    <span class="font-bold text-warning">Catatan:</span> {{ disclaimer }}
+                    <span class="font-bold text-warning">{{ t('Catatan:') }}</span> {{ disclaimer }}
                 </p>
             </AppCard>
 
@@ -187,27 +189,27 @@ function isEmptyKind(kind: SavingsKind): boolean {
             <!-- KPI tiles per savings kind -->
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Simpanan Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Simpanan Pokok') }}</p>
                     <p class="mt-2 text-lg font-bold text-primary">{{ fmt(by_kind.pokok?.closing_balance ?? 0) }}</p>
                     <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.pokok?.count ?? 0 }} akun</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Simpanan Wajib</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Simpanan Wajib') }}</p>
                     <p class="mt-2 text-lg font-bold text-primary">{{ fmt(by_kind.wajib?.closing_balance ?? 0) }}</p>
                     <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.wajib?.count ?? 0 }} akun</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Simpanan Sukarela</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Simpanan Sukarela') }}</p>
                     <p class="mt-2 text-lg font-bold text-primary">{{ fmt(by_kind.sukarela?.closing_balance ?? 0) }}</p>
                     <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.sukarela?.count ?? 0 }} akun</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Simpanan Berjangka</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Simpanan Berjangka') }}</p>
                     <p class="mt-2 text-lg font-bold text-primary">{{ fmt(by_kind.berjangka?.closing_balance ?? 0) }}</p>
                     <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.berjangka?.count ?? 0 }} akun</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total') }}</p>
                     <p :class="totals.closing_balance < 0 ? 'mt-2 text-lg font-bold text-error' : 'mt-2 text-lg font-bold text-primary'">
                         {{ fmt(totals.closing_balance) }}
                     </p>
@@ -244,19 +246,19 @@ function isEmptyKind(kind: SavingsKind): boolean {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left w-12">No</th>
-                                <th class="px-3 py-2 text-left w-28">Kode Akun</th>
-                                <th class="px-3 py-2 text-left">Nama Rekening</th>
-                                <th class="px-3 py-2 text-left w-40">Jenis Simpanan</th>
-                                <th class="px-3 py-2 text-right w-32">Saldo Akhir</th>
-                                <th class="px-3 py-2 text-right w-32">Mutasi Debit</th>
-                                <th class="px-3 py-2 text-right w-32">Mutasi Kredit</th>
+                                <th class="px-3 py-2 text-left w-12">{{ t('No') }}</th>
+                                <th class="px-3 py-2 text-left w-28">{{ t('Kode Akun') }}</th>
+                                <th class="px-3 py-2 text-left">{{ t('Nama Rekening') }}</th>
+                                <th class="px-3 py-2 text-left w-40">{{ t('Jenis Simpanan') }}</th>
+                                <th class="px-3 py-2 text-right w-32">{{ t('Saldo Akhir') }}</th>
+                                <th class="px-3 py-2 text-right w-32">{{ t('Mutasi Debit') }}</th>
+                                <th class="px-3 py-2 text-right w-32">{{ t('Mutasi Kredit') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="filteredRows.length === 0">
                                 <td colspan="7" class="px-3 py-8 text-center text-on-surface-variant">
-                                    Belum ada data simpanan untuk filter ini.
+                                    {{ t('Belum ada data simpanan untuk filter ini.') }}
                                 </td>
                             </tr>
                             <tr

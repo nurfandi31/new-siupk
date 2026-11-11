@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AppCard from '../../../Components/AppCard.vue';
@@ -22,7 +24,7 @@ const selectedTenant = ref(props.selected_tenant_id || '');
 const baseUrl = '/regency/reports/income-statement';
 
 const tenantOptions = computed(() => [
-    { value: '', label: 'Semua Kecamatan (Gabungan)' },
+    { value: '', label: t('Semua Kecamatan (Gabungan)') },
     ...(props.report.kecamatans || []).map(kec => ({
         value: kec.id,
         label: kec.name,
@@ -47,7 +49,7 @@ watch(selectedTenant, () => {
                 <div>
                     <h1 class="text-2xl font-bold text-primary">Laba Rugi Konsolidasi Kabupaten {{ regency_name }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        {{ report.period?.period_label }} · {{ report.is_consolidated ? 'Gabungan Seluruh Kecamatan' : 'Kecamatan Terpilih' }}
+                        {{ report.period?.period_label }} · {{ report.is_consolidated ? t('Gabungan Seluruh Kecamatan') : t('Kecamatan Terpilih') }}
                     </p>
                 </div>
 
@@ -62,7 +64,7 @@ watch(selectedTenant, () => {
                         <SmartSelect
                             v-model="selectedTenant"
                             :options="tenantOptions"
-                            label="Kecamatan"
+                            :label="t('Kecamatan')"
                             value-key="value"
                             label-key="label"
                             hide-label
@@ -74,15 +76,15 @@ watch(selectedTenant, () => {
             <!-- Summary Cards -->
             <div class="grid gap-4 sm:grid-cols-3">
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Pendapatan Operasional (YTD)</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Pendapatan Operasional (YTD)') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ money(report.summary?.revenue_ops?.ytd) }}</p>
                 </AppCard>
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Beban Operasional (YTD)</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Beban Operasional (YTD)') }}</span>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ money(report.summary?.expense_ops?.ytd) }}</p>
                 </AppCard>
                 <AppCard>
-                    <span class="text-sm font-semibold text-on-surface-variant">Laba (Rugi) Bersih (YTD)</span>
+                    <span class="text-sm font-semibold text-on-surface-variant">{{ t('Laba (Rugi) Bersih (YTD)') }}</span>
                     <p
                         class="mt-2 text-2xl font-bold"
                         :class="(report.summary?.after_tax?.ytd || 0) >= 0 ? 'text-primary' : 'text-error'"
@@ -98,8 +100,8 @@ watch(selectedTenant, () => {
                     <table class="w-full text-left text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase text-on-surface-variant">
                             <tr>
-                                <th class="px-6 py-3 w-32">Kode</th>
-                                <th class="px-6 py-3">Nama Rekening</th>
+                                <th class="px-6 py-3 w-32">{{ t('Kode') }}</th>
+                                <th class="px-6 py-3">{{ t('Nama Rekening') }}</th>
                                 <th class="px-4 py-3 text-right">s.d. {{ report.header_lalu }}</th>
                                 <th class="px-4 py-3 text-right">{{ report.header_sekarang }}</th>
                                 <th
@@ -116,7 +118,7 @@ watch(selectedTenant, () => {
                         <tbody class="divide-y divide-outline-variant">
                             <tr v-if="!report.groups?.length">
                                 <td :colspan="(report.is_consolidated && report.kecamatans.length > 1) ? report.kecamatans.length + 5 : 5" class="px-6 py-8 text-center text-on-surface-variant">
-                                    Belum ada transaksi pendapatan atau beban pada periode ini.
+                                    {{ t('Belum ada transaksi pendapatan atau beban pada periode ini.') }}
                                 </td>
                             </tr>
                             <template v-for="group in report.groups" :key="group.code">
@@ -152,35 +154,35 @@ watch(selectedTenant, () => {
                         </tbody>
                         <tfoot class="bg-surface-container-low font-bold">
                             <tr class="border-t border-outline-variant">
-                                <td class="px-6 py-2.5" colspan="2">Laba (Rugi) Operasional (A)</td>
+                                <td class="px-6 py-2.5" colspan="2">{{ t('Laba (Rugi) Operasional (A)') }}</td>
                                 <td class="px-4 py-2.5 text-right text-xs">{{ money(report.summary?.operating?.prior) }}</td>
                                 <td class="px-4 py-2.5 text-right text-xs">{{ money(report.summary?.operating?.current) }}</td>
                                 <td v-if="report.is_consolidated && report.kecamatans.length > 1" :colspan="report.kecamatans.length"></td>
                                 <td class="px-6 py-2.5 text-right text-primary">{{ money(report.summary?.operating?.ytd) }}</td>
                             </tr>
                             <tr>
-                                <td class="px-6 py-2.5" colspan="2">Laba (Rugi) Non Operasional (B)</td>
+                                <td class="px-6 py-2.5" colspan="2">{{ t('Laba (Rugi) Non Operasional (B)') }}</td>
                                 <td class="px-4 py-2.5 text-right text-xs">{{ money(report.summary?.non_operating?.prior) }}</td>
                                 <td class="px-4 py-2.5 text-right text-xs">{{ money(report.summary?.non_operating?.current) }}</td>
                                 <td v-if="report.is_consolidated && report.kecamatans.length > 1" :colspan="report.kecamatans.length"></td>
                                 <td class="px-6 py-2.5 text-right text-primary">{{ money(report.summary?.non_operating?.ytd) }}</td>
                             </tr>
                             <tr>
-                                <td class="px-6 py-2.5" colspan="2">Laba (Rugi) Sebelum Pajak (A+B)</td>
+                                <td class="px-6 py-2.5" colspan="2">{{ t('Laba (Rugi) Sebelum Pajak (A+B)') }}</td>
                                 <td class="px-4 py-2.5 text-right text-xs">{{ money(report.summary?.before_tax?.prior) }}</td>
                                 <td class="px-4 py-2.5 text-right text-xs">{{ money(report.summary?.before_tax?.current) }}</td>
                                 <td v-if="report.is_consolidated && report.kecamatans.length > 1" :colspan="report.kecamatans.length"></td>
                                 <td class="px-6 py-2.5 text-right text-primary">{{ money(report.summary?.before_tax?.ytd) }}</td>
                             </tr>
                             <tr>
-                                <td class="px-6 py-2.5" colspan="2">Beban Pajak Penghasilan</td>
+                                <td class="px-6 py-2.5" colspan="2">{{ t('Beban Pajak Penghasilan') }}</td>
                                 <td class="px-4 py-2.5 text-right text-xs">{{ money(report.summary?.tax?.prior) }}</td>
                                 <td class="px-4 py-2.5 text-right text-xs">{{ money(report.summary?.tax?.current) }}</td>
                                 <td v-if="report.is_consolidated && report.kecamatans.length > 1" :colspan="report.kecamatans.length"></td>
                                 <td class="px-6 py-2.5 text-right text-primary">{{ money(report.summary?.tax?.ytd) }}</td>
                             </tr>
                             <tr class="bg-primary/10 text-primary text-base">
-                                <td class="px-6 py-3" colspan="2">Laba (Rugi) Bersih Setelah Pajak</td>
+                                <td class="px-6 py-3" colspan="2">{{ t('Laba (Rugi) Bersih Setelah Pajak') }}</td>
                                 <td class="px-4 py-3 text-right text-sm">{{ money(report.summary?.after_tax?.prior) }}</td>
                                 <td class="px-4 py-3 text-right text-sm">{{ money(report.summary?.after_tax?.current) }}</td>
                                 <td v-if="report.is_consolidated && report.kecamatans.length > 1" :colspan="report.kecamatans.length"></td>

@@ -1017,6 +1017,14 @@ final class LoanDocumentTest extends TestCase
                 self::assertStringStartsWith('%PDF-', $content, "PDF {$document['key']} ({$status}) bukan PDF valid.");
                 self::assertGreaterThan(1000, strlen($content), "PDF {$document['key']} ({$status}) terlalu kecil/blank.");
 
+                if (in_array($document['key'], ['cover_proposal', 'cover_pencairan'], true)) {
+                    $text = strtoupper((string) preg_replace('/\s+/', ' ', (new Parser)->parseContent($content)->getText()));
+                    self::assertStringNotContainsString('COVER', $text, "Judul cover individu {$document['key']} ({$status}) masih memakai kata COVER.");
+                    self::assertStringNotContainsString('LOAN ID', $text, "Cover individu {$document['key']} ({$status}) masih menampilkan Loan ID.");
+                    self::assertStringContainsString($document['key'] === 'cover_proposal' ? 'PROPOSAL' : 'PENCAIRAN', $text);
+                    self::assertStringContainsString('PINJAMAN INDIVIDU', $text);
+                }
+
                 $generated[$status][$document['key']] = strlen($content);
             }
         }
@@ -1357,6 +1365,14 @@ final class LoanDocumentTest extends TestCase
                 if (in_array($document['key'], ['kartu_angsuran', 'kartu_angsuran_anggota'], true)) {
                     $pdf = (new Parser)->parseContent($content);
                     self::assertCount(1, $pdf->getPages(), "Kartu angsuran kelompok {$document['key']} ({$status}) harus satu lembar.");
+                }
+
+                if (in_array($document['key'], ['cover_proposal', 'cover_pencairan'], true)) {
+                    $text = strtoupper((string) preg_replace('/\s+/', ' ', (new Parser)->parseContent($content)->getText()));
+                    self::assertStringNotContainsString('COVER', $text, "Judul cover kelompok {$document['key']} ({$status}) masih memakai kata COVER.");
+                    self::assertStringNotContainsString('LOAN ID', $text, "Cover kelompok {$document['key']} ({$status}) masih menampilkan Loan ID.");
+                    self::assertStringContainsString($document['key'] === 'cover_proposal' ? 'PROPOSAL' : 'PENCAIRAN', $text);
+                    self::assertStringContainsString('PINJAMAN KELOMPOK', $text);
                 }
 
                 $generated[$status][$document['key']] = strlen($content);

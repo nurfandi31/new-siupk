@@ -82,8 +82,10 @@ docker compose exec app php artisan siupk:bootstrap-local --password='change-me'
 Perintah `siupk:bootstrap-local` bersifat *idempotent*: mendaftarkan shard/tenant local, migrasi shard, sinkronisasi registry, import COA, buka periode fiskal, seed master data/produk pinjaman, dan provision user dev.
 
 - **Aplikasi**: <http://localhost:64080> (atau port `APP_PORT` di `.env`)
-- **Login Dev**: `dev` / `password`
-- **Login Admin**: `superadmin` / `password`
+- **Login Dev**: `dev` / password yang Anda isi pada `--password`
+- **Login Admin**: jalankan `php artisan db:seed` lalu catat password acak yang dicetak, atau set `SEED_SUPERADMIN_PASSWORD` sebelum seeding
+
+Tenant baru otomatis mendapat satu akun per role. Jika `TENANCY_SEED_USERS_PASSWORD` tidak diisi, sistem membuat password acak dan menampilkannya sekali setelah tenant dibuat. Untuk membuat tenant demo: set `SEED_DEMO_TENANT=true` (opsional `SEED_DEMO_PASSWORD`), lalu jalankan `php artisan db:seed`. Tanpa env tersebut, seeder demo dilewati dan tidak ada kredensial contoh di kode.
 
 ---
 

@@ -13,26 +13,55 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
+/**
+ * Membuat akun awal platform tanpa kredensial dummy yang ditanam di kode.
+ *
+ * Nilai default hanya dipakai saat akun belum ada; password dapat ditentukan
+ * lewat environment. Bila tidak diisi, password acak dibuat dan dicetak sekali
+ * ke konsol agar operator dapat mencatatnya.
+ */
 final class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Provision Superadmin
-        User::query()->updateOrCreate(
-            ['username' => 'superadmin'],
-            [
-                'public_id' => User::query()->where('username', 'superadmin')->value('public_id') ?: (string) Str::ulid(),
-                'name' => 'Superadmin Platform',
-                'email' => 'superadmin@example.test',
-                'phone' => '+6280000000000',
-                'password' => Hash::make('password'),
-                'status' => 'active',
-                'tenant_id' => null,
-                'is_superadmin' => true,
-            ],
-        );
+        $this->seedSuperadmin();
+        $this->seedDevelopmentTenant();
+    }
 
-        // 2. Ensure Local Tenant & Shard exist for dev user
+    private function seedSuperadmin(): void
+    {
+        $username = (string) env('SEED_SUPERADMIN_USERNAME', 'superadmin');
+        $existing = User::query()->where('username', $username)->first();
+
+        if ($existing !== null) {
+            $this->command?->info("Akun superadmin '{$username}' sudah ada; password tidak diubah.");
+
+            return;
+        }
+
+        $password = (string) (env('SEED_SUPERADMIN_PASSWORD') ?: Str::password(20));
+
+        User::query()->create([
+            'public_id' => (string) Str::ulid(),
+            'name' => (string) env('SEED_SUPERADMIN_NAME', 'Superadmin Platform'),
+            'username' => $username,
+            'email' => (string) env('SEED_SUPERADMIN_EMAIL', 'superadmin@localhost'),
+            'phone' => env('SEED_SUPERADMIN_PHONE'),
+            'password' => Hash::make($password),
+            'status' => 'active',
+            'tenant_id' => null,
+            'is_superadmin' => true,
+        ]);
+
+        $this->command?->info("Superadmin '{$username}' dibuat. Password awal: {$password}");
+    }
+
+    private function seedDevelopmentTenant(): void
+    {
+        if (! filter_var(env('SEED_DEV_TENANT', false), FILTER_VALIDATE_BOOL)) {
+            return;
+        }
+
         $shard = DatabaseShard::query()->firstOrCreate(
             ['code' => 'local'],
             [
@@ -70,20 +99,28 @@ final class UserSeeder extends Seeder
             ],
         );
 
-        // 3. Provision Dev User
-        $devUser = User::query()->updateOrCreate(
-            ['username' => 'dev'],
-            [
-                'public_id' => User::query()->where('username', 'dev')->value('public_id') ?: (string) Str::ulid(),
-                'tenant_id' => $tenant->row_id,
-                'name' => 'Development User',
-                'email' => 'dev@example.test',
-                'phone' => '+6280000000002',
-                'password' => Hash::make('password'),
-                'status' => 'active',
-                'is_superadmin' => false,
-            ],
-        );
+        $username = (string) env('SEED_DEV_USERNAME', 'dev');
+        $existing = User::query()->where('username', $username)->first();
+
+        if ($existing !== null) {
+            $this->command?->info("Akun development '{$username}' sudah ada; password tidak diubah.");
+
+            return;
+        }
+
+        $password = (string) (env('SEED_DEV_PASSWORD') ?: Str::password(20));
+
+        $devUser = User::query()->create([
+            'public_id' => (string) Str::ulid(),
+            'tenant_id' => $tenant->row_id,
+            'name' => (string) env('SEED_DEV_NAME', 'Development User'),
+            'username' => $username,
+            'email' => (string) env('SEED_DEV_EMAIL', 'dev@localhost'),
+            'phone' => env('SEED_DEV_PHONE'),
+            'password' => Hash::make($password),
+            'status' => 'active',
+            'is_superadmin' => false,
+        ]);
 
         TenantMembership::query()->firstOrCreate(
             ['user_id' => $devUser->row_id],
@@ -93,5 +130,7 @@ final class UserSeeder extends Seeder
                 'joined_at' => now(),
             ],
         );
+
+        $this->command?->info("Akun development '{$username}' dibuat. Password awal: {$password}");
     }
 }

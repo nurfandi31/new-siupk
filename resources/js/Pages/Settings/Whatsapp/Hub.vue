@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n, dateLocale } from '../../../i18n';
+const { t } = useI18n();
 import { useCan } from '../../../composables/useCan';
 import { useConfirm } from '../../../composables/useConfirm';
 import { useMoney } from '../../../composables/useMoney';
@@ -37,9 +39,9 @@ const toast = useToast();
 const loadingAction = ref(null);
 
 const tabs = computed(() => [
-    ...(can('settings.manage') ? [{ key: 'instances', label: 'Status & Instance', icon: 'settings' }] : []),
-    ...(can('settings.manage') ? [{ key: 'templates', label: 'Template Pesan', icon: 'edit_note' }] : []),
-    ...(can('messages.send') ? [{ key: 'billing', label: 'Kirim Tagihan', icon: 'send' }] : []),
+    ...(can('settings.manage') ? [{ key: 'instances', label: t('Status & Instance'), icon: 'settings' }] : []),
+    ...(can('settings.manage') ? [{ key: 'templates', label: t('Template Pesan'), icon: 'edit_note' }] : []),
+    ...(can('messages.send') ? [{ key: 'billing', label: t('Kirim Tagihan'), icon: 'send' }] : []),
 ]);
 const activeTab = ref(getInitialTab());
 
@@ -84,8 +86,8 @@ const globalForm = useForm({
 });
 
 const rotationOptions = [
-    { value: 'round_robin', label: 'Round Robin', icon: 'shuffle' },
-    { value: 'default_only', label: 'Nomor Utama', icon: 'star' },
+    { value: 'round_robin', label: t('Round Robin'), icon: 'shuffle' },
+    { value: 'default_only', label: t('Nomor Utama'), icon: 'star' },
 ];
 
 const showQrModal = ref(false);
@@ -157,9 +159,9 @@ function submitInstance() {
 
 async function toggleDefault(instance) {
     if (!instance.is_default && !await confirmAction({
-        title: 'Set Nomor Utama',
+        title: t('Set Nomor Utama'),
         message: `Jadikan "${instance.name}" sebagai nomor utama?`,
-        confirmLabel: 'Jadikan Utama',
+        confirmLabel: t('Jadikan Utama'),
     })) return;
 
     const form = useForm({ ...instance, is_default: !instance.is_default });
@@ -173,9 +175,9 @@ async function toggleActive(instance) {
 
 async function destroyInstance(instance) {
     if (!await confirmAction({
-        title: 'Hapus Instance',
+        title: t('Hapus Instance'),
         message: `Session "${instance.name}" akan dihapus dari gateway dan data instance akan dihapus.`,
-        confirmLabel: 'Hapus',
+        confirmLabel: t('Hapus'),
         variant: 'danger',
         icon: 'delete',
     })) return;
@@ -198,9 +200,9 @@ async function createSession(instance) {
 
 async function deleteSession(instance) {
     if (!await confirmAction({
-        title: 'Hapus Session Gateway',
+        title: t('Hapus Session Gateway'),
         message: `Hapus session WhatsApp "${instance.name}" dari gateway?`,
-        confirmLabel: 'Hapus Session',
+        confirmLabel: t('Hapus Session'),
         variant: 'danger',
         icon: 'delete',
     })) return;
@@ -341,7 +343,7 @@ function formatDate(value) {
     if (!value) return '—';
     const date = new Date(`${value}T00:00:00`);
     if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    return date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 function goDate(value) {
@@ -413,11 +415,11 @@ const filterItems = computed(() => {
     const individuals = props.items.filter((i) => i.phone_source !== 'group' && i.phone_source !== 'none').length;
     const noPhone = props.items.filter((i) => !i.can_send).length;
     const items = [
-        { value: 'all', label: 'Semua', count: props.items.length },
-        { value: 'sendable', label: 'Ber-nomor', count: sendable },
-        { value: 'group', label: 'Kelompok', count: groups },
-        { value: 'individual', label: 'Individu', count: individuals },
-        { value: 'no_phone', label: 'Tanpa No', count: noPhone },
+        { value: 'all', label: t('Semua'), count: props.items.length },
+        { value: 'sendable', label: t('Ber-nomor'), count: sendable },
+        { value: 'group', label: t('Kelompok'), count: groups },
+        { value: 'individual', label: t('Individu'), count: individuals },
+        { value: 'no_phone', label: t('Tanpa No'), count: noPhone },
     ];
     // Sembunyikan filter yang tidak punya data, tapi selalu pertahankan 'all'
     return items.filter((i) => i.value === 'all' || i.count > 0);
@@ -540,18 +542,18 @@ async function sendBillingWithProgress() {
 </script>
 
 <template>
-    <Head title="WhatsApp Gateway" />
+    <Head :title="t('WhatsApp Gateway')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                     <p class="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-on-surface-variant">
                         <AppIcon name="chat" class="text-primary" />
-                        Pengaturan
+                        {{ t('Pengaturan') }}
                     </p>
-                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">WhatsApp Gateway</h1>
+                    <h1 class="text-2xl font-bold text-primary sm:text-3xl">{{ t('WhatsApp Gateway') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Kelola beberapa nomor WhatsApp per lembaga dan distribusikan pengiriman pesan untuk mengurangi risiko blokir.
+                        {{ t('Kelola beberapa nomor WhatsApp per lembaga dan distribusikan pengiriman pesan untuk mengurangi risiko blokir.') }}
                     </p>
                 </div>
             </header>
@@ -560,34 +562,34 @@ async function sendBillingWithProgress() {
                 v-model="activeTab"
                 :items="tabs"
                 variant="pills-bar"
-                aria-label="Tab WhatsApp Hub"
+                :aria-label="t('Tab WhatsApp Hub')"
                 @update:model-value="go($event)"
             />
 
             <template v-if="activeTab === 'instances'">
                 <div class="flex justify-end">
-                    <AppButton type="button" icon="add" :disabled="!props.global.configured" @click="openCreate">Tambah Instance</AppButton>
+                    <AppButton type="button" icon="add" :disabled="!props.global.configured" @click="openCreate">{{ t('Tambah Instance') }}</AppButton>
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-3">
                     <div class="flex items-center gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
                         <AppIcon name="smartphone" tone="primary" :container-size="11" />
                         <div class="min-w-0">
-                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Instance</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Instance') }}</p>
                             <p class="mt-0.5 text-2xl font-bold text-primary">{{ stats.total }}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
                         <AppIcon name="check_circle" tone="secondary" :container-size="11" />
                         <div class="min-w-0">
-                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Instance Aktif</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Instance Aktif') }}</p>
                             <p class="mt-0.5 text-2xl font-bold text-primary">{{ stats.active }}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
                         <AppIcon name="link" tone="info" :container-size="11" />
                         <div class="min-w-0">
-                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Terhubung</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Terhubung') }}</p>
                             <p class="mt-0.5 text-2xl font-bold text-primary">{{ stats.connected }}</p>
                         </div>
                     </div>
@@ -596,13 +598,13 @@ async function sendBillingWithProgress() {
                 <AppCard bordered>
                     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                            <h2 class="text-lg font-bold text-primary">Daftar Instance WhatsApp</h2>
+                            <h2 class="text-lg font-bold text-primary">{{ t('Daftar Instance WhatsApp') }}</h2>
                             <p class="mt-1 text-sm text-on-surface-variant">
-                                Kelola beberapa nomor WhatsApp per lembaga dan distribusikan pengiriman pesan.
+                                {{ t('Kelola beberapa nomor WhatsApp per lembaga dan distribusikan pengiriman pesan.') }}
                             </p>
                         </div>
                         <AppBadge :tone="props.global.configured ? 'success' : 'warning'">
-                            {{ props.global.configured ? 'Gateway Siap' : 'Gateway Belum Dikonfigurasi' }}
+                            {{ props.global.configured ? t('Gateway Siap') : t('Gateway Belum Dikonfigurasi') }}
                         </AppBadge>
                     </div>
 
@@ -610,12 +612,12 @@ async function sendBillingWithProgress() {
                         <table class="w-full min-w-[40rem] text-left text-[11px] sm:min-w-[56rem] sm:text-sm">
                             <thead class="bg-surface-container-low text-sm">
                                 <tr>
-                                    <th class="px-4 py-3 font-bold text-primary">Instance</th>
-                                    <th class="px-4 py-3 font-bold text-primary">Status</th>
-                                    <th class="px-4 py-3 font-bold text-primary">Nomor</th>
-                                    <th class="px-4 py-3 font-bold text-primary">Batas Harian</th>
-                                    <th class="px-4 py-3 font-bold text-primary">Mode</th>
-                                    <th class="px-4 py-3 text-right font-bold text-primary">Aksi</th>
+                                    <th class="px-4 py-3 font-bold text-primary">{{ t('Instance') }}</th>
+                                    <th class="px-4 py-3 font-bold text-primary">{{ t('Status') }}</th>
+                                    <th class="px-4 py-3 font-bold text-primary">{{ t('Nomor') }}</th>
+                                    <th class="px-4 py-3 font-bold text-primary">{{ t('Batas Harian') }}</th>
+                                    <th class="px-4 py-3 font-bold text-primary">{{ t('Mode') }}</th>
+                                    <th class="px-4 py-3 text-right font-bold text-primary">{{ t('Aksi') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -625,25 +627,25 @@ async function sendBillingWithProgress() {
                                         <div class="mt-1 font-mono text-xs text-on-surface-variant">{{ instance.instance_name }}</div>
                                     </td>
                                     <td class="px-4 py-4"><AppBadge :tone="statusTone(instance.status)">{{ statusLabel(instance.status) }}</AppBadge></td>
-                                    <td class="px-4 py-4 text-on-surface-variant">{{ instance.phone_number || 'Belum tersambung' }}</td>
+                                    <td class="px-4 py-4 text-on-surface-variant">{{ instance.phone_number || t('Belum tersambung') }}</td>
                                     <td class="px-4 py-4 text-on-surface-variant">{{ instance.daily_limit ? instance.daily_limit.toLocaleString('id-ID') : 'Tanpa batas' }}</td>
                                     <td class="px-4 py-4">
                                         <div class="flex flex-col gap-2">
                                             <div class="flex items-center gap-2">
                                                 <AppCheckbox :model-value="instance.is_default" @update:model-value="toggleDefault(instance)" />
-                                                <span class="text-sm text-on-surface-variant">Default</span>
+                                                <span class="text-sm text-on-surface-variant">{{ t('Default') }}</span>
                                             </div>
                                             <AppSwitch :model-value="instance.is_active" @update:model-value="toggleActive(instance)" />
                                         </div>
                                     </td>
                                     <td class="px-4 py-4">
                                         <div class="flex flex-wrap justify-end gap-2">
-                                            <AppButton size="compact" variant="secondary" icon="qr_code_scanner" :loading="loadingAction === instance.row_id" :disabled="!props.global.configured" @click="createSession(instance)">Buat QR</AppButton>
-                                            <AppButton size="compact" variant="ghost" icon="delete" :loading="loadingAction === instance.row_id" :disabled="!props.global.configured" @click="deleteSession(instance)">Hapus Sesi</AppButton>
-                                            <AppButton size="compact" variant="ghost" icon="visibility" @click="openQr(instance)">Status</AppButton>
-                                            <AppButton size="compact" variant="ghost" icon="send" :disabled="!props.global.configured" @click="openTest(instance)">Tes</AppButton>
-                                            <AppButton size="compact" variant="ghost" icon="edit" @click="openEdit(instance)">Edit</AppButton>
-                                            <AppButton size="compact" variant="danger" icon="delete" @click="destroyInstance(instance)">Hapus</AppButton>
+                                            <AppButton size="compact" variant="secondary" icon="qr_code_scanner" :loading="loadingAction === instance.row_id" :disabled="!props.global.configured" @click="createSession(instance)">{{ t('Buat QR') }}</AppButton>
+                                            <AppButton size="compact" variant="ghost" icon="delete" :loading="loadingAction === instance.row_id" :disabled="!props.global.configured" @click="deleteSession(instance)">{{ t('Hapus Sesi') }}</AppButton>
+                                            <AppButton size="compact" variant="ghost" icon="visibility" @click="openQr(instance)">{{ t('Status') }}</AppButton>
+                                            <AppButton size="compact" variant="ghost" icon="send" :disabled="!props.global.configured" @click="openTest(instance)">{{ t('Tes') }}</AppButton>
+                                            <AppButton size="compact" variant="ghost" icon="edit" @click="openEdit(instance)">{{ t('Edit') }}</AppButton>
+                                            <AppButton size="compact" variant="danger" icon="delete" @click="destroyInstance(instance)">{{ t('Hapus') }}</AppButton>
                                         </div>
                                     </td>
                                 </tr>
@@ -654,8 +656,8 @@ async function sendBillingWithProgress() {
                     <AppEmptyState
                         v-else
                         icon="chat"
-                        title="Belum ada instance WhatsApp"
-                        description="Tambahkan instance pertama, lalu buat QR untuk memasangkan nomor WhatsApp."
+                        :title="t('Belum ada instance WhatsApp')"
+                        :description="t('Tambahkan instance pertama, lalu buat QR untuk memasangkan nomor WhatsApp.')"
                     />
                 </AppCard>
             </template>
@@ -663,54 +665,54 @@ async function sendBillingWithProgress() {
             <AppCard v-if="activeTab === 'templates'" bordered>
                 <div class="mb-5 flex items-start justify-between gap-4">
                     <div>
-                        <h2 class="text-lg font-bold text-primary">Template & Aktivasi</h2>
-                        <p class="mt-1 text-sm text-on-surface-variant">Template dan strategi pengiriman berlaku untuk semua notifikasi WhatsApp.</p>
+                        <h2 class="text-lg font-bold text-primary">{{ t('Template & Aktivasi') }}</h2>
+                        <p class="mt-1 text-sm text-on-surface-variant">{{ t('Template dan strategi pengiriman berlaku untuk semua notifikasi WhatsApp.') }}</p>
                     </div>
                     <AppIcon name="edit_note" class="hidden text-3xl text-primary sm:block" />
                 </div>
                 <form class="space-y-6" @submit.prevent="submitGlobal">
                     <section>
-                        <h3 class="mb-3 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Strategi Pengiriman</h3>
-                        <AppRadioGroup v-model="globalForm.rotation_mode" label="Rotasi Nomor" :options="rotationOptions" />
+                        <h3 class="mb-3 text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Strategi Pengiriman') }}</h3>
+                        <AppRadioGroup v-model="globalForm.rotation_mode" :label="t('Rotasi Nomor')" :options="rotationOptions" />
                     </section>
 
                     <section>
-                        <h3 class="mb-3 text-xs font-bold uppercase tracking-wider text-on-surface-variant">Template Pesan</h3>
+                        <h3 class="mb-3 text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Template Pesan') }}</h3>
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <AppTextarea v-model="globalForm.template_billing" label="Pesan Tagihan" :rows="5" hint="Placeholder: {nama}, {angsuran_ke}, {total}, {tanggal}, {pinjaman}" />
-                            <AppTextarea v-model="globalForm.template_installment" label="Pesan Angsuran" :rows="5" hint="Placeholder: {nama}, {penyetor}, {angsuran_ke}, {total}" />
+                            <AppTextarea v-model="globalForm.template_billing" :label="t('Pesan Tagihan')" :rows="5" hint="Placeholder: {nama}, {angsuran_ke}, {total}, {tanggal}, {pinjaman}" />
+                            <AppTextarea v-model="globalForm.template_installment" :label="t('Pesan Angsuran')" :rows="5" hint="Placeholder: {nama}, {penyetor}, {angsuran_ke}, {total}" />
                         </div>
                     </section>
 
                     <section>
                         <div class="flex items-center justify-between rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
                             <div class="min-w-0">
-                                <p class="text-sm font-bold text-primary">Aktifkan Gateway</p>
-                                <p class="mt-0.5 text-xs text-on-surface-variant">Jika nonaktif, seluruh pengiriman WhatsApp akan diblokir.</p>
+                                <p class="text-sm font-bold text-primary">{{ t('Aktifkan Gateway') }}</p>
+                                <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Jika nonaktif, seluruh pengiriman WhatsApp akan diblokir.') }}</p>
                             </div>
                             <AppSwitch v-model="globalForm.is_enabled" />
                         </div>
                     </section>
 
                     <div class="flex flex-wrap justify-end gap-2 border-t border-outline-variant pt-4">
-                        <AppButton type="submit" icon="save" :loading="globalForm.processing">Simpan Pengaturan</AppButton>
+                        <AppButton type="submit" icon="save" :loading="globalForm.processing">{{ t('Simpan Pengaturan') }}</AppButton>
                     </div>
                 </form>
             </AppCard>
 
         <AppModal v-model="showCreateModal" :title="editingInstance ? 'Edit Instance' : 'Tambah Instance'" size="md">
             <form class="space-y-5" @submit.prevent="submitInstance">
-                <AppInput v-model="form.name" label="Nama Instance" required placeholder="Masukkan nama" :error="form.errors.name" />
-                <AppInput v-model="form.phone_number" label="Nomor WhatsApp (opsional)" placeholder="08xxxxxxxxxx" :error="form.errors.phone_number" hint="Boleh diisi setelah nomor tersambung." />
-                <AppInput v-model.number="form.daily_limit" label="Batas Pesan Harian" type="number" min="0" :error="form.errors.daily_limit" hint="Isi 0 untuk tanpa batas." />
+                <AppInput v-model="form.name" :label="t('Nama Instance')" required :placeholder="t('Masukkan nama')" :error="form.errors.name" />
+                <AppInput v-model="form.phone_number" :label="t('Nomor WhatsApp (opsional)')" placeholder="08xxxxxxxxxx" :error="form.errors.phone_number" :hint="t('Boleh diisi setelah nomor tersambung.')" />
+                <AppInput v-model.number="form.daily_limit" :label="t('Batas Pesan Harian')" type="number" min="0" :error="form.errors.daily_limit" :hint="t('Isi 0 untuk tanpa batas.')" />
                 <div class="grid gap-3 rounded-xl border border-outline-variant bg-surface-container-low p-4 sm:grid-cols-2">
-                    <AppCheckbox v-model="form.is_default" label="Jadikan nomor utama" />
-                    <AppCheckbox v-model="form.is_active" label="Instance aktif" />
+                    <AppCheckbox v-model="form.is_default" :label="t('Jadikan nomor utama')" />
+                    <AppCheckbox v-model="form.is_active" :label="t('Instance aktif')" />
                 </div>
             </form>
             <template #footer>
-                <AppButton variant="ghost" @click="closeForm">Batal</AppButton>
-                <AppButton :loading="form.processing" @click="submitInstance">{{ editingInstance ? 'Simpan' : 'Tambah' }}</AppButton>
+                <AppButton variant="ghost" @click="closeForm">{{ t('Batal') }}</AppButton>
+                <AppButton :loading="form.processing" @click="submitInstance">{{ editingInstance ? t('Simpan') : t('Tambah') }}</AppButton>
             </template>
         </AppModal>
 
@@ -723,9 +725,9 @@ async function sendBillingWithProgress() {
                 <AppIcon name="warning" class="shrink-0 text-warning" />
                 <p class="min-w-0 flex-1 text-sm font-semibold text-primary">
                     Gateway belum siap. Atur di tab
-                    <button class="underline" @click="go('instances')">Status &amp; Instance</button>.
+                    <button class="underline" @click="go('instances')">{{ t('Status & Instance') }}</button>.
                 </p>
-                <AppBadge tone="warning">{{ props.billing_gateway?.configured ? 'Nonaktif' : 'Belum Diatur' }}</AppBadge>
+                <AppBadge tone="warning">{{ props.billing_gateway?.configured ? t('Nonaktif') : t('Belum Diatur') }}</AppBadge>
             </div>
 
             <!-- Banner hasil kirim -->
@@ -749,28 +751,28 @@ async function sendBillingWithProgress() {
                 <div class="flex items-center gap-3 rounded-xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
                     <AppIcon name="event" tone="info" :container-size="10" />
                     <div class="min-w-0">
-                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">Tanggal</p>
+                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">{{ t('Tanggal') }}</p>
                         <p class="truncate text-sm font-bold text-primary">{{ formatDate(props.due_date) }}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 rounded-xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
                     <AppIcon name="payments" tone="primary" :container-size="10" />
                     <div class="min-w-0">
-                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">Total Tagihan</p>
+                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">{{ t('Total Tagihan') }}</p>
                         <p class="truncate text-sm font-bold text-primary">{{ money(props.totals?.amount) }}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 rounded-xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
                     <AppIcon name="checklist" tone="secondary" :container-size="10" />
                     <div class="min-w-0">
-                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">Dipilih</p>
+                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">{{ t('Dipilih') }}</p>
                         <p class="truncate text-sm font-bold text-primary">{{ selectedIds.length }} · {{ money(selectedAmount) }}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3 rounded-xl bg-surface-container-lowest p-4 ring-1 ring-outline-variant">
                     <AppIcon name="hub" tone="info" :container-size="10" />
                     <div class="min-w-0">
-                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">Gateway</p>
+                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">{{ t('Gateway') }}</p>
                         <p class="truncate text-sm font-bold text-primary">
                             {{ props.billing_gateway?.instance ?? '—' }}
                             <span v-if="props.billing_gateway?.state" class="ml-1 text-xs font-normal text-on-surface-variant">
@@ -788,11 +790,11 @@ async function sendBillingWithProgress() {
                     <AppCard bordered>
                         <h2 class="mb-4 flex items-center gap-2 text-sm font-bold text-primary">
                             <AppIcon name="filter_alt" class="text-base" />
-                            Filter
+                            {{ t('Filter') }}
                         </h2>
                         <div class="space-y-4">
-                            <AppDatePicker v-model="selectedDate" label="Tanggal" />
-                            <AppInput v-model="billingSearch" label="Pencarian" hide-label placeholder="Cari nama / nomor" icon="search" />
+                            <AppDatePicker v-model="selectedDate" :label="t('Tanggal')" />
+                            <AppInput v-model="billingSearch" :label="t('Pencarian')" hide-label :placeholder="t('Cari nama / nomor')" icon="search" />
                             <div class="grid gap-1.5 rounded-xl bg-outline-variant/40 p-1.5" :class="filterGridCols">
                                 <button
                                     v-for="item in filterItems"
@@ -814,20 +816,20 @@ async function sendBillingWithProgress() {
 
                     <AppCard bordered>
                         <div class="mb-3 flex items-center gap-2">
-                            <h2 class="flex-1 text-sm font-bold text-primary">Preview Pesan</h2>
+                            <h2 class="flex-1 text-sm font-bold text-primary">{{ t('Preview Pesan') }}</h2>
                             <div class="flex rounded-md bg-surface-container-low p-0.5">
                                 <button
                                     type="button"
                                     class="rounded px-2.5 py-1 text-[11px] font-bold transition-all"
                                     :class="previewType === 'group' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'"
                                     @click="previewType = 'group'"
-                                >Kelompok</button>
+                                >{{ t('Kelompok') }}</button>
                                 <button
                                     type="button"
                                     class="rounded px-2.5 py-1 text-[11px] font-bold transition-all"
                                     :class="previewType === 'individual' ? 'bg-primary text-on-primary' : 'text-on-surface-variant'"
                                     @click="previewType = 'individual'"
-                                >Individu</button>
+                                >{{ t('Individu') }}</button>
                             </div>
                         </div>
                         <div class="rounded-lg bg-[#d9fdd3] p-3 text-sm leading-relaxed text-[#111b21] ring-1 ring-success/30">
@@ -840,23 +842,23 @@ async function sendBillingWithProgress() {
                 <AppCard :padded="false">
                     <header class="flex flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-3">
                         <div class="min-w-0 flex-1 basis-full sm:basis-auto">
-                            <h2 class="text-sm font-bold text-primary">Pinjaman Jatuh Tempo</h2>
+                            <h2 class="text-sm font-bold text-primary">{{ t('Pinjaman Jatuh Tempo') }}</h2>
                             <p class="text-xs text-on-surface-variant">
                                 {{ filteredItems.length }} baris · {{ filteredItems.filter((i) => i.can_send).length }} siap kirim
                             </p>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            <AppButton size="compact" variant="ghost" icon="done_all" @click="selectSendable">Ber-nomor</AppButton>
-                            <AppButton size="compact" variant="ghost" icon="clear_all" @click="clearSelection">Reset</AppButton>
+                            <AppButton size="compact" variant="ghost" icon="done_all" @click="selectSendable">{{ t('Ber-nomor') }}</AppButton>
+                            <AppButton size="compact" variant="ghost" icon="clear_all" @click="clearSelection">{{ t('Reset') }}</AppButton>
                         </div>
                     </header>
 
                     <div v-if="props.items.length === 0" class="p-8">
-                        <AppEmptyState icon="event_available" title="Tidak ada jatuh tempo" />
+                        <AppEmptyState icon="event_available" :title="t('Tidak ada jatuh tempo')" />
                     </div>
 
                     <div v-else-if="filteredItems.length === 0" class="p-8">
-                        <AppEmptyState icon="search_off" title="Tidak ada yang cocok" />
+                        <AppEmptyState icon="search_off" :title="t('Tidak ada yang cocok')" />
                     </div>
 
                     <div v-else class="overflow-x-auto">
@@ -871,10 +873,10 @@ async function sendBillingWithProgress() {
                                             @update:model-value="toggleSelectAll"
                                         />
                                     </th>
-                                    <th class="px-3 py-2 font-bold">Peminjam</th>
-                                    <th class="px-3 py-2 font-bold">Ke</th>
-                                    <th class="px-3 py-2 text-right font-bold">Tagihan</th>
-                                    <th class="px-3 py-2 font-bold">Tujuan</th>
+                                    <th class="px-3 py-2 font-bold">{{ t('Peminjam') }}</th>
+                                    <th class="px-3 py-2 font-bold">{{ t('Ke') }}</th>
+                                    <th class="px-3 py-2 text-right font-bold">{{ t('Tagihan') }}</th>
+                                    <th class="px-3 py-2 font-bold">{{ t('Tujuan') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -922,7 +924,7 @@ async function sendBillingWithProgress() {
                             :disabled="!gatewayOk || selectedIds.length === 0 || billingForm.processing"
                             @click="sendBillingWithProgress"
                         >
-                            Kirim
+                            {{ t('Kirim') }}
                         </AppButton>
                     </footer>
 
@@ -937,25 +939,25 @@ async function sendBillingWithProgress() {
             <div class="space-y-4 text-center">
                 <AppBadge :tone="qrTone">{{ statusLabel(qrStatus) }}</AppBadge>
                 <div v-if="qrCode" class="rounded-xl border border-outline-variant bg-surface-container-low p-4">
-                    <img :src="qrCode" alt="QR Code WhatsApp" class="mx-auto size-64 object-contain" />
-                    <p class="mt-2 animate-pulse text-xs text-on-surface-variant">Scan QR menggunakan WhatsApp di HP Anda.</p>
+                    <img :src="qrCode" :alt="t('QR Code WhatsApp')" class="mx-auto size-64 object-contain" />
+                    <p class="mt-2 animate-pulse text-xs text-on-surface-variant">{{ t('Scan QR menggunakan WhatsApp di HP Anda.') }}</p>
                 </div>
                 <p class="text-sm text-on-surface-variant">{{ qrMessage }}</p>
             </div>
             <template #footer>
-                <AppButton variant="ghost" @click="closeQr">Tutup</AppButton>
-                <AppButton v-if="qrInstance" variant="secondary" icon="refresh" @click="refreshState(qrInstance)">Periksa Ulang</AppButton>
+                <AppButton variant="ghost" @click="closeQr">{{ t('Tutup') }}</AppButton>
+                <AppButton v-if="qrInstance" variant="secondary" icon="refresh" @click="refreshState(qrInstance)">{{ t('Periksa Ulang') }}</AppButton>
             </template>
         </AppModal>
 
-        <AppModal v-model="showTestModal" title="Tes Pengiriman WhatsApp" size="sm">
+        <AppModal v-model="showTestModal" :title="t('Tes Pengiriman WhatsApp')" size="sm">
             <form class="space-y-5" @submit.prevent="sendTest">
-                <AppInput v-model="testForm.phone" label="Nomor Tujuan" required placeholder="08xxxxxxxxxx" />
-                <AppTextarea v-model="testForm.message" label="Pesan (opsional)" :rows="4" placeholder="Tes koneksi" />
+                <AppInput v-model="testForm.phone" :label="t('Nomor Tujuan')" required placeholder="08xxxxxxxxxx" />
+                <AppTextarea v-model="testForm.message" :label="t('Pesan (opsional)')" :rows="4" :placeholder="t('Tes koneksi')" />
             </form>
             <template #footer>
-                <AppButton variant="ghost" @click="showTestModal = false">Batal</AppButton>
-                <AppButton icon="send" :loading="loadingAction === `test-${testInstance?.row_id}`" @click="sendTest">Kirim Tes</AppButton>
+                <AppButton variant="ghost" @click="showTestModal = false">{{ t('Batal') }}</AppButton>
+                <AppButton icon="send" :loading="loadingAction === `test-${testInstance?.row_id}`" @click="sendTest">{{ t('Kirim Tes') }}</AppButton>
             </template>
         </AppModal>
 

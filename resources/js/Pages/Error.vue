@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AppIcon from '../Components/AppIcon.vue';
@@ -19,7 +21,7 @@ const errorDetails = computed(() => {
     const code = Number(props.status) || 500;
     const map = {
         400: {
-            title: 'Permintaan Tidak Valid',
+            title: t('Permintaan Tidak Valid'),
             category: 'Format & Parameter',
             icon: 'code_off',
             desc: props.message || 'Server tidak dapat memproses permintaan karena format data atau parameter yang dikirim tidak sesuai spesifikasi.',
@@ -30,7 +32,7 @@ const errorDetails = computed(() => {
             ],
         },
         401: {
-            title: 'Sesi Belum Terautentikasi',
+            title: t('Sesi Belum Terautentikasi'),
             category: 'Autentikasi Pengguna',
             icon: 'vpn_key',
             desc: props.message || 'Akses ke modul ini membutuhkan login. Silakan masuk terlebih dahulu untuk melanjutkan pekerjaan Anda.',
@@ -41,7 +43,7 @@ const errorDetails = computed(() => {
             ],
         },
         402: {
-            title: 'Langganan Tenant Diperlukan',
+            title: t('Langganan Tenant Diperlukan'),
             category: 'Langganan & Tagihan',
             icon: 'credit_card',
             desc: props.message || 'Masa aktif langganan instansi BUMDesma Anda memerlukan aktivasi paket untuk melanjutkan fitur ini.',
@@ -52,7 +54,7 @@ const errorDetails = computed(() => {
             ],
         },
         403: {
-            title: 'Akses Dibatasi',
+            title: t('Akses Dibatasi'),
             category: 'Otorisasi & Wewenang',
             icon: 'shield_lock',
             desc: props.message || 'Anda tidak memiliki wewenang atau hak akses (permission) yang memadai untuk membuka halaman atau data ini.',
@@ -63,7 +65,7 @@ const errorDetails = computed(() => {
             ],
         },
         404: {
-            title: 'Halaman Tidak Ditemukan',
+            title: t('Halaman Tidak Ditemukan'),
             category: 'Navigasi & URL',
             icon: 'explore_off',
             desc: props.message || 'Maaf, halaman atau data keuangan yang Anda cari tidak ditemukan. Tautan mungkin salah atau telah dipindahkan.',
@@ -74,7 +76,7 @@ const errorDetails = computed(() => {
             ],
         },
         419: {
-            title: 'Sesi Formulir Kedaluwarsa',
+            title: t('Sesi Formulir Kedaluwarsa'),
             category: 'Keamanan Sesi',
             icon: 'timer_off',
             desc: props.message || 'Sesi keamanan formulir Anda telah kedaluwarsa demi melindungi kerahasiaan data keuangan BUMDesma.',
@@ -85,7 +87,7 @@ const errorDetails = computed(() => {
             ],
         },
         429: {
-            title: 'Terlalu Banyak Permintaan',
+            title: t('Terlalu Banyak Permintaan'),
             category: 'Batas Frekuensi',
             icon: 'speed',
             desc: props.message || 'Sistem mendeteksi frekuensi permintaan yang terlalu tinggi. Harap tunggu beberapa saat demi kestabilan server.',
@@ -96,7 +98,7 @@ const errorDetails = computed(() => {
             ],
         },
         500: {
-            title: 'Terjadi Kesalahan Server',
+            title: t('Terjadi Kesalahan Server'),
             category: 'Kendala Teknis Server',
             icon: 'dns',
             desc: props.message || 'Terjadi gangguan teknis internal pada server. Tenang, seluruh data transaksi Anda tetap aman di basis data.',
@@ -107,7 +109,7 @@ const errorDetails = computed(() => {
             ],
         },
         503: {
-            title: 'Sistem Dalam Pemeliharaan',
+            title: t('Sistem Dalam Pemeliharaan'),
             category: 'Pemeliharaan Sistem',
             icon: 'engineering',
             desc: props.message || 'Kami sedang melakukan peningkatan performa sistem rutin. Layanan siupk Next akan segera aktif kembali.',
@@ -150,8 +152,8 @@ function reloadPage() {
                     <AppIcon name="account_balance" class="text-2xl" />
                 </div>
                 <div>
-                    <p class="text-lg font-extrabold leading-tight text-primary">siupk <span class="text-secondary">Next</span></p>
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-secondary">BUMDesma LKD Financial System</p>
+                    <p class="text-lg font-extrabold leading-tight text-primary">siupk <span class="text-secondary">{{ t('Next') }}</span></p>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-secondary">{{ t('BUMDesma LKD Financial System') }}</p>
                 </div>
             </Link>
 
@@ -199,7 +201,7 @@ function reloadPage() {
                     <div class="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-4 mb-6">
                         <p class="text-xs font-bold uppercase tracking-wider text-on-surface mb-2.5 flex items-center gap-1.5">
                             <AppIcon name="lightbulb" class="text-sm text-secondary" />
-                            Langkah yang disarankan
+                            {{ t('Langkah yang disarankan') }}
                         </p>
                         <ul class="space-y-2">
                             <li v-for="(tip, idx) in errorDetails.tips" :key="idx" class="flex items-start gap-2 text-xs md:text-sm text-on-surface-variant">
@@ -213,14 +215,14 @@ function reloadPage() {
                     <div class="flex flex-wrap items-center gap-3">
                         <Link href="/dashboard">
                             <AppButton variant="primary" icon="dashboard">
-                                Ke Dashboard
+                                {{ t('Ke Dashboard') }}
                             </AppButton>
                         </Link>
                         <AppButton variant="secondary" icon="arrow_back" @click="goBack">
-                            Halaman Sebelumnya
+                            {{ t('Halaman Sebelumnya') }}
                         </AppButton>
                         <AppButton variant="ghost" icon="refresh" @click="reloadPage">
-                            Refresh
+                            {{ t('Refresh') }}
                         </AppButton>
                     </div>
                 </div>

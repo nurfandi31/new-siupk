@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -52,18 +54,18 @@ const selectedMonth = ref(String(props.filters.month));
 const selectedProduct = ref(props.filters.product || 'all');
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -76,7 +78,7 @@ const yearOptions = computed(() => {
 });
 
 const productOptions = [
-    { value: 'all', label: 'Semua Produk' },
+    { value: 'all', label: t('Semua Produk') },
 ];
 
 const money = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
@@ -125,16 +127,16 @@ function openDetail(rowId: number): void {
 </script>
 
 <template>
-    <Head title="Pinjaman Dihapusbukukan — Kelompok" />
+    <Head :title="t('Pinjaman Dihapusbukukan — Kelompok')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Laporan Piutang</p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Pinjaman Dihapusbukukan — Kelompok</h1>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Laporan Piutang') }}</p>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Pinjaman Dihapusbukukan — Kelompok') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Daftar pinjaman kelompok (<span class="font-semibold text-primary">legacy_source = group_loan</span>)
-                        yang berstatus <AppBadge tone="error">Dihapusbukukan</AppBadge>
+                        yang berstatus <AppBadge tone="error">{{ t('Dihapusbukukan') }}</AppBadge>
                         per <span class="font-semibold text-primary">{{ period_label }}</span>
                         — {{ identity.legal_name }}
                     </p>
@@ -143,13 +145,13 @@ function openDetail(rowId: number): void {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                     <a :href="excelUrl" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">table_view</span>
-                            Export Excel
+                            {{ t('Export Excel') }}
                         </AppButton>
                     </a>
                 </div>
@@ -159,15 +161,15 @@ function openDetail(rowId: number): void {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Produk</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Produk') }}</label>
                         <SmartSelect v-model="selectedProduct" :options="productOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -176,19 +178,19 @@ function openDetail(rowId: number): void {
             <!-- KPI cards -->
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Jumlah Pinjaman Hapus</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Pinjaman Hapus') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.count }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Pokok</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Pokok') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.principal_total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Sisa Pokok Saat Hapus</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Sisa Pokok Saat Hapus') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(totals.sisa_pokok_total) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Cadangan CKPN</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Cadangan CKPN') }}</p>
                     <p class="mt-2 text-2xl font-bold text-error">{{ formatMoney(totals.ckpn_total) }}</p>
                 </AppCard>
             </div>
@@ -198,22 +200,22 @@ function openDetail(rowId: number): void {
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                         <tr class="border-b border-outline-variant/30">
-                            <th class="p-3 text-center" style="width: 4%;">No</th>
-                            <th class="p-3 text-left" style="width: 13%;">Nomor Pinjaman</th>
-                            <th class="p-3 text-left" style="width: 17%;">Kelompok</th>
-                            <th class="p-3 text-left" style="width: 10%;">Desa</th>
-                            <th class="p-3 text-right" style="width: 11%;">Pokok</th>
-                            <th class="p-3 text-right" style="width: 11%;">Sisa Pokok</th>
+                            <th class="p-3 text-center" style="width: 4%;">{{ t('No') }}</th>
+                            <th class="p-3 text-left" style="width: 13%;">{{ t('Nomor Pinjaman') }}</th>
+                            <th class="p-3 text-left" style="width: 17%;">{{ t('Kelompok') }}</th>
+                            <th class="p-3 text-left" style="width: 10%;">{{ t('Desa') }}</th>
+                            <th class="p-3 text-right" style="width: 11%;">{{ t('Pokok') }}</th>
+                            <th class="p-3 text-right" style="width: 11%;">{{ t('Sisa Pokok') }}</th>
                             <th class="p-3 text-right" style="width: 11%;">CKPN</th>
-                            <th class="p-3 text-right" style="width: 11%;">Nilai Bersih</th>
-                            <th class="p-3 text-center" style="width: 8%;">Tgl Hapus</th>
-                            <th class="p-3 text-left" style="width: 15%;">Alasan</th>
+                            <th class="p-3 text-right" style="width: 11%;">{{ t('Nilai Bersih') }}</th>
+                            <th class="p-3 text-center" style="width: 8%;">{{ t('Tgl Hapus') }}</th>
+                            <th class="p-3 text-left" style="width: 15%;">{{ t('Alasan') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-outline-variant/20">
                         <tr v-if="rows.length === 0">
                             <td colspan="10" class="px-3 py-12 text-center text-on-surface-variant">
-                                Tidak ada pinjaman kelompok yang dihapusbukukan pada periode ini.
+                                {{ t('Tidak ada pinjaman kelompok yang dihapusbukukan pada periode ini.') }}
                             </td>
                         </tr>
                         <tr
@@ -261,8 +263,8 @@ function openDetail(rowId: number): void {
             <AppCard v-if="rows.length === 0" class="p-8 text-center">
                 <AppEmptyState
                     icon="description"
-                    title="Belum ada pinjaman dihapusbukukan"
-                    description="Tidak ada pinjaman kelompok dengan status hapus buku pada periode yang dipilih."
+                    :title="t('Belum ada pinjaman dihapusbukukan')"
+                    :description="t('Tidak ada pinjaman kelompok dengan status hapus buku pada periode yang dipilih.')"
                 />
             </AppCard>
         </div>

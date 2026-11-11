@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../../i18n';
+const { t } = useI18n();
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppButton from '../../../../Components/AppButton.vue';
 import AppCard from '../../../../Components/AppCard.vue';
@@ -26,9 +28,9 @@ const form = useForm({
 });
 
 const statusOptions = [
-    { value: 'active', label: 'Aktif' },
-    { value: 'suspended', label: 'Ditangguhkan' },
-    { value: 'inactive', label: 'Nonaktif' },
+    { value: 'active', label: t('Aktif') },
+    { value: 'suspended', label: t('Ditangguhkan') },
+    { value: 'inactive', label: t('Nonaktif') },
 ];
 
 function submit() {
@@ -45,23 +47,23 @@ function submit() {
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header>
-                <h1 class="text-2xl font-bold text-primary">{{ editing ? 'Edit User' : 'Tambah User' }}</h1>
+                <h1 class="text-2xl font-bold text-primary">{{ editing ? t('Edit User') : t('Tambah User') }}</h1>
             </header>
 
             <AppCard>
                 <form class="space-y-4" @submit.prevent="submit">
-                    <AppInput v-model="form.name" label="Nama" required :error="form.errors.name" />
-                    <AppInput v-model="form.username" label="Username" required :error="form.errors.username" />
-                    <AppInput v-model="form.email" label="Email" type="email" :error="form.errors.email" />
-                    <AppInput v-model="form.phone" label="Nomor HP (WhatsApp)" icon="phone" type="tel" inputmode="tel" autocomplete="tel" required :error="form.errors.phone" />
+                    <AppInput v-model="form.name" :label="t('Nama')" required :error="form.errors.name" />
+                    <AppInput v-model="form.username" :label="t('Username')" required :error="form.errors.username" />
+                    <AppInput v-model="form.email" :label="t('Email')" type="email" :error="form.errors.email" />
+                    <AppInput v-model="form.phone" :label="t('Nomor HP (WhatsApp)')" icon="phone" type="tel" inputmode="tel" autocomplete="tel" required :error="form.errors.phone" />
                     <AppInput v-model="form.password" :label="editing ? 'Password baru (opsional)' : 'Password'" type="password" :required="!editing" :error="form.errors.password" />
-                    <AppInput v-model="form.password_confirmation" label="Konfirmasi password" type="password" :required="!editing || !!form.password" />
-                    <SmartSelect v-model="form.status" label="Status" :options="statusOptions" required :error="form.errors.status" />
-                    <SmartSelect v-model="form.role" label="Role" :options="roleOptions" :error="form.errors.role" />
+                    <AppInput v-model="form.password_confirmation" :label="t('Konfirmasi password')" type="password" :required="!editing || !!form.password" />
+                    <SmartSelect v-model="form.status" :label="t('Status')" :options="statusOptions" required :error="form.errors.status" />
+                    <SmartSelect v-model="form.role" :label="t('Role')" :options="roleOptions" :error="form.errors.role" />
                     <p class="text-xs text-on-surface-variant">Role membatasi permission. Kosong = akses penuh (legacy).</p>
                     <div class="flex justify-end gap-3">
-                        <Link :href="`/admin/tenants/${tenant.row_id}/users`"><AppButton variant="secondary">Batal</AppButton></Link>
-                        <AppButton type="submit" :loading="form.processing" icon="save">Simpan</AppButton>
+                        <Link :href="`/admin/tenants/${tenant.row_id}/users`"><AppButton variant="secondary">{{ t('Batal') }}</AppButton></Link>
+                        <AppButton type="submit" :loading="form.processing" icon="save">{{ t('Simpan') }}</AppButton>
                     </div>
                 </form>
             </AppCard>

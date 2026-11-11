@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AppButton from '../../../Components/AppButton.vue';
@@ -26,18 +28,18 @@ const routeBase = computed(() =>
 );
 
 const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
+    { value: '1', label: t('Januari') },
+    { value: '2', label: t('Februari') },
+    { value: '3', label: t('Maret') },
+    { value: '4', label: t('April') },
+    { value: '5', label: t('Mei') },
+    { value: '6', label: t('Juni') },
+    { value: '7', label: t('Juli') },
+    { value: '8', label: t('Agustus') },
+    { value: '9', label: t('September') },
+    { value: '10', label: t('Oktober') },
+    { value: '11', label: t('November') },
+    { value: '12', label: t('Desember') },
 ];
 
 const yearOptions = computed(() => {
@@ -84,9 +86,9 @@ const pdfUrl = computed(() => {
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">Laporan Piutang</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Laporan Piutang') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">
-                        {{ isIndividu ? 'LPP Rekap Desa Individu' : 'LPP Rekap per Desa' }}
+                        {{ isIndividu ? t('LPP Rekap Desa Individu') : t('LPP Rekap per Desa') }}
                     </h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         Daftar perkembangan piutang {{ isIndividu ? 'individu' : '' }} rekapitulasi desa
@@ -97,7 +99,7 @@ const pdfUrl = computed(() => {
                     <a :href="pdfUrl" target="_blank" class="inline-flex">
                         <AppButton variant="outline">
                             <span class="material-symbols-outlined mr-1.5 text-base">picture_as_pdf</span>
-                            Cetak PDF
+                            {{ t('Cetak PDF') }}
                         </AppButton>
                     </a>
                 </div>
@@ -107,11 +109,11 @@ const pdfUrl = computed(() => {
             <AppCard class="p-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tahun</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Tahun') }}</label>
                         <SmartSelect v-model="selectedYear" :options="yearOptions" @update:model-value="apply" hide-label />
                     </div>
                     <div class="space-y-1.5">
-                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Bulan</label>
+                        <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">{{ t('Bulan') }}</label>
                         <SmartSelect v-model="selectedMonth" :options="monthOptions" @update:model-value="apply" hide-label />
                     </div>
                 </div>
@@ -132,30 +134,30 @@ const pdfUrl = computed(() => {
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-surface-variant/40 text-on-surface font-semibold">
                             <tr class="border-b border-outline-variant/30 text-center">
-                                <th rowspan="2" class="p-3 text-left">Desa</th>
-                                <th v-if="!isIndividu" rowspan="2" class="p-3">Kel</th>
-                                <th v-if="!isIndividu" rowspan="2" class="p-3">Pmf</th>
-                                <th rowspan="2" class="p-3 text-right">Alokasi</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Target</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Real s.d. Lalu</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Real Bulan Ini</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Real Kumulatif</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Saldo</th>
-                                <th colspan="2" class="p-3 border-l border-outline-variant/20">Tunggakan</th>
+                                <th rowspan="2" class="p-3 text-left">{{ t('Desa') }}</th>
+                                <th v-if="!isIndividu" rowspan="2" class="p-3">{{ t('Kel') }}</th>
+                                <th v-if="!isIndividu" rowspan="2" class="p-3">{{ t('Pmf') }}</th>
+                                <th rowspan="2" class="p-3 text-right">{{ t('Alokasi') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Target') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Real s.d. Lalu') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Real Bulan Ini') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Real Kumulatif') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Saldo') }}</th>
+                                <th colspan="2" class="p-3 border-l border-outline-variant/20">{{ t('Tunggakan') }}</th>
                             </tr>
                             <tr class="border-b border-outline-variant/30 text-center text-[11px] text-on-surface-variant">
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">Pokok</th>
-                                <th class="p-2 text-right">Jasa</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
+                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
+                                <th class="p-2 text-right">{{ t('Jasa') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/20">

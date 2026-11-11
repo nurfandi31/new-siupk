@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../i18n';
+const { t } = useI18n();
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { onBeforeUnmount, ref, watch } from 'vue';
 import AppButton from '../../Components/AppButton.vue';
@@ -6,16 +8,16 @@ import AppCheckbox from '../../Components/AppCheckbox.vue';
 import AppIcon from '../../Components/AppIcon.vue';
 import AppIconButton from '../../Components/AppIconButton.vue';
 import AppInput from '../../Components/AppInput.vue';
+import AppLanguageSwitcher from '../../Components/AppLanguageSwitcher.vue';
 
-const props = defineProps({
-    demo: { type: Object, default: null },
+defineProps({
     centralLogin: { type: Boolean, default: false },
 });
 
-const showPassword = ref(Boolean(props.demo));
+const showPassword = ref(false);
 const form = useForm({
-    identifier: props.demo?.username ?? '',
-    password: props.demo?.password ?? '',
+    identifier: '',
+    password: '',
     remember: false,
 });
 const page = usePage();
@@ -71,13 +73,13 @@ function togglePasswordVisibility() {
 }
 
 const trustItems = [
-    { icon: 'verified_user', label: 'Regulasi PP No. 11/2021' },
-    { icon: 'lock', label: 'Enkripsi & Database Sharding' },
+    { icon: 'verified_user', label: t('Regulasi PP No. 11/2021') },
+    { icon: 'lock', label: t('Enkripsi & Database Sharding') },
 ];
 </script>
 
 <template>
-    <Head title="Masuk Ke Portal - siupk Next" />
+    <Head :title="t('Masuk Ke Portal - siupk Next')" />
 
     <main class="login-shell flex flex-col bg-surface font-sans text-on-surface lg:flex-row">
         <!-- ============================================================
@@ -85,7 +87,7 @@ const trustItems = [
              - Mobile: compact horizontal strip (~72px)
              - Desktop (md+): full-height sidebar with bg image & headline
         ============================================================ -->
-        <aside class="login-brand relative w-full shrink-0 overflow-hidden md:fixed md:inset-y-0 md:left-0 md:flex md:w-[55%] md:flex-col md:justify-between md:min-w-0 lg:w-[52%] xl:w-[58%]" aria-label="Informasi siupk">
+        <aside class="login-brand relative w-full shrink-0 overflow-hidden md:fixed md:inset-y-0 md:left-0 md:flex md:w-[55%] md:flex-col md:justify-between md:min-w-0 lg:w-[52%] xl:w-[58%]" :aria-label="t('Informasi siupk')">
             <div class="login-brand-bg" aria-hidden="true" />
             <div class="login-brand-overlay" aria-hidden="true" />
 
@@ -99,10 +101,10 @@ const trustItems = [
                     </div>
                     <div class="min-w-0 leading-tight">
                         <p class="truncate text-base font-bold tracking-tight md:text-lg">
-                            siupk <span class="text-secondary-container">Next</span>
+                            siupk <span class="text-secondary-container">{{ t('Next') }}</span>
                         </p>
                         <p class="hidden truncate text-[11px] font-medium uppercase tracking-[0.18em] text-primary-fixed-dim md:block">
-                            BUMDesma LKD Platform
+                            {{ t('BUMDesma LKD Platform') }}
                         </p>
                     </div>
                 </Link>
@@ -111,7 +113,7 @@ const trustItems = [
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-4 shrink-0 transition-transform group-hover:-translate-x-0.5" aria-hidden="true">
                         <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                     </svg>
-                    <span>beranda</span>
+                    <span>{{ t('Beranda') }}</span>
                 </Link>
             </header>
 
@@ -131,18 +133,24 @@ const trustItems = [
         <!-- ============================================================
              RIGHT FORM PANEL
         ============================================================ -->
-        <section class="login-form-panel flex min-h-0 w-full flex-1 flex-col bg-surface-container-lowest md:ml-[55%] md:w-auto lg:ml-[52%] xl:ml-[58%]">
+        <section class="login-form-panel relative flex min-h-0 w-full flex-1 flex-col bg-surface-container-lowest md:ml-[55%] md:w-auto lg:ml-[52%] xl:ml-[58%]">
+            <!-- Language switcher: desktop floating top-right -->
+            <div class="absolute right-4 top-4 z-30 hidden md:block">
+                <AppLanguageSwitcher align="right" tone="surface" />
+            </div>
+
             <!-- Top bar (mobile only — desktop brand panel handles it) -->
             <div class="flex shrink-0 items-center justify-between border-b border-outline-variant/40 px-4 py-3 md:hidden">
                 <Link href="/" class="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-4 shrink-0" aria-hidden="true">
                         <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                     </svg>
-                    beranda
+                    {{ t('Beranda') }}
                 </Link>
                 <span class="text-[11px] font-medium uppercase tracking-[0.18em] text-outline">
-                    Autentikasi
+                    {{ t('Autentikasi') }}
                 </span>
+                <AppLanguageSwitcher align="right" tone="surface" />
             </div>
 
             <div class="login-form-scroll flex min-h-0 flex-1 items-center justify-center px-4 py-6 sm:px-6 md:px-10 md:py-10 lg:px-14 xl:px-20">
@@ -150,40 +158,29 @@ const trustItems = [
                     <!-- Header -->
                     <header class="login-form-header space-y-2 text-center sm:text-left">
                         <span class="login-form-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-primary)_15%,transparent)] backdrop-blur-sm"
-                            :class="demo
-                                ? 'bg-tertiary-fixed/40 text-tertiary'
-                                : 'bg-primary-container/40 text-primary'">
+                            :class="'bg-primary-container/40 text-primary'">
                             <span class="login-pill-dot relative flex size-1.5">
                                 <span class="login-pill-dot-ping absolute inset-0 rounded-full opacity-75"
-                                    :class="demo ? 'bg-tertiary' : 'bg-primary'" />
+                                    :class="'bg-primary'" />
                                 <span class="relative inline-flex size-1.5 rounded-full"
-                                    :class="demo ? 'bg-tertiary' : 'bg-primary'" />
+                                    :class="'bg-primary'" />
                             </span>
-                            {{ demo ? 'Akun Demo · Data Fiktif' : 'Portal Autentikasi Pengurus & Admin' }}
+                            {{ t('Portal Autentikasi Pengurus & Admin') }}
                         </span>
                         <h1 class="login-form-title text-2xl font-extrabold tracking-tight text-on-surface sm:text-3xl">
-                            {{ demo ? 'Coba Sistem Demo' : 'Masuk ke Akun Anda' }}
+                            {{ t('Masuk ke Akun Anda') }}
                         </h1>
                         <p class="login-form-subtitle text-sm text-on-surface-variant">
-                            {{ demo ? 'Kredensial demo sudah terisi otomatis. Klik tombol masuk untuk menjelajah sistem.' : 'Masukkan kredensial pengguna terdaftar BUMDesma Anda.' }}
+                            {{ t('Masukkan kredensial pengguna terdaftar BUMDesma Anda.') }}
                         </p>
                     </header>
 
                     <!-- Central/tenant separation notice -->
-                    <div v-if="centralLogin && !demo" role="status" class="flex items-start gap-2.5 rounded-lg border border-primary/30 bg-primary-container/30 p-3 text-sm text-on-surface">
+                    <div v-if="centralLogin" role="status" class="flex items-start gap-2.5 rounded-lg border border-primary/30 bg-primary-container/30 p-3 text-sm text-on-surface">
                         <AppIcon name="info" class="text-xl shrink-0 mt-0.5 leading-none text-primary" />
                         <div class="leading-snug">
-                            <p class="font-semibold">Ini halaman login pusat.</p>
-                            <p class="mt-0.5 text-on-surface-variant">Gunakan akun superadmin/pusat. Akun tenant harus login melalui domain tenant masing-masing.</p>
-                        </div>
-                    </div>
-
-                    <!-- Demo banner info -->
-                    <div v-if="demo" role="status" class="flex items-start gap-2.5 rounded-lg border border-tertiary/30 bg-tertiary-fixed/30 p-3 text-sm text-on-surface">
-                        <AppIcon name="info" class="text-xl shrink-0 mt-0.5 leading-none text-tertiary" />
-                        <div class="leading-snug">
-                            <p class="font-semibold">Ini akun <span class="uppercase">demo</span> · bukan data produksi.</p>
-                            <p class="mt-0.5 text-on-surface-variant">Username: <code class="font-mono font-bold text-tertiary">{{ demo.username }}</code> · Password: <code class="font-mono font-bold text-tertiary">{{ demo.password }}</code></p>
+                            <p class="font-semibold">{{ t('Ini halaman login pusat.') }}</p>
+                            <p class="mt-0.5 text-on-surface-variant">{{ t('Gunakan akun superadmin/pusat. Akun tenant harus login melalui domain tenant masing-masing.') }}</p>
                         </div>
                     </div>
 
@@ -207,7 +204,7 @@ const trustItems = [
                         </div>
                         <div v-if="form.errors.identifier || form.errors.password || form.errors.error" role="alert" class="flex items-start gap-2.5 rounded-lg border border-error/30 bg-error-container/40 p-3 text-sm text-error">
                             <AppIcon name="lock_reset" class="text-xl shrink-0 mt-0.5 leading-none" />
-                            <span class="leading-snug">{{ form.errors.identifier || form.errors.password || form.errors.error || 'Kredensial tidak valid.' }}</span>
+                            <span class="leading-snug">{{ form.errors.identifier || form.errors.password || form.errors.error || t('Kredensial tidak valid.') }}</span>
                         </div>
                     </div>
 
@@ -216,10 +213,10 @@ const trustItems = [
                         <div class="login-form-field">
                             <AppInput
                                 v-model="form.identifier"
-                                label="Username / Email"
+                                :label="t('Username / Email')"
                                 icon="person"
                                 autocomplete="username"
-                                placeholder="Username atau email"
+                                :placeholder="t('Username atau email')"
                                 required
                                 autofocus
                                 :error="form.errors.identifier"
@@ -229,7 +226,7 @@ const trustItems = [
                         <div class="login-form-field">
                             <AppInput
                                 v-model="form.password"
-                                label="Password"
+                                :label="t('Password')"
                                 icon="lock"
                                 :type="showPassword ? 'text' : 'password'"
                                 autocomplete="current-password"
@@ -243,7 +240,7 @@ const trustItems = [
                                         size="sm"
                                         tone="neutral"
                                         rounded="lg"
-                                        :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'"
+                                        :aria-label="showPassword ? t('Sembunyikan password') : t('Tampilkan password')"
                                         @click="togglePasswordVisibility"
                                     />
                                 </template>
@@ -251,11 +248,10 @@ const trustItems = [
                         </div>
 
                         <div class="login-form-options flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
-                            <AppCheckbox v-if="!demo" v-model="form.remember" variant="inline" label="Ingat sesi saya" />
-                            <Link v-if="!demo" :href="route('password.request')" class="font-semibold text-primary hover:underline">
-                                Lupa password?
+                            <AppCheckbox v-model="form.remember" variant="inline" :label="t('Ingat sesi saya')" />
+                            <Link :href="route('password.request')" class="font-semibold text-primary hover:underline">
+                                {{ t('Lupa password?') }}
                             </Link>
-                            <span v-else class="text-xs text-on-surface-variant">Akun demo direset otomatis tiap periode.</span>
                         </div>
 
                         <div class="login-form-submit" style="margin-top: 1.5rem;">
@@ -267,20 +263,17 @@ const trustItems = [
                                 :loading="form.processing"
                                 icon="login"
                             >
-                                <span>{{ form.processing ? 'Memverifikasi...' : (demo ? 'masuk sebagai demo' : 'masuk ke dashboard') }}</span>
+                                <span>{{ form.processing ? t('Memverifikasi...') : t('masuk ke dashboard') }}</span>
                             </AppButton>
                         </div>
 
-                        <p v-if="demo" class="text-center text-[11px] text-outline">
-                            Kembali ke <Link :href="route('home')" class="font-semibold text-primary hover:underline">halaman demo</Link>.
-                        </p>
                     </form>
                 </div>
             </div>
 
             <!-- Footer -->
             <footer class="shrink-0 border-t border-outline-variant/40 px-4 py-3 text-center text-[11px] text-outline sm:px-6">
-                &copy; {{ new Date().getFullYear() }} siupk Next &mdash; Sistem Informasi Unit Pengelola Kegiatan
+                &copy; {{ new Date().getFullYear() }} siupk Next &mdash; {{ t('Sistem Informasi Unit Pengelola Kegiatan') }}
             </footer>
         </section>
     </main>

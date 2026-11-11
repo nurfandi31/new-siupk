@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../i18n';
+const { t } = useI18n();
 import { computed, ref } from 'vue';
 
 const props = defineProps({
@@ -220,13 +222,13 @@ function tooltipStyle(h) {
             <div class="space-y-1 text-xs">
                 <p class="flex items-center justify-between gap-4">
                     <span class="inline-flex items-center gap-1.5 text-on-surface-variant">
-                        <span class="size-2 rounded-sm bg-primary" aria-hidden="true" />Cair
+                        <span class="size-2 rounded-sm bg-primary" aria-hidden="true" />{{ t('Cair') }}
                     </span>
                     <span class="font-semibold tabular-nums text-on-surface">{{ formatMoney(hover.disbursed) }}</span>
                 </p>
                 <p class="flex items-center justify-between gap-4">
                     <span class="inline-flex items-center gap-1.5 text-on-surface-variant">
-                        <span class="size-2 rounded-sm bg-secondary" aria-hidden="true" />Terima
+                        <span class="size-2 rounded-sm bg-secondary" aria-hidden="true" />{{ t('Terima') }}
                     </span>
                     <span class="font-semibold tabular-nums text-on-surface">{{ formatMoney(hover.collected) }}</span>
                 </p>
@@ -234,12 +236,12 @@ function tooltipStyle(h) {
         </div>
 
         <table class="sr-only">
-            <caption>Tren 6 bulan pencairan vs penerimaan</caption>
+            <caption>{{ t('Tren 6 bulan pencairan vs penerimaan') }}</caption>
             <thead>
                 <tr>
-                    <th>Bulan</th>
-                    <th>Cair</th>
-                    <th>Terima</th>
+                    <th>{{ t('Bulan') }}</th>
+                    <th>{{ t('Cair') }}</th>
+                    <th>{{ t('Terima') }}</th>
                 </tr>
             </thead>
             <tbody>

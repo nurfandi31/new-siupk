@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../../i18n';
+const { t } = useI18n();
 import { Head, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppBadge from '../../../../Components/AppBadge.vue';
@@ -38,15 +40,15 @@ const pdfHref = computed(() => {
 </script>
 
 <template>
-    <Head title="Laba Rugi Tutup Buku" />
+    <Head :title="t('Laba Rugi Tutup Buku')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                        Pelaporan · Tutup Buku
+                        {{ t('Pelaporan · Tutup Buku') }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold text-primary">Laporan Laba Rugi Tutup Buku</h1>
+                    <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Laporan Laba Rugi Tutup Buku') }}</h1>
                     <p class="text-sm text-on-surface-variant">
                         Tahun Buku {{ year }} · per {{ as_of }}
                     </p>
@@ -63,7 +65,7 @@ const pdfHref = computed(() => {
                 <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                            Tahun Buku
+                            {{ t('Tahun Buku') }}
                         </label>
                         <select
                             class="w-full rounded-xl border border-outline-variant bg-surface px-3 py-2 text-sm"
@@ -77,7 +79,7 @@ const pdfHref = computed(() => {
                     </div>
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                            Tanggal As-of
+                            {{ t('Tanggal As-of') }}
                         </label>
                         <input
                             readonly
@@ -87,7 +89,7 @@ const pdfHref = computed(() => {
                     </div>
                     <div>
                         <label class="mb-1 block text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                            Status Akun Nominal
+                            {{ t('Status Akun Nominal') }}
                         </label>
                         <input
                             readonly
@@ -100,21 +102,21 @@ const pdfHref = computed(() => {
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Pendapatan</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Pendapatan') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ money.format(kpi.total_revenue) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Total Beban</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Beban') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ money.format(kpi.total_expense) }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Surplus/(Defisit)</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Surplus/(Defisit)') }}</p>
                     <p class="mt-2 text-xl font-bold" :class="kpi.surplus_deficit < 0 ? 'text-error' : 'text-primary'">
                         {{ money.format(kpi.surplus_deficit) }}
                     </p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Margin</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Margin') }}</p>
                     <p
                         class="mt-2 text-xl font-bold"
                         :class="kpi.margin_pct < 0 ? 'text-error' : 'text-primary'"
@@ -129,14 +131,14 @@ const pdfHref = computed(() => {
                     <table class="min-w-full text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
-                                <th class="px-3 py-2 text-left">Rekening</th>
+                                <th class="px-3 py-2 text-left">{{ t('Rekening') }}</th>
                                 <th class="px-3 py-2 text-right">Tahun {{ year }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="groups.length === 0">
                                 <td colspan="2" class="px-3 py-8 text-center text-on-surface-variant">
-                                    Belum ada pendapatan/beban.
+                                    {{ t('Belum ada pendapatan/beban.') }}
                                 </td>
                             </tr>
                             <template v-for="group in groups" :key="group.code">
@@ -164,23 +166,23 @@ const pdfHref = computed(() => {
                         </tbody>
                         <tfoot class="font-semibold">
                             <tr class="border-t-2 border-outline bg-surface-container">
-                                <td class="px-3 py-2">A. Laba Rugi OPERASIONAL (Pendapatan Ops − Beban Ops)</td>
+                                <td class="px-3 py-2">{{ t('A. Laba Rugi OPERASIONAL (Pendapatan Ops − Beban Ops)') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.operating) }}</td>
                             </tr>
                             <tr class="bg-surface-container">
-                                <td class="px-3 py-2">B. Laba Rugi NON OPERASIONAL</td>
+                                <td class="px-3 py-2">{{ t('B. Laba Rugi NON OPERASIONAL') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.non_operating) }}</td>
                             </tr>
                             <tr class="bg-surface-container">
-                                <td class="px-3 py-2">C. Laba Rugi Sebelum Taksiran Pajak (A + B)</td>
+                                <td class="px-3 py-2">{{ t('C. Laba Rugi Sebelum Taksiran Pajak (A + B)') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.before_tax) }}</td>
                             </tr>
                             <tr class="bg-surface-container">
-                                <td class="px-3 py-2">Beban Pajak</td>
+                                <td class="px-3 py-2">{{ t('Beban Pajak') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.tax) }}</td>
                             </tr>
                             <tr class="bg-primary/10 text-primary">
-                                <td class="px-3 py-2">D. Laba (Rugi) Bersih</td>
+                                <td class="px-3 py-2">{{ t('D. Laba (Rugi) Bersih') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ money.format(summary.after_tax) }}</td>
                             </tr>
                         </tfoot>

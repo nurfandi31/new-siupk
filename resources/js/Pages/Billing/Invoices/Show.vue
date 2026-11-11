@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from '../../../i18n';
+const { t } = useI18n();
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
@@ -35,8 +37,8 @@ const selectedMethod = ref('QRIS2');
 const copiedField = ref('');
 
 const categoryOptions = [
-    { value: 'qris', label: 'QRIS (Scan Langsung)', icon: 'qr_code_scanner' },
-    { value: 'virtual_account', label: 'Virtual Account Bank (VA)', icon: 'account_balance' },
+    { value: 'qris', label: t('QRIS (Scan Langsung)'), icon: 'qr_code_scanner' },
+    { value: 'virtual_account', label: t('Virtual Account Bank (VA)'), icon: 'account_balance' },
 ];
 
 const qrisChannels = computed(() => props.channels.filter((c) => c.group === 'qris' || c.code.includes('QRIS')));
@@ -124,7 +126,7 @@ function methodLabel(payment) {
             <header class="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
                 <div>
                     <Link href="/billing/invoices" class="text-sm font-semibold text-primary hover:underline">
-                        ← Kembali ke Daftar Tagihan
+                        {{ t('← Kembali ke Daftar Tagihan') }}
                     </Link>
                     <div class="mt-3 flex flex-wrap items-center gap-3">
                         <h1 class="text-2xl font-bold text-primary">{{ invoice.number }}</h1>
@@ -133,7 +135,7 @@ function methodLabel(payment) {
                     <p class="mt-1 text-sm text-on-surface-variant">
                         {{ purposeLabels[invoice.purpose] || invoice.purpose || 'Tagihan' }}
                         · Jatuh tempo: <strong>{{ invoice.due_at || '—' }}</strong>
-                        <span v-if="invoice.subscription"> · Paket: {{ invoice.subscription.plan?.name }}</span>
+                        <span v-if="invoice.subscription"> {{ t('· Paket:') }} {{ invoice.subscription.plan?.name }}</span>
                     </p>
                 </div>
 
@@ -144,7 +146,7 @@ function methodLabel(payment) {
                         :loading="checkingStatus"
                         @click="checkStatus"
                     >
-                        Cek Status Pembayaran
+                        {{ t('Cek Status Pembayaran') }}
                     </AppButton>
                 </div>
             </header>
@@ -158,12 +160,12 @@ function methodLabel(payment) {
                                 <AppIcon :name="active_payment.method_code.includes('QRIS') ? 'qr_code_scanner' : 'account_balance'" size="28" />
                             </span>
                             <div>
-                                <span class="text-xs font-bold uppercase tracking-wider text-primary">Instruksi Pembayaran Aktif</span>
+                                <span class="text-xs font-bold uppercase tracking-wider text-primary">{{ t('Instruksi Pembayaran Aktif') }}</span>
                                 <h2 class="text-xl font-bold text-on-surface">{{ active_payment.payment_name }}</h2>
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="text-xs text-on-surface-variant">Batas Waktu Pembayaran</span>
+                            <span class="text-xs text-on-surface-variant">{{ t('Batas Waktu Pembayaran') }}</span>
                             <p class="font-bold text-error">{{ active_payment.expired_time || '24 Jam' }}</p>
                         </div>
                     </div>
@@ -174,33 +176,33 @@ function methodLabel(payment) {
                             <div class="relative rounded-2xl border-4 border-white bg-white p-3 shadow-lg">
                                 <img
                                     :src="active_payment.qr_url"
-                                    alt="QRIS Code"
+                                    :alt="t('QRIS Code')"
                                     class="size-56 object-contain"
                                 />
                             </div>
-                            <p class="mt-3 text-xs font-semibold text-on-surface-variant">NMID / Standar QRIS Nasional</p>
+                            <p class="mt-3 text-xs font-semibold text-on-surface-variant">{{ t('NMID / Standar QRIS Nasional') }}</p>
                         </div>
 
                         <div class="mt-6 max-w-md space-y-4 sm:mt-0">
                             <div>
-                                <span class="text-xs font-semibold text-on-surface-variant">Total Tagihan</span>
+                                <span class="text-xs font-semibold text-on-surface-variant">{{ t('Total Tagihan') }}</span>
                                 <p class="text-3xl font-black text-primary">{{ money(active_payment.total_amount) }}</p>
                             </div>
                             <div class="rounded-xl bg-surface-container-low p-4 text-xs text-on-surface space-y-2">
-                                <p class="font-bold text-primary">Cara Pembayaran QRIS:</p>
+                                <p class="font-bold text-primary">{{ t('Cara Pembayaran QRIS:') }}</p>
                                 <ol class="list-decimal pl-4 space-y-1">
-                                    <li>Buka aplikasi m-Banking (BCA, Mandiri, BRI, BNI, dll.) atau e-Wallet (GoPay, OVO, Dana, ShopeePay).</li>
+                                    <li>{{ t('Buka aplikasi m-Banking (BCA, Mandiri, BRI, BNI, dll.) atau e-Wallet (GoPay, OVO, Dana, ShopeePay).') }}</li>
                                     <li>Pilih menu <strong>Scan / Bayar QRIS</strong>.</li>
-                                    <li>Arahkan kamera ke kode QR di layar ini.</li>
-                                    <li>Periksa nama merchant dan nominal, lalu masukkan PIN Anda.</li>
+                                    <li>{{ t('Arahkan kamera ke kode QR di layar ini.') }}</li>
+                                    <li>{{ t('Periksa nama merchant dan nominal, lalu masukkan PIN Anda.') }}</li>
                                 </ol>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <AppButton variant="primary" icon="refresh" :loading="checkingStatus" @click="checkStatus">
-                                    Saya Sudah Bayar
+                                    {{ t('Saya Sudah Bayar') }}
                                 </AppButton>
                                 <a :href="active_payment.qr_url" download="qris_invoice.png" target="_blank">
-                                    <AppButton variant="secondary" icon="download">Unduh QR</AppButton>
+                                    <AppButton variant="secondary" icon="download">{{ t('Unduh QR') }}</AppButton>
                                 </a>
                             </div>
                         </div>
@@ -211,7 +213,7 @@ function methodLabel(payment) {
                         <div class="grid gap-6 md:grid-cols-2">
                             <div class="space-y-4">
                                 <div>
-                                    <span class="text-xs font-semibold text-on-surface-variant">Nomor Virtual Account</span>
+                                    <span class="text-xs font-semibold text-on-surface-variant">{{ t('Nomor Virtual Account') }}</span>
                                     <div class="mt-1 flex items-center gap-3">
                                         <span class="font-mono text-2xl font-black tracking-wider text-primary">
                                             {{ active_payment.pay_code }}
@@ -228,7 +230,7 @@ function methodLabel(payment) {
                                 </div>
 
                                 <div>
-                                    <span class="text-xs font-semibold text-on-surface-variant">Total Nominal Transfer</span>
+                                    <span class="text-xs font-semibold text-on-surface-variant">{{ t('Total Nominal Transfer') }}</span>
                                     <div class="mt-1 flex items-center gap-3">
                                         <span class="text-2xl font-bold text-on-surface">
                                             {{ money(active_payment.total_amount) }}
@@ -246,14 +248,14 @@ function methodLabel(payment) {
 
                                 <div class="pt-2">
                                     <AppButton variant="primary" icon="refresh" :loading="checkingStatus" @click="checkStatus">
-                                        Saya Sudah Transfer
+                                        {{ t('Saya Sudah Transfer') }}
                                     </AppButton>
                                 </div>
                             </div>
 
                             <!-- Payment Steps / Instructions -->
                             <div v-if="active_payment.instructions?.length" class="space-y-3">
-                                <span class="text-xs font-bold uppercase tracking-wider text-primary">Panduan Pembayaran:</span>
+                                <span class="text-xs font-bold uppercase tracking-wider text-primary">{{ t('Panduan Pembayaran:') }}</span>
                                 <div class="max-h-60 overflow-y-auto space-y-2 pr-2">
                                     <div
                                         v-for="(inst, i) in active_payment.instructions"
@@ -276,30 +278,30 @@ function methodLabel(payment) {
             <div class="grid gap-6 lg:grid-cols-3">
                 <!-- Summary Card -->
                 <AppCard class="lg:col-span-1 h-fit">
-                    <h2 class="font-bold text-primary text-lg">Rincian Tagihan</h2>
+                    <h2 class="font-bold text-primary text-lg">{{ t('Rincian Tagihan') }}</h2>
                     <dl class="mt-4 divide-y divide-outline-variant text-sm">
                         <div class="py-2.5 flex justify-between">
-                            <dt class="text-on-surface-variant">Nominal Tagihan</dt>
+                            <dt class="text-on-surface-variant">{{ t('Nominal Tagihan') }}</dt>
                             <dd class="font-bold text-on-surface">{{ money(invoice.amount, invoice.currency) }}</dd>
                         </div>
                         <div class="py-2.5 flex justify-between">
-                            <dt class="text-on-surface-variant">Sudah Dibayar</dt>
+                            <dt class="text-on-surface-variant">{{ t('Sudah Dibayar') }}</dt>
                             <dd class="font-bold text-secondary">{{ money(invoice.amount_paid, invoice.currency) }}</dd>
                         </div>
                         <div class="py-2.5 flex justify-between">
-                            <dt class="text-on-surface-variant font-semibold">Sisa Kewajiban</dt>
+                            <dt class="text-on-surface-variant font-semibold">{{ t('Sisa Kewajiban') }}</dt>
                             <dd class="text-lg font-black text-primary">{{ money(invoice.remaining, invoice.currency) }}</dd>
                         </div>
                         <div class="py-2.5">
-                            <dt class="text-on-surface-variant">Keperluan</dt>
+                            <dt class="text-on-surface-variant">{{ t('Keperluan') }}</dt>
                             <dd class="font-semibold text-primary">{{ purposeLabels[invoice.purpose] || invoice.purpose }}</dd>
                         </div>
                         <div class="py-2.5">
-                            <dt class="text-on-surface-variant">Deskripsi</dt>
+                            <dt class="text-on-surface-variant">{{ t('Deskripsi') }}</dt>
                             <dd class="text-on-surface">{{ invoice.description || '—' }}</dd>
                         </div>
                         <div class="py-2.5 flex justify-between">
-                            <dt class="text-on-surface-variant">Tanggal Diterbitkan</dt>
+                            <dt class="text-on-surface-variant">{{ t('Tanggal Diterbitkan') }}</dt>
                             <dd class="text-on-surface">{{ invoice.issued_at || '—' }}</dd>
                         </div>
                     </dl>
@@ -309,17 +311,17 @@ function methodLabel(payment) {
                 <AppCard v-if="invoice.is_open" class="lg:col-span-2 space-y-6">
                     <div>
                         <h2 class="font-bold text-primary text-lg">
-                            {{ active_payment ? 'Pilih Metode Lain' : 'Pilih Metode Pembayaran Online' }}
+                            {{ active_payment ? t('Pilih Metode Lain') : t('Pilih Metode Pembayaran Online') }}
                         </h2>
                         <p class="mt-1 text-sm text-on-surface-variant">
-                            Pembayaran otomatis diverifikasi secara real-time via Tripay.
+                            {{ t('Pembayaran otomatis diverifikasi secara real-time via Tripay.') }}
                         </p>
                     </div>
 
                     <AppRadioGroup
                         v-model="selectedCategory"
                         :options="categoryOptions"
-                        label="Kategori Pembayaran"
+                        :label="t('Kategori Pembayaran')"
                     />
 
                     <!-- Category 1: QRIS List -->
@@ -337,7 +339,7 @@ function methodLabel(payment) {
                                 </span>
                                 <div>
                                     <p class="font-bold text-sm text-primary">{{ ch.name }}</p>
-                                    <p class="text-xs text-on-surface-variant">Semua Mobile Banking & E-Wallet (BCA, Mandiri, BRI, GoPay, Dana, dll.)</p>
+                                    <p class="text-xs text-on-surface-variant">{{ t('Semua Mobile Banking & E-Wallet (BCA, Mandiri, BRI, GoPay, Dana, dll.)') }}</p>
                                 </div>
                             </div>
                             <input
@@ -365,7 +367,7 @@ function methodLabel(payment) {
                                 </span>
                                 <div>
                                     <p class="font-bold text-xs text-primary">{{ ch.name }}</p>
-                                    <p class="text-[10px] text-on-surface-variant">Verifikasi Otomatis</p>
+                                    <p class="text-[10px] text-on-surface-variant">{{ t('Verifikasi Otomatis') }}</p>
                                 </div>
                             </div>
                             <input
@@ -385,7 +387,7 @@ function methodLabel(payment) {
                             :loading="payForm.processing"
                             @click="pay"
                         >
-                            {{ active_payment ? 'Ganti ke Metode Ini' : 'Dapatkan Kode Pembayaran' }}
+                            {{ active_payment ? t('Ganti ke Metode Ini') : t('Dapatkan Kode Pembayaran') }}
                         </AppButton>
                     </div>
                 </AppCard>
@@ -395,7 +397,7 @@ function methodLabel(payment) {
                     <div class="flex items-center gap-3">
                         <AppIcon name="check_circle" tone="success" size="28" container-size="12" container-shape="pill" />
                         <div>
-                            <h2 class="text-xl font-bold text-secondary">Tagihan Telah Lunas</h2>
+                            <h2 class="text-xl font-bold text-secondary">{{ t('Tagihan Telah Lunas') }}</h2>
                             <p class="text-sm text-on-secondary-container">
                                 Pembayaran telah diterima{{ invoice.paid_at ? ` pada ${invoice.paid_at}` : '' }}. Masa langganan aktif.
                             </p>
@@ -407,17 +409,17 @@ function methodLabel(payment) {
             <!-- Payment History Table -->
             <AppCard :padded="false">
                 <div class="border-b border-outline-variant px-6 py-4">
-                    <h2 class="font-bold text-primary">Riwayat Transaksi Pembayaran</h2>
+                    <h2 class="font-bold text-primary">{{ t('Riwayat Transaksi Pembayaran') }}</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase text-on-surface-variant">
                             <tr>
-                                <th class="px-6 py-3">Metode</th>
-                                <th class="px-6 py-3">Status</th>
-                                <th class="px-6 py-3">Nominal</th>
-                                <th class="px-6 py-3">Referensi / Kode Bayar</th>
-                                <th class="px-6 py-3">Waktu</th>
+                                <th class="px-6 py-3">{{ t('Metode') }}</th>
+                                <th class="px-6 py-3">{{ t('Status') }}</th>
+                                <th class="px-6 py-3">{{ t('Nominal') }}</th>
+                                <th class="px-6 py-3">{{ t('Referensi / Kode Bayar') }}</th>
+                                <th class="px-6 py-3">{{ t('Waktu') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
@@ -434,7 +436,7 @@ function methodLabel(payment) {
                                 <td class="px-6 py-3 text-on-surface-variant text-xs">{{ payment.paid_at || '—' }}</td>
                             </tr>
                             <tr v-if="!payments.length">
-                                <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">Belum ada catatan pembayaran.</td>
+                                <td colspan="5" class="px-6 py-8 text-center text-on-surface-variant">{{ t('Belum ada catatan pembayaran.') }}</td>
                             </tr>
                         </tbody>
                     </table>
