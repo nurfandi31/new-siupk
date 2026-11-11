@@ -27,7 +27,7 @@ const inputId = props.id || generatedId;
 </script>
 
 <template>
-    <div class="space-y-1.5">
+    <div class="min-w-0 space-y-1.5">
         <div v-if="!hideLabel" class="flex items-center gap-1.5 ml-1">
             <label :for="inputId" :class="['block text-sm font-bold uppercase tracking-wider', disabled ? 'text-on-surface-variant' : 'text-primary']">{{ label }}</label>
             <AppTooltip v-if="tooltip" :id="`${inputId}-tooltip`" :text="tooltip" />
@@ -52,7 +52,7 @@ const inputId = props.id || generatedId;
                     size === 'compact'
                         ? 'h-9 rounded-lg px-3 text-sm'
                         : 'h-11 rounded-xl px-3.5 text-sm',
-                    'w-full border bg-surface-container-lowest text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant disabled:cursor-not-allowed disabled:bg-surface-container-low disabled:text-on-surface-variant disabled:opacity-70',
+                    'min-w-0 w-full border bg-surface-container-lowest text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant disabled:cursor-not-allowed disabled:bg-surface-container-low disabled:text-on-surface-variant disabled:opacity-70',
                     size === 'compact' ? (icon ? 'pl-9' : '') : (icon ? 'pl-11' : ''),
                     $slots.trailing ? (size === 'compact' ? 'pr-10' : 'pr-12') : '',
                     error ? 'border-error' : 'border-outline-variant',

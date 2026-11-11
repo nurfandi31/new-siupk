@@ -239,7 +239,7 @@ watch(() => props.modelValue, (value) => {
 </script>
 
 <template>
-    <div class="space-y-1.5" :data-smart-select="selectId">
+    <div class="min-w-0 space-y-1.5" :data-smart-select="selectId">
         <label :for="selectId" :class="hideLabel ? 'sr-only' : 'ml-1 block text-sm font-bold uppercase tracking-wider text-primary'">{{ label }}</label>
         <div class="relative">
             <button
@@ -254,7 +254,7 @@ watch(() => props.modelValue, (value) => {
                 :disabled="disabled"
                 :class="[
                     size === 'compact' ? 'h-9 rounded-lg px-3 pr-12 text-sm' : 'h-11 rounded-xl px-3.5 pr-12 text-sm',
-                    'flex w-full items-center justify-between border bg-surface-container-lowest text-left text-primary transition-all duration-150 active:scale-[0.99] focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
+                    'flex w-full min-w-0 items-center justify-between border bg-surface-container-lowest text-left text-primary transition-all duration-150 active:scale-[0.99] focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
                     error ? 'border-error' : 'border-outline-variant',
                 ]"
                 v-bind="$attrs"

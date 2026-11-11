@@ -340,7 +340,7 @@ function applySignatureStarter() {
 
                 <!-- Tab Content -->
                 <Transition name="tab-fade" mode="out-in">
-                    <div :key="activeTab" class="space-y-6 p-5 sm:p-7">
+                    <div :key="activeTab" class="min-w-0 space-y-6 p-5 sm:p-7">
                     <!-- Identity -->
                     <div v-if="activeTab === 'identity'" class="space-y-6">
                         <div class="flex items-center gap-3">

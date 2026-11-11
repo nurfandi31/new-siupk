@@ -189,7 +189,7 @@ watch(model, () => {
 </script>
 
 <template>
-    <div class="space-y-1.5">
+    <div class="min-w-0 space-y-1.5">
         <div v-if="!hideLabel" class="ml-1 flex items-center gap-1.5">
             <label :for="inputId" class="block text-sm font-bold uppercase tracking-wider text-primary">{{ label }}</label>
             <AppTooltip v-if="tooltip" :id="`${inputId}-tooltip`" :text="tooltip" />
@@ -209,7 +209,7 @@ watch(model, () => {
                 ].filter(Boolean).join(' ') || undefined"
                 :readonly="readonly"
                 :placeholder="readonly ? undefined : (placeholder ?? defaultPlaceholder('currency', label))"
-                class="h-11 w-full rounded-xl border bg-surface-container-lowest px-3.5 pl-11 text-sm text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant"
+                class="h-11 w-full min-w-0 rounded-xl border bg-surface-container-lowest px-3.5 pl-11 text-sm text-primary transition placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none read-only:cursor-default read-only:bg-surface-container-low read-only:text-on-surface-variant"
                 :class="[error ? 'border-error' : 'border-outline-variant', !readonly && 'pr-16']"
                 v-bind="$attrs"
                 @input="onInput"

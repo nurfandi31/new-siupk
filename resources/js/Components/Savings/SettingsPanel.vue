@@ -254,65 +254,78 @@ async function deleteProduct(product) {
                 </AppButton>
             </div>
 
-            <div class="overflow-x-auto rounded-xl border border-outline-variant">
-                    <table class="min-w-full divide-y divide-outline-variant text-sm">
-                        <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
-                            <tr>
-                                <th class="px-4 py-3 text-left font-semibold">{{ t('Kode') }}</th>
-                                <th class="px-4 py-3 text-left font-semibold">{{ t('Nama') }}</th>
-                                <th class="px-4 py-3 text-right font-semibold">{{ t('Bunga') }}</th>
-                                <th class="px-4 py-3 text-right font-semibold">{{ t('Pajak') }}</th>
-                                <th class="px-4 py-3 text-right font-semibold">{{ t('Admin') }}</th>
-                                <th class="px-4 py-3 text-right font-semibold">{{ t('Saldo Min') }}</th>
-                                <th class="px-4 py-3 text-right font-semibold">{{ t('Rekening') }}</th>
-                                <th class="px-4 py-3 text-right font-semibold">{{ t('Aksi') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-outline-variant/60">
-                            <tr v-for="product in products" :key="product.row_id" class="transition hover:bg-surface-container-low/60">
-                                <td class="px-4 py-3 font-mono text-xs font-bold text-primary">{{ product.code }}</td>
-                                <td class="px-4 py-3">
-                                    <p class="whitespace-nowrap font-semibold text-on-surface">{{ product.name }}</p>
-                                    <div class="mt-1 flex flex-wrap items-center gap-1">
-                                        <AppBadge tone="primary-soft">{{ product.category_label }}</AppBadge>
-                                        <AppBadge tone="neutral">{{ product.form_type_label }}</AppBadge>
-                                        <AppBadge v-if="!product.is_active" tone="neutral">{{ t('Nonaktif') }}</AppBadge>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3 text-right text-on-surface">{{ product.interest_rate }}%</td>
-                                <td class="px-4 py-3 text-right text-on-surface">{{ product.tax_rate }}%</td>
-                                <td class="px-4 py-3 text-right text-on-surface">{{ money(product.admin_fee) }}</td>
-                                <td class="px-4 py-3 text-right text-on-surface">{{ money(product.minimum_balance) }}</td>
-                                <td class="px-4 py-3 text-right">
-                                    <AppBadge tone="neutral">{{ product.accounts_count }}</AppBadge>
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-3">
-                                    <div class="flex justify-end gap-1">
-                                        <AppIconButton
-                                            name="edit"
-                                            tone="primary"
-                                            size="md"
-                                            :tooltip="t('Edit jenis simpanan')"
-                                            @click="openEditProduct(product)"
-                                        />
-                                        <AppIconButton
-                                            name="delete"
-                                            tone="danger"
-                                            size="md"
-                                            :disabled="product.accounts_count > 0"
-                                            :tooltip="product.accounts_count > 0 ? t('Tidak dapat dihapus karena sudah dipakai rekening') : t('Hapus jenis simpanan')"
-                                            @click="deleteProduct(product)"
-                                        />
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr v-if="products.length === 0">
-                                <td colspan="8" class="px-4 py-10 text-center text-on-surface-variant">
-                                    {{ t('Belum ada jenis simpanan. Tambahkan minimal satu jenis.') }}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div v-if="products.length === 0" class="rounded-2xl border border-dashed border-outline-variant bg-surface-container-low p-10 text-center">
+                <AppIcon name="savings" class="text-5xl text-on-surface-variant" />
+                <p class="mt-3 text-sm font-bold text-primary">{{ t('Belum ada jenis simpanan') }}</p>
+                <p class="mt-1 text-xs text-on-surface-variant">{{ t('Tambahkan minimal satu jenis simpanan untuk mulai membuka rekening.') }}</p>
+            </div>
+
+            <div v-else class="grid gap-4 md:grid-cols-2">
+                <article
+                    v-for="product in products"
+                    :key="product.row_id"
+                    class="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm transition-all hover:border-primary-container hover:shadow-md"
+                >
+                    <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary to-secondary opacity-0 transition-opacity group-hover:opacity-100" />
+
+                    <div class="flex items-start gap-3">
+                        <div class="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary shadow-md shadow-primary/20">
+                            <AppIcon name="savings" class="text-xl" />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate font-bold text-primary">{{ product.name }}</p>
+                            <div class="mt-1 flex flex-wrap items-center gap-1">
+                                <code class="rounded bg-surface-container px-1.5 py-0.5 font-mono text-xs text-on-surface-variant">{{ product.code }}</code>
+                                <AppBadge tone="primary-soft">{{ product.category_label }}</AppBadge>
+                                <AppBadge tone="neutral">{{ product.form_type_label }}</AppBadge>
+                                <AppBadge v-if="!product.is_active" tone="neutral">{{ t('Nonaktif') }}</AppBadge>
+                            </div>
+                        </div>
+                        <div class="flex shrink-0 gap-1">
+                            <AppIconButton
+                                name="edit"
+                                tone="primary"
+                                size="md"
+                                :tooltip="t('Edit jenis simpanan')"
+                                @click="openEditProduct(product)"
+                            />
+                            <AppIconButton
+                                name="delete"
+                                tone="danger"
+                                size="md"
+                                :disabled="product.accounts_count > 0"
+                                :tooltip="product.accounts_count > 0 ? t('Tidak dapat dihapus karena sudah dipakai rekening') : t('Hapus jenis simpanan')"
+                                @click="deleteProduct(product)"
+                            />
+                        </div>
+                    </div>
+
+                    <p v-if="product.description" class="mt-3 line-clamp-2 text-sm text-on-surface-variant">{{ product.description }}</p>
+
+                    <dl class="mt-4 grid grid-cols-2 gap-3 border-t border-outline-variant/60 pt-4 text-sm">
+                        <div>
+                            <dt class="text-xs text-on-surface-variant">{{ t('Bunga / bulan') }}</dt>
+                            <dd class="mt-0.5 font-semibold text-on-surface">{{ product.interest_rate }}%</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-on-surface-variant">{{ t('Pajak') }}</dt>
+                            <dd class="mt-0.5 font-semibold text-on-surface">{{ product.tax_rate }}%</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-on-surface-variant">{{ t('Admin / bulan') }}</dt>
+                            <dd class="mt-0.5 font-semibold text-on-surface">{{ money(product.admin_fee) }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-on-surface-variant">{{ t('Saldo minimum') }}</dt>
+                            <dd class="mt-0.5 font-semibold text-on-surface">{{ money(product.minimum_balance) }}</dd>
+                        </div>
+                    </dl>
+
+                    <div class="mt-auto flex items-center justify-between gap-2 pt-4">
+                        <span class="text-xs text-on-surface-variant">{{ t('Rekening terhubung') }}</span>
+                        <AppBadge tone="neutral">{{ product.accounts_count }}</AppBadge>
+                    </div>
+                </article>
             </div>
         </section>
     </div>
