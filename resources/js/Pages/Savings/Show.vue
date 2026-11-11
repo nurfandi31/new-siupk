@@ -771,7 +771,7 @@ function typeTone(type) {
                                 :href="activeDocument.url"
                                 target="_blank"
                                 rel="noopener"
-                                class="hidden h-9 items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary sm:inline-flex"
+                                class="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary sm:inline-flex"
                                 :title="t('Buka di tab baru')"
                                 :aria-label="t('Buka di tab baru')"
                             >
