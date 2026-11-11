@@ -82,7 +82,7 @@ function statusLabel(value) {
     <Head :title="t('Simpanan')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
-            <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <header class="space-y-4">
                 <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
                         <h1 class="text-2xl font-bold text-primary">{{ t('Simpanan') }}</h1>
@@ -92,11 +92,11 @@ function statusLabel(value) {
                         {{ t('Rekening simpanan anggota, mutasi setoran/penarikan, serta bunga dan pajak per periode.') }}
                     </p>
                 </div>
-                <div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
-                    <Link v-if="can('simpanan.manage')" href="/simpanan/bunga" class="block">
+                <div v-if="can('simpanan.manage')" class="grid grid-cols-2 gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 sm:flex sm:items-center sm:justify-between">
+                    <Link href="/simpanan/bunga" class="block">
                         <AppButton variant="secondary" icon="percent" class="w-full justify-center sm:w-auto">{{ t('Bunga & Pajak') }}</AppButton>
                     </Link>
-                    <Link v-if="can('simpanan.manage')" href="/simpanan/create" class="block">
+                    <Link href="/simpanan/create" class="block">
                         <AppButton variant="primary" icon="add_card" class="w-full justify-center sm:w-auto">{{ t('Buka Rekening') }}</AppButton>
                     </Link>
                 </div>

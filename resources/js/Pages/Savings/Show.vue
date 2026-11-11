@@ -86,6 +86,11 @@ const isActive = computed(() => props.account.status === 'active');
 const canManage = computed(() => can('simpanan.manage'));
 const hasTransactions = computed(() => props.account.stats.transaction_count > 0);
 const minimumWithdrawal = computed(() => Number(props.account.product.minimum_balance || 0));
+const memberInitials = computed(() => {
+    const parts = String(props.account.member.name || '').trim().split(/\s+/).filter(Boolean);
+
+    return parts.slice(0, 2).map((part) => part.charAt(0)).join('').toUpperCase() || '—';
+});
 
 const showOpeningRow = computed(() => Number(props.statement?.year ?? 0) > 0);
 
@@ -222,359 +227,410 @@ function typeTone(type) {
 <template>
     <Head :title="`Rekening ${account.account_number}`" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
-            <header class="flex flex-col justify-between gap-4 xl:flex-row xl:items-start">
-                <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <Link href="/simpanan" class="text-on-surface-variant transition hover:text-primary">
-                            <AppIcon name="arrow_back" />
-                        </Link>
-                        <h1 class="font-mono text-2xl font-bold text-primary">{{ account.account_number }}</h1>
-                        <AppBadge :tone="isActive ? 'success-soft' : 'neutral'">
-                            {{ isActive ? t('Aktif') : t('Ditutup') }}
-                        </AppBadge>
-                        <AppBadge tone="primary-soft">{{ account.product.form_type_label }}</AppBadge>
-                    </div>
-                    <p class="mt-1 text-on-surface-variant">
-                        {{ account.member.name }}
-                        <span class="text-outline">·</span>
-                        {{ account.member.member_number || '—' }}
-                        <span class="text-outline">·</span>
-                        {{ account.product.name }}
-                    </p>
-                </div>
-                <div class="flex w-full flex-col gap-3 xl:w-auto xl:items-end">
-                    <div v-if="canManage" class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
-                        <AppButton
-                            v-if="isActive"
-                            variant="primary"
-                            icon="add"
-                            class="w-full justify-center sm:w-auto"
-                            @click="openTransaction('setoran')"
-                        >
-                            {{ t('Setoran') }}
-                        </AppButton>
-                        <AppButton
-                            v-if="isActive"
-                            variant="secondary"
-                            icon="remove"
-                            class="w-full justify-center sm:w-auto"
-                            @click="openTransaction('penarikan')"
-                        >
-                            {{ t('Penarikan') }}
-                        </AppButton>
-                        <AppButton variant="secondary" icon="edit" class="w-full justify-center sm:w-auto" @click="openEdit">
-                            {{ t('Edit') }}
-                        </AppButton>
-                        <AppButton variant="ghost" icon="refresh" class="w-full justify-center sm:w-auto" @click="recalculate">
-                            {{ t('Hitung Ulang') }}
-                        </AppButton>
-                        <Link :href="`/simpanan/create?member=${account.member.row_id}`" class="col-span-2 block sm:col-span-1">
-                            <AppButton variant="ghost" icon="add_card" class="w-full justify-center sm:w-auto">
-                                {{ t('Rekening Baru') }}
-                            </AppButton>
-                        </Link>
-                    </div>
-
-                    <div class="w-full rounded-2xl border border-outline-variant bg-surface-container-low p-2.5 xl:w-auto">
-                        <p class="flex items-center gap-1.5 px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-on-surface-variant">
-                            <AppIcon name="print" class="text-sm" />
-                            {{ t('Dokumen') }}
-                        </p>
-                        <div class="mt-2 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                            <AppButton
-                                variant="secondary"
-                                icon="id_card"
-                                class="w-full justify-center sm:w-auto"
-                                @click="printDoc(`/simpanan/${account.row_id}/cetak/kop`)"
-                            >
-                                {{ t('KOP') }}
-                            </AppButton>
-                            <AppButton
-                                variant="secondary"
-                                icon="description"
-                                class="w-full justify-center sm:w-auto"
-                                @click="printDoc(`/simpanan/${account.row_id}/cetak/formulir`)"
-                            >
-                                {{ t('Formulir') }}
-                            </AppButton>
-                            <AppButton
-                                variant="secondary"
-                                icon="receipt_long"
-                                class="col-span-2 w-full justify-center sm:col-span-1 sm:w-auto"
-                                @click="printKoran"
-                            >
-                                {{ t('Rekening Koran') }}
-                            </AppButton>
+        <div class="mx-auto max-w-7xl space-y-5">
+            <header class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div class="flex min-w-0 items-start gap-3">
+                    <Link
+                        href="/simpanan"
+                        class="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface-variant transition hover:border-primary/30 hover:text-primary"
+                        :aria-label="t('Kembali')"
+                    >
+                        <AppIcon name="arrow_back" class="text-lg" />
+                    </Link>
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h1 class="font-mono text-xl font-bold tracking-tight text-primary sm:text-2xl">{{ account.account_number }}</h1>
+                            <AppBadge :tone="isActive ? 'success-soft' : 'neutral'">
+                                {{ isActive ? t('Aktif') : t('Ditutup') }}
+                            </AppBadge>
+                            <AppBadge tone="primary-soft">{{ account.product.form_type_label }}</AppBadge>
                         </div>
+                        <p class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-on-surface-variant">
+                            <span class="font-medium text-on-surface">{{ account.member.name }}</span>
+                            <span class="text-outline">·</span>
+                            <span>{{ account.member.member_number || '—' }}</span>
+                            <span class="text-outline">·</span>
+                            <span>{{ account.product.name }}</span>
+                        </p>
                     </div>
                 </div>
+                <Link
+                    v-if="canManage"
+                    :href="`/simpanan/create?member=${account.member.row_id}`"
+                    class="block shrink-0"
+                >
+                    <AppButton variant="secondary" size="compact" icon="add_card" class="w-full justify-center sm:w-auto">
+                        {{ t('Rekening Baru') }}
+                    </AppButton>
+                </Link>
             </header>
 
-            <section class="relative overflow-hidden rounded-3xl border border-outline-variant bg-gradient-to-br from-secondary-container via-surface-container-low to-primary-container p-5 sm:p-8">
-                <div class="pointer-events-none absolute -right-16 -top-20 size-56 rounded-full bg-surface/40 blur-2xl" aria-hidden="true" />
-                <div class="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Saldo Rekening') }}</p>
-                        <p class="mt-1 text-4xl font-black leading-tight text-on-surface sm:text-5xl">{{ money(account.balance) }}</p>
-                        <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+            <div class="flex flex-col gap-2 rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 xl:flex-row xl:items-center xl:justify-between">
+                <div v-if="canManage" class="grid grid-cols-2 gap-2 xl:flex xl:flex-wrap">
+                    <AppButton v-if="isActive" size="compact" icon="add" class="w-full justify-center xl:w-auto" @click="openTransaction('setoran')">
+                        {{ t('Setoran') }}
+                    </AppButton>
+                    <AppButton v-if="isActive" variant="secondary" size="compact" icon="remove" class="w-full justify-center xl:w-auto" @click="openTransaction('penarikan')">
+                        {{ t('Penarikan') }}
+                    </AppButton>
+                    <AppButton variant="secondary" size="compact" icon="edit" class="w-full justify-center xl:w-auto" @click="openEdit">
+                        {{ t('Edit') }}
+                    </AppButton>
+                    <AppButton variant="ghost" size="compact" icon="refresh" class="w-full justify-center xl:w-auto" @click="recalculate">
+                        {{ t('Hitung Ulang') }}
+                    </AppButton>
+                </div>
+                <div class="grid grid-cols-2 gap-2 xl:flex xl:flex-wrap xl:items-center xl:ml-auto">
+                    <span class="hidden px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-on-surface-variant xl:inline">{{ t('Dokumen') }}</span>
+                    <AppButton variant="secondary" size="compact" icon="id_card" class="w-full justify-center xl:w-auto" @click="printDoc(`/simpanan/${account.row_id}/cetak/kop`)">
+                        {{ t('KOP') }}
+                    </AppButton>
+                    <AppButton variant="secondary" size="compact" icon="description" class="w-full justify-center xl:w-auto" @click="printDoc(`/simpanan/${account.row_id}/cetak/formulir`)">
+                        {{ t('Formulir') }}
+                    </AppButton>
+                    <AppButton variant="secondary" size="compact" icon="receipt_long" class="col-span-2 w-full justify-center xl:col-span-1 xl:w-auto" @click="printKoran">
+                        {{ t('Rekening Koran') }}
+                    </AppButton>
+                </div>
+            </div>
+
+            <section class="grid gap-3 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+                <div class="relative overflow-hidden rounded-2xl border border-outline-variant bg-gradient-to-br from-secondary-container via-surface-container-low to-primary-container p-5">
+                    <div class="pointer-events-none absolute -right-12 -top-14 size-44 rounded-full bg-surface/40 blur-2xl" aria-hidden="true" />
+                    <div class="relative">
+                        <div class="flex items-center gap-2">
+                            <span class="grid size-8 place-items-center rounded-xl bg-surface/70 text-secondary shadow-sm">
+                                <AppIcon name="savings" class="text-lg" />
+                            </span>
+                            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-on-surface-variant">{{ t('Saldo Rekening') }}</p>
+                        </div>
+                        <p class="mt-2 text-3xl font-black tracking-tight text-on-surface sm:text-4xl">{{ money(account.balance) }}</p>
+                        <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
                             <AppBadge tone="primary-soft">{{ account.product.category_label }}</AppBadge>
                             <span class="text-on-surface-variant">{{ t('Dibuka') }} {{ account.opened_at || '—' }}</span>
                             <span class="text-outline">·</span>
                             <span class="text-on-surface-variant">{{ t('Bunga') }} {{ account.interest_rate }}% / {{ t('bulan') }}</span>
                             <span class="text-outline">·</span>
                             <span class="text-on-surface-variant">{{ t('Pajak') }} {{ account.tax_rate }}%</span>
-                            <span class="text-outline">·</span>
-                            <span class="text-on-surface-variant">{{ t('Admin') }} {{ money(account.admin_fee) }} / {{ t('bulan') }}</span>
                         </div>
                     </div>
-                    <div class="grid grid-cols-3 gap-2 text-center">
-                        <div class="rounded-2xl bg-surface/75 px-3 py-3 backdrop-blur">
-                            <p class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Masuk') }}</p>
-                            <p class="mt-1 text-sm font-bold text-secondary">{{ money(account.stats.total_in) }}</p>
+                </div>
+
+                <div class="flex flex-col divide-y divide-outline-variant overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest">
+                    <div class="flex flex-1 items-center justify-between gap-3 px-4 py-3">
+                        <div class="flex items-center gap-2">
+                            <AppIcon name="south_west" class="text-sm text-secondary" />
+                            <span class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Masuk') }}</span>
                         </div>
-                        <div class="rounded-2xl bg-surface/75 px-3 py-3 backdrop-blur">
-                            <p class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Keluar') }}</p>
-                            <p class="mt-1 text-sm font-bold text-tertiary">{{ money(account.stats.total_out) }}</p>
+                        <span class="truncate text-sm font-bold text-secondary">{{ money(account.stats.total_in) }}</span>
+                    </div>
+                    <div class="flex flex-1 items-center justify-between gap-3 px-4 py-3">
+                        <div class="flex items-center gap-2">
+                            <AppIcon name="north_east" class="text-sm text-tertiary" />
+                            <span class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Keluar') }}</span>
                         </div>
-                        <div class="rounded-2xl bg-surface/75 px-3 py-3 backdrop-blur">
-                            <p class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Mutasi') }}</p>
-                            <p class="mt-1 text-sm font-bold text-on-surface">{{ account.stats.transaction_count }}×</p>
+                        <span class="truncate text-sm font-bold text-tertiary">{{ money(account.stats.total_out) }}</span>
+                    </div>
+                    <div class="flex flex-1 items-center justify-between gap-3 px-4 py-3">
+                        <div class="flex items-center gap-2">
+                            <AppIcon name="receipt_long" class="text-sm text-primary" />
+                            <span class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Mutasi') }}</span>
                         </div>
+                        <span class="text-sm font-bold text-on-surface">{{ account.stats.transaction_count }}×</span>
                     </div>
                 </div>
             </section>
 
-            <div class="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-                <AppCard :padded="false" class="min-w-0">
-                    <template #header>
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <div class="flex items-center gap-2">
-                                <AppIcon name="receipt_long" tone="primary" />
-                                <span class="font-semibold text-on-surface">{{ t('Buku Simpanan') }}</span>
+            <div class="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+                <div class="min-w-0 space-y-4">
+                    <AppCard :padded="false" class="min-w-0 overflow-hidden">
+                        <template #header>
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <AppIcon name="receipt_long" tone="primary" container-size="8" />
+                                    <div>
+                                        <p class="font-semibold text-on-surface">{{ t('Buku Simpanan') }}</p>
+                                        <p class="text-xs text-on-surface-variant">{{ t('Riwayat mutasi rekening') }}</p>
+                                    </div>
+                                </div>
+                                <AppBadge tone="neutral">{{ account.stats.transaction_count }} {{ t('transaksi') }}</AppBadge>
                             </div>
-                            <AppBadge tone="neutral">{{ account.stats.transaction_count }} {{ t('transaksi') }}</AppBadge>
-                        </div>
-                    </template>
+                        </template>
 
-                    <div class="space-y-3 border-b border-outline-variant p-4">
-                        <div class="grid gap-3 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-end">
-                            <div class="w-full sm:w-32">
-                                <SmartSelect v-model="year" :label="t('Periode')" :options="yearOptions" />
-                            </div>
-                            <div class="w-full sm:w-40">
-                                <SmartSelect v-model="month" :label="t('Bulan')" :options="monthOptions" />
-                            </div>
-                            <div class="col-span-2 flex gap-2 lg:col-span-1">
-                                <AppButton variant="secondary" icon="filter_alt" class="flex-1 justify-center sm:flex-none" @click="applyFilter">
+                        <div class="space-y-2 border-b border-outline-variant p-3">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="hidden px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-on-surface-variant sm:inline">{{ t('Periode') }}</span>
+                                <div class="w-28">
+                                    <SmartSelect v-model="year" :label="t('Tahun')" hide-label size="compact" :options="yearOptions" />
+                                </div>
+                                <div class="w-36">
+                                    <SmartSelect v-model="month" :label="t('Bulan')" hide-label size="compact" :options="monthOptions" />
+                                </div>
+                                <AppButton variant="secondary" size="compact" icon="filter_alt" @click="applyFilter">
                                     {{ t('Tampilkan') }}
                                 </AppButton>
-                                <AppButton variant="ghost" icon="restart_alt" class="flex-1 justify-center sm:flex-none" @click="resetFilter">
+                                <AppButton variant="ghost" size="compact" icon="restart_alt" @click="resetFilter">
                                     {{ t('Reset') }}
                                 </AppButton>
                             </div>
+                            <div v-if="statement" class="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-surface-container-low px-3 py-2 text-xs sm:text-sm">
+                                <span class="text-on-surface-variant">{{ t('Saldo awal') }}</span>
+                                <span class="font-semibold text-on-surface">{{ money(statement.opening_balance) }}</span>
+                                <AppIcon name="arrow_forward" class="text-base text-outline" />
+                                <span class="text-on-surface-variant">{{ t('Saldo akhir') }}</span>
+                                <span class="font-bold text-secondary">{{ money(statement.closing_balance) }}</span>
+                            </div>
                         </div>
-                        <div v-if="statement" class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-surface-container-low px-3 py-2 text-sm">
-                            <span class="text-on-surface-variant">{{ t('Saldo awal') }}</span>
-                            <span class="font-semibold text-on-surface">{{ money(statement.opening_balance) }}</span>
-                            <AppIcon name="arrow_forward" class="text-outline" />
-                            <span class="text-on-surface-variant">{{ t('Saldo akhir') }}</span>
-                            <span class="font-bold text-secondary">{{ money(statement.closing_balance) }}</span>
-                        </div>
-                    </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="min-w-[760px] divide-y divide-outline-variant text-sm lg:min-w-full">
-                            <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
-                                <tr>
-                                    <th class="px-3 py-3 text-left font-semibold">No</th>
-                                    <th class="px-3 py-3 text-left font-semibold">{{ t('Tanggal') }}</th>
-                                    <th class="px-3 py-3 text-left font-semibold">{{ t('Keterangan') }}</th>
-                                    <th class="px-3 py-3 text-center font-semibold">KD.TRX</th>
-                                    <th class="px-3 py-3 text-right font-semibold">{{ t('Debit') }}</th>
-                                    <th class="px-3 py-3 text-right font-semibold">{{ t('Kredit') }}</th>
-                                    <th class="px-3 py-3 text-right font-semibold">{{ t('Saldo') }}</th>
-                                    <th class="px-3 py-3 text-center font-semibold">P</th>
-                                    <th class="px-3 py-3 text-right font-semibold">{{ t('Cetak') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-outline-variant/60">
-                                <tr v-if="showOpeningRow" class="bg-surface-container-low/50">
-                                    <td colspan="6" class="px-3 py-3 text-center font-semibold text-on-surface">{{ openingLabel }}</td>
-                                    <td class="whitespace-nowrap px-3 py-3 text-right font-bold text-on-surface">{{ money(statement.opening_balance) }}</td>
-                                    <td colspan="2" class="px-3 py-3 text-right text-xs text-on-surface-variant">&nbsp;</td>
-                                </tr>
-                                <tr v-for="(row, index) in transactions.data" :key="row.row_id" class="transition hover:bg-surface-container-low/60">
-                                    <td class="whitespace-nowrap px-3 py-3 text-on-surface-variant">
-                                        {{ (transactions.from || 1) + index }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-3 text-on-surface-variant">{{ row.transaction_date }}</td>
-                                    <td class="min-w-[220px] px-3 py-3">
-                                        <div class="flex flex-col">
+                        <div class="divide-y divide-outline-variant/60 min-[1400px]:hidden">
+                            <div v-if="showOpeningRow" class="flex items-center justify-between gap-3 bg-surface-container-low/40 px-4 py-2.5">
+                                <span class="text-xs font-semibold text-on-surface">{{ openingLabel }}</span>
+                                <span class="text-xs font-bold text-on-surface">{{ money(statement.opening_balance) }}</span>
+                            </div>
+                            <div v-for="(row, index) in transactions.data" :key="row.row_id" class="px-4 py-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <p class="text-xs text-on-surface-variant">
+                                            {{ row.transaction_date }}
+                                            <span class="text-outline">· #{{ (transactions.from || 1) + index }}</span>
+                                        </p>
+                                        <div class="mt-1 flex flex-wrap items-center gap-1.5">
                                             <AppBadge :tone="typeTone(row.type)">{{ row.type_label }}</AppBadge>
-                                            <span class="mt-1 text-xs text-on-surface-variant">
-                                                <span class="font-mono font-semibold">{{ row.code }}</span>
-                                                | {{ row.description || '—' }}
-                                            </span>
+                                            <span class="font-mono text-[11px] font-semibold text-outline">{{ t('Kode') }} {{ row.code }}</span>
                                         </div>
-                                    </td>
-                                    <td class="px-3 py-3 text-center font-mono text-xs font-semibold text-primary">{{ row.row_id }}</td>
-                                    <td class="whitespace-nowrap px-3 py-3 text-right font-semibold text-tertiary">
-                                        {{ row.direction === 'out' ? money(row.amount) : '—' }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-3 text-right font-semibold text-secondary">
-                                        {{ row.direction === 'in' ? money(row.amount) : '—' }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-3 text-right font-bold text-on-surface">{{ money(row.balance_after) }}</td>
-                                    <td class="px-3 py-3 text-center text-xs font-semibold text-on-surface-variant">{{ row.created_by || '—' }}</td>
-                                    <td class="px-3 py-3">
-                                        <div class="flex justify-end gap-1">
-                                            <AppIconButton
-                                                name="menu_book"
-                                                tone="primary"
-                                                size="md"
-                                                :tooltip="t('Cetak pada buku')"
-                                                @click="printDoc(`/simpanan/${account.row_id}/cetak/buku/${row.row_id}`)"
-                                            />
-                                            <AppIconButton
-                                                name="receipt"
-                                                tone="secondary"
-                                                size="md"
-                                                :tooltip="t('Cetak kwitansi')"
-                                                @click="printDoc(`/simpanan/${account.row_id}/cetak/kwitansi/${row.row_id}`)"
-                                            />
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr v-if="transactions.data.length === 0">
-                                    <td colspan="9" class="px-4 py-10 text-center text-on-surface-variant">
-                                        {{ t('Belum ada mutasi pada periode ini.') }}
-                                    </td>
-                                </tr>
-                                <tr class="border-t-2 border-outline-variant bg-surface-container-low/40">
-                                    <td colspan="6" class="px-3 py-3 text-center font-bold text-on-surface">{{ t('Total Saldo') }}</td>
-                                    <td class="whitespace-nowrap px-3 py-3 text-right font-black text-on-surface">
-                                        {{ money(statement?.closing_balance ?? account.balance) }}
-                                    </td>
-                                    <td colspan="2" class="px-3 py-3 text-right text-xs text-on-surface-variant">&nbsp;</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div v-if="transactions.last_page > 1" class="flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant px-4 py-3 text-sm">
-                        <p class="text-on-surface-variant">{{ t('Halaman') }} {{ transactions.current_page }} / {{ transactions.last_page }}</p>
-                        <div class="flex flex-wrap gap-1">
-                            <template v-for="(link, index) in transactions.links" :key="index">
-                                <Link
-                                    v-if="link.url"
-                                    :href="link.url"
-                                    preserve-scroll
-                                    class="rounded-lg px-3 py-1.5 text-sm font-semibold transition"
-                                    :class="link.active ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface hover:bg-surface-container-high'"
-                                    v-html="link.label"
-                                />
-                                <span v-else class="rounded-lg px-3 py-1.5 text-sm text-outline" v-html="link.label" />
-                            </template>
+                                        <p class="mt-1 break-words text-xs text-on-surface-variant">{{ row.description || '—' }}</p>
+                                        <p v-if="row.created_by" class="mt-0.5 text-[11px] text-outline">{{ t('oleh') }} {{ row.created_by }}</p>
+                                    </div>
+                                    <div class="shrink-0 text-right">
+                                        <p class="text-sm font-bold" :class="row.direction === 'in' ? 'text-secondary' : 'text-tertiary'">
+                                            {{ row.direction === 'in' ? '+' : '−' }} {{ money(row.amount) }}
+                                        </p>
+                                        <p class="mt-0.5 text-[11px] text-on-surface-variant">{{ t('Saldo') }} {{ money(row.balance_after) }}</p>
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex justify-end gap-1">
+                                    <AppIconButton
+                                        name="menu_book"
+                                        tone="primary"
+                                        size="sm"
+                                        :tooltip="t('Cetak pada buku')"
+                                        @click="printDoc(`/simpanan/${account.row_id}/cetak/buku/${row.row_id}`)"
+                                    />
+                                    <AppIconButton
+                                        name="receipt"
+                                        tone="secondary"
+                                        size="sm"
+                                        :tooltip="t('Cetak kwitansi')"
+                                        @click="printDoc(`/simpanan/${account.row_id}/cetak/kwitansi/${row.row_id}`)"
+                                    />
+                                </div>
+                            </div>
+                            <div v-if="transactions.data.length === 0" class="px-4 py-8 text-center">
+                                <AppIcon name="receipt_long" class="text-2xl text-outline" />
+                                <p class="mt-2 text-sm font-semibold text-on-surface">{{ t('Belum ada mutasi pada periode ini.') }}</p>
+                                <p class="mt-1 text-xs text-on-surface-variant">{{ t('Ubah periode atau reset filter untuk melihat riwayat lainnya.') }}</p>
+                            </div>
+                            <div class="flex items-center justify-between gap-3 border-t-2 border-outline-variant bg-surface-container-low/40 px-4 py-3">
+                                <span class="text-sm font-bold text-on-surface">{{ t('Total Saldo') }}</span>
+                                <span class="text-sm font-black text-on-surface">{{ money(statement?.closing_balance ?? account.balance) }}</span>
+                            </div>
                         </div>
-                    </div>
-                </AppCard>
 
-                <aside class="min-w-0 space-y-4">
-                    <AppCard>
+                        <div class="hidden overflow-x-auto min-[1400px]:block">
+                            <table class="w-full min-w-[720px] divide-y divide-outline-variant text-sm">
+                                <thead class="bg-surface-container-low/60 text-[11px] uppercase tracking-wider text-on-surface-variant">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left font-semibold">{{ t('Tanggal') }}</th>
+                                        <th class="px-4 py-3 text-left font-semibold">{{ t('Keterangan') }}</th>
+                                        <th class="px-3 py-3 text-right font-semibold">{{ t('Debit') }}</th>
+                                        <th class="px-3 py-3 text-right font-semibold">{{ t('Kredit') }}</th>
+                                        <th class="px-3 py-3 text-right font-semibold">{{ t('Saldo') }}</th>
+                                        <th class="px-3 py-3 text-right font-semibold">{{ t('Cetak') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-outline-variant/60">
+                                    <tr v-if="showOpeningRow" class="bg-surface-container-low/40">
+                                        <td colspan="4" class="px-4 py-2.5 font-semibold text-on-surface">{{ openingLabel }}</td>
+                                        <td class="whitespace-nowrap px-3 py-2.5 text-right font-bold text-on-surface">{{ money(statement.opening_balance) }}</td>
+                                        <td class="px-3 py-2.5">&nbsp;</td>
+                                    </tr>
+                                    <tr v-for="(row, index) in transactions.data" :key="row.row_id" class="transition hover:bg-surface-container-low/40">
+                                        <td class="whitespace-nowrap px-4 py-3 align-top">
+                                            <p class="text-sm text-on-surface">{{ row.transaction_date }}</p>
+                                            <p class="mt-0.5 text-[11px] text-outline">#{{ (transactions.from || 1) + index }}</p>
+                                        </td>
+                                        <td class="min-w-[220px] px-4 py-3 align-top">
+                                            <div class="flex flex-wrap items-center gap-1.5">
+                                                <AppBadge :tone="typeTone(row.type)">{{ row.type_label }}</AppBadge>
+                                                <span class="font-mono text-[11px] font-semibold text-outline">{{ t('Kode') }} {{ row.code }}</span>
+                                            </div>
+                                            <p class="mt-1 text-xs text-on-surface-variant">{{ row.description || '—' }}</p>
+                                            <p v-if="row.created_by" class="mt-0.5 text-[11px] text-outline">{{ t('oleh') }} {{ row.created_by }}</p>
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-3 text-right align-top font-semibold text-tertiary">
+                                            {{ row.direction === 'out' ? money(row.amount) : '—' }}
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-3 text-right align-top font-semibold text-secondary">
+                                            {{ row.direction === 'in' ? money(row.amount) : '—' }}
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-3 text-right align-top font-bold text-on-surface">{{ money(row.balance_after) }}</td>
+                                        <td class="px-3 py-3 align-top">
+                                            <div class="flex justify-end gap-1">
+                                                <AppIconButton
+                                                    name="menu_book"
+                                                    tone="primary"
+                                                    size="sm"
+                                                    :tooltip="t('Cetak pada buku')"
+                                                    @click="printDoc(`/simpanan/${account.row_id}/cetak/buku/${row.row_id}`)"
+                                                />
+                                                <AppIconButton
+                                                    name="receipt"
+                                                    tone="secondary"
+                                                    size="sm"
+                                                    :tooltip="t('Cetak kwitansi')"
+                                                    @click="printDoc(`/simpanan/${account.row_id}/cetak/kwitansi/${row.row_id}`)"
+                                                />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="transactions.data.length === 0">
+                                        <td colspan="6" class="px-4 py-10 text-center">
+                                            <AppIcon name="receipt_long" class="text-2xl text-outline" />
+                                            <p class="mt-2 text-sm font-semibold text-on-surface">{{ t('Belum ada mutasi pada periode ini.') }}</p>
+                                            <p class="mt-1 text-xs text-on-surface-variant">{{ t('Ubah periode atau reset filter untuk melihat riwayat lainnya.') }}</p>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-t-2 border-outline-variant bg-surface-container-low/40">
+                                        <td colspan="4" class="px-4 py-3 text-right font-bold text-on-surface">{{ t('Total Saldo') }}</td>
+                                        <td class="whitespace-nowrap px-3 py-3 text-right font-black text-on-surface">
+                                            {{ money(statement?.closing_balance ?? account.balance) }}
+                                        </td>
+                                        <td class="px-3 py-3">&nbsp;</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div v-if="transactions.last_page > 1" class="flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant px-4 py-3 text-sm">
+                            <p class="text-on-surface-variant">{{ t('Halaman') }} {{ transactions.current_page }} / {{ transactions.last_page }}</p>
+                            <div class="flex flex-wrap gap-1">
+                                <template v-for="(link, index) in transactions.links" :key="index">
+                                    <Link
+                                        v-if="link.url"
+                                        :href="link.url"
+                                        preserve-scroll
+                                        class="rounded-lg px-3 py-1.5 text-sm font-semibold transition"
+                                        :class="link.active ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface hover:bg-surface-container-high'"
+                                        v-html="link.label"
+                                    />
+                                    <span v-else class="rounded-lg px-3 py-1.5 text-sm text-outline" v-html="link.label" />
+                                </template>
+                            </div>
+                        </div>
+                    </AppCard>
+
+                    <AppCard v-if="canManage" :padded="false">
+                        <div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-on-surface">{{ t('Tindakan Rekening') }}</p>
+                                <p v-if="hasTransactions" class="mt-0.5 text-xs text-on-surface-variant">
+                                    {{ t('Rekening dengan mutasi tidak dapat dihapus; gunakan penutupan rekening.') }}
+                                </p>
+                                <p v-else class="mt-0.5 text-xs text-on-surface-variant">
+                                    {{ t('Rekening tanpa mutasi dapat dihapus permanen.') }}
+                                </p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <AppButton v-if="isActive" variant="secondary" size="compact" icon="lock" @click="closeAccount">
+                                    {{ t('Tutup Rekening') }}
+                                </AppButton>
+                                <AppButton v-if="!hasTransactions" variant="danger" size="compact" icon="delete" @click="deleteAccount">
+                                    {{ t('Hapus Rekening') }}
+                                </AppButton>
+                            </div>
+                        </div>
+                    </AppCard>
+                </div>
+
+                <aside class="min-w-0 space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0 xl:block xl:space-y-4">
+                    <AppCard :padded="false">
                         <template #header>
                             <div class="flex items-center gap-2">
-                                <AppIcon name="person" tone="primary" />
+                                <AppIcon name="person" tone="primary" container-size="8" />
                                 <span class="font-semibold text-on-surface">{{ t('Anggota') }}</span>
                             </div>
                         </template>
-                        <div class="space-y-3 text-sm">
-                            <div>
-                                <p class="font-semibold text-on-surface">{{ account.member.name }}</p>
-                                <p class="text-on-surface-variant">{{ account.member.member_number || '—' }}</p>
+                        <div class="p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="grid size-11 shrink-0 place-items-center rounded-full bg-primary-container text-sm font-bold text-on-primary-container">
+                                    {{ memberInitials }}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="truncate font-semibold text-on-surface">{{ account.member.name }}</p>
+                                    <p class="text-xs text-on-surface-variant">{{ account.member.member_number || '—' }}</p>
+                                </div>
                             </div>
-                            <div class="flex justify-between gap-3">
-                                <span class="text-on-surface-variant">NIK</span>
-                                <span class="font-medium text-on-surface">{{ account.member.nik || '—' }}</span>
-                            </div>
-                            <div class="flex justify-between gap-3">
-                                <span class="text-on-surface-variant">{{ t('Telepon') }}</span>
-                                <span class="font-medium text-on-surface">{{ account.member.phone || '—' }}</span>
-                            </div>
-                            <div class="flex justify-between gap-3">
-                                <span class="text-on-surface-variant">{{ t('Alamat') }}</span>
-                                <span class="max-w-[60%] text-right font-medium text-on-surface">{{ account.address || '—' }}</span>
-                            </div>
-                            <div class="flex justify-between gap-3">
-                                <span class="text-on-surface-variant">{{ t('Minimal tutup') }}</span>
-                                <span class="font-medium text-on-surface">{{ account.minimum_closing_date || '—' }}</span>
-                            </div>
+                            <dl class="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 text-sm">
+                                <div>
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">NIK</dt>
+                                    <dd class="mt-0.5 break-words font-medium text-on-surface">{{ account.member.nik || '—' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Telepon') }}</dt>
+                                    <dd class="mt-0.5 break-words font-medium text-on-surface">{{ account.member.phone || '—' }}</dd>
+                                </div>
+                                <div class="col-span-2">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Alamat') }}</dt>
+                                    <dd class="mt-0.5 font-medium text-on-surface">{{ account.address || '—' }}</dd>
+                                </div>
+                                <div class="col-span-2">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Minimal tutup') }}</dt>
+                                    <dd class="mt-0.5 font-medium text-on-surface">{{ account.minimum_closing_date || '—' }}</dd>
+                                </div>
+                            </dl>
                         </div>
                     </AppCard>
 
-                    <AppCard>
+                    <AppCard :padded="false">
                         <template #header>
                             <div class="flex items-center gap-2">
-                                <AppIcon name="tune" tone="primary" />
+                                <AppIcon name="tune" tone="primary" container-size="8" />
                                 <span class="font-semibold text-on-surface">{{ t('Ketentuan Bunga') }}</span>
                             </div>
                         </template>
-                        <dl class="space-y-2 text-sm">
-                            <div class="flex justify-between gap-3">
-                                <dt class="text-on-surface-variant">{{ t('Bunga per bulan') }}</dt>
-                                <dd class="font-semibold text-on-surface">{{ account.interest_rate }}%</dd>
-                            </div>
-                            <div class="flex justify-between gap-3">
-                                <dt class="text-on-surface-variant">{{ t('Pajak bunga') }}</dt>
-                                <dd class="font-semibold text-on-surface">{{ account.tax_rate }}%</dd>
-                            </div>
-                            <div class="flex justify-between gap-3">
-                                <dt class="text-on-surface-variant">{{ t('Biaya admin') }}</dt>
-                                <dd class="font-semibold text-on-surface">{{ money(account.admin_fee) }}</dd>
-                            </div>
-                            <div class="flex justify-between gap-3">
-                                <dt class="text-on-surface-variant">{{ t('Biaya buka buku') }}</dt>
-                                <dd class="font-semibold text-on-surface">{{ money(account.opening_fee) }}</dd>
-                            </div>
-                            <div class="flex justify-between gap-3">
-                                <dt class="text-on-surface-variant">{{ t('Metode saldo') }}</dt>
-                                <dd class="text-right font-semibold text-on-surface">{{ methodLabel }}</dd>
-                            </div>
-                            <div class="flex justify-between gap-3">
-                                <dt class="text-on-surface-variant">{{ t('Saldo minimal tarik') }}</dt>
-                                <dd class="font-semibold text-on-surface">{{ money(minimumWithdrawal) }}</dd>
-                            </div>
-                        </dl>
-                        <p v-if="account.notes" class="mt-3 rounded-xl bg-surface-container-low p-3 text-xs text-on-surface-variant">
-                            {{ account.notes }}
-                        </p>
-                    </AppCard>
-
-                    <AppCard v-if="canManage">
-                        <div class="space-y-2">
-                            <AppButton
-                                v-if="isActive"
-                                variant="secondary"
-                                icon="lock"
-                                class="w-full justify-center"
-                                @click="closeAccount"
-                            >
-                                {{ t('Tutup Rekening') }}
-                            </AppButton>
-                            <AppButton
-                                v-if="!hasTransactions"
-                                variant="danger"
-                                icon="delete"
-                                class="w-full justify-center"
-                                @click="deleteAccount"
-                            >
-                                {{ t('Hapus Rekening') }}
-                            </AppButton>
-                            <p v-else class="text-xs text-on-surface-variant">
-                                {{ t('Rekening dengan mutasi tidak dapat dihapus; gunakan penutupan rekening.') }}
+                        <div class="p-4">
+                            <dl class="grid grid-cols-2 gap-2 text-sm">
+                                <div class="rounded-xl bg-surface-container-low p-2.5">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Bunga / bulan') }}</dt>
+                                    <dd class="mt-1 font-bold text-on-surface">{{ account.interest_rate }}%</dd>
+                                </div>
+                                <div class="rounded-xl bg-surface-container-low p-2.5">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Pajak bunga') }}</dt>
+                                    <dd class="mt-1 font-bold text-on-surface">{{ account.tax_rate }}%</dd>
+                                </div>
+                                <div class="rounded-xl bg-surface-container-low p-2.5">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Biaya admin') }}</dt>
+                                    <dd class="mt-1 font-bold text-on-surface">{{ money(account.admin_fee) }}</dd>
+                                </div>
+                                <div class="rounded-xl bg-surface-container-low p-2.5">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Buka buku') }}</dt>
+                                    <dd class="mt-1 font-bold text-on-surface">{{ money(account.opening_fee) }}</dd>
+                                </div>
+                                <div class="col-span-2 flex items-center justify-between gap-3 rounded-xl bg-surface-container-low px-2.5 py-2">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Metode saldo') }}</dt>
+                                    <dd class="text-right text-sm font-semibold text-on-surface">{{ methodLabel }}</dd>
+                                </div>
+                                <div class="col-span-2 flex items-center justify-between gap-3 rounded-xl bg-surface-container-low px-2.5 py-2">
+                                    <dt class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Saldo minimal tarik') }}</dt>
+                                    <dd class="text-right text-sm font-semibold text-on-surface">{{ money(minimumWithdrawal) }}</dd>
+                                </div>
+                            </dl>
+                            <p v-if="account.notes" class="mt-3 rounded-xl bg-surface-container-low p-3 text-xs text-on-surface-variant">
+                                {{ account.notes }}
                             </p>
                         </div>
                     </AppCard>
+
                 </aside>
             </div>
         </div>
@@ -584,7 +640,8 @@ function typeTone(type) {
                 <AppCurrencyInput
                     v-model="txForm.amount"
                     :label="t('Nominal')"
-                    icon="payments"
+                    :icon="null"
+                    :show-stepper="false"
                     :error="txForm.errors.amount"
                 />
                 <AppDatePicker
@@ -595,7 +652,6 @@ function typeTone(type) {
                 <AppInput
                     v-model="txForm.reference"
                     :label="t('Referensi')"
-                    icon="tag"
                     :error="txForm.errors.reference"
                     :placeholder="t('Nomor bukti / referensi (opsional)')"
                 />
