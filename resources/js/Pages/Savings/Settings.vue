@@ -20,7 +20,7 @@ const props = defineProps({
 <template>
     <Head :title="t('Pengaturan Simpanan')" />
     <AuthenticatedLayout>
-        <div class="mx-auto max-w-7xl space-y-6">
+        <div class="mx-auto max-w-6xl space-y-6">
             <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
@@ -36,13 +36,15 @@ const props = defineProps({
                 </AppButton>
             </header>
 
-            <SavingsSettingsPanel
-                :settings="props.settings"
-                :products="props.products"
-                :methods="props.methods"
-                :categories="props.categories"
-                :form-types="props.formTypes"
-            />
+            <div class="rounded-2xl bg-surface-container-lowest p-5 shadow-sm ring-1 ring-outline-variant/40 sm:p-7">
+                <SavingsSettingsPanel
+                    :settings="props.settings"
+                    :products="props.products"
+                    :methods="props.methods"
+                    :categories="props.categories"
+                    :form-types="props.formTypes"
+                />
+            </div>
         </div>
     </AuthenticatedLayout>
 </template>

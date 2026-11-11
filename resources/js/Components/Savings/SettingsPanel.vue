@@ -3,7 +3,6 @@ import { computed, ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AppBadge from '../AppBadge.vue';
 import AppButton from '../AppButton.vue';
-import AppCard from '../AppCard.vue';
 import AppCurrencyInput from '../AppCurrencyInput.vue';
 import AppIcon from '../AppIcon.vue';
 import AppIconButton from '../AppIconButton.vue';
@@ -145,16 +144,14 @@ async function deleteProduct(product) {
 </script>
 
 <template>
-    <div class="min-w-0 space-y-6">
-            <AppCard>
-                <template #header>
-                    <div class="flex items-center gap-2">
-                        <AppIcon name="percent" tone="primary" />
-                        <span class="font-semibold text-on-surface">{{ t('Ketentuan Bunga & Pajak') }}</span>
-                    </div>
-                </template>
+    <div class="min-w-0 divide-y divide-outline-variant">
+        <section class="space-y-4 pb-6">
+            <div class="flex items-center gap-2">
+                <AppIcon name="percent" tone="primary" :container-size="8" />
+                <h3 class="text-sm font-bold text-primary">{{ t('Ketentuan Bunga & Pajak') }}</h3>
+            </div>
 
-                <div class="space-y-4">
+            <div class="space-y-4">
                     <div class="grid gap-4 sm:grid-cols-2">
                         <AppInput
                             v-model="settingsForm.interest_rate"
@@ -244,22 +241,20 @@ async function deleteProduct(product) {
                         </AppButton>
                     </div>
                 </div>
-            </AppCard>
+        </section>
 
-            <AppCard :padded="false" class="min-w-0">
-                <template #header>
-                    <div class="flex flex-wrap items-center justify-between gap-2">
-                        <div class="flex items-center gap-2">
-                            <AppIcon name="category" tone="primary" />
-                            <span class="font-semibold text-on-surface">{{ t('Jenis Simpanan') }}</span>
-                        </div>
-                        <AppButton variant="secondary" icon="add" size="compact" @click="openCreateProduct">
-                            {{ t('Tambah Jenis') }}
-                        </AppButton>
-                    </div>
-                </template>
+        <section class="space-y-4 pt-6">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <AppIcon name="category" tone="primary" :container-size="8" />
+                    <h3 class="text-sm font-bold text-primary">{{ t('Jenis Simpanan') }}</h3>
+                </div>
+                <AppButton variant="secondary" icon="add" size="compact" @click="openCreateProduct">
+                    {{ t('Tambah Jenis') }}
+                </AppButton>
+            </div>
 
-                <div class="overflow-x-auto">
+            <div class="overflow-x-auto rounded-xl border border-outline-variant">
                     <table class="min-w-full divide-y divide-outline-variant text-sm">
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
@@ -318,8 +313,8 @@ async function deleteProduct(product) {
                             </tr>
                         </tbody>
                     </table>
-                </div>
-            </AppCard>
+            </div>
+        </section>
     </div>
 
     <AppModal v-model="productOpen" :title="editingProduct ? t('Edit Jenis Simpanan') : t('Tambah Jenis Simpanan')" size="md" centered>
