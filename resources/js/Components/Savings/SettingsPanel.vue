@@ -27,6 +27,21 @@ const props = defineProps({
     formTypes: { type: Object, default: () => ({}) },
 });
 
+const productIconMap = {
+    umum: 'savings',
+    deposito: 'account_balance',
+    program: 'flag',
+    utang: 'receipt_long',
+};
+const productToneMap = {
+    umum: 'bg-primary-container text-on-primary-container',
+    deposito: 'bg-secondary-container text-on-secondary-container',
+    program: 'bg-tertiary-fixed text-tertiary',
+    utang: 'bg-error-container text-on-error-container',
+};
+const productIcon = (product) => productIconMap[product?.category] ?? productIconMap.umum;
+const productTone = (product) => productToneMap[product?.category] ?? productToneMap.umum;
+
 const settingsForm = useForm({
     interest_rate: props.settings.interest_rate,
     tax_rate: props.settings.tax_rate,
@@ -259,6 +274,9 @@ async function deleteProduct(product) {
                     class="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 transition hover:bg-surface-container-low/60"
                 >
                     <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                        <span class="grid size-9 shrink-0 place-items-center rounded-full" :class="productTone(product)">
+                            <AppIcon :name="productIcon(product)" class="text-lg" />
+                        </span>
                         <code class="rounded bg-surface-container px-1.5 py-0.5 font-mono text-[11px] text-on-surface-variant">{{ product.code }}</code>
                         <p class="whitespace-nowrap text-sm font-semibold text-on-surface">{{ product.name }}</p>
                         <AppBadge tone="primary-soft">{{ product.category_label }}</AppBadge>
@@ -278,6 +296,8 @@ async function deleteProduct(product) {
                         <div class="flex shrink-0 gap-0.5">
                             <AppIconButton
                                 name="edit"
+                                tone="primary"
+                                rounded="full"
                                 size="sm"
                                 :tooltip="t('Edit jenis simpanan')"
                                 @click="openEditProduct(product)"
@@ -285,6 +305,7 @@ async function deleteProduct(product) {
                             <AppIconButton
                                 name="delete"
                                 tone="danger"
+                                rounded="full"
                                 size="sm"
                                 :disabled="product.accounts_count > 0"
                                 :tooltip="product.accounts_count > 0 ? t('Tidak dapat dihapus karena sudah dipakai rekening') : t('Hapus jenis simpanan')"
