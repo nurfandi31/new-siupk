@@ -46,6 +46,18 @@
             </td>
         </tr>
     @endforeach
+    @php
+        $surplus = (float) ($surplus ?? 0);
+    @endphp
+    <tr style="font-weight: bold;">
+        <td class="t l b" align="left">Surplus / Devisit</td>
+        <td class="t l b" align="right">—</td>
+        <td class="t l b" align="right">—</td>
+        <td class="t l b" align="right">{{ $surplus > 0 ? number_format($surplus, 2) : '—' }}</td>
+        <td class="t l b" align="right">{{ $surplus < 0 ? number_format(abs($surplus), 2) : '—' }}</td>
+        <td class="t l b" align="right">{{ $surplus < 0 ? number_format(abs($surplus), 2) : '—' }}</td>
+        <td class="t l b r" align="right">{{ $surplus > 0 ? number_format($surplus, 2) : '—' }}</td>
+    </tr>
     <tr style="background: rgb(242, 242, 242); font-weight: bold;">
         <td class="t l b" align="center">Jumlah</td>
         <td class="t l b" align="right">{{ number_format($totals['ns_debit'], 2) }}</td>

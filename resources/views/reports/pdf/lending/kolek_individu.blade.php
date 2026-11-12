@@ -26,25 +26,34 @@
             </tr>
         </table>
 
+        @php
+            $levelCount = max(1, count($levels ?? []));
+            $levelWidth = 30 / $levelCount;
+            $colCount = 7 + $levelCount;
+        @endphp
         <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 8.5px; table-layout: fixed;">
             <thead>
                 <tr style="background: rgb(230, 230, 230); font-weight: bold; text-align: center;">
-                    <th class="t l b" rowspan="2" width="16%">Desa</th>
-                    <th class="t l b" rowspan="2" width="24%">Peminjam</th>
-                    <th class="t l b" rowspan="2" width="9%">Alokasi</th>
-                    <th class="t l b" rowspan="2" width="10%">Saldo Pokok</th>
-                    <th class="t l b" colspan="2" width="20%">Tunggakan</th>
-                    <th class="t l b r" rowspan="2" width="11%">Kolek</th>
+                    <th class="t l b" rowspan="2" width="13%">Desa</th>
+                    <th class="t l b" rowspan="2" width="19%">Peminjam</th>
+                    <th class="t l b" rowspan="2" width="8%">Alokasi</th>
+                    <th class="t l b" rowspan="2" width="9%">Saldo Pokok</th>
+                    <th class="t l b" colspan="2" width="14%">Tunggakan</th>
+                    <th class="t l b" colspan="{{ $levelCount }}" width="30%">Saldo per Kolektibilitas</th>
+                    <th class="t l b r" rowspan="2" width="7%">Kolek</th>
                 </tr>
                 <tr style="background: rgb(230, 230, 230); font-weight: bold; text-align: center;">
                     <th class="t l b">Pokok</th>
                     <th class="t l b">Jasa</th>
+                    @foreach ($levels as $level)
+                        <th class="t l b" width="{{ $levelWidth }}%">{{ $level['nama'] }}</th>
+                    @endforeach
                 </tr>
             </thead>
             <tbody>
                 @foreach ($prod['villages'] as $v)
                     <tr class="village-row">
-                        <td class="t l b" colspan="7">DESA: {{ strtoupper($v['village_name']) }}</td>
+                        <td class="t l b" colspan="{{ $colCount }}">DESA: {{ strtoupper($v['village_name']) }}</td>
                     </tr>
                     @foreach ($v['loans'] as $loan)
                         <tr>
@@ -59,6 +68,11 @@
                             <td class="l b num">{{ number_format($loan['saldo'], 0, ',', '.') }}</td>
                             <td class="l b num">{{ number_format($loan['tunggakan_pokok'], 0, ',', '.') }}</td>
                             <td class="l b num">{{ number_format($loan['tunggakan_jasa'], 0, ',', '.') }}</td>
+                            @foreach ($levels as $level)
+                                <td class="l b num">
+                                    {{ ($loan['bucket_key'] ?? '') === $level['bucket_key'] ? number_format($loan['saldo'], 0, ',', '.') : '—' }}
+                                </td>
+                            @endforeach
                             <td class="l b r">{{ $loan['kolek_nama'] }}</td>
                         </tr>
                     @endforeach
@@ -68,6 +82,9 @@
                         <td class="l b num">{{ number_format($v['subtotal']['saldo'], 0, ',', '.') }}</td>
                         <td class="l b num">{{ number_format($v['subtotal']['tunggakan_pokok'], 0, ',', '.') }}</td>
                         <td class="l b num">{{ number_format($v['subtotal']['tunggakan_jasa'], 0, ',', '.') }}</td>
+                        @foreach ($levels as $level)
+                            <td class="l b num">{{ number_format((float) ($v['subtotal'][$level['bucket_key']] ?? 0), 0, ',', '.') }}</td>
+                        @endforeach
                         <td class="l b r">{{ $v['subtotal']['peminjam_count'] }} peminjam</td>
                     </tr>
                 @endforeach
@@ -79,6 +96,9 @@
                     <th class="t l b num">{{ number_format($prod['totals']['saldo'], 0, ',', '.') }}</th>
                     <th class="t l b num">{{ number_format($prod['totals']['tunggakan_pokok'], 0, ',', '.') }}</th>
                     <th class="t l b num">{{ number_format($prod['totals']['tunggakan_jasa'], 0, ',', '.') }}</th>
+                    @foreach ($levels as $level)
+                        <th class="t l b num">{{ number_format((float) ($prod['totals'][$level['bucket_key']] ?? 0), 0, ',', '.') }}</th>
+                    @endforeach
                     <th class="t l b r">{{ $prod['totals']['peminjam_count'] }} peminjam</th>
                 </tr>
             </tfoot>

@@ -143,6 +143,8 @@ final class PaidIndividuLoansService
                 'completed_at' => $completedAt,
                 'loan_months' => $loanMonths,
                 'interest_rate' => (float) ($loan->interest_rate ?? 0),
+                'arrears_amount' => 0.0,
+                'collectibility_label' => 'Lancar',
             ];
 
             $totals['count']++;

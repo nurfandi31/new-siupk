@@ -64,6 +64,7 @@ final readonly class BalanceSheetService
         $sections = [];
         $totalAsset = 0.0;
         $totalCredit = 0.0;
+        $totalEquity = 0.0;
 
         $level1 = $accounts->where('level', 1)->values();
         foreach ($level1 as $l1) {
@@ -119,6 +120,9 @@ final readonly class BalanceSheetService
                 $totalAsset += $l1Sum;
             } else {
                 $totalCredit += $l1Sum;
+                if ($l1->account_type === 'equity') {
+                    $totalEquity += $l1Sum;
+                }
             }
         }
 
@@ -126,6 +130,7 @@ final readonly class BalanceSheetService
         $hasEarnings = $accounts->contains(fn (Account $a) => (string) $a->code === AccountBalanceQuery::CURRENT_EARNINGS_CODE);
         if (! $hasEarnings && abs($netIncome) >= 0.005) {
             $totalCredit += $netIncome;
+            $totalEquity += $netIncome;
             $sections[] = [
                 'code' => '3',
                 'name' => 'Ekuitas (Laba Berjalan)',
@@ -158,6 +163,7 @@ final readonly class BalanceSheetService
             'totals' => [
                 'assets' => round($totalAsset, 2),
                 'liabilities_equity' => round($totalCredit, 2),
+                'equity' => round($totalEquity, 2),
                 'net_income' => round($netIncome, 2),
             ],
             'balanced' => abs($totalAsset - $totalCredit) < 0.02,

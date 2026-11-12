@@ -142,6 +142,63 @@
     </table>
 @endif
 
+@if (! empty($rows))
+    @php
+        $productMap = collect($products)->keyBy('product_row_id');
+    @endphp
+    <div class="break"></div>
+    <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 7.5px; table-layout: fixed;">
+        <thead>
+            <tr>
+                <td colspan="11" align="center" style="font-size: 13px; font-weight: bold; padding-bottom: 6px;">
+                    RINCIAN PINJAMAN PER KONTRAK (KBP2 / POJK 41)
+                </td>
+            </tr>
+            <tr style="background: rgb(230, 230, 230); font-weight: bold; text-align: center;">
+                <th class="t l b" width="3%">No</th>
+                <th class="t l b" width="13%">No. Kontrak</th>
+                <th class="t l b" width="10%">Produk</th>
+                <th class="t l b" width="9%">Pokok</th>
+                <th class="t l b" width="10%">Outstanding</th>
+                <th class="t l b" width="5%">DPD</th>
+                <th class="t l b" width="10%">Lancar</th>
+                <th class="t l b" width="10%">DPK</th>
+                <th class="t l b" width="10%">Kurang Lancar</th>
+                <th class="t l b" width="10%">Diragukan</th>
+                <th class="t l b r" width="10%">Macet</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($rows as $idx => $row)
+                @php
+                    $days = (int) ($row['days_overdue'] ?? 0);
+                    $bucketCode = $days <= 0 ? 1 : ($days <= 90 ? 2 : ($days <= 120 ? 3 : ($days <= 180 ? 4 : 5)));
+                    $outstanding = (float) ($row['outstanding'] ?? 0);
+                    $product = $productMap->get((int) ($row['loan_product_row_id'] ?? 0));
+                @endphp
+                <tr style="background: {{ $idx % 2 === 0 ? 'rgb(255, 255, 255)' : 'rgb(245, 245, 245)' }};">
+                    <td class="l b" align="center">{{ $idx + 1 }}</td>
+                    <td class="l b">
+                        #{{ $row['loan_id'] ?? '-' }}
+                        @if (! empty($row['loan_number']))
+                            <br><span style="color: #555;">{{ $row['loan_number'] }}</span>
+                        @endif
+                    </td>
+                    <td class="l b">{{ $product['product_code'] ?? '—' }}</td>
+                    <td class="l b" align="right">{{ $fmt((float) ($row['principal_amount'] ?? 0)) }}</td>
+                    <td class="l b" align="right">{{ $fmt($outstanding) }}</td>
+                    <td class="l b" align="right">{{ $days }}</td>
+                    @for ($code = 1; $code <= 5; $code++)
+                        <td class="l b{{ $code === 5 ? ' r' : '' }}" align="right">
+                            {{ $bucketCode === $code ? $fmt($outstanding) : '—' }}
+                        </td>
+                    @endfor
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+@endif
+
 @if (! empty($signature_html))
     <div data-report-signature style="margin-top:24px;page-break-inside:avoid;font-size:11px;">{!! $signature_html !!}</div>
 @else

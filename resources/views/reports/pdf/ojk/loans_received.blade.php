@@ -1,8 +1,6 @@
 @php
     $id = $identity;
-    $legalName = strtoupper($id['legal_name'] ?? '');
     $periodLabel = strtoupper($period_label ?? '');
-    $logoUrl = $id['logo_url'] ?? null;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -29,16 +27,12 @@
     </style>
 </head>
 <body>
-    @if (! empty($logoUrl))
-        <div style="text-align: center; margin-bottom: 4px;">
-            <img src="{{ $logoUrl }}" width="50" alt="Logo">
-        </div>
-    @endif
+    @include('reports.pdf.partials.letterhead', ['variant' => 'standard'])
+    <div style="height: 8px;"></div>
     <table border="0" cellspacing="0" cellpadding="0">
         <tr>
             <td colspan="11" class="center">
                 <div class="title">
-                    <div style="font-size: 13px;"><b>{{ $legalName }}</b></div>
                     <div class="big">DAFTAR RINCIAN PINJAMAN YANG DITERIMA (DRPY)</div>
                     <div class="med">Periode {{ $periodLabel }}</div>
                 </div>

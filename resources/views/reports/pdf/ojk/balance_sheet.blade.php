@@ -1,11 +1,6 @@
 @php
-    $id = $identity;
-    $legalName = strtoupper($id['legal_name'] ?? '');
-    $district = $id['district_name'] ?? '';
-    $regency = $id['regency_name'] ?? '';
     $periodLabel = strtoupper($period['period_label'] ?? '');
     $asOf = $period['as_of'] ?? '';
-    $logoUrl = $id['logo_url'] ?? null;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -34,15 +29,11 @@
     </style>
 </head>
 <body>
-    @if (! empty($logoUrl))
-        <div style="text-align: center; margin-bottom: 4px;">
-            <img src="{{ $logoUrl }}" width="50" alt="Logo">
-        </div>
-    @endif
+    @include('reports.pdf.partials.letterhead', ['variant' => 'standard'])
+    <div style="height: 8px;"></div>
     <table border="0" cellspacing="0" cellpadding="0" style="font-size: 11px;">
         <tr>
             <td colspan="4" align="center">
-                <div style="font-size: 14px;"><b>{{ $legalName }}</b></div>
                 <div style="font-size: 16px;"><b>LAPORAN POSISI KEUANGAN</b></div>
                 <div style="font-size: 14px;"><b>{{ $periodLabel }}</b></div>
                 <div style="font-size: 10px;">per {{ $asOf }}</div>

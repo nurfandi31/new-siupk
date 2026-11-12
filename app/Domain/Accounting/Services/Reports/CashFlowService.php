@@ -79,9 +79,27 @@ final class CashFlowService
         $closingCash = round($closingCash, 2);
 
         $sections = [
-            'operating' => ['key' => 'operating', 'label' => 'Arus kas dari aktivitas operasi', 'lines' => [], 'total' => 0.0],
-            'investing' => ['key' => 'investing', 'label' => 'Arus kas dari aktivitas investasi', 'lines' => [], 'total' => 0.0],
-            'financing' => ['key' => 'financing', 'label' => 'Arus kas dari aktivitas pendanaan', 'lines' => [], 'total' => 0.0],
+            'operating' => [
+                'key' => 'operating',
+                'label' => 'Arus kas dari aktivitas operasi',
+                'total_label' => 'Kas Bersih yang diperoleh dari aktivitas Operasi (A-B-C)',
+                'lines' => [],
+                'total' => 0.0,
+            ],
+            'investing' => [
+                'key' => 'investing',
+                'label' => 'Arus kas dari aktivitas investasi',
+                'total_label' => 'Kas Bersih yang diperoleh dari aktivitas Investasi (A-B)',
+                'lines' => [],
+                'total' => 0.0,
+            ],
+            'financing' => [
+                'key' => 'financing',
+                'label' => 'Arus kas dari aktivitas pendanaan',
+                'total_label' => 'Kas Bersih yang diperoleh dari aktivitas Pendanaan (A-B)',
+                'lines' => [],
+                'total' => 0.0,
+            ],
         ];
 
         if ($cashIds === []) {

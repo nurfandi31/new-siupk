@@ -165,6 +165,9 @@ final readonly class IncomeStatementService
 
         $profile = OrganizationProfile::query()->first();
 
+        $totalRevenue = round($revOpsYtd + $revNonYtd, 2);
+        $totalExpense = round($expOpsYtd + $expNonYtd, 2);
+
         return [
             'period' => $period,
             'identity' => [
@@ -174,6 +177,12 @@ final readonly class IncomeStatementService
             'header_lalu' => $period['is_monthly'] ? 'Bulan Lalu' : 'Tahun Lalu',
             'header_sekarang' => $period['is_monthly'] ? 'Bulan Ini' : 'Tahun Ini',
             'groups' => $groups,
+            'totals' => [
+                'revenue' => $totalRevenue,
+                'expense' => $totalExpense,
+                'tax' => round($taxYtd, 2),
+                'surplus' => round($afterTax, 2),
+            ],
             'summary' => [
                 'operating' => ['prior' => $aPrior, 'current' => $aCur, 'ytd' => $aYtd],
                 'non_operating' => ['prior' => $bPrior, 'current' => $bCur, 'ytd' => $bYtd],

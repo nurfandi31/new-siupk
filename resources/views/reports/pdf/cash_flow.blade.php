@@ -29,7 +29,6 @@
             <tr style="background: {{ $loop->iteration % 2 == 0 ? 'rgb(240, 240, 240)' : 'rgb(200, 200, 200)' }};">
                 <td width="5%" align="center">&nbsp;</td>
                 <td width="80%">
-                <td>
                     {{ $line['label'] }}
                     @if(($line['count'] ?? 1) > 1)
                         <span style="color: grey;">({{ $line['count'] }} jurnal)</span>
@@ -45,7 +44,7 @@
         @endforelse
         <tr style="background: rgb(150, 150, 150); font-weight: bold;">
             <td align="center">&nbsp;</td>
-            <td>Jumlah {{ strtolower($section['label']) }}</td>
+            <td>{{ $section['total_label'] ?? 'Jumlah '.strtolower($section['label']) }}</td>
             <td align="right">{{ number_format($section['total'], 2) }}</td>
         </tr>
     @endforeach

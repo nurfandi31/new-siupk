@@ -201,6 +201,7 @@ final readonly class CollectibilityOjkV2Service
             'borrower_scope' => $borrowerScope,
             'buckets_meta' => $bucketsMeta,
             'products' => $productReports,
+            'rows' => $loanMetrics,
             'grand_total' => $grand,
             'generated_at' => CarbonImmutable::now()->toDateTimeString(),
             'tenant_id' => $tenantId,

@@ -35,7 +35,7 @@ final class FinancialHealthService
         $incomeData = $this->incomeStatement->build($year, $month);
         $pendapatan = (float) ($incomeData['totals']['revenue'] ?? 0);
         $biaya = (float) ($incomeData['totals']['expense'] ?? 0);
-        $surplus = round($pendapatan - $biaya, 2);
+        $surplus = (float) ($incomeData['totals']['surplus'] ?? round($pendapatan - $biaya, 2));
 
         // 2. Data Neraca (Aset & Ekuitas)
         $balanceData = $this->balanceSheet->build($year, $month);

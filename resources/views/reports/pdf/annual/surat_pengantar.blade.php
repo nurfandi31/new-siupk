@@ -1,4 +1,4 @@
-@extends('reports.pdf.layout')
+@extends('reports.pdf.layout', ['letterhead_variant' => 'letter'])
 
 @section('content')
     <table border="0" width="100%" style="font-size: 11px; line-height: 1.6;">

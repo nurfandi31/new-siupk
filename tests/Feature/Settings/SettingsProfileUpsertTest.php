@@ -54,6 +54,8 @@ final class SettingsProfileUpsertTest extends TestCase
             ->put('/settings/identity', [
                 'legal_name' => 'Koperasi Baru',
                 'short_name' => 'KB',
+                'district_name' => 'Sukamaju',
+                'regency_name' => 'Cianjur',
                 'timezone' => 'Asia/Jakarta',
             ])
             ->assertRedirect();
@@ -61,6 +63,8 @@ final class SettingsProfileUpsertTest extends TestCase
         $profile = OrganizationProfile::query()->firstOrFail();
         self::assertSame(1, (int) $profile->id);
         self::assertSame('Koperasi Baru', $profile->legal_name);
+        self::assertSame('Sukamaju', $profile->district_name);
+        self::assertSame('Cianjur', $profile->regency_name);
 
         // Update kedua tidak boleh mengubah id maupun membuat baris baru.
         $this->actingAs($this->user)

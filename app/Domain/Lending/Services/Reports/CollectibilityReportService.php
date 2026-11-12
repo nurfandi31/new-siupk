@@ -521,6 +521,7 @@ final class CollectibilityReportService
                     'tunggakan_jasa' => $tunggakanJasa,
                     'kolek' => $levelIndex + 1,
                     'kolek_nama' => $kolekNama,
+                    'bucket_key' => $bucket,
                 ];
 
                 $villagesMap[$vKey]['loans'][] = $loanData;
@@ -769,6 +770,7 @@ final class CollectibilityReportService
                     'tunggakan_jasa' => $tunggakanJasa,
                     'kolek' => $levelIndex + 1,
                     'kolek_nama' => $kolekNama,
+                    'bucket_key' => $bucket,
                 ];
 
                 $villagesMap[$vKey]['loans'][] = $loanData;

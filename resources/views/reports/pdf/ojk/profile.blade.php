@@ -32,18 +32,9 @@
         $logoUrl = $id['logo_url'] ?? null;
     @endphp
 
-    @if (! empty($logoUrl))
-        <div class="center" style="margin-bottom: 6px;">
-            <img src="{{ $logoUrl }}" width="50" alt="Logo">
-        </div>
-    @endif
+    @include('reports.pdf.partials.letterhead', ['variant' => 'standard'])
+    <div style="height: 8px;"></div>
     <h1>PROFIL LEMBAGA</h1>
-    <p class="center" style="margin-bottom: 4px;">
-        <strong>{{ $legalName }}</strong>
-    </p>
-    <p class="center" style="margin-bottom: 4px;">
-        {{ $district !== '' ? strtoupper($district) : '' }}{{ $regency !== '' ? ' · ' . strtoupper($regency) : '' }}{{ $province !== '' ? ' · ' . strtoupper($province) : '' }}
-    </p>
     <p class="center" style="margin-bottom: 14px;">
         Untuk Periode Yang Berakhir Pada Tanggal {{ $dateFormatted }}
     </p>

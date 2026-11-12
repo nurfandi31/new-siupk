@@ -41,7 +41,8 @@
 
     <!-- 1. COVER PAGE -->
     <div class="cover break">
-        <div style="font-size: 14px; font-weight: bold; letter-spacing: 1px; color: #555;">SISTEM INFORMASI LEMBAGA KEUANGAN DESA (siupk)</div>
+        <div style="font-size: 14px; font-weight: bold; letter-spacing: 1px; color: #333;">PEMERINTAH PROVINSI {{ $province }}</div>
+        <div style="font-size: 14px; font-weight: bold; letter-spacing: 1px; color: #555; margin-top: 4px;">SISTEM INFORMASI LEMBAGA KEUANGAN DESA (siupk)</div>
         <h1>LAPORAN KEUANGAN KONSOLIDASI</h1>
         <h2>TINGKAT PROVINSI {{ $province }}</h2>
         
@@ -58,7 +59,8 @@
     <div class="break">
         <div class="header-box">
             <h2>LAPORAN NERACA KONSOLIDASI</h2>
-            <p>PROVINSI {{ $province }} — PERIODE {{ $periodLabel }}</p>
+            <p style="font-weight: bold;">PEMERINTAH PROVINSI {{ $province }}</p>
+            <p>PROVINSI {{ $province }} - PERIODE {{ $periodLabel }}</p>
         </div>
 
         <table class="data-table">
@@ -128,7 +130,8 @@
     <div class="break">
         <div class="header-box">
             <h2>LAPORAN LABA RUGI KONSOLIDASI</h2>
-            <p>PROVINSI {{ $province }} — PERIODE {{ $periodLabel }}</p>
+            <p style="font-weight: bold;">PEMERINTAH PROVINSI {{ $province }}</p>
+            <p>PROVINSI {{ $province }} - PERIODE {{ $periodLabel }}</p>
         </div>
 
         <table class="data-table">
@@ -187,7 +190,8 @@
     <div class="break">
         <div class="header-box">
             <h2>LAPORAN ARUS KAS KONSOLIDASI</h2>
-            <p>PROVINSI {{ $province }} — PERIODE {{ $periodLabel }}</p>
+            <p style="font-weight: bold;">PEMERINTAH PROVINSI {{ $province }}</p>
+            <p>PROVINSI {{ $province }} - PERIODE {{ $periodLabel }}</p>
         </div>
 
         <table class="data-table">
@@ -230,7 +234,8 @@
     <div class="break">
         <div class="header-box">
             <h2>LAPORAN PERUBAHAN EKUITAS KONSOLIDASI</h2>
-            <p>PROVINSI {{ $province }} — PERIODE {{ $periodLabel }}</p>
+            <p style="font-weight: bold;">PEMERINTAH PROVINSI {{ $province }}</p>
+            <p>PROVINSI {{ $province }} - PERIODE {{ $periodLabel }}</p>
         </div>
 
         <table class="data-table">
@@ -269,7 +274,8 @@
     <div>
         <div class="header-box">
             <h2>CATATAN ATAS LAPORAN KEUANGAN (CALK)</h2>
-            <p>PROVINSI {{ $province }} — PERIODE {{ $periodLabel }}</p>
+            <p style="font-weight: bold;">PEMERINTAH PROVINSI {{ $province }}</p>
+            <p>PROVINSI {{ $province }} - PERIODE {{ $periodLabel }}</p>
         </div>
 
         <div class="section-title">1. Gambaran Umum Entitas</div>

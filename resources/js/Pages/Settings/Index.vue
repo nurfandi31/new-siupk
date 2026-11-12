@@ -91,6 +91,8 @@ const identityForm = useForm({
     registration_number: props.identity.registration_number ?? '',
     tax_number: props.identity.tax_number ?? '',
     address: props.identity.address ?? '',
+    district_name: props.identity.district_name ?? '',
+    regency_name: props.identity.regency_name ?? '',
     phone: props.identity.phone ?? '',
     email: props.identity.email ?? '',
     website: props.identity.website ?? '',
@@ -404,6 +406,8 @@ function applySignatureStarter() {
                                 <AppInput v-model="identityForm.short_name" :label="t('Nama Pendek')" :error="identityForm.errors.short_name" />
                                 <AppInput v-model="identityForm.registration_number" :label="t('Nomor Badan Hukum')" :error="identityForm.errors.registration_number" />
                                 <AppInput v-model="identityForm.tax_number" label="NPWP" :error="identityForm.errors.tax_number" />
+                                <AppInput v-model="identityForm.district_name" :label="t('Kecamatan')" :error="identityForm.errors.district_name" />
+                                <AppInput v-model="identityForm.regency_name" :label="t('Kabupaten')" :error="identityForm.errors.regency_name" />
                                 <AppInput v-model="identityForm.phone" :label="t('Telepon')" :error="identityForm.errors.phone" />
                                 <AppInput v-model="identityForm.email" :label="t('Email')" type="email" :error="identityForm.errors.email" />
                                 <AppInput v-model="identityForm.website" :label="t('Website')" type="url" :error="identityForm.errors.website" />

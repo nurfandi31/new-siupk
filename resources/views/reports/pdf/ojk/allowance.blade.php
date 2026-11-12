@@ -119,6 +119,51 @@
     </tfoot>
 </table>
 
+@php
+    $nplLabels = ['Diragukan', 'Macet'];
+    $totalOutstanding = (float) ($totals['outstanding'] ?? 0);
+    $nplOutstanding = 0.0;
+    foreach ($buckets as $bucket) {
+        if (in_array((string) ($bucket['label'] ?? ''), $nplLabels, true)) {
+            $nplOutstanding += (float) ($bucket['outstanding'] ?? 0);
+        }
+    }
+    $nplRatio = $totalOutstanding > 0 ? ($nplOutstanding / $totalOutstanding) * 100 : 0.0;
+@endphp
+<table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 9px; margin-top: 10px; table-layout: fixed;">
+    <thead>
+        <tr style="background: rgb(230, 230, 230); font-weight: bold; text-align: center;">
+            <th class="t l b" width="30%">Tingkat Kolektibilitas</th>
+            <th class="t l b" width="25%">Outstanding</th>
+            <th class="t l b" width="20%">Porsi</th>
+            <th class="t l b r" width="25%">NPL</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($buckets as $bucket)
+            @php
+                $bucketOutstanding = (float) ($bucket['outstanding'] ?? 0);
+                $porsi = $totalOutstanding > 0 ? ($bucketOutstanding / $totalOutstanding) * 100 : 0.0;
+                $isNpl = in_array((string) ($bucket['label'] ?? ''), $nplLabels, true);
+            @endphp
+            <tr>
+                <td class="l b">{{ $bucket['label'] ?? '' }}</td>
+                <td class="l b" align="right">{{ $fmt($bucketOutstanding) }}</td>
+                <td class="l b" align="right">{{ $pct($porsi) }}</td>
+                <td class="l b r" align="right">{{ $isNpl ? $fmt($bucketOutstanding) : '—' }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+    <tfoot>
+        <tr style="background: rgb(200, 200, 200); font-weight: bold;">
+            <td class="t l b" align="right">NPL</td>
+            <td class="t l b" align="right">{{ $fmt($nplOutstanding) }}</td>
+            <td class="t l b" align="right">{{ $pct($nplRatio) }}</td>
+            <td class="t l b r" align="right">{{ $pct($nplRatio) }}</td>
+        </tr>
+    </tfoot>
+</table>
+
 <p style="font-size: 10px; margin-top: 10px; color: #555;">
     <b>Keterangan:</b> Tarif Penyisihan sesuai standar OJK:
     Lancar 0.5%, Dalam Perhatian Khusus 3%, Kurang Lancar 10%, Diragukan 50%, Macet 100%.

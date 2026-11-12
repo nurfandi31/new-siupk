@@ -230,6 +230,13 @@ final class ActiveLoansService
             // Kolektibilitas OJK (5 kolektibilitas)
             $collectibilityCode = $this->collectibilityCode($daysOverdue);
 
+            $disbursedAt = $loan->disbursed_at ? substr((string) $loan->disbursed_at, 0, 10) : null;
+            $termMonths = (int) ($loan->term_months ?? 0);
+            $maturityDate = null;
+            if ($disbursedAt !== null && $termMonths > 0) {
+                $maturityDate = CarbonImmutable::parse($disbursedAt)->addMonths($termMonths)->toDateString();
+            }
+
             $rows[] = [
                 'loan_id' => (int) $loan->id,
                 'loan_row_id' => (int) $loan->row_id,
@@ -248,10 +255,12 @@ final class ActiveLoansService
                 'days_overdue' => $daysOverdue,
                 'collectibility_code' => $collectibilityCode,
                 'collectibility_label' => $this->collectibilityLabel($collectibilityCode),
-                'disbursed_at' => $loan->disbursed_at ? substr((string) $loan->disbursed_at, 0, 10) : null,
+                'disbursed_at' => $disbursedAt,
+                'maturity_date' => $maturityDate,
                 'next_due_date' => $nextDue,
                 'installment_paid' => $paidCount,
-                'tenor_months' => (int) ($loan->term_months ?? 0),
+                'tenor_months' => $termMonths,
+                'interest_rate' => round((float) ($loan->interest_rate ?? 0), 4),
             ];
 
             $totals['count']++;

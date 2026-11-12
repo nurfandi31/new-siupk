@@ -42,18 +42,19 @@
         <thead>
             <tr style="background: rgb(220, 220, 220); font-weight: bold; text-align: center;">
                 <th class="t l b" width="3%">No</th>
-                <th class="t l b" width="9%">No. Kontrak</th>
-                <th class="t l b" width="7%">Tgl Cair</th>
-                <th class="t l b" width="14%">Peminjam</th>
+                <th class="t l b" width="8%">No. Kontrak</th>
+                <th class="t l b" width="6%">Tgl Cair</th>
+                <th class="t l b" width="13%">Peminjam</th>
                 <th class="t l b" width="5%">Jenis</th>
-                <th class="t l b" width="8%">Desa</th>
+                <th class="t l b" width="7%">Desa</th>
                 <th class="t l b" width="8%">Pokok</th>
                 <th class="t l b" width="8%">Sisa Pokok</th>
-                <th class="t l b" width="6%">Angs ke-</th>
-                <th class="t l b" width="7%">Jatuh Tempo</th>
-                <th class="t l b" width="5%">Kol.</th>
-                <th class="t l b" width="4%">Hari</th>
-                <th class="t l b r" width="16%">Produk</th>
+                <th class="t l b" width="5%">Angs ke-</th>
+                <th class="t l b" width="8%">Jatuh Tempo</th>
+                <th class="t l b" width="4%">Bunga</th>
+                <th class="t l b" width="4%">Kol.</th>
+                <th class="t l b" width="3%">Hari</th>
+                <th class="t l b r" width="18%">Produk</th>
             </tr>
         </thead>
         <tbody>
@@ -85,7 +86,11 @@
                     <td class="l b ctr">{{ $row['installment_paid'] }}/{{ $row['tenor_months'] }}</td>
                     <td class="l b ctr">
                         {{ !empty($row['next_due_date']) ? date('d/m/Y', strtotime($row['next_due_date'])) : '—' }}
+                        @if (!empty($row['maturity_date']))
+                            <br><span style="font-size: 6px; color: #777;">Akhir: {{ date('d/m/Y', strtotime($row['maturity_date'])) }}</span>
+                        @endif
                     </td>
+                    <td class="l b ctr">{{ number_format((float) ($row['interest_rate'] ?? 0), 2, ',', '.') }}%</td>
                     <td class="l b ctr" style="font-weight: bold;">
                         {{ $row['collectibility_code'] }}
                     </td>
@@ -99,7 +104,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td class="l b r" colspan="13" align="center" style="padding: 14px;">
+                    <td class="l b r" colspan="14" align="center" style="padding: 14px;">
                         Tidak ada pinjaman aktif pada periode ini.
                     </td>
                 </tr>
@@ -110,11 +115,10 @@
                 <th class="t l b" colspan="6" align="left">TOTAL</th>
                 <th class="t l b num">{{ number_format($totals['principal_total'] ?? 0, 0, ',', '.') }}</th>
                 <th class="t l b num">{{ number_format($totals['principal_remaining_total'] ?? 0, 0, ',', '.') }}</th>
-                <th class="t l b" colspan="5"></th>
-                <th class="t l b r"></th>
+                <th class="t l b" colspan="6"></th>
             </tr>
             <tr style="font-weight: normal;">
-                <td class="l b" colspan="13" style="font-size: 7px; padding-top: 4px;">
+                <td class="l b" colspan="14" style="font-size: 7px; padding-top: 4px;">
                     Jumlah pinjaman aktif: {{ $totals['count'] ?? 0 }} |
                     Kelompok: {{ $totals['group_count'] ?? 0 }} |
                     Individu: {{ $totals['member_count'] ?? 0 }} |

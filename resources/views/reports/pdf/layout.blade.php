@@ -1,20 +1,6 @@
 @php
-    $identity = $identity ?? [];
-    $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? config('app.name'));
-    $district = $identity['district_name'] ?? '';
-    $regency = $identity['regency_name'] ?? '';
-    $locationLine = trim(($district !== '' ? 'Kec. ' . $district : '') . ' ' . ($regency !== '' ? 'Kab. ' . $regency : ''));
-    $registration = $identity['registration_number'] ?? '';
-    $address = $identity['address'] ?? '';
-    $phone = $identity['phone'] ?? '';
-    $logoUrl = $identity['logo_url'] ?? null;
-
-    $infoLine = $address;
-    if ($address !== '' && $phone !== '') {
-        $infoLine .= ', Telp. ' . $phone;
-    } elseif ($phone !== '') {
-        $infoLine = 'Telp. ' . $phone;
-    }
+    $letterheadVariant = $letterhead_variant ?? 'standard';
+    $contentTop = $letterheadVariant === 'letter' ? 80 : 60;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -43,38 +29,10 @@
 </head>
 <body>
     <header>
-        <table width="100%" style="border-bottom: 1px solid grey;">
-            <tr>
-                @if (! empty($logoUrl))
-                    <td width="30">
-                        <img src="{{ $logoUrl }}" width="40" alt="Logo">
-                    </td>
-                @endif
-                <td>
-                    <div style="font-size: 12px;">{{ $legalName }}</div>
-                    <div style="font-size: 12px;">
-                        <b>{{ strtoupper($locationLine) }}</b>
-                    </div>
-                </td>
-            </tr>
-        </table>
-        <table width="100%" style="position: relative; top: -10px;">
-            <tr>
-                <td>
-                    <span style="font-size: 8px; color: grey;">
-                        <i>{{ $registration !== '' ? 'SK Kemenkumham RI No. ' . $registration : '' }}</i>
-                    </span>
-                </td>
-                <td align="right">
-                    <span style="font-size: 8px; color: grey;">
-                        <i>{{ $infoLine }}</i>
-                    </span>
-                </td>
-            </tr>
-        </table>
+        @include('reports.pdf.partials.letterhead', ['variant' => $letterheadVariant])
     </header>
 
-    <main style="position: relative; top: 60px; font-size: 12px; padding-bottom: 38px;">
+    <main style="position: relative; top: {{ $contentTop }}px; font-size: 12px; padding-bottom: 38px;">
         @yield('content')
     </main>
 </body>

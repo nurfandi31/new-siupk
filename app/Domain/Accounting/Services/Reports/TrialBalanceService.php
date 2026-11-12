@@ -137,6 +137,7 @@ final readonly class TrialBalanceService
             ],
             'rows' => $rows,
             'totals' => $totals,
+            'surplus' => round($lrNet, 2),
             'net_income' => round($this->balances->netIncome($asOf), 2),
             'balanced' => abs($totals['ns_debit'] - $totals['ns_credit']) < 0.02
                 && abs($totals['bs_debit'] - $totals['bs_credit']) < 0.02

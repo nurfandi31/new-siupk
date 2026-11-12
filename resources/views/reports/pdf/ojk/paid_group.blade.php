@@ -42,17 +42,19 @@
         <thead>
             <tr style="background: rgb(220, 220, 220); font-weight: bold; text-align: center;">
                 <th class="t l b" width="3%">No</th>
-                <th class="t l b" width="9%">No. Kontrak</th>
-                <th class="t l b" width="18%">Kelompok</th>
-                <th class="t l b" width="10%">Desa</th>
-                <th class="t l b" width="9%">Pokok</th>
-                <th class="t l b" width="10%">Total Dibayar</th>
-                <th class="t l b" width="7%">Tgl Cair</th>
-                <th class="t l b" width="7%">Tgl Lunas</th>
-                <th class="t l b" width="6%">Lama (bln)</th>
-                <th class="t l b" width="6%">Suku (%)</th>
-                <th class="t l b" width="9%">Bagi Hasil</th>
-                <th class="t l b r" width="6%">Produk</th>
+                <th class="t l b" width="8%">No. Kontrak</th>
+                <th class="t l b" width="16%">Kelompok</th>
+                <th class="t l b" width="9%">Desa</th>
+                <th class="t l b" width="8%">Pokok</th>
+                <th class="t l b" width="9%">Total Dibayar</th>
+                <th class="t l b" width="6%">Tgl Cair</th>
+                <th class="t l b" width="6%">Tgl Lunas</th>
+                <th class="t l b" width="5%">Lama (bln)</th>
+                <th class="t l b" width="5%">Suku (%)</th>
+                <th class="t l b" width="8%">Bagi Hasil</th>
+                <th class="t l b" width="6%">Tunggakan</th>
+                <th class="t l b" width="4%">Kol.</th>
+                <th class="t l b r" width="7%">Produk</th>
             </tr>
         </thead>
         <tbody>
@@ -83,13 +85,15 @@
                     <td class="l b ctr">{{ $row['loan_months'] ?? '—' }}</td>
                     <td class="l b ctr">{{ number_format($row['interest_rate'], 2) }}</td>
                     <td class="l b num">{{ number_format($row['interest_paid'], 0, ',', '.') }}</td>
+                    <td class="l b num">{{ number_format((float) ($row['arrears_amount'] ?? 0), 0, ',', '.') }}</td>
+                    <td class="l b ctr">{{ $row['collectibility_label'] ?? 'Lancar' }}</td>
                     <td class="l b r">
                         <span style="font-weight: bold;">{{ $row['product_code'] }}</span>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td class="l b r" colspan="12" align="center" style="padding: 14px;">
+                    <td class="l b r" colspan="14" align="center" style="padding: 14px;">
                         Tidak ada pinjaman kelompok lunas pada periode ini.
                     </td>
                 </tr>
@@ -100,12 +104,14 @@
                 <th class="t l b" colspan="4" align="left">TOTAL</th>
                 <th class="t l b num">{{ number_format($totals['principal_total'] ?? 0, 0, ',', '.') }}</th>
                 <th class="t l b num">{{ number_format($totals['paid_amount_total'] ?? 0, 0, ',', '.') }}</th>
-                <th class="t l b" colspan="5"></th>
+                <th class="t l b" colspan="4"></th>
                 <th class="t l b num">{{ number_format($totals['interest_total'] ?? 0, 0, ',', '.') }}</th>
+                <th class="t l b num">0</th>
+                <th class="t l b ctr">L</th>
                 <th class="t l b r"></th>
             </tr>
             <tr style="font-weight: normal;">
-                <td class="l b" colspan="12" style="font-size: 7px; padding-top: 4px;">
+                <td class="l b" colspan="14" style="font-size: 7px; padding-top: 4px;">
                     Jumlah pinjaman kelompok lunas: {{ $totals['count'] ?? 0 }} |
                     Total pokok: Rp {{ number_format($totals['principal_total'] ?? 0, 0, ',', '.') }} |
                     Total pembayaran: Rp {{ number_format($totals['paid_amount_total'] ?? 0, 0, ',', '.') }}
