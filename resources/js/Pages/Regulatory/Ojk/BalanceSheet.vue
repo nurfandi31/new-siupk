@@ -90,7 +90,7 @@ const pdfUrl = computed(() => {
                         {{ t('Laporan OJK · Neraca') }}
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Laporan Posisi Keuangan (Neraca)') }}</h1>
-                    <p class="text-sm text-on-surface-variant">{{ period.period_label }} · per {{ period.as_of }}</p>
+                    <p class="text-sm text-on-surface-variant">{{ period.period_label }} {{ t('· per') }} {{ period.as_of }}</p>
                 </div>
                 <AppBadge :tone="balanced ? 'success' : 'error'">
                     {{ balanced ? 'Aset = Liabilitas+Ekuitas' : t('Tidak seimbang') }}
@@ -164,7 +164,7 @@ const pdfUrl = computed(() => {
                     </tfoot>
                 </table>
                 <p class="border-t border-outline-variant/40 px-4 py-3 text-xs text-on-surface-variant">
-                    Laba/Rugi tahun berjalan ({{ '3.2.02.01' }}):
+                    {{ t('Laba/Rugi tahun berjalan (') }}{{ '3.2.02.01' }}):
                     <span class="font-semibold text-on-surface">{{ fmt(net_income) }}</span>
                 </p>
             </AppCard>

@@ -20,12 +20,12 @@ const props = defineProps({
 });
 
 const purposeLabels = {
-    subscription: 'Langganan / perpanjangan',
-    setup: 'Biaya setup / onboarding',
-    support: 'Dukungan / maintenance',
-    training: 'Pelatihan',
-    custom_dev: 'Pengembangan custom',
-    other: 'Lainnya',
+    subscription: t('Langganan / perpanjangan'),
+    setup: t('Biaya setup / onboarding'),
+    support: t('Dukungan / maintenance'),
+    training: t('Pelatihan'),
+    custom_dev: t('Pengembangan custom'),
+    other: t('Lainnya'),
 };
 
 const manualForm = useForm({
@@ -93,7 +93,7 @@ async function voidInvoice() {
                     <p class="text-on-surface-variant">
                         <Link v-if="invoice.tenant" :href="`/admin/tenants/${invoice.tenant.row_id}`" class="font-semibold text-primary">{{ invoice.tenant.name }}</Link>
                         <span v-else>—</span>
-                        · jatuh tempo {{ invoice.due_at || '—' }}
+                        {{ t('· jatuh tempo') }} {{ invoice.due_at || '—' }}
                     </p>
                 </div>
                 <AppButton

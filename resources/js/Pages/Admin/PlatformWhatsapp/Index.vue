@@ -58,7 +58,7 @@ function statusTone(status) {
 
 function statusLabel(status) {
     const value = (status || '').toLowerCase();
-    if (isConnected(value)) return 'Terhubung';
+    if (isConnected(value)) return t('Terhubung');
     if (['connecting', 'pending'].includes(value)) return 'Menghubungkan';
     if (value === 'missing') return 'Belum Dibuat';
     if (['disconnected', 'close', 'closed'].includes(value)) return 'Terputus';
@@ -120,7 +120,7 @@ async function createSession(instance) {
     loadingAction.value = instance.row_id;
     try {
         const response = await requestJson(`/admin/whatsapp/${instance.row_id}/create-session`, { method: 'POST' });
-        toast[response.success ? 'success' : 'error'](response.message || 'Berhasil');
+        toast[response.success ? 'success' : 'error'](response.message || t('Berhasil'));
         if (response.success) await openQr(instance, response);
     } catch (error) {
         toast.error(error.message || 'Gagal membuat QR.');
@@ -344,7 +344,7 @@ onBeforeUnmount(stopPolling);
                 />
             </AppCard>
 
-            <AppModal v-model="showFormModal" :title="editingInstance ? 'Edit Instance Platform' : 'Tambah Instance Platform'" size="md">
+            <AppModal v-model="showFormModal" :title="editingInstance ? t('Edit Instance Platform') : t('Tambah Instance Platform')" size="md">
                 <form class="space-y-4" @submit.prevent="submitInstance">
                     <AppInput v-model="form.name" :label="t('Nama Instance')" required :placeholder="t('Masukkan nama')" :error="form.errors.name" />
                     <AppInput v-model="form.phone" :label="t('Nomor WhatsApp (opsional)')" placeholder="08xxxxxxxxxx" :error="form.errors.phone" :hint="t('Boleh diisi setelah nomor tersambung.')" />
@@ -355,7 +355,7 @@ onBeforeUnmount(stopPolling);
                 </template>
             </AppModal>
 
-            <AppModal v-model="showQrModal" :title="qrInstance ? `Status ${qrInstance.name}` : 'Status Instance'" size="sm">
+            <AppModal v-model="showQrModal" :title="qrInstance ? `Status ${qrInstance.name}` : t('Status Instance')" size="sm">
                 <div class="space-y-4 text-center">
                     <AppBadge :tone="statusTone(qrStatus)">{{ statusLabel(qrStatus) }}</AppBadge>
                     <div v-if="qrCode" class="rounded-xl border border-outline-variant bg-surface-container-low p-4">

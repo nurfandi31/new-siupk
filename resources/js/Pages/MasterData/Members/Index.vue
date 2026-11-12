@@ -30,7 +30,7 @@ const columns = [
 ];
 
 const csvColumns = ['nik', 'nama', 'jenis_kelamin', 'alamat', 'desa', 'no_hp', 'status'];
-const statusLabels = { active: 'Aktif', exited: 'Keluar', deceased: 'Meninggal' };
+const statusLabels = { active: t('Aktif'), exited: t('Sudah Keluar'), deceased: t('Meninggal') };
 </script>
 
 <template>

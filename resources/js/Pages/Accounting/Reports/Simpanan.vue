@@ -160,7 +160,7 @@ function isEmptyKind(kind: SavingsKind): boolean {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Daftar Simpanan') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ periodLabel }} · per {{ period.as_of ?? '-' }}
+                        {{ periodLabel }} {{ t('· per') }} {{ period.as_of ?? '-' }}
                     </p>
                 </div>
                 <AppBadge :tone="hasData ? 'success' : 'warning'">
@@ -306,7 +306,7 @@ function isEmptyKind(kind: SavingsKind): boolean {
             </AppCard>
 
             <p v-if="generated_at" class="text-right text-[11px] text-on-surface-variant">
-                Digenerate pada {{ generated_at }}
+                {{ t('Digenerate pada') }} {{ generated_at }}
             </p>
         </div>
     </AuthenticatedLayout>

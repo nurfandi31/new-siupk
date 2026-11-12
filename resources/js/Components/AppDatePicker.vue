@@ -29,9 +29,9 @@ const placeAbove = ref(false);
 const popupStyle = ref({});
 const generatedId = useId();
 const inputId = props.id || generatedId;
-const weekdays = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map((name) => t(name));
-const monthShort = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const weekdays = [t('Sen'), t('Sel'), t('Rab'), t('Kam'), t('Jum'), t('Sab'), t('Min')];
+const monthNames = [t('Januari'), t('Februari'), t('Maret'), t('April'), t('Mei'), t('Juni'), t('Juli'), t('Agustus'), t('September'), t('Oktober'), t('November'), t('Desember')];
+const monthShort = [t('Jan'), t('Feb'), t('Mar'), t('Apr'), t('Mei'), t('Jun'), t('Jul'), t('Agu'), t('Sep'), t('Okt'), t('Nov'), t('Des')];
 
 function isWeekend(date) {
     const day = date.getDay();
@@ -327,7 +327,7 @@ onBeforeUnmount(() => {
     window.removeEventListener('scroll', onViewportChange, true);
 });
 
-const todayActionLabel = computed(() => props.mode === 'year' ? 'Tahun ini' : props.mode === 'month' ? 'Bulan ini' : 'Hari ini');
+const todayActionLabel = computed(() => props.mode === 'year' ? t('Tahun ini') : props.mode === 'month' ? t('Bulan ini') : t('Hari ini'));
 </script>
 
 <template>

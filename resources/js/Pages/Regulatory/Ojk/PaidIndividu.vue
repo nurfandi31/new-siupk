@@ -122,7 +122,7 @@ function formatDate(value: string | null): string {
                         {{ t('Rincian Pinjaman Lunas Individu') }}
                     </h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Pinjaman individu yang telah dilunasi (status completed) pada periode
+                        {{ t('Pinjaman individu yang telah dilunasi (status completed) pada periode') }}
                         <span class="font-semibold text-primary">{{ period_label }}</span>
                         — {{ identity.legal_name }}
                     </p>

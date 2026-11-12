@@ -299,7 +299,7 @@ function addBeneficiary() {
                             <SmartSelect v-model="selectedGroupId" :label="t('Kelompok')" :options="groups.map((g) => ({ value: g.value, label: g.label }))" :placeholder="t('Pilih kelompok')" required searchable :error="form.errors.group_id" />
                         </div>
                         <div v-if="selectedProduct" class="mt-2 rounded-lg border border-secondary/30 bg-secondary/10 px-3 py-2 text-xs text-primary">
-                            <span class="font-semibold">{{ selectedProduct.name }} ({{ selectedProduct.code }})</span> · Jasa {{ formatRate(selectedProduct.default_interest_rate) }}%/periode · Tenor {{ selectedProduct.default_term_months }} bln.
+                            <span class="font-semibold">{{ selectedProduct.name }} ({{ selectedProduct.code }})</span> {{ t('· Jasa') }} {{ formatRate(selectedProduct.default_interest_rate) }}{{ t('%/periode · Tenor') }} {{ selectedProduct.default_term_months }} bln.
                         </div>
                     </section>
 
@@ -396,7 +396,7 @@ function addBeneficiary() {
                                     </tfoot>
                                 </table>
                             </div>
-                            <p v-if="beneficiaryTotal > 0 && Number(form.principal_amount) > 0 && beneficiaryTotal > Number(form.principal_amount)" class="mt-1.5 text-xs text-error">Total melebihi plafon ({{ currency(Number(form.principal_amount)) }}).</p>
+                            <p v-if="beneficiaryTotal > 0 && Number(form.principal_amount) > 0 && beneficiaryTotal > Number(form.principal_amount)" class="mt-1.5 text-xs text-error">{{ t('Total melebihi plafon (') }}{{ currency(Number(form.principal_amount)) }}).</p>
                             <p v-if="form.errors.beneficiary_ids" class="mt-1.5 text-xs text-error">{{ form.errors.beneficiary_ids }}</p>
                             <p v-if="form.errors.beneficiary_amounts" class="mt-1.5 text-xs text-error">{{ form.errors.beneficiary_amounts }}</p>
                         </template>

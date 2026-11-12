@@ -51,12 +51,12 @@ function systemLabel(frequency, graceMonths) {
 function roundingLabel(step, productRounding) {
     const effective = step !== null && step !== undefined && step !== '' ? step : productRounding;
     if (!effective || effective === '0' || effective === 'decimal_2') return 'Tanpa Pembulatan';
-    if (effective === '100') return 'Rp 100';
-    if (effective === '500') return 'Rp 500';
-    if (effective === '1000') return 'Rp 1.000';
-    if (effective === '5000') return 'Rp 5.000';
-    if (effective === '10000') return 'Rp 10.000';
-    if (effective === '50000') return 'Rp 50.000';
+    if (effective === '100') return t('Rp 100');
+    if (effective === '500') return t('Rp 500');
+    if (effective === '1000') return t('Rp 1.000');
+    if (effective === '5000') return t('Rp 5.000');
+    if (effective === '10000') return t('Rp 10.000');
+    if (effective === '50000') return t('Rp 50.000');
     return String(effective);
 }
 
@@ -293,7 +293,7 @@ const committeeEditable = computed(() => can('loans.manage') && props.loan.commi
 const committeeOptions = computed(() => props.loan.committee_member_options ?? []);
 const committeeForm = useForm({ chair_id: '', secretary_id: '', treasurer_id: '' });
 const committeeConfirmOpen = ref(false);
-const committeeLabels = { chair: 'Ketua', secretary: 'Sekretaris', treasurer: 'Bendahara' };
+const committeeLabels = { chair: t('Ketua'), secretary: t('Sekretaris'), treasurer: t('Bendahara') };
 const committeeReady = computed(() =>
     Number(committeeForm.chair_id) > 0
     && Number(committeeForm.secretary_id) > 0
@@ -646,7 +646,7 @@ const tabs = computed(() => {
         items.push({ key: 'payments', label: t('Pembayaran'), icon: 'receipt_long', badge: paymentRows.value.length || null });
     }
     if (canShowVerifyForm.value || canShowApproveForm.value || canShowDisburseForm.value) {
-        items.push({ key: 'actions', label: t('Aksi'), icon: 'bolt', badge: 'Aksi' });
+        items.push({ key: 'actions', label: t('Aksi'), icon: 'bolt', badge: t('Aksi') });
     }
     return items;
 });
@@ -668,7 +668,7 @@ const progressPercent = computed(() => {
 const loanFacts = computed(() => [
     { label: t('No. Pinjaman'), value: props.loan.loan_number || `#${props.loan.row_id}`, icon: 'tag' },
     { label: t('Produk'), value: props.loan.product ? `${props.loan.product.name}` : '—', sub: props.loan.product?.code || '', icon: 'inventory_2' },
-    { label: t('Kelompok'), value: props.loan.group?.name || 'Pinjaman Perorangan', sub: props.loan.group?.address || '', icon: 'groups' },
+    { label: t('Kelompok'), value: props.loan.group?.name || t('Pinjaman Perorangan'), sub: props.loan.group?.address || '', icon: 'groups' },
     { label: t('Desa'), value: props.loan.group?.village?.name || '—', icon: 'location_on' },
     { label: t('Tanggal Pengajuan'), value: formatDate(props.loan.proposed_at), icon: 'event' },
     { label: t('Tanggal Verifikasi'), value: formatDate(props.loan.verified_at), icon: 'verified' },
@@ -710,7 +710,7 @@ const beneficiaryStats = computed(() => ({
                     <AppButton v-if="canDeleteProposal" type="button" variant="danger" icon="delete_outline" size="compact" @click="confirmDeleteLoan">{{ t('Hapus Proposal') }}</AppButton>
                     <AppButton type="button" variant="secondary" icon="history" size="compact" @click="auditHistoryModalOpen = true">{{ t('Riwayat & Audit') }}</AppButton>
                     <AppButton v-if="canPrintDocument" type="button" variant="secondary" icon="description" size="compact" @click="documentModalOpen = true">
-                        Dokumen
+                        {{ t('Dokumen') }}
                         <span v-if="availableDocuments.length" class="ml-1 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">{{ availableDocuments.length }}</span>
                     </AppButton>
                 </div>
@@ -766,7 +766,7 @@ const beneficiaryStats = computed(() => ({
                     </div>
                     <p class="mt-2 text-xl font-extrabold tabular-nums tracking-tight text-on-surface">{{ currency(principalRemaining) }}</p>
                     <p class="mt-0.5 text-[11px] text-on-surface-variant">
-                        <template v-if="principalRemaining > 0">dari {{ currency(loan.principal_amount) }}</template>
+                        <template v-if="principalRemaining > 0">{{ t('dari') }} {{ currency(loan.principal_amount) }}</template>
                         <template v-else><span class="font-semibold text-secondary">{{ t('Lunas') }}</span></template>
                     </p>
                 </div>
@@ -890,7 +890,7 @@ const beneficiaryStats = computed(() => ({
                                 <div class="min-w-0 flex-1">
                                     <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{{ committeeLabels[position] || position }}</p>
                                     <p class="text-sm font-semibold text-on-surface">{{ entry?.name || '—' }}</p>
-                                    <p v-if="entry?.snapshot_at" class="text-[10px] text-on-surface-variant">Sejak {{ formatDate(entry.snapshot_at) }}</p>
+                                    <p v-if="entry?.snapshot_at" class="text-[10px] text-on-surface-variant">{{ t('Sejak') }} {{ formatDate(entry.snapshot_at) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -904,7 +904,7 @@ const beneficiaryStats = computed(() => ({
             <section v-show="activeTab === 'beneficiaries'">
                 <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Daftar Pemanfaat') }}</h2>
-                    <p class="text-xs text-on-surface-variant">{{ beneficiaryStats.total }} anggota · Total alokasi <span class="font-bold text-on-surface">{{ currency(beneficiaryStats.allocated) }}</span></p>
+                    <p class="text-xs text-on-surface-variant">{{ beneficiaryStats.total }} {{ t('anggota · Total alokasi') }} <span class="font-bold text-on-surface">{{ currency(beneficiaryStats.allocated) }}</span></p>
                 </div>
                 <div class="overflow-hidden rounded-2xl bg-surface-container-lowest shadow-md">
                     <div class="overflow-x-auto">
@@ -1016,7 +1016,7 @@ const beneficiaryStats = computed(() => ({
                         </span>
                         <div>
                             <h3 class="text-base font-bold text-on-surface">{{ t('Penetapan Alokasi') }}</h3>
-                            <p class="text-xs text-on-surface-variant">Standar verifikasi: <span class="font-semibold text-on-surface">{{ currency(verifiedAmountTotal) }}</span></p>
+                            <p class="text-xs text-on-surface-variant">{{ t('Standar verifikasi:') }} <span class="font-semibold text-on-surface">{{ currency(verifiedAmountTotal) }}</span></p>
                         </div>
                     </div>
                     <form class="space-y-4 p-6" @submit.prevent="submitApprove">
@@ -1033,7 +1033,7 @@ const beneficiaryStats = computed(() => ({
                             <SmartSelect v-model="approveForm.interest_frequency" :label="t('Sistem Jasa')" :options="frequencyOptions" required :error="approveForm.errors.interest_frequency" />
                             <SmartSelect v-model="approveForm.interest_grace_months" :label="t('Grace Jasa')" :options="graceOptions" required :error="approveForm.errors.interest_grace_months" />
                         </div>
-                        <p v-if="approveTotal > approveForm.allocated_principal" class="text-xs text-error">Total alokasi per anggota ({{ currency(approveTotal) }}) melebihi plafon kelompok ({{ currency(approveForm.allocated_principal) }}).</p>
+                        <p v-if="approveTotal > approveForm.allocated_principal" class="text-xs text-error">{{ t('Total alokasi per anggota (') }}{{ currency(approveTotal) }}{{ t(') melebihi plafon kelompok (') }}{{ currency(approveForm.allocated_principal) }}).</p>
                         <AppTextarea v-model="approveForm.allocation_notes" :label="t('Catatan Penetapan (opsional)')" :error="approveForm.errors.allocation_notes" :placeholder="t('Masukkan catatan')" />
                         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                             <Link :href="backUrl"><AppButton type="button" variant="secondary">{{ t('Kembali') }}</AppButton></Link>
@@ -1080,7 +1080,7 @@ const beneficiaryStats = computed(() => ({
             <section v-if="installmentRows.length" v-show="activeTab === 'schedule'">
                 <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jadwal Angsuran') }}</h2>
-                    <p class="text-xs text-on-surface-variant">{{ installmentRows.length }} angsuran · Sisa pokok {{ currency(principalRemaining) }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ installmentRows.length }} {{ t('angsuran · Sisa pokok') }} {{ currency(principalRemaining) }}</p>
                 </div>
                 <div class="overflow-hidden rounded-2xl bg-surface-container-lowest shadow-md">
                     <div class="overflow-x-auto">
@@ -1120,7 +1120,7 @@ const beneficiaryStats = computed(() => ({
             <section v-if="paymentRows.length" v-show="activeTab === 'payments'">
                 <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Riwayat Pembayaran') }}</h2>
-                    <p class="text-xs text-on-surface-variant">{{ paymentRows.length }} kali pembayaran</p>
+                    <p class="text-xs text-on-surface-variant">{{ paymentRows.length }} {{ t('kali pembayaran') }}</p>
                 </div>
                 <div class="overflow-hidden rounded-2xl bg-surface-container-lowest shadow-md">
                     <div class="overflow-x-auto">
@@ -1161,7 +1161,7 @@ const beneficiaryStats = computed(() => ({
                     <div class="space-y-3 border-b border-outline-variant p-4">
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Daftar Dokumen') }}</p>
-                            <span class="text-[10px] font-semibold text-on-surface-variant">{{ availableDocuments.length }} dokumen</span>
+                            <span class="text-[10px] font-semibold text-on-surface-variant">{{ availableDocuments.length }} {{ t('dokumen') }}</span>
                         </div>
                         <AppInput v-model="docSearch" type="search" icon="search" :label="t('Cari dokumen')" :hide-label="true" :placeholder="t('Cari dokumen...')" />
                     </div>
@@ -1199,7 +1199,7 @@ const beneficiaryStats = computed(() => ({
                     <div v-if="activeDocument" class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-variant bg-surface px-4 py-3">
                         <div class="min-w-0 flex-1">
                             <p class="truncate text-sm font-bold text-on-surface">{{ activeDocument.label }}</p>
-                            <p class="mt-0.5 text-[11px] text-on-surface-variant">PDF · Tahap {{ STAGE_META[activeDocument.stage].label }}</p>
+                            <p class="mt-0.5 text-[11px] text-on-surface-variant">{{ t('PDF · Tahap') }} {{ STAGE_META[activeDocument.stage].label }}</p>
                         </div>
                         <div class="flex shrink-0 items-center gap-1.5">
                             <a :href="activeDocument.url" target="_blank" rel="noopener" class="inline-flex size-9 items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary" :title="t('Buka di tab baru')" :aria-label="t('Buka di tab baru')">
@@ -1238,7 +1238,7 @@ const beneficiaryStats = computed(() => ({
         </AppModal>
 
         <AppModal v-model="committeeConfirmOpen" :title="t('Simpan pengurus?')">
-            <p class="text-sm text-on-surface">Setelah disimpan, pengurus pinjaman <strong>tidak dapat diganti</strong>.</p>
+            <p class="text-sm text-on-surface">{{ t('Setelah disimpan, pengurus pinjaman') }} <strong>{{ t('tidak dapat diganti') }}</strong>.</p>
             <ul class="mt-3 space-y-1 text-sm text-on-surface">
                 <li><span class="font-semibold">{{ t('Ketua:') }}</span> {{ memberLabel(committeeForm.chair_id) }}</li>
                 <li><span class="font-semibold">{{ t('Sekretaris:') }}</span> {{ memberLabel(committeeForm.secretary_id) }}</li>
@@ -1283,13 +1283,13 @@ const beneficiaryStats = computed(() => ({
                             </tr>
                             <tr>
                                 <th class="py-3 pr-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jangka Waktu') }}</th>
-                                <td v-for="history in auditStageHistories" :key="`term-${history.to_status}-${history.changed_at}`" class="py-3 px-4">{{ history.term_months ?? '—' }} Bulan</td>
+                                <td v-for="history in auditStageHistories" :key="`term-${history.to_status}-${history.changed_at}`" class="py-3 px-4">{{ history.term_months ?? '—' }} {{ t('Bulan') }}</td>
                                 <td v-if="auditStageHistories.length < 4" class="py-3 pl-4 text-on-surface-variant" :colspan="4 - auditStageHistories.length">—</td>
                             </tr>
                             <tr>
                                 <th class="py-3 pr-4 text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pros Jasa / Bunga') }}</th>
                                 <td v-for="history in auditStageHistories" :key="`rate-${history.to_status}-${history.changed_at}`" class="py-3 px-4">
-                                    {{ percent(history.service_rate_total) }} total · {{ monthlyRate(history.service_rate_total, history.term_months) }}
+                                    {{ percent(history.service_rate_total) }} {{ t('total ·') }} {{ monthlyRate(history.service_rate_total, history.term_months) }}
                                 </td>
                                 <td v-if="auditStageHistories.length < 4" class="py-3 pl-4 text-on-surface-variant" :colspan="4 - auditStageHistories.length">—</td>
                             </tr>
@@ -1349,7 +1349,7 @@ const beneficiaryStats = computed(() => ({
 
         <AppModal v-model="rejectModalOpen" :title="t('Tandai Pinjaman Tidak Layak?')" size="md">
             <div class="space-y-3">
-                <p class="text-sm text-on-surface-variant">Pinjaman akan ditandai sebagai <strong>Tidak Layak</strong> dan tidak dapat dicairkan. Tindakan ini akan dicatat di status history untuk audit.</p>
+                <p class="text-sm text-on-surface-variant">{{ t('Pinjaman akan ditandai sebagai') }} <strong>{{ t('Tidak Layak') }}</strong> {{ t('dan tidak dapat dicairkan. Tindakan ini akan dicatat di status history untuk audit.') }}</p>
                 <form class="space-y-3" @submit.prevent="submitReject">
                     <AppTextarea
                         v-model="rejectForm.notes"
@@ -1370,7 +1370,7 @@ const beneficiaryStats = computed(() => ({
 
         <AppModal v-model="rescheduleModalOpen" :title="t('Reschedule Pinjaman')" size="lg">
             <p class="mb-4 text-sm text-on-surface-variant">
-                Pinjaman ini akan ditutup status <strong>Reschedule</strong> dan diganti pinjaman baru dengan alokasi sisa pokok
+                {{ t('Pinjaman ini akan ditutup status') }} <strong>{{ t('Reschedule') }}</strong> {{ t('dan diganti pinjaman baru dengan alokasi sisa pokok') }}
                 <strong>{{ currency(loan.principal_remaining) }}</strong>.
             </p>
             <form class="space-y-5" @submit.prevent="submitReschedule">
@@ -1401,8 +1401,7 @@ const beneficiaryStats = computed(() => ({
 
         <AppModal v-model="writeOffModalOpen" :title="t('Penghapusan Pinjaman')" size="md">
             <p class="mb-4 text-sm text-on-surface-variant">
-                Piutang sisa pokok <strong>{{ currency(loan.principal_remaining) }}</strong> akan dihapusbukukan.
-                Status pinjaman menjadi <strong>Dihapus</strong>. Tindakan ini tidak dapat dibatalkan.
+                {{ t('Piutang sisa pokok') }} <strong>{{ currency(loan.principal_remaining) }}</strong> {{ t('akan dihapusbukukan. Status pinjaman menjadi') }} <strong>{{ t('Dihapus') }}</strong>{{ t('. Tindakan ini tidak dapat dibatalkan.') }}
             </p>
             <form class="space-y-5" @submit.prevent="submitWriteOff">
                 <AppDatePicker v-model="writeOffForm.written_off_at" :label="t('Tanggal Penghapusan')" :max="today" :error="writeOffForm.errors.written_off_at" required />
@@ -1417,10 +1416,8 @@ const beneficiaryStats = computed(() => ({
 
         <AppModal v-model="beneficiaryWriteOffModalOpen" :title="t('Penghapusan Pemanfaat')" size="md">
             <p v-if="beneficiaryWriteOffTarget" class="mb-4 text-sm text-on-surface-variant">
-                Pemanfaat <strong>{{ beneficiaryWriteOffTarget.name || '—' }}</strong> akan dihapusbukukan.
-                Sisa pokok alokasi <strong>{{ currency(beneficiaryWriteOffTarget.allocated_amount) }}</strong>
-                akan dicatat sebagai penghapusan piutang. Jadwal angsuran setelah posisi penghapusan akan disesuaikan
-                secara proporsional. Tindakan ini tidak dapat dibatalkan.
+                {{ t('Pemanfaat') }} <strong>{{ beneficiaryWriteOffTarget.name || '—' }}</strong> {{ t('akan dihapusbukukan. Sisa pokok alokasi') }} <strong>{{ currency(beneficiaryWriteOffTarget.allocated_amount) }}</strong>
+                {{ t('akan dicatat sebagai penghapusan piutang. Jadwal angsuran setelah posisi penghapusan akan disesuaikan secara proporsional. Tindakan ini tidak dapat dibatalkan.') }}
             </p>
             <form class="space-y-5" @submit.prevent="submitBeneficiaryWriteOff">
                 <div class="grid gap-4 sm:grid-cols-2">
@@ -1451,7 +1448,7 @@ const beneficiaryStats = computed(() => ({
 
         <AppModal v-model="completeModalOpen" :title="t('Validasi Pelunasan Pinjaman')" size="md">
             <p class="mb-4 text-sm text-on-surface-variant">
-                Seluruh angsuran pokok pinjaman ini telah dilunasi (100%). Lakukan validasi pelunasan untuk secara resmi mengubah status pinjaman menjadi <strong>Lunas</strong>.
+                {{ t('Seluruh angsuran pokok pinjaman ini telah dilunasi (100%). Lakukan validasi pelunasan untuk secara resmi mengubah status pinjaman menjadi') }} <strong>{{ t('Lunas') }}</strong>.
             </p>
             <form class="space-y-5" @submit.prevent="submitComplete">
                 <AppDatePicker v-model="completeForm.completed_at" :label="t('Tanggal Pelunasan')" :max="today" :error="completeForm.errors.completed_at" required />

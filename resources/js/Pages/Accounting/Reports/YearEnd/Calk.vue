@@ -71,7 +71,7 @@ function save() {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Catatan Atas Laporan Keuangan — Tutup Buku') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        Tahun Buku {{ year }} · khusus pelaporan tutup buku akhir tahun
+                        {{ t('Tahun Buku') }} {{ year }} {{ t('· khusus pelaporan tutup buku akhir tahun') }}
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -118,7 +118,7 @@ function save() {
                 <p class="mt-2 text-lg font-bold text-primary">{{ identity.legal_name }}</p>
                 <p v-if="identity.address" class="text-sm text-on-surface-variant">{{ identity.address }}</p>
                 <p v-if="identity.registration_number || identity.tax_number" class="mt-1 text-xs text-on-surface-variant">
-                    <span v-if="identity.registration_number">Registrasi {{ identity.registration_number }}</span>
+                    <span v-if="identity.registration_number">{{ t('Registrasi') }} {{ identity.registration_number }}</span>
                     <span v-if="identity.registration_number && identity.tax_number"> · </span>
                     <span v-if="identity.tax_number">NPWP {{ identity.tax_number }}</span>
                 </p>
@@ -169,7 +169,7 @@ function save() {
                         <strong>{{ formatMoney(line.amount) }}</strong>
                     </li>
                     <li class="border-t border-outline-variant/30 pt-1 font-semibold">
-                        Total Dialokasikan: {{ formatMoney(allocation_summary.totals.allocated) }}
+                        {{ t('Total Dialokasikan:') }} {{ formatMoney(allocation_summary.totals.allocated) }}
                         ({{ allocation_summary.totals.pct_allocated.toFixed(2) }}%)
                     </li>
                 </ul>
@@ -208,10 +208,7 @@ function save() {
 
             <AppCard class="p-5">
                 <p class="text-xs text-on-surface-variant">
-                    <strong class="text-on-surface">Catatan:</strong> CALK ini adalah bagian dari pelaporan
-                    tutup buku akhir tahun. Pastikan setiap bab direview oleh manajemen/direksi sebelum
-                    penerbitan resmi. Setelah tutup buku benar-benar dijalankan (PeriodClose), catatan akan
-                    direfleksikan ke laporan final.
+                    <strong class="text-on-surface">{{ t('Catatan:') }}</strong> {{ t('CALK ini adalah bagian dari pelaporan tutup buku akhir tahun. Pastikan setiap bab direview oleh manajemen/direksi sebelum penerbitan resmi. Setelah tutup buku benar-benar dijalankan (PeriodClose), catatan akan direfleksikan ke laporan final.') }}
                 </p>
             </AppCard>
         </div>

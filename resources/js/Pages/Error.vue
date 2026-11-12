@@ -178,7 +178,7 @@ function reloadPage() {
 
                     <div class="relative z-10 inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-outline-variant/60 px-4 py-1.5 rounded-full text-sm font-bold text-primary shadow-sm">
                         <AppIcon name="error_outline" class="text-base text-secondary" />
-                        <span>Status {{ status }}</span>
+                        <span>{{ t('Status') }} {{ status }}</span>
                     </div>
                 </div>
 
@@ -231,7 +231,7 @@ function reloadPage() {
 
         <!-- Footer -->
         <footer class="relative z-10 text-center py-5 text-xs text-on-surface-variant border-t border-outline-variant/30">
-            <p>&copy; {{ new Date().getFullYear() }} <strong>siupk Next</strong> &bull; Tata Kelola Dana Bergulir BUMDesma LKD</p>
+            <p>&copy; {{ new Date().getFullYear() }} <strong>{{ t('siupk Next') }}</strong> {{ t('• Tata Kelola Dana Bergulir BUMDesma LKD') }}</p>
         </footer>
     </div>
 </template>

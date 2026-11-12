@@ -201,7 +201,7 @@ const filteredReleases = computed(() => {
                         <div>
                             <div class="flex flex-wrap items-center gap-2.5">
                                 <h1 class="text-xl font-bold text-on-surface sm:text-2xl">{{ t('Catatan Rilis & Riwayat Pembaruan') }}</h1>
-                                <AppBadge tone="primary-soft" class="px-3 py-1 font-mono text-xs">v{{ latest_version }}</AppBadge>
+                                <AppBadge tone="primary-soft" class="px-3 py-1 font-mono text-xs">{{ t('v') }}{{ latest_version }}</AppBadge>
                             </div>
                             <p class="mt-1 text-sm text-on-surface-variant max-w-2xl leading-relaxed">
                                 {{ t('Dokumentasi lengkap fitur baru, peningkatan antarmuka, optimasi performa, dan perbaikan berkala pada sistem siupk Next.') }}
@@ -213,11 +213,11 @@ const filteredReleases = computed(() => {
                     <div class="flex flex-wrap items-center gap-2 sm:self-start md:self-auto">
                         <div class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-xs font-semibold text-on-surface">
                             <AppIcon name="verified" class="text-base text-secondary" />
-                            <span>{{ total_releases }} Versi Rilis</span>
+                            <span>{{ total_releases }} {{ t('Versi Rilis') }}</span>
                         </div>
                         <div class="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2 text-xs font-semibold text-on-surface">
                             <AppIcon name="checklist" class="text-base text-primary" />
-                            <span>{{ totalFeaturesCount }}+ Fitur & Peningkatan</span>
+                            <span>{{ totalFeaturesCount }}{{ t('+ Fitur & Peningkatan') }}</span>
                         </div>
                     </div>
                 </div>
@@ -303,7 +303,7 @@ const filteredReleases = computed(() => {
 
                             <div class="flex items-center gap-3">
                                 <span class="rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-semibold text-on-surface-variant">
-                                    {{ release.total_changes }} Perubahan
+                                    {{ release.total_changes }} {{ t('Perubahan') }}
                                 </span>
                                 <div class="grid size-8 place-items-center rounded-lg bg-surface-container-low text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary">
                                     <AppIcon
@@ -338,7 +338,7 @@ const filteredReleases = computed(() => {
                                                 <span>{{ categoryMeta[section.category]?.label || section.label }}</span>
                                             </AppBadge>
                                             <span class="text-xs font-medium text-on-surface-variant/80">
-                                                ({{ (section.items || []).length }} item)
+                                                ({{ (section.items || []).length }} {{ t('item)') }}
                                             </span>
                                         </div>
 
@@ -368,7 +368,7 @@ const filteredReleases = computed(() => {
                                                                 v-if="(item.sub_items || []).length > 0"
                                                                 class="rounded-md bg-surface-container-high px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant"
                                                             >
-                                                                {{ item.sub_items.length }} Poin Rincian
+                                                                {{ item.sub_items.length }} {{ t('Poin Rincian') }}
                                                             </span>
                                                         </div>
 

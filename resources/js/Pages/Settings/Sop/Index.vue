@@ -31,7 +31,7 @@ const props = defineProps({
     },
 });
 
-const levelPlaceholders = ['Lancar', 'Kurang Lancar', 'Diragukan', 'Macet', 'Tidak Aktif'];
+const levelPlaceholders = [t('Lancar'), t('Kurang Lancar'), t('Diragukan'), t('Macet'), t('Tidak Aktif')];
 
 // Pakai useForm untuk handle submit + error display
 const kolekForm = useForm({
@@ -301,7 +301,7 @@ async function destroyLogo() {
                                     :label="t('Nama kolek')"
                                     hide-label
                                     size="compact"
-                                    :placeholder="levelPlaceholders[idx] ?? 'Nama kolek'"
+                                    :placeholder="levelPlaceholders[idx] ?? t('Nama kolek')"
                                 />
                                 <AppInput
                                     v-model="row.durasi"

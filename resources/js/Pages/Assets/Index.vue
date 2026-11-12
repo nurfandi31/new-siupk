@@ -88,7 +88,7 @@ watch([status, category, asOf], () => {
                 <div>
                     <h1 class="text-2xl font-bold text-primary">{{ t('Inventaris') }}</h1>
                     <p class="mt-1 text-on-surface-variant">
-                        Register &amp; nilai buku. <strong>Beli aset</strong> lewat Jurnal Umum → tipe Pembelian Inventaris.
+                        {{ t('Register & nilai buku.') }} <strong>{{ t('Beli aset') }}</strong> {{ t('lewat Jurnal Umum → tipe Pembelian Inventaris.') }}
                     </p>
                 </div>
                 <Link v-if="can('journals.create')" href="/accounting/journal-entries/create?type=pembelian_aset_peralatan">
@@ -141,9 +141,9 @@ watch([status, category, asOf], () => {
                         <tbody>
                             <tr v-if="!assets.data?.length">
                                 <td colspan="7" class="px-4 py-10 text-center text-on-surface-variant">
-                                    Belum ada inventaris. Catat di
+                                    {{ t('Belum ada inventaris. Catat di') }}
                                     <Link href="/accounting/journal-entries/create?type=pembelian_aset_peralatan" class="font-semibold text-primary hover:underline">{{ t('Jurnal Umum') }}</Link>
-                                    — pilih jenis Pembelian Aset ….
+                                    {{ t('— pilih jenis Pembelian Aset ….') }}
                                 </td>
                             </tr>
                             <tr
@@ -185,7 +185,7 @@ watch([status, category, asOf], () => {
                     class="flex items-center justify-between border-t border-outline-variant/20 px-4 py-3 text-sm"
                 >
                     <p class="text-on-surface-variant">
-                        Halaman {{ assets.current_page }} / {{ assets.last_page }} · {{ assets.total }} item
+                        {{ t('Halaman') }} {{ assets.current_page }} / {{ assets.last_page }} · {{ assets.total }} {{ t('item') }}
                     </p>
                     <div class="flex gap-2">
                         <AppButton

@@ -251,7 +251,7 @@ onBeforeUnmount(() => {
 });
 
 function navLabel(label) {
-    if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : 'Beranda';
+    if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : t('Beranda');
     return t(label);
 }
 
@@ -522,7 +522,7 @@ const sections = [
                     { label: t('Laba Rugi'), href: '/accounting/reports/income-statement' },
                     { label: t('Arus Kas'), href: '/accounting/reports/cash-flow' },
                     { label: t('Perubahan Ekuitas'), href: '/accounting/reports/equity-change' },
-                    { label: 'CALK', href: '/accounting/reports/calk' },
+                    { label: t('CALK'), href: '/accounting/reports/calk' },
                     { label: t('Buku Besar'), href: '/accounting/reports/general-ledger' },
                     { label: t('Daftar Simpanan'), href: '/accounting/reports/simpanan' },
                 ],
@@ -893,7 +893,7 @@ function onParentItemClick(item, event) {
                     class="ml-1 flex shrink-0 items-center gap-2 rounded-full chip-shadow bg-surface-container-lowest py-1 pl-1 pr-3 ring-1 ring-outline-variant transition hover:bg-surface-container-low hover:ring-primary/40"
                     :aria-label="t('Buka Profil')"
                 >
-                    <span class="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'User'" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'U' }}</span></span>
+                    <span class="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || t('User')" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'U' }}</span></span>
                     <span class="hidden min-w-0 flex-col leading-tight sm:flex">
                         <span class="truncate text-xs font-bold text-primary">{{ user?.name || t('Pengguna') }}</span>
                         <span class="truncate text-[10px] font-medium text-on-surface-variant">{{ props.unitName || t('Unit belum dipilih') }}</span>

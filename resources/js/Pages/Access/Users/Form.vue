@@ -86,7 +86,7 @@ function submit() {
 </script>
 
 <template>
-    <Head :title="editing ? 'Edit Pengguna' : 'Tambah Pengguna'" />
+    <Head :title="editing ? t('Edit Pengguna') : t('Tambah Pengguna')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-4xl space-y-6">
             <header>
@@ -131,7 +131,7 @@ function submit() {
                     <div class="grid gap-4 sm:grid-cols-2">
                         <AppInput
                             v-model="form.password"
-                            :label="editing ? 'Password Baru (Kosongkan jika tidak diubah)' : 'Password'"
+                            :label="editing ? t('Password Baru (Kosongkan jika tidak diubah)') : t('Password')"
                             type="password"
                             :required="!editing"
                             :error="form.errors.password"

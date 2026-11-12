@@ -147,7 +147,7 @@ const pdfHref = computed(() => {
                             <template v-for="row in rows" :key="row.no ?? row.entry_no">
                                 <tr v-if="row.is_header" class="bg-primary/10">
                                     <td colspan="8" class="px-3 py-2 font-semibold text-primary">
-                                        Entry #{{ row.entry_no }} · {{ row.reference }} — {{ row.description }}
+                                        {{ t('Entry #') }}{{ row.entry_no }} · {{ row.reference }} — {{ row.description }}
                                     </td>
                                 </tr>
                                 <tr v-else class="border-t border-outline-variant/40">
@@ -183,29 +183,25 @@ const pdfHref = computed(() => {
                 </h2>
                 <ol class="list-decimal space-y-2 pl-5 text-sm text-on-surface">
                     <li>
-                        <strong>Entry 1 — Tutup Pendapatan:</strong>
-                        Debit akun pendapatan ({{ revenue_rows.length }} akun, total {{ money.format(totals.revenue) }}),
-                        Kredit {{ summary_account.code }} Ikhtisar Laba Rugi.
+                        <strong>{{ t('Entry 1 — Tutup Pendapatan:') }}</strong>
+                        {{ t('Debit akun pendapatan (') }}{{ revenue_rows.length }} {{ t('akun, total') }} {{ money.format(totals.revenue) }}{{ t('), Kredit') }} {{ summary_account.code }} {{ t('Ikhtisar Laba Rugi.') }}
                     </li>
                     <li>
-                        <strong>Entry 2 — Tutup Beban:</strong>
-                        Debit {{ summary_account.code }} Ikhtisar Laba Rugi ({{ money.format(totals.expense) }}),
-                        Kredit akun beban ({{ expense_rows.length }} akun).
+                        <strong>{{ t('Entry 2 — Tutup Beban:') }}</strong>
+                        {{ t('Debit') }} {{ summary_account.code }} {{ t('Ikhtisar Laba Rugi (') }}{{ money.format(totals.expense) }}{{ t('), Kredit akun beban (') }}{{ expense_rows.length }} {{ t('akun).') }}
                     </li>
                     <li>
-                        <strong>Entry 3 — Pindahkan Saldo ke Laba Ditahan:</strong>
-                        Saldo {{ summary_account.code }} ({{ money.format(Math.abs(totals.surplus)) }})
+                        <strong>{{ t('Entry 3 — Pindahkan Saldo ke Laba Ditahan:') }}</strong>
+                        {{ t('Saldo') }} {{ summary_account.code }} ({{ money.format(Math.abs(totals.surplus)) }})
                         {{ totals.surplus >= 0 ? 'dikreditkan ke' : 'di-debit dari' }}
-                        {{ retained_account.code }} Laba Ditahan.
+                        {{ retained_account.code }} {{ t('Laba Ditahan.') }}
                     </li>
                 </ol>
             </AppCard>
 
             <AppCard class="p-5">
                 <p class="text-xs text-on-surface-variant">
-                    <strong class="text-on-surface">Catatan:</strong> Jurnal ini adalah PREVIEW/SIMULASI yang
-                    di-generate otomatis dari saldo akun nominal per {{ t('31 Desember') }} {{ year }}. Jurnal sebenarnya akan
-                    di-posting oleh modul Tutup Buku (PeriodClose) jika administrator menjalankan proses tutup tahun.
+                    <strong class="text-on-surface">{{ t('Catatan:') }}</strong> {{ t('Jurnal ini adalah PREVIEW/SIMULASI yang di-generate otomatis dari saldo akun nominal per') }} {{ t('31 Desember') }} {{ year }}{{ t('. Jurnal sebenarnya akan di-posting oleh modul Tutup Buku (PeriodClose) jika administrator menjalankan proses tutup tahun.') }}
                 </p>
             </AppCard>
         </div>

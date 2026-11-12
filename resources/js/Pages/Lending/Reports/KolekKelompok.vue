@@ -78,9 +78,9 @@ const levelColumns = computed(() => {
         return props.levels;
     }
     return [
-        { level: 1, nama: 'Lancar', prosentase: 0.5, bucket_key: 'kolek1_lancar' },
-        { level: 2, nama: 'Diragukan', prosentase: 50, bucket_key: 'kolek2_diragukan' },
-        { level: 3, nama: 'Macet', prosentase: 100, bucket_key: 'kolek3_macet' },
+        { level: 1, nama: t('Lancar'), prosentase: 0.5, bucket_key: 'kolek1_lancar' },
+        { level: 2, nama: t('Diragukan'), prosentase: 50, bucket_key: 'kolek2_diragukan' },
+        { level: 3, nama: t('Macet'), prosentase: 100, bucket_key: 'kolek3_macet' },
     ];
 });
 
@@ -125,7 +125,7 @@ function kolekLabelDynamic(level) {
                     <span class="material-symbols-outlined text-base">rule</span>
                     <span>{{ t('Aturan kolek aktif:') }}</span>
                     <span v-for="lvl in levelColumns" :key="lvl.bucket_key" class="rounded-full bg-surface-variant/50 px-2 py-0.5">
-                        Tingkat {{ lvl.level }} - <strong>{{ lvl.nama }}</strong> (CKPN {{ lvl.prosentase }}%)
+                        {{ t('Tingkat') }} {{ lvl.level }} - <strong>{{ lvl.nama }}</strong> (CKPN {{ lvl.prosentase }}%)
                     </span>
                     <a href="/settings/sop?tab=kolek" class="ml-auto text-xs font-bold text-primary hover:underline">{{ t('Ubah aturan') }}</a>
                 </div>
@@ -200,12 +200,12 @@ function kolekLabelDynamic(level) {
                                     </td>
                                 </tr>
                                 <tr class="bg-surface-variant/20 font-semibold">
-                                    <td colspan="2" class="p-2.5">Subtotal {{ v.village_name }}</td>
+                                    <td colspan="2" class="p-2.5">{{ t('Subtotal') }} {{ v.village_name }}</td>
                                     <td class="p-2.5 text-right">{{ formatMoney(v.subtotal.alokasi) }}</td>
                                     <td class="p-2.5 text-right text-primary">{{ formatMoney(v.subtotal.saldo) }}</td>
                                     <td class="border-l border-outline-variant/20 p-2.5 text-right">{{ formatMoney(v.subtotal.tunggakan_pokok) }}</td>
                                     <td class="p-2.5 text-right">{{ formatMoney(v.subtotal.tunggakan_jasa) }}</td>
-                                    <td class="border-l border-outline-variant/20 p-2.5 text-center">{{ v.subtotal.peminjam_count }} pinjaman</td>
+                                    <td class="border-l border-outline-variant/20 p-2.5 text-center">{{ v.subtotal.peminjam_count }} {{ t('pinjaman') }}</td>
                                 </tr>
                             </template>
                         </tbody>
@@ -220,7 +220,7 @@ function kolekLabelDynamic(level) {
                                 <td class="p-3 text-right" :class="prod.totals.tunggakan_jasa > 0 ? 'text-error' : ''">
                                     {{ formatMoney(prod.totals.tunggakan_jasa) }}
                                 </td>
-                                <td class="border-l border-outline-variant/20 p-3 text-center">{{ prod.totals.peminjam_count }} pinjaman</td>
+                                <td class="border-l border-outline-variant/20 p-3 text-center">{{ prod.totals.peminjam_count }} {{ t('pinjaman') }}</td>
                             </tr>
                         </tfoot>
                     </table>

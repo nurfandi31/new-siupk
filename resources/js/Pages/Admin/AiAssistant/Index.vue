@@ -860,7 +860,7 @@ onBeforeUnmount(() => {
                                         <div class="flex items-center justify-end gap-1">
                                             <AppIconButton name="edit" size="sm" :tooltip="t('Edit')" @click="openEditPersona(p)" />
                                             <AppIconButton v-if="!p.is_default" name="star" size="sm" :tooltip="t('Set as default')" @click="togglePersona(p, 'is_default')" />
-                                            <AppIconButton :name="p.is_active ? 'toggle_on' : 'toggle_off'" size="sm" :tooltip="p.is_active ? 'Nonaktifkan' : 'Aktifkan'" @click="togglePersona(p, 'is_active')" />
+                                            <AppIconButton :name="p.is_active ? 'toggle_on' : 'toggle_off'" size="sm" :tooltip="p.is_active ? t('Nonaktifkan') : t('Aktifkan')" @click="togglePersona(p, 'is_active')" />
                                             <AppIconButton v-if="!p.is_default" name="delete" size="sm" tone="danger" :tooltip="t('Hapus')" @click="deletePersona(p)" />
                                         </div>
                                     </td>
@@ -877,7 +877,7 @@ onBeforeUnmount(() => {
                     <header class="mb-4 flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <h2 class="text-lg font-bold text-primary">{{ t('Tool Registry & Sinkronisasi') }}</h2>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">Tools ter-register via <code class="rounded bg-surface-container px-1 py-0.5 text-xs">ToolHandler</code>. Sync dari codebase untuk materialisasi DB row.</p>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Tools ter-register via') }} <code class="rounded bg-surface-container px-1 py-0.5 text-xs">ToolHandler</code>{{ t('. Sync dari codebase untuk materialisasi DB row.') }}</p>
                         </div>
                         <AppButton icon="sync" :loading="toolSyncing" @click="syncTools">{{ t('Sinkronkan dari Registry') }}</AppButton>
                     </header>
@@ -898,37 +898,37 @@ onBeforeUnmount(() => {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-outline-variant bg-surface">
-                                <tr v-for="t in tools" :key="t.id" class="hover:bg-surface-container-lowest">
+                                <tr v-for="tool in tools" :key="tool.id" class="hover:bg-surface-container-lowest">
                                     <td class="px-4 py-3">
-                                        <p class="font-mono text-xs font-bold text-primary">{{ t.name }}</p>
-                                        <p class="mt-0.5 line-clamp-1 text-xs text-on-surface-variant">{{ t.description }}</p>
+                                        <p class="font-mono text-xs font-bold text-primary">{{ tool.name }}</p>
+                                        <p class="mt-0.5 line-clamp-1 text-xs text-on-surface-variant">{{ tool.description }}</p>
                                     </td>
                                     <td class="px-4 py-3 text-center">
-                                        <AppBadge :tone="t.is_registered ? 'success' : 'warning'">
-                                            {{ t.is_registered ? t('Terdaftar') : t('Tertinggal') }}
+                                        <AppBadge :tone="tool.is_registered ? 'success' : 'warning'">
+                                            {{ tool.is_registered ? t('Terdaftar') : t('Tertinggal') }}
                                         </AppBadge>
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <AppIconButton
                                             size="sm"
-                                            :tone="t.requires_confirmation ? 'warning' : 'neutral'"
-                                            :name="t.requires_confirmation ? 'lock' : 'lock_open'"
-                                            :tooltip="t.requires_confirmation ? 'Wajib konfirmasi' : 'Tanpa konfirmasi'"
-                                            @click="toggleTool(t, 'requires_confirmation')"
+                                            :tone="tool.requires_confirmation ? 'warning' : 'neutral'"
+                                            :name="tool.requires_confirmation ? 'lock' : 'lock_open'"
+                                            :tooltip="tool.requires_confirmation ? t('Wajib konfirmasi') : t('Tanpa konfirmasi')"
+                                            @click="toggleTool(tool, 'requires_confirmation')"
                                         />
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <AppIconButton
                                             size="sm"
-                                            :tone="t.is_active ? 'success' : 'neutral'"
-                                            :name="t.is_active ? 'toggle_on' : 'toggle_off'"
-                                            :tooltip="t.is_active ? 'Aktif' : 'Nonaktif'"
-                                            @click="toggleTool(t, 'is_active')"
+                                            :tone="tool.is_active ? 'success' : 'neutral'"
+                                            :name="tool.is_active ? 'toggle_on' : 'toggle_off'"
+                                            :tooltip="tool.is_active ? t('Aktif') : t('Nonaktif')"
+                                            @click="toggleTool(tool, 'is_active')"
                                         />
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="flex items-center justify-end gap-1">
-                                            <AppIconButton size="sm" name="info" :tooltip="t('Detail')" @click="openToolDetail(t)" />
+                                            <AppIconButton size="sm" name="info" :tooltip="t('Detail')" @click="openToolDetail(tool)" />
                                         </div>
                                     </td>
                                 </tr>
@@ -968,13 +968,13 @@ onBeforeUnmount(() => {
                             >
                                 <AppIcon name="upload_file" class="text-2xl text-on-surface-variant" />
                                 <p class="text-sm text-on-surface-variant">
-                                    <span class="font-semibold text-primary">{{ t('Klik untuk pilih') }}</span> atau drop file di sini
+                                    <span class="font-semibold text-primary">{{ t('Klik untuk pilih') }}</span> {{ t('atau drop file di sini') }}
                                 </p>
                                 <p class="text-xs text-on-surface-variant">{{ t('PDF / DOCX / MD / HTML / TXT — maks 20 MB') }}</p>
                                 <input type="file" class="hidden" accept=".pdf,.docx,.md,.markdown,.html,.htm,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/html" @change="onUploadFile">
                             </label>
                             <p v-if="uploadFileName" class="mt-2 text-xs text-on-surface-variant">
-                                Dipilih: <span class="font-semibold">{{ uploadFileName }}</span>
+                                {{ t('Dipilih:') }} <span class="font-semibold">{{ uploadFileName }}</span>
                             </p>
                         </div>
                         <p v-if="uploadResult" class="text-xs" :class="uploadResult.ok ? 'text-success' : 'text-error'">{{ uploadResult.message }}</p>
@@ -988,7 +988,7 @@ onBeforeUnmount(() => {
                     <header class="mb-4 flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <h2 class="text-lg font-bold text-primary">{{ t('Dokumen Terupload') }}</h2>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">Total {{ docs.items.length }} dokumen aktif.</p>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ t('Total') }} {{ docs.items.length }} {{ t('dokumen aktif.') }}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <SmartSelect v-model="uploadForm.persona_id" :options="kbPersonaOptions" :placeholder="t('Semua persona')" hide-label class="min-w-44" />
@@ -1181,7 +1181,7 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- Person modal -->
-            <AppModal v-model="personaModal.open" :title="personaModal.mode === 'create' ? 'Buat Persona' : 'Edit Persona'" size="lg">
+            <AppModal v-model="personaModal.open" :title="personaModal.mode === 'create' ? t('Buat Persona') : t('Edit Persona')" size="lg">
                 <div class="space-y-4">
                     <AppInput v-model="personaModal.data.name" :label="t('Nama')" :placeholder="t('Masukkan nama')" />
                     <AppInput v-model="personaModal.data.slug" :label="t('Slug')" :placeholder="t('Masukkan slug')" />
@@ -1189,22 +1189,22 @@ onBeforeUnmount(() => {
                     <div class="space-y-1.5">
                         <label class="ml-1 block text-sm font-bold uppercase tracking-wider text-primary">Tool Scope (kosongkan = semua tools)</label>
                         <div class="grid max-h-56 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-3 sm:grid-cols-2">
-                            <label v-for="t in tools" :key="t.id" class="flex items-start gap-2 rounded-lg p-2 hover:bg-surface-container-low">
+                            <label v-for="tool in tools" :key="tool.id" class="flex items-start gap-2 rounded-lg p-2 hover:bg-surface-container-low">
                                 <AppCheckbox
                                     class="mt-1"
-                                    :value="t.id"
-                                    :model-value="personaModal.data.tool_ids.includes(t.id)"
+                                    :value="tool.id"
+                                    :model-value="personaModal.data.tool_ids.includes(tool.id)"
                                     @update:model-value="(checked) => {
-                                        if (checked && !personaModal.data.tool_ids.includes(t.id)) {
-                                            personaModal.data.tool_ids.push(t.id);
+                                        if (checked && !personaModal.data.tool_ids.includes(tool.id)) {
+                                            personaModal.data.tool_ids.push(tool.id);
                                         } else if (!checked) {
-                                            personaModal.data.tool_ids = personaModal.data.tool_ids.filter((id) => id !== t.id);
+                                            personaModal.data.tool_ids = personaModal.data.tool_ids.filter((id) => id !== tool.id);
                                         }
                                     }"
                                 />
                                 <div class="min-w-0 flex-1">
-                                    <p class="truncate font-mono text-xs font-bold text-primary">{{ t.name }}</p>
-                                    <p class="mt-0.5 line-clamp-1 text-xs text-on-surface-variant">{{ t.description }}</p>
+                                    <p class="truncate font-mono text-xs font-bold text-primary">{{ tool.name }}</p>
+                                    <p class="mt-0.5 line-clamp-1 text-xs text-on-surface-variant">{{ tool.description }}</p>
                                 </div>
                             </label>
                         </div>
@@ -1261,11 +1261,11 @@ onBeforeUnmount(() => {
                         </div>
                     </div>
                     <div>
-                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Chunks ({{ docModal.doc.chunks.length }})</p>
+                        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Chunks (') }}{{ docModal.doc.chunks.length }})</p>
                         <div class="mt-2 max-h-96 space-y-2 overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-3">
                             <div v-for="chunk in docModal.doc.chunks" :key="chunk.id" class="rounded-lg border border-outline-variant bg-surface p-3">
                                 <div class="flex items-center justify-between text-xs text-on-surface-variant">
-                                    <span>Chunk #{{ chunk.chunk_index }}</span>
+                                    <span>{{ t('Chunk #') }}{{ chunk.chunk_index }}</span>
                                     <AppBadge :tone="chunk.has_embedding ? 'success' : 'warning'">{{ chunk.has_embedding ? t('Embedded') : t('Pending') }}</AppBadge>
                                 </div>
                                 <p class="mt-2 whitespace-pre-wrap text-xs">{{ chunk.chunk_text }}</p>

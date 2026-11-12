@@ -24,11 +24,11 @@ const props = defineProps({
 
 const purposeLabels = {
     subscription: 'Langganan / perpanjangan aplikasi',
-    setup: 'Biaya setup / onboarding',
-    support: 'Dukungan / maintenance',
-    training: 'Pelatihan',
-    custom_dev: 'Pengembangan custom',
-    other: 'Lainnya',
+    setup: t('Biaya setup / onboarding'),
+    support: t('Dukungan / maintenance'),
+    training: t('Pelatihan'),
+    custom_dev: t('Pengembangan custom'),
+    other: t('Lainnya'),
 };
 
 // Selected channel state
@@ -98,16 +98,16 @@ function tone(status) {
 
 function statusLabel(status) {
     return ({
-        issued: 'Belum dibayar',
-        partially_paid: 'Sebagian',
-        paid: 'Lunas',
-        overdue: 'Terlambat',
-        void: 'Dibatalkan',
-        draft: 'Draft',
-        pending: 'Menunggu Pembayaran',
-        failed: 'Gagal',
+        issued: t('Belum dibayar'),
+        partially_paid: t('Sebagian'),
+        paid: t('Lunas'),
+        overdue: t('Terlambat'),
+        void: t('Dibatalkan'),
+        draft: t('Draft'),
+        pending: t('Menunggu Pembayaran'),
+        failed: t('Gagal'),
         expired: 'Kedaluwarsa',
-        cancelled: 'Dibatalkan',
+        cancelled: t('Dibatalkan'),
     })[status] || status;
 }
 
@@ -134,7 +134,7 @@ function methodLabel(payment) {
                     </div>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         {{ purposeLabels[invoice.purpose] || invoice.purpose || 'Tagihan' }}
-                        · Jatuh tempo: <strong>{{ invoice.due_at || '—' }}</strong>
+                        {{ t('· Jatuh tempo:') }} <strong>{{ invoice.due_at || '—' }}</strong>
                         <span v-if="invoice.subscription"> {{ t('· Paket:') }} {{ invoice.subscription.plan?.name }}</span>
                     </p>
                 </div>
@@ -192,7 +192,7 @@ function methodLabel(payment) {
                                 <p class="font-bold text-primary">{{ t('Cara Pembayaran QRIS:') }}</p>
                                 <ol class="list-decimal pl-4 space-y-1">
                                     <li>{{ t('Buka aplikasi m-Banking (BCA, Mandiri, BRI, BNI, dll.) atau e-Wallet (GoPay, OVO, Dana, ShopeePay).') }}</li>
-                                    <li>Pilih menu <strong>Scan / Bayar QRIS</strong>.</li>
+                                    <li>{{ t('Pilih menu') }} <strong>{{ t('Scan / Bayar QRIS') }}</strong>.</li>
                                     <li>{{ t('Arahkan kamera ke kode QR di layar ini.') }}</li>
                                     <li>{{ t('Periksa nama merchant dan nominal, lalu masukkan PIN Anda.') }}</li>
                                 </ol>
@@ -399,7 +399,7 @@ function methodLabel(payment) {
                         <div>
                             <h2 class="text-xl font-bold text-secondary">{{ t('Tagihan Telah Lunas') }}</h2>
                             <p class="text-sm text-on-secondary-container">
-                                Pembayaran telah diterima{{ invoice.paid_at ? ` pada ${invoice.paid_at}` : '' }}. Masa langganan aktif.
+                                {{ t('Pembayaran telah diterima') }}{{ invoice.paid_at ? ` pada ${invoice.paid_at}` : '' }}{{ t('. Masa langganan aktif.') }}
                             </p>
                         </div>
                     </div>

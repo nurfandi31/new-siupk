@@ -133,7 +133,7 @@ function formatDateTime(value: string | null): string {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Catatan Pengawas') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ period.period_label }} · Catatan & rekomendasi kinerja lembaga
+                        {{ period.period_label }} {{ t('· Catatan & rekomendasi kinerja lembaga') }}
                     </p>
                 </div>
                 <AppButton
@@ -183,7 +183,7 @@ function formatDateTime(value: string | null): string {
             <AppCard class="overflow-hidden p-0">
                 <div class="flex items-center justify-between border-b border-outline-variant/40 bg-surface-container-low px-4 py-3 text-sm">
                     <div>
-                        <p class="font-bold text-primary">{{ totalCount }} catatan</p>
+                        <p class="font-bold text-primary">{{ totalCount }} {{ t('catatan') }}</p>
                         <p class="text-xs text-on-surface-variant">
                             {{ t('Daftar catatan pengawas sesuai filter') }}
                         </p>
@@ -280,8 +280,8 @@ function formatDateTime(value: string | null): string {
                     class="flex items-center justify-between border-t border-outline-variant/40 px-4 py-3 text-xs"
                 >
                     <p class="text-on-surface-variant">
-                        Halaman {{ paginator.page }} dari {{ paginator.last_page }}
-                        ({{ paginator.total }} catatan)
+                        {{ t('Halaman') }} {{ paginator.page }} {{ t('dari') }} {{ paginator.last_page }}
+                        ({{ paginator.total }} {{ t('catatan)') }}
                     </p>
                     <div class="flex gap-2">
                         <button
@@ -309,7 +309,7 @@ function formatDateTime(value: string | null): string {
                     <h2 class="text-sm font-bold uppercase tracking-wide text-on-surface-variant">
                         {{ t('Laporan disetujui pengawas') }}
                     </h2>
-                    <span class="text-xs text-on-surface-variant">{{ reports.length }} laporan</span>
+                    <span class="text-xs text-on-surface-variant">{{ reports.length }} {{ t('laporan') }}</span>
                 </div>
 
                 <div v-if="reports.length === 0" class="rounded-lg border border-dashed border-outline-variant p-4 text-center text-sm text-on-surface-variant">

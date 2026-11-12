@@ -63,7 +63,7 @@ function onAccountChange() {
             <div>
                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
                 <h1 class="mt-1 text-2xl font-bold text-primary">
-                    Buku Besar
+                    {{ t('Buku Besar') }}
                     <span v-if="account" class="text-lg font-semibold text-on-surface-variant">— {{ account.name }}</span>
                 </h1>
                 <p class="text-sm text-on-surface-variant">

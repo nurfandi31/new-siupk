@@ -62,7 +62,7 @@ async function destroy() {
                     <p class="text-xl font-bold text-primary">{{ formatMoney(asset.accumulated_depreciation) }}</p>
                 </div>
                 <div class="rounded-xl bg-surface-container-low px-4 py-3">
-                    <p class="text-xs text-on-surface-variant">Nilai buku per {{ as_of }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Nilai buku per') }} {{ as_of }}</p>
                     <p class="text-xl font-bold text-primary">{{ formatMoney(asset.book_value) }}</p>
                 </div>
             </div>
@@ -85,8 +85,8 @@ async function destroy() {
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-on-surface-variant">Umur s.d. {{ as_of }}</dt>
-                        <dd class="font-medium">{{ asset.age_months }} bulan · susut/bln {{ formatMoney(asset.monthly_depreciation) }}</dd>
+                        <dt class="text-on-surface-variant">{{ t('Umur s.d.') }} {{ as_of }}</dt>
+                        <dd class="font-medium">{{ asset.age_months }} {{ t('bulan · susut/bln') }} {{ formatMoney(asset.monthly_depreciation) }}</dd>
                     </div>
                     <div>
                         <dt class="text-on-surface-variant">{{ t('Unit / desa') }}</dt>

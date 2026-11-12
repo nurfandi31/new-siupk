@@ -52,7 +52,7 @@ defineProps({
                             v-if="backHref"
                             :href="backHref"
                             class="inline-flex size-9 items-center justify-center rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary"
-                            :aria-label="backLabel"
+                            :aria-label="t(backLabel)"
                         >
                             <AppIcon name="arrow_back" class="text-lg" />
                         </Link>

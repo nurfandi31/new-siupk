@@ -28,12 +28,12 @@ const columns = [
 ];
 
 const purposeLabels = {
-    subscription: 'Langganan',
+    subscription: t('Langganan'),
     setup: 'Setup',
     support: 'Support',
-    training: 'Pelatihan',
+    training: t('Pelatihan'),
     custom_dev: 'Custom',
-    other: 'Lainnya',
+    other: t('Lainnya'),
 };
 
 const statusOptions = [
@@ -68,12 +68,12 @@ function tone(status) {
 
 function statusLabel(status) {
     return ({
-        issued: 'Belum dibayar',
-        partially_paid: 'Sebagian',
-        paid: 'Lunas',
-        overdue: 'Terlambat',
-        void: 'Dibatalkan',
-        draft: 'Draft',
+        issued: t('Belum dibayar'),
+        partially_paid: t('Sebagian'),
+        paid: t('Lunas'),
+        overdue: t('Terlambat'),
+        void: t('Dibatalkan'),
+        draft: t('Draft'),
     })[status] || status;
 }
 </script>
@@ -115,7 +115,7 @@ function statusLabel(status) {
                         <template #cell-amount="{ row }">
                             <span class="font-semibold text-primary">{{ money(row.amount, row.currency) }}</span>
                             <span v-if="Number(row.remaining) > 0 && row.status !== 'paid'" class="block text-xs text-on-surface-variant">
-                                Sisa {{ money(row.remaining, row.currency) }}
+                                {{ t('Sisa') }} {{ money(row.remaining, row.currency) }}
                             </span>
                         </template>
                         <template #cell-status="{ row }">

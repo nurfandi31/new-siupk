@@ -81,7 +81,7 @@ const pdfUrl = computed(() => {
 </script>
 
 <template>
-    <Head :title="isIndividu ? 'LPP Rekap Desa Individu' : 'LPP Rekap Desa'" />
+    <Head :title="isIndividu ? t('LPP Rekap Desa Individu') : t('LPP Rekap Desa')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4">
@@ -91,8 +91,7 @@ const pdfUrl = computed(() => {
                         {{ isIndividu ? t('LPP Rekap Desa Individu') : t('LPP Rekap per Desa') }}
                     </h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Daftar perkembangan piutang {{ isIndividu ? 'individu' : '' }} rekapitulasi desa
-                        (Target, Realisasi, Saldo, dan Tunggakan)
+                        {{ t('Daftar perkembangan piutang') }} {{ isIndividu ? 'individu' : '' }} {{ t('rekapitulasi desa (Target, Realisasi, Saldo, dan Tunggakan)') }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -126,7 +125,7 @@ const pdfUrl = computed(() => {
                         {{ prod.product_name }} ({{ prod.product_code }})
                     </h2>
                     <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
-                        {{ prod.villages.length }} Desa Terdata
+                        {{ prod.villages.length }} {{ t('Desa Terdata') }}
                     </span>
                 </div>
 

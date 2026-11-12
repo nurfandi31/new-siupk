@@ -273,7 +273,7 @@ const trustItems = [
 
             <!-- Footer -->
             <footer class="shrink-0 border-t border-outline-variant/40 px-4 py-3 text-center text-[11px] text-outline sm:px-6">
-                &copy; {{ new Date().getFullYear() }} siupk Next &mdash; {{ t('Sistem Informasi Unit Pengelola Kegiatan') }}
+                &copy; {{ new Date().getFullYear() }} {{ t('siupk Next —') }} {{ t('Sistem Informasi Unit Pengelola Kegiatan') }}
             </footer>
         </section>
     </main>

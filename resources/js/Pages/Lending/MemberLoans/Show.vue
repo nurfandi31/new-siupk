@@ -38,16 +38,16 @@ function can(action) { return Boolean((props.can ?? {})[action]); }
 
 const statusLabel = computed(() => {
     const map = {
-        draft: 'Proposal',
+        draft: t('Proposal'),
         verified: 'Terverifikasi',
-        waiting: 'Menunggu Pencairan',
-        approved: 'Disetujui',
-        active: 'Aktif',
+        waiting: t('Menunggu Pencairan'),
+        approved: t('Disetujui'),
+        active: t('Aktif'),
         disbursed: 'Dicairkan',
-        completed: 'Lunas',
-        written_off: 'Dihapusbukukan',
-        rescheduled: 'Reschedule',
-        rejected: 'Tidak Layak',
+        completed: t('Lunas'),
+        written_off: t('Dihapusbukukan'),
+        rescheduled: t('Reschedule'),
+        rejected: t('Tidak Layak'),
     };
     return map[props.loan.status] ?? props.loan.status;
 });
@@ -131,21 +131,21 @@ async function confirmDelete() {
 }
 
 const frequencyLabels = {
-    weekly: 'Mingguan',
-    biweekly: 'Dua Mingguan',
-    monthly: 'Bulanan',
-    bimonthly: 'Tiap 2 Bulan',
-    quarterly: 'Tiap 3 Bulan',
-    every_4_months: 'Tiap 4 Bulan',
-    every_5_months: 'Tiap 5 Bulan',
-    every_6_months: 'Tiap 6 Bulan',
-    every_12_months: 'Tiap 12 Bulan',
-    at_maturity: 'Sekaligus di Akhir',
+    weekly: t('Mingguan'),
+    biweekly: t('Dua Mingguan'),
+    monthly: t('Bulanan'),
+    bimonthly: t('Tiap 2 Bulan'),
+    quarterly: t('Tiap 3 Bulan'),
+    every_4_months: t('Tiap 4 Bulan'),
+    every_5_months: t('Tiap 5 Bulan'),
+    every_6_months: t('Tiap 6 Bulan'),
+    every_12_months: t('Tiap 12 Bulan'),
+    at_maturity: t('Sekaligus di Akhir'),
 };
 
 const installmentMethodLabels = {
-    flat: 'Flat',
-    annuity: 'Anuitas',
+    flat: t('Flat'),
+    annuity: t('Anuitas'),
     effective: 'Efektif Menurun',
     declining: 'Menurun',
 };
@@ -192,7 +192,7 @@ const statCards = computed(() => [
     {
         key: 'remaining',
         label: t('Sisa Pokok'),
-        eyebrow: props.loan.principal_remaining > 0 ? 'Belum tertagih' : 'Selesai',
+        eyebrow: props.loan.principal_remaining > 0 ? t('Belum tertagih') : t('Selesai'),
         icon: props.loan.principal_remaining > 0 ? 'account_balance_wallet' : 'task_alt',
         iconBg: props.loan.principal_remaining > 0
             ? 'bg-tertiary-fixed/40 text-tertiary-deep'
@@ -219,12 +219,12 @@ const statCards = computed(() => [
         iconBg: 'bg-secondary-container/40 text-secondary',
         accent: 'secondary',
         value: `${paidInstallments} / ${totalInstallments}`,
-        suffix: paidInstallments === 1 ? 'angsuran' : 'angsuran',
+        suffix: paidInstallments === 1 ? t('angsuran') : t('angsuran'),
         sublabel: props.loan.next_due_date
             ? `Jatuh tempo berikutnya ${fDate(props.loan.next_due_date)}`
             : 'Tidak ada jadwal tersisa',
         progress: progressPercent,
-        progressLabel: 'Progress pelunasan',
+        progressLabel: t('Progress pelunasan'),
         progressClass: 'bg-secondary',
         footer: totalInstallments > 0
             ? `${Math.max(0, totalInstallments - paidInstallments)} angsuran tersisa`
@@ -250,7 +250,7 @@ const statCards = computed(() => [
         deltaClass: totalInterestDue - totalInterestPaid <= 0
             ? 'bg-emerald-500/15 text-emerald-700'
             : 'bg-primary-container/25 text-primary',
-        footer: 'Akumulasi jasa yang sudah dibayar',
+        footer: t('Akumulasi jasa yang sudah dibayar'),
         footerIcon: 'savings',
     },
     {
@@ -296,7 +296,7 @@ const FREQUENCY_OPTIONS = [
 ];
 
 // ===== Forms (form inline di tab Aksi, bukan popup) =====
-// State form & submit handler untuk form yang ditampilkan di section tab "Aksi".
+// State form & submit handler untuk form yang ditampilkan di section tab t('Aksi').
 const verifyForm = ref({
     verified_at: props.today,
     verification_amount: Number(props.loan.verification_amount ?? props.loan.principal_amount ?? 0),
@@ -590,7 +590,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                     </div>
                     <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-container/30 px-2.5 py-1 text-[11px] font-bold text-primary">
                         <AppIcon name="monitoring" class="text-[12px] leading-none" />
-                        <span>Live · {{ loan.installments?.length ?? 0 }} entri</span>
+                        <span>{{ t('Live ·') }} {{ loan.installments?.length ?? 0 }} {{ t('entri') }}</span>
                     </span>
                 </div>
 
@@ -628,7 +628,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                                 {{ fMoney(loanAmount) }}
                             </p>
                             <p class="mt-1 text-[11px] font-semibold text-on-surface-variant">
-                                IDR · {{ termMonths }} bulan · tingkat jasa {{ percent(serviceRate) }}
+                                IDR · {{ termMonths }} {{ t('bulan · tingkat jasa') }} {{ percent(serviceRate) }}
                             </p>
                         </div>
 
@@ -640,7 +640,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             </div>
                             <div class="min-w-0 rounded-lg bg-surface-container-low px-2 py-2 sm:px-2.5">
                                 <dt class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">{{ t('Jangka') }}</dt>
-                                <dd class="mt-0.5 text-[11px] font-bold text-on-surface">{{ termMonths }} bulan</dd>
+                                <dd class="mt-0.5 text-[11px] font-bold text-on-surface">{{ termMonths }} {{ t('bulan') }}</dd>
                             </div>
                             <div class="min-w-0 rounded-lg bg-surface-container-low px-2 py-2 sm:px-2.5">
                                 <dt class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant">{{ t('Tingkat Jasa') }}</dt>
@@ -712,7 +712,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         </div>
 
                         <p class="mt-auto pt-3 text-[11px] leading-snug text-on-surface-variant">
-                            {{ Math.max(0, totalInstallments - paidInstallments) }} angsuran tersisa · Berikutnya {{ props.loan.next_due_date ? fDate(props.loan.next_due_date) : '—' }}
+                            {{ Math.max(0, totalInstallments - paidInstallments) }} {{ t('angsuran tersisa · Berikutnya') }} {{ props.loan.next_due_date ? fDate(props.loan.next_due_date) : '—' }}
                         </p>
                     </article>
 
@@ -721,7 +721,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         <header class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
                                 <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-on-surface-variant">{{ t('Jasa Terbayar') }}</p>
-                                <p class="mt-0.5 text-[11px] font-semibold text-on-surface-variant/80">Total jasa {{ fMoney(totalInterestDue) }}</p>
+                                <p class="mt-0.5 text-[11px] font-semibold text-on-surface-variant/80">{{ t('Total jasa') }} {{ fMoney(totalInterestDue) }}</p>
                             </div>
                             <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-container/35 text-primary">
                                 <AppIcon name="percent" class="text-[15px] leading-none" />
@@ -780,7 +780,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                             </span>
                             <span v-if="(props.loan.principal_grace_months ?? 0) > 0 || (props.loan.interest_grace_months ?? 0) > 0" class="inline-flex items-center gap-1">
                                 <AppIcon name="hourglass_empty" class="text-[12px] leading-none text-on-surface-variant" />
-                                Grace · P{{ props.loan.principal_grace_months ?? 0 }} / J{{ props.loan.interest_grace_months ?? 0 }} bln
+                                {{ t('Grace · P') }}{{ props.loan.principal_grace_months ?? 0 }} / J{{ props.loan.interest_grace_months ?? 0 }} {{ t('bln') }}
                             </span>
                         </div>
                     </article>
@@ -890,7 +890,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                     <div class="flex flex-wrap items-center justify-between gap-2 px-4 pt-4 sm:px-6 sm:pt-6">
                         <div>
                             <h2 class="text-base font-bold text-on-surface">{{ t('Jadwal Angsuran') }}</h2>
-                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ loan.installments?.length ?? 0 }} entri angsuran · Sisa pokok {{ fMoney(loan.principal_remaining) }}</p>
+                            <p class="mt-0.5 text-xs text-on-surface-variant">{{ loan.installments?.length ?? 0 }} {{ t('entri angsuran · Sisa pokok') }} {{ fMoney(loan.principal_remaining) }}</p>
                         </div>
                     </div>
                 </template>
@@ -907,7 +907,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
                             <tr v-for="row in installmentRows" :key="row.installment_number">
-                                <td class="py-3 px-4 text-on-surface-variant">Angsuran #{{ row.installment_number }}</td>
+                                <td class="py-3 px-4 text-on-surface-variant">{{ t('Angsuran #') }}{{ row.installment_number }}</td>
                                 <td class="py-3 px-4 text-on-surface-variant">{{ fDate(row.due_date) }}</td>
                                 <td class="py-3 px-4 text-right text-on-surface">{{ fNumber(row.principal_due) }}</td>
                                 <td class="py-3 px-4 text-right text-on-surface">{{ fNumber(row.interest_due) }}</td>
@@ -928,7 +928,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                 <template #header>
                     <div class="px-4 pt-4 sm:px-6 sm:pt-6">
                         <h2 class="text-base font-bold text-on-surface">{{ t('Tabel Pembayaran') }}</h2>
-                        <p class="mt-0.5 text-xs text-on-surface-variant">{{ paymentRows.length }} kali pembayaran tercatat.</p>
+                        <p class="mt-0.5 text-xs text-on-surface-variant">{{ paymentRows.length }} {{ t('kali pembayaran tercatat.') }}</p>
                     </div>
                 </template>
                 <div class="overflow-x-auto rounded-b-xl">
@@ -995,7 +995,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                                 <td class="py-3 px-4 tabular-nums text-on-surface">{{ h.principal_amount !== null ? fNumber(h.principal_amount) : '—' }}</td>
                                 <td class="py-3 px-4 text-on-surface-variant">
                                     <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                                        <span v-if="h.term_months !== null"><AppIcon name="schedule" class="mr-1 text-sm align-middle" />{{ h.term_months }} bln</span>
+                                        <span v-if="h.term_months !== null"><AppIcon name="schedule" class="mr-1 text-sm align-middle" />{{ h.term_months }} {{ t('bln') }}</span>
                                         <span v-if="h.service_rate_total !== null"><AppIcon name="percent" class="mr-1 text-sm align-middle" />{{ percent(h.service_rate_total) }}</span>
                                         <span v-if="h.principal_frequency"><AppIcon name="autorenew" class="mr-1 text-sm align-middle" />{{ frequencyLabels[h.principal_frequency] ?? h.principal_frequency }}</span>
                                     </div>
@@ -1360,7 +1360,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         <div class="space-y-3 border-b border-outline-variant p-4">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Daftar Dokumen') }}</p>
-                                <span class="text-[10px] font-semibold text-on-surface-variant">{{ availableDocuments.length }} dokumen</span>
+                                <span class="text-[10px] font-semibold text-on-surface-variant">{{ availableDocuments.length }} {{ t('dokumen') }}</span>
                             </div>
                             <AppInput v-model="docSearch" type="search" icon="search" :label="t('Cari dokumen')" :hide-label="true" :placeholder="t('Cari dokumen...')" />
                         </div>
@@ -1398,7 +1398,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         <div v-if="activeDocument" class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-variant bg-surface px-4 py-3">
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-sm font-bold text-on-surface">{{ activeDocument.label }}</p>
-                                <p class="mt-0.5 text-[11px] text-on-surface-variant">PDF · Tahap {{ STAGE_META[activeDocument.stage].label }}</p>
+                                <p class="mt-0.5 text-[11px] text-on-surface-variant">{{ t('PDF · Tahap') }} {{ STAGE_META[activeDocument.stage].label }}</p>
                             </div>
                             <div class="flex shrink-0 items-center gap-1.5">
                                 <a :href="activeDocument.url" target="_blank" rel="noopener" class="inline-flex size-9 items-center justify-center rounded-lg border border-outline-variant bg-surface text-on-surface-variant transition hover:bg-surface-container-low hover:text-primary" :title="t('Buka di tab baru')" :aria-label="t('Buka di tab baru')">

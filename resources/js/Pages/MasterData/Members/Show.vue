@@ -91,8 +91,8 @@ function formatDate(v) {
     return new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
 }
 
-const statusLabels = { active: 'Aktif', exited: 'Keluar', deceased: 'Meninggal' };
-const genderLabels = { male: 'Laki-laki', female: 'Perempuan', L: 'Laki-laki', P: 'Perempuan' };
+const statusLabels = { active: t('Aktif'), exited: t('Sudah Keluar'), deceased: t('Meninggal') };
+const genderLabels = { male: t('Laki-laki'), female: t('Perempuan'), L: t('Laki-laki'), P: t('Perempuan') };
 
 const statusBadgeTone = computed(() => (props.member.status === 'active' ? 'success-soft' : 'neutral'));
 
@@ -106,14 +106,14 @@ const profileSections = computed(() => {
     fields.push(infoField('Tempat / Tgl Lahir', `${props.member.birth_place || '—'}${
         props.member.birth_date ? ` · ${formatDate(props.member.birth_date)}` : ''
     }`));
-    fields.push(infoField('No. HP', props.member.phone || '—', { mono: true }));
+    fields.push(infoField(t('No. HP'), props.member.phone || '—', { mono: true }));
     fields.push(infoField('No. KK', props.member.family_card_number || '—', { mono: true }));
-    fields.push(infoField('Desa', props.member.village?.name || '—'));
-    fields.push(infoField('Terdaftar', formatDate(props.member.registered_at)));
+    fields.push(infoField(t('Desa'), props.member.village?.name || '—'));
+    fields.push(infoField(t('Terdaftar'), formatDate(props.member.registered_at)));
     return fields;
 });
 
-const addressField = computed(() => infoField('Alamat', props.member.address || '—', { multiline: true }));
+const addressField = computed(() => infoField(t('Alamat'), props.member.address || '—', { multiline: true }));
 </script>
 
 <template>
@@ -202,7 +202,7 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                             {{ summary.loan_count }}
                             <span class="text-xs font-medium text-on-surface-variant">pinjaman</span>
                         </p>
-                        <p class="text-[11px] text-on-surface-variant">{{ summary.active_loan_count }} aktif</p>
+                        <p class="text-[11px] text-on-surface-variant">{{ summary.active_loan_count }} {{ t('aktif') }}</p>
                     </div>
                 </AppCard>
                 <AppCard class="flex items-center gap-3">
@@ -240,7 +240,7 @@ const addressField = computed(() => infoField('Alamat', props.member.address || 
                         <p class="text-xs text-on-surface-variant">{{ t('Rekening simpanan yang dimiliki anggota ini.') }}</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <AppBadge tone="primary-soft">{{ savings.accounts.length }} rekening</AppBadge>
+                        <AppBadge tone="primary-soft">{{ savings.accounts.length }} {{ t('rekening') }}</AppBadge>
                         <Link v-if="canManageSavings" :href="`/simpanan/create?member=${member.row_id}`" class="contents">
                             <AppButton variant="primary" icon="add" size="compact">
                                 {{ t('Buka Rekening') }}

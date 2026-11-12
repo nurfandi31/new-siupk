@@ -36,7 +36,7 @@ function formatMoney(v) {
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Laporan Arus Kas') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ period.period_label }} · metode langsung dari jurnal akun kas (1.1.01*)
+                        {{ period.period_label }} {{ t('· metode langsung dari jurnal akun kas (1.1.01*)') }}
                     </p>
                 </div>
                 <AppBadge :tone="reconciled ? 'success' : 'error'">
@@ -72,7 +72,7 @@ function formatMoney(v) {
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Saldo kas akhir') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(closing_cash) }}</p>
                     <p v-if="!reconciled" class="mt-1 text-xs text-error">
-                        Implied {{ formatMoney(implied_closing) }}
+                        {{ t('Implied') }} {{ formatMoney(implied_closing) }}
                     </p>
                 </AppCard>
             </div>
@@ -94,7 +94,7 @@ function formatMoney(v) {
 
                             <template v-for="section in sections" :key="section.key">
                                 <tr class="bg-surface-container-high font-semibold">
-                                    <td class="px-3 py-2" colspan="2">{{ section.label }}</td>
+                                    <td class="px-3 py-2" colspan="2">{{ t(section.label) }}</td>
                                 </tr>
                                 <tr v-if="section.lines.length === 0">
                                     <td class="px-3 py-1.5 pl-6 text-on-surface-variant" colspan="2">{{ t('Tidak ada mutasi') }}</td>
@@ -105,9 +105,9 @@ function formatMoney(v) {
                                     class="border-t border-outline-variant/30"
                                 >
                                     <td class="px-3 py-1.5 pl-6">
-                                        {{ line.label }}
+                                        {{ t(line.label) }}
                                         <span v-if="line.count > 1" class="text-xs text-on-surface-variant">
-                                            · {{ line.count }} jurnal
+                                            · {{ line.count }} {{ t('jurnal') }}
                                         </span>
                                     </td>
                                     <td
@@ -118,7 +118,7 @@ function formatMoney(v) {
                                     </td>
                                 </tr>
                                 <tr class="bg-surface-container-low text-sm font-semibold">
-                                    <td class="px-3 py-1.5">Jumlah {{ section.label.toLowerCase() }}</td>
+                                    <td class="px-3 py-1.5">{{ t('Jumlah') }} {{ t(section.label).toLowerCase() }}</td>
                                     <td
                                         class="px-3 py-1.5 text-right tabular-nums"
                                         :class="section.total < 0 ? 'text-error' : ''"
@@ -145,8 +145,7 @@ function formatMoney(v) {
                     </table>
                 </div>
                 <p class="border-t border-outline-variant/40 px-4 py-3 text-xs text-on-surface-variant">
-                    Klasifikasi dari lawan akun kas di tiap jurnal (operasi / investasi / pendanaan).
-                    Sumber pinjaman digabung ke operasi. Bukan salinan tabel mapping legacy.
+                    {{ t('Klasifikasi dari lawan akun kas di tiap jurnal (operasi / investasi / pendanaan). Sumber pinjaman digabung ke operasi. Bukan salinan tabel mapping legacy.') }}
                     <span v-if="cash_accounts.length">
                         {{ t('· Kas:') }}
                         <template v-for="(a, i) in cash_accounts" :key="a.row_id">

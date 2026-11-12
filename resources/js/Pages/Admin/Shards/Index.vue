@@ -74,7 +74,7 @@ function driverIcon(driver) {
                         <AppIcon name="storage" tone="primary" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold text-primary">
-                        {{ summary.active_shards }}<span class="text-sm font-medium text-on-surface-variant">/{{ summary.total_shards }} aktif</span>
+                        {{ summary.active_shards }}<span class="text-sm font-medium text-on-surface-variant">/{{ summary.total_shards }} {{ t('aktif') }}</span>
                     </p>
                 </AppCard>
 
@@ -93,7 +93,7 @@ function driverIcon(driver) {
                         <AppIcon name="check_circle" tone="success" container-size="9" container-shape="pill" />
                     </div>
                     <p class="mt-2 text-2xl font-extrabold text-secondary">{{ summary.runs_completed }}</p>
-                    <p v-if="summary.runs_failed > 0" class="mt-0.5 text-xs font-semibold text-error">{{ summary.runs_failed }} run gagal</p>
+                    <p v-if="summary.runs_failed > 0" class="mt-0.5 text-xs font-semibold text-error">{{ summary.runs_failed }} {{ t('run gagal') }}</p>
                     <p v-else class="mt-0.5 text-xs text-on-surface-variant">{{ t('Tidak ada run gagal') }}</p>
                 </AppCard>
 
@@ -118,7 +118,7 @@ function driverIcon(driver) {
                 </template>
 
                 <div v-if="!shards.length" class="rounded-lg bg-surface-container-low p-4 text-sm text-on-surface-variant">
-                    Belum ada shard terdaftar. Jalankan <code class="rounded bg-surface-container-lowest px-1 font-mono">php artisan app:bootstrap-local</code> untuk inisialisasi.
+                    {{ t('Belum ada shard terdaftar. Jalankan') }} <code class="rounded bg-surface-container-lowest px-1 font-mono">php artisan app:bootstrap-local</code> {{ t('untuk inisialisasi.') }}
                 </div>
                 <div v-else class="space-y-3">
                     <div v-for="shard in shards" :key="shard.row_id" class="rounded-lg border border-outline-variant p-4">
@@ -208,7 +208,7 @@ function driverIcon(driver) {
                         </AppBadge>
                     </template>
                     <template #cell-progress="{ row }">
-                        <span class="whitespace-nowrap tabular-nums text-on-surface">{{ row.steps_ok }}/{{ row.steps_total }} step</span>
+                        <span class="whitespace-nowrap tabular-nums text-on-surface">{{ row.steps_ok }}/{{ row.steps_total }} {{ t('step') }}</span>
                     </template>
                     <template #cell-status="{ row }">
                         <div class="space-y-0.5">

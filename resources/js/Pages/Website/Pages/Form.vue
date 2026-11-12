@@ -36,7 +36,7 @@ function submit() {
 </script>
 
 <template>
-    <Head :title="editing ? 'Edit Halaman' : 'Buat Halaman'" />
+    <Head :title="editing ? t('Edit Halaman') : t('Buat Halaman')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
             <header class="mb-6">

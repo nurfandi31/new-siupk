@@ -15,7 +15,7 @@ const html = computed(() => (props.block ? renderMarkdownHtml(props.block.markdo
 <template>
     <AppModal
         :open="block !== null"
-        :title="block?.title ?? 'Detail'"
+        :title="block?.title ?? t('Detail')"
         size="lg"
         @close="emit('close')"
     >

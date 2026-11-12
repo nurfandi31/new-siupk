@@ -90,7 +90,7 @@ function formatMoney(value) {
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Lending') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('LPP Rincian Individu') }}</h1>
-                    <p class="text-sm text-on-surface-variant">Periode {{ period_label }} — {{ identity.legal_name }}</p>
+                    <p class="text-sm text-on-surface-variant">{{ t('Periode') }} {{ period_label }} — {{ identity.legal_name }}</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <a :href="pdfUrl" target="_blank">

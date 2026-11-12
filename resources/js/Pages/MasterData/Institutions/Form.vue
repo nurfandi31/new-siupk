@@ -33,7 +33,7 @@ function submit() {
 </script>
 
 <template>
-    <Head :title="editing ? 'Edit Lembaga' : 'Tambah Lembaga'" />
+    <Head :title="editing ? t('Edit Lembaga') : t('Tambah Lembaga')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
             <header class="mb-6">

@@ -17,7 +17,7 @@ const logoutForm = useForm({});
 const avatarError = ref(false);
 
 function navLabel(label) {
-    if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : 'Beranda';
+    if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : t('Beranda');
     return t(label);
 }
 
@@ -28,7 +28,7 @@ const navigation = [
     { label: t('Laba Rugi'), icon: 'trending_up', href: '/province/reports/income-statement' },
     { label: t('Arus Kas'), icon: 'payments', href: '/province/reports/cash-flow' },
     { label: t('Perubahan Ekuitas'), icon: 'balance', href: '/province/reports/equity-changes' },
-    { label: 'CALK', icon: 'description', href: '/province/reports/calk' },
+    { label: t('CALK'), icon: 'description', href: '/province/reports/calk' },
 ];
 
 function isActive(item) {
@@ -86,7 +86,7 @@ function logout() {
 
             <div class="mt-4 border-t border-primary-container/40 px-4 pt-4">
                 <div class="flex min-w-0 items-center gap-3 rounded-xl bg-primary-container/50 p-3 shadow-inner shadow-black/20">
-                    <div class="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-sm font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'Provinsi'" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'P' }}</span></div>
+                    <div class="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-sm font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || t('Provinsi')" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'P' }}</span></div>
                     <div class="min-w-0 flex-1">
                         <p class="truncate font-bold text-on-primary">{{ user?.name || t('Supervisor') }}</p>
                         <p class="truncate text-xs text-primary-fixed-dim">{{ t('Level Provinsi') }}</p>

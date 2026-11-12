@@ -24,9 +24,9 @@ const baseUrl = '/province/reports/equity-changes';
         <div class="space-y-6">
             <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Laporan Perubahan Ekuitas Provinsi {{ province_name }}</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Laporan Perubahan Ekuitas Provinsi') }} {{ province_name }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Perubahan Modal dan Hasil Usaha Konsolidasi ({{ report.period?.period_label }}).
+                        {{ t('Perubahan Modal dan Hasil Usaha Konsolidasi (') }}{{ report.period?.period_label }}).
                     </p>
                 </div>
 

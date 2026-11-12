@@ -181,7 +181,7 @@ const formatDate = (v: string | null): string => {
                             <p class="text-xs text-on-surface-variant">{{ group.village_name || '—' }}</p>
                         </div>
                         <div class="text-right text-xs">
-                            <p><strong>{{ group.members.length }}</strong> pemanfaat</p>
+                            <p><strong>{{ group.members.length }}</strong> {{ t('pemanfaat') }}</p>
                             <p>{{ t('Alokasi:') }} <strong>{{ formatMoney(group.subtotal_alokasi) }}</strong></p>
                         </div>
                     </div>
@@ -212,7 +212,7 @@ const formatDate = (v: string | null): string => {
                         </tbody>
                         <tfoot class="bg-surface-variant/40 font-bold text-on-surface">
                             <tr class="border-t border-outline-variant/40">
-                                <td class="p-2.5" colspan="5">Subtotal {{ group.group_name }}</td>
+                                <td class="p-2.5" colspan="5">{{ t('Subtotal') }} {{ group.group_name }}</td>
                                 <td class="p-2.5 text-right">{{ formatMoney(group.subtotal_alokasi) }}</td>
                                 <td class="p-2.5 text-right" :class="group.subtotal_tunggakan_pokok > 0 ? 'text-error' : ''">{{ formatMoney(group.subtotal_tunggakan_pokok) }}</td>
                                 <td class="p-2.5 text-right" :class="group.subtotal_tunggakan_jasa > 0 ? 'text-error' : ''">{{ formatMoney(group.subtotal_tunggakan_jasa) }}</td>

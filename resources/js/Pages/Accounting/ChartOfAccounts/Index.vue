@@ -166,7 +166,7 @@ watch([type, status], () => {
                     </table>
                 </div>
                 <p class="border-t border-outline-variant/20 px-4 py-3 text-xs text-on-surface-variant">
-                    {{ rows.length }} baris ditampilkan
+                    {{ rows.length }} {{ t('baris ditampilkan') }}
                     <span v-if="filters.q || filters.type || filters.status !== 'all'"> {{ t('(terfilter)') }}</span>.
                 </p>
             </AppCard>

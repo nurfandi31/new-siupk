@@ -158,7 +158,7 @@ function collectibilityTone(code: string): string {
                         {{ t('Daftar Rincian Pinjaman Aktif') }}
                     </h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Pinjaman aktif (status active/disbursed) yang dicairkan pada periode
+                        {{ t('Pinjaman aktif (status active/disbursed) yang dicairkan pada periode') }}
                         <span class="font-semibold text-primary">{{ period_label }}</span>
                         — {{ identity.legal_name }}
                     </p>

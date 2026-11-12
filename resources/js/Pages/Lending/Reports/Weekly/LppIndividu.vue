@@ -179,10 +179,10 @@ function asLoanRow(r: Record<string, unknown>): LoanRow {
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div class="text-sm">
                         <span class="font-bold text-primary">{{ t('Periode Mingguan Aktif:') }}</span>
-                        <span class="text-on-surface">Minggu ke-{{ week }} • {{ week_start }} s.d. {{ week_end }}</span>
+                        <span class="text-on-surface">{{ t('Minggu ke-') }}{{ week }} • {{ week_start }} s.d. {{ week_end }}</span>
                     </div>
                     <div class="text-xs text-on-surface-variant">
-                        Subjek: <span class="font-semibold text-primary">{{ t('Individu') }}</span>
+                        {{ t('Subjek:') }} <span class="font-semibold text-primary">{{ t('Individu') }}</span>
                     </div>
                 </div>
             </AppCard>

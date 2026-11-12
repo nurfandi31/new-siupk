@@ -136,7 +136,7 @@ onUnmounted(() => {
 });
 
 const tenantName = computed(() => {
-    return page.props.tenant?.name || page.props.unitName || 'siupk Next Desktop';
+    return page.props.tenant?.name || page.props.unitName || t('siupk Next Desktop');
 });
 </script>
 
@@ -226,8 +226,8 @@ const tenantName = computed(() => {
             <button
                 type="button"
                 class="flex w-10 items-center justify-center text-slate-400 transition hover:bg-slate-800 hover:text-white"
-                :title="isMaximized ? 'Restore' : 'Maximize'"
-                :aria-label="isMaximized ? 'Restore' : 'Maximize'"
+                :title="isMaximized ? t('Restore') : t('Maximize')"
+                :aria-label="isMaximized ? t('Restore') : t('Maximize')"
                 :disabled="isClosing"
                 @click="handleMaximize"
             >

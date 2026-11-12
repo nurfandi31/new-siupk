@@ -10,12 +10,12 @@ const showSplash = ref(false);
 const showExit = ref(false);
 const splashProgress = ref(15);
 const splashStatus = ref('Memuat modul sistem...');
-const exitStatus = ref('Menyimpan sesi & mengamankan data...');
+const exitStatus = ref(t('Menyimpan sesi & mengamankan data...'));
 
 let progressInterval = null;
 
 const tenantName = computed(() => {
-    return page.props.tenant?.name || page.props.unitName || 'siupk Next';
+    return page.props.tenant?.name || page.props.unitName || t('siupk Next');
 });
 
 function triggerExitScreen(detail = {}) {

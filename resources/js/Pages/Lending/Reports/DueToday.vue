@@ -108,7 +108,7 @@ const excelHref = computed<string>(() => {
 
 function statusLabel(s: string): string {
     if (s === 'pending') return 'Belum Bayar';
-    if (s === 'partial') return 'Sebagian';
+    if (s === 'partial') return t('Sebagian');
     return s;
 }
 </script>
@@ -149,7 +149,7 @@ function statusLabel(s: string): string {
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Angsuran') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ formatMoney(totals.total_due) }}</p>
-                    <p class="text-xs text-on-surface-variant">{{ totals.count }} angsuran · {{ totals.loan_count }} pinjaman</p>
+                    <p class="text-xs text-on-surface-variant">{{ totals.count }} {{ t('angsuran ·') }} {{ totals.loan_count }} {{ t('pinjaman') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pokok Jatuh Tempo') }}</p>
@@ -236,7 +236,7 @@ function statusLabel(s: string): string {
                         </tbody>
                         <tfoot v-if="rows.length > 0">
                             <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                <td class="px-3 py-2" colspan="8">TOTAL ({{ totals.count }} angsuran · {{ totals.loan_count }} pinjaman)</td>
+                                <td class="px-3 py-2" colspan="8">TOTAL ({{ totals.count }} {{ t('angsuran ·') }} {{ totals.loan_count }} {{ t('pinjaman)') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.principal_due) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.interest_due) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.penalty_due) }}</td>

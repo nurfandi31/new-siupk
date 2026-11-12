@@ -29,12 +29,12 @@ const columns = [
 ];
 
 const purposeLabels = {
-    subscription: 'Langganan',
+    subscription: t('Langganan'),
     setup: 'Setup',
     support: 'Support',
-    training: 'Pelatihan',
+    training: t('Pelatihan'),
     custom_dev: 'Custom',
-    other: 'Lainnya',
+    other: t('Lainnya'),
 };
 
 const statusOptions = [

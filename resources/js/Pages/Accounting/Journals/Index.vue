@@ -148,8 +148,10 @@ watch([from, to, source], () => {
 
 const sourceLabel = computed(() => {
     const map = Object.fromEntries(props.sourceOptions.map((o) => [o.value, o.label]));
-    return (value) => map[value] || value || '—';
+    return (value) => t(map[value] || value || '—');
 });
+
+const localizedSourceOptions = computed(() => props.sourceOptions.map((option) => ({ ...option, label: t(option.label) })));
 
 const pageStart = computed(() => {
     if (props.pagination.total === 0) return 0;
@@ -288,7 +290,7 @@ function submitBulkReverse() {
                         v-model="activeQuickRange"
                         :items="[
                             ...quickRanges.map((r) => ({ value: r.value, label: r.label })),
-                            { value: 'custom', label: 'Kustom', disabled: true },
+                            { value: 'custom', label: t('Kustom'), disabled: true },
                         ]"
                         variant="outline"
                         size="compact"
@@ -300,7 +302,7 @@ function submitBulkReverse() {
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <AppDatePicker v-model="from" mode="date" :label="t('Dari tanggal')" />
                     <AppDatePicker v-model="to" mode="date" :label="t('Sampai tanggal')" />
-                    <SmartSelect v-model="source" :label="t('Sumber jurnal')" :options="sourceOptions" />
+                    <SmartSelect v-model="source" :label="t('Sumber jurnal')" :options="localizedSourceOptions" />
                     <AppInput
                         v-model="q"
                         :label="t('Cari')"
@@ -328,9 +330,9 @@ function submitBulkReverse() {
                             {{ selectedRowIds.length }}
                         </span>
                         <div>
-                            <p class="text-sm font-bold text-on-surface">{{ selectedRowIds.length }} transaksi dipilih</p>
+                            <p class="text-sm font-bold text-on-surface">{{ selectedRowIds.length }} {{ t('transaksi dipilih') }}</p>
                             <p class="text-xs text-on-surface-variant">
-                                Total nominal · <span class="font-semibold text-on-surface tabular-nums">{{ formatMoney(selectedTotalAmount) }}</span>
+                                {{ t('Total nominal ·') }} <span class="font-semibold text-on-surface tabular-nums">{{ formatMoney(selectedTotalAmount) }}</span>
                             </p>
                         </div>
                     </div>
@@ -355,7 +357,7 @@ function submitBulkReverse() {
                         </p>
                     </div>
                     <span class="hidden text-xs text-on-surface-variant sm:inline">
-                        {{ rows.length }} baris pada halaman ini
+                        {{ rows.length }} {{ t('baris pada halaman ini') }}
                     </span>
                 </div>
 
@@ -419,11 +421,11 @@ function submitBulkReverse() {
                                 <td class="px-4 py-3 align-top">
                                     <p class="font-medium text-on-surface">{{ row.description || '—' }}</p>
                                     <p v-if="row.is_reversal && row.source_row_id" class="mt-0.5 text-xs text-on-surface-variant">
-                                        Pembalik dari jurnal
+                                        {{ t('Pembalik dari jurnal') }}
                                         <span class="font-semibold text-primary">#{{ row.source_row_id }}</span>
                                     </p>
                                     <p v-else-if="row.already_reversed && row.reversal" class="mt-0.5 text-xs text-error">
-                                        Telah dibatalkan oleh jurnal
+                                        {{ t('Telah dibatalkan oleh jurnal') }}
                                         <span class="font-semibold">#{{ row.reversal.id }}</span>
                                     </p>
                                 </td>
@@ -498,11 +500,11 @@ function submitBulkReverse() {
                 >
                     <p class="text-on-surface-variant">
                         <span v-if="pagination.total > 0">
-                            Menampilkan <span class="font-semibold text-on-surface">{{ pageStart }}–{{ pageEnd }}</span>
-                            dari <span class="font-semibold text-on-surface">{{ pagination.total }}</span> jurnal
+                            {{ t('Menampilkan') }} <span class="font-semibold text-on-surface">{{ pageStart }}–{{ pageEnd }}</span>
+                            {{ t('dari') }} <span class="font-semibold text-on-surface">{{ pagination.total }}</span> {{ t('jurnal') }}
                         </span>
                         <span v-else>{{ t('Tidak ada jurnal') }}</span>
-                        <span class="text-outline"> · hlm {{ pagination.page }}/{{ pagination.last_page }}</span>
+                        <span class="text-outline"> {{ t('· hlm') }} {{ pagination.page }}/{{ pagination.last_page }}</span>
                     </p>
                     <div class="flex items-center gap-2">
                         <AppButton
@@ -532,8 +534,8 @@ function submitBulkReverse() {
                     <div class="flex items-start gap-3 rounded-xl bg-error-container/30 p-3">
                         <AppIcon name="warning" tone="danger" :container-size="9" />
                         <p class="text-sm text-on-surface-variant">
-                            Jurnal <span class="font-bold text-on-surface">#{{ reverseTarget?.id }}</span>
-                            tidak dihapus permanen. Sistem akan membuat jurnal pembalik (debit ↔ kredit) untuk menjaga audit trail.
+                            {{ t('Jurnal') }} <span class="font-bold text-on-surface">#{{ reverseTarget?.id }}</span>
+                            {{ t('tidak dihapus permanen. Sistem akan membuat jurnal pembalik (debit ↔ kredit) untuk menjaga audit trail.') }}
                         </p>
                     </div>
                     <p v-if="reverseTarget" class="rounded-lg bg-surface-container-low px-3 py-2 text-sm">
@@ -564,10 +566,9 @@ function submitBulkReverse() {
                     <div class="flex items-start gap-3 rounded-xl bg-error-container/30 p-3">
                         <AppIcon name="delete_sweep" tone="danger" :container-size="9" />
                         <p class="text-sm text-on-surface-variant">
-                            <span class="font-bold text-on-surface">{{ selectedRowIds.length }} transaksi</span>
-                            (Total nominal
-                            <span class="font-bold text-on-surface tabular-nums">{{ formatMoney(selectedTotalAmount) }}</span>)
-                            akan dibatalkan bersamaan dengan membuat jurnal pembalik. Data asli tetap tersimpan untuk audit.
+                            <span class="font-bold text-on-surface">{{ selectedRowIds.length }} {{ t('transaksi') }}</span>
+                            {{ t('(Total nominal') }}
+                            <span class="font-bold text-on-surface tabular-nums">{{ formatMoney(selectedTotalAmount) }}</span>{{ t(') akan dibatalkan bersamaan dengan membuat jurnal pembalik. Data asli tetap tersimpan untuk audit.') }}
                         </p>
                     </div>
                     <AppDatePicker v-model="bulkReverseForm.reversal_date" mode="date" :label="t('Tanggal reverse')" required />
@@ -580,7 +581,7 @@ function submitBulkReverse() {
                     <div class="flex justify-end gap-2">
                         <AppButton type="button" variant="secondary" @click="bulkReverseOpen = false">{{ t('Batal') }}</AppButton>
                         <AppButton type="submit" variant="danger" icon="delete_sweep" :loading="bulkReverseForm.processing">
-                            Hapus {{ selectedRowIds.length }} Transaksi
+                            {{ t('Hapus') }} {{ selectedRowIds.length }} {{ t('Transaksi') }}
                         </AppButton>
                     </div>
                 </form>

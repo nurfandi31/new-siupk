@@ -32,7 +32,7 @@ function submit() {
     });
 }
 
-const orgName = computed(() => props.organization?.name ?? 'Desa');
+const orgName = computed(() => props.organization?.name ?? t('Desa'));
 const address = computed(() => props.settings?.contact_address ?? props.organization?.address ?? null);
 const phone = computed(() => props.settings?.contact_phone ?? props.organization?.phone ?? null);
 const email = computed(() => props.settings?.contact_email ?? props.organization?.email ?? null);

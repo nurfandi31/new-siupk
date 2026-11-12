@@ -97,13 +97,13 @@ const steps = [
         title: t('Registrasi & Alokasi Tenant'),
         desc: t('Pendaftaran BUMDesma LKD untuk mendapatkan alokasi basis data terisolasi yang aman dan siap pakai.'),
         icon: 'how_to_reg',
-        role: 'Tim Teknis + Pengurus BUMDesma',
-        duration: '1–3 hari kerja',
+        role: t('Tim Teknis + Pengurus BUMDesma'),
+        duration: t('1–3 hari kerja'),
         output: [
-            'Tenant database terisolasi & terenkripsi',
-            'Akun admin & operator BUMDesma',
-            'Konfigurasi COA & mata uang daerah',
-            'Surat penugasan pendampingan',
+            t('Tenant database terisolasi & terenkripsi'),
+            t('Akun admin & operator BUMDesma'),
+            t('Konfigurasi COA & mata uang daerah'),
+            t('Surat penugasan pendampingan'),
         ],
     },
     {
@@ -111,13 +111,13 @@ const steps = [
         title: t('Migrasi & Saldo Awal'),
         desc: t('Fasilitas Import Wizard pintar untuk memindahkan data master kelompok, anggota, dan saldo awal dari sistem sebelumnya.'),
         icon: 'database',
-        role: 'Tim Teknis + Bendahara',
-        duration: '3–7 hari kerja',
+        role: t('Tim Teknis + Bendahara'),
+        duration: t('3–7 hari kerja'),
         output: [
-            'Import data master desa, kelompok, anggota',
-            'Riwayat pinjaman & saldo awal',
-            'Rekonsiliasi saldo pembuka',
-            'Laporan migrasi tervalidasi',
+            t('Import data master desa, kelompok, anggota'),
+            t('Riwayat pinjaman & saldo awal'),
+            t('Rekonsiliasi saldo pembuka'),
+            t('Laporan migrasi tervalidasi'),
         ],
     },
     {
@@ -125,13 +125,13 @@ const steps = [
         title: t('Operasional Harian'),
         desc: t('Pencatatan pinjaman, pembayaran angsuran, kas/bank, dan jurnal akuntansi otomatis sesuai standar SAK Entitas Privat.'),
         icon: 'monitoring',
-        role: 'Operator BUMDesma (mandiri)',
-        duration: 'Berjalan otomatis setiap hari',
+        role: t('Operator BUMDesma (mandiri)'),
+        duration: t('Berjalan otomatis setiap hari'),
         output: [
-            'Pinjaman baru & angsuran real-time',
-            'Jurnal akuntansi otomatis (SAK EP/ETAP)',
-            'Integrasi QRIS & Virtual Account',
-            'Asisten AI regulasi (Ollama LLM)',
+            t('Pinjaman baru & angsuran real-time'),
+            t('Jurnal akuntansi otomatis (SAK EP/ETAP)'),
+            t('Integrasi QRIS & Virtual Account'),
+            t('Asisten AI regulasi (Ollama LLM)'),
         ],
     },
     {
@@ -139,13 +139,13 @@ const steps = [
         title: t('Laporan & Pengawasan Pemda'),
         desc: t('Penerbitan laporan resmi berkala untuk pertanggungjawaban musyawarah antar desa (MAD) dan monitoring dinas terkait.'),
         icon: 'assessment',
-        role: 'Pengurus + Dinas PMD/Inspektorat',
-        duration: 'Bulanan & tahunan',
+        role: t('Pengurus + Dinas PMD/Inspektorat'),
+        duration: t('Bulanan & tahunan'),
         output: [
-            'Laporan Keuangan (Neraca, Laba Rugi, Arus Kas)',
-            'Laporan pertanggungjawaban MAD',
-            'Dashboard monitoring Dinas PMD',
-            'Export PDF/Excel siap audit',
+            t('Laporan Keuangan (Neraca, Laba Rugi, Arus Kas)'),
+            t('Laporan pertanggungjawaban MAD'),
+            t('Dashboard monitoring Dinas PMD'),
+            t('Export PDF/Excel siap audit'),
         ],
     },
 ];
@@ -164,7 +164,7 @@ const trustLogos = [
         tone: 'primary',
     },
     {
-        label: 'SAK EP / ETAP',
+        label: t('SAK EP / ETAP'),
         sub: t('Standar Akuntansi'),
         icon: 'account_balance',
         desc: t('Bagan akun entitas mikro & privat yang teruji.'),
@@ -195,23 +195,23 @@ const trustLogos = [
 
 const faqs = [
     {
-        q: 'Apa itu siupk Next dan siapa saja yang dapat menggunakannya?',
-        a: 'siupk Next adalah sistem informasi tata kelola keuangan terpadu yang dirancang khusus untuk BUMDesma LKD (Lembaga Keuangan Desa / Eks UPK PNPM-MPd), pengelola dana bergulir masyarakat, serta instansi pembina teknis di tingkat Kabupaten (Dinas PMD & Inspektorat).',
+        q: t('Apa itu siupk Next dan siapa saja yang dapat menggunakannya?'),
+        a: t('siupk Next adalah sistem informasi tata kelola keuangan terpadu yang dirancang khusus untuk BUMDesma LKD (Lembaga Keuangan Desa / Eks UPK PNPM-MPd), pengelola dana bergulir masyarakat, serta instansi pembina teknis di tingkat Kabupaten (Dinas PMD & Inspektorat).'),
     },
     {
-        q: 'Apakah sistem ini sesuai dengan regulasi pemerintah dan standar akuntansi terkini?',
-        a: 'Ya, sistem telah diselaraskan dengan amanat PP No. 11 Tahun 2021 tentang BUMDesa, Permendesa PDTT, serta standar bagan akun (COA) akuntansi keuangan entitas mikro & privat (SAK EP/ETAP) untuk menghasilkan Neraca, Laba Rugi, Arus Kas, dan CALK yang akuntabel.',
+        q: t('Apakah sistem ini sesuai dengan regulasi pemerintah dan standar akuntansi terkini?'),
+        a: t('Ya, sistem telah diselaraskan dengan amanat PP No. 11 Tahun 2021 tentang BUMDesa, Permendesa PDTT, serta standar bagan akun (COA) akuntansi keuangan entitas mikro & privat (SAK EP/ETAP) untuk menghasilkan Neraca, Laba Rugi, Arus Kas, dan CALK yang akuntabel.'),
     },
     {
-        q: 'Bagaimana keamanan dan kerahasiaan data keuangan masing-masing BUMDesma?',
-        a: 'Sistem menggunakan teknologi Database Sharding terisolasi, di mana setiap BUMDesma memiliki ruang data yang independen dan terenkripsi sehingga data antar-kecamatan tidak dapat saling bercampur atau diakses tanpa izin.',
+        q: t('Bagaimana keamanan dan kerahasiaan data keuangan masing-masing BUMDesma?'),
+        a: t('Sistem menggunakan teknologi Database Sharding terisolasi, di mana setiap BUMDesma memiliki ruang data yang independen dan terenkripsi sehingga data antar-kecamatan tidak dapat saling bercampur atau diakses tanpa izin.'),
     },
     {
-        q: 'Apakah data lama dari format Excel atau database Access dapat dipindahkan?',
-        a: 'Tersedia modul Import Wizard dan migrasi data pintar yang memudahkan pengurus memasukkan data master desa, kelompok pemanfaat, data anggota, serta riwayat saldo pinjaman lama secara cepat tanpa harus input manual satu per satu.',
+        q: t('Apakah data lama dari format Excel atau database Access dapat dipindahkan?'),
+        a: t('Tersedia modul Import Wizard dan migrasi data pintar yang memudahkan pengurus memasukkan data master desa, kelompok pemanfaat, data anggota, serta riwayat saldo pinjaman lama secara cepat tanpa harus input manual satu per satu.'),
     },
     {
-        q: 'Bagaimana cara BUMDesma mendaftarkan unit atau berkonsultasi implementasi?',
+        q: t('Bagaimana cara BUMDesma mendaftarkan unit atau berkonsultasi implementasi?'),
         a: 'Pengurus BUMDesma maupun perwakilan Dinas PMD dapat menghubungi tim teknis kami melalui tombol "Konsultasi & Pendaftaran" di bawah ini untuk pendampingan registrasi, demonstrasi sistem, dan pelatihan operator.',
     },
 ];
@@ -1124,7 +1124,7 @@ onUnmounted(() => {
                                         </div>
                                         <div class="text-right">
                                             <div class="inline-flex items-center gap-1.5 rounded-full bg-primary-container/50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-primary">
-                                                Step {{ step.num }}
+                                                {{ t('Step') }} {{ step.num }}
                                             </div>
                                             <p class="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-secondary">
                                                 {{ t(step.role) }}
@@ -1175,7 +1175,7 @@ onUnmounted(() => {
                                             class="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold text-on-surface-variant shadow-sm ring-1 ring-inset ring-outline-variant/30 hover:text-primary hover:bg-primary-container/30 hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/40 active:scale-[0.97] active:shadow-sm transition-all duration-200"
                                         >
                                             <AppIcon name="arrow_forward" class="text-sm rotate-180" />
-                                            <span>Step {{ steps[idx - 1].num }}</span>
+                                            <span>{{ t('Step') }} {{ steps[idx - 1].num }}</span>
                                         </button>
                                         <span v-else class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/60">
                                             {{ t('Tahap Awal') }}

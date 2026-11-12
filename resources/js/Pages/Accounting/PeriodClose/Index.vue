@@ -43,9 +43,9 @@ const forceRewrite = ref(false);
 /** periods | trial_balance | allocate */
 const tab = ref('periods');
 const tabs = [
-    { value: 'periods', label: t('1. Periode'), short: 'Periode' },
-    { value: 'trial_balance', label: t('2. Neraca Saldo'), short: 'Neraca Saldo' },
-    { value: 'allocate', label: t('3. Alokasi laba'), short: 'Alokasi' },
+    { value: 'periods', label: t('1. Periode'), short: t('Periode') },
+    { value: 'trial_balance', label: t('2. Neraca Saldo'), short: t('Neraca Saldo') },
+    { value: 'allocate', label: t('3. Alokasi laba'), short: t('Alokasi') },
 ];
 
 watch(
@@ -95,8 +95,8 @@ async function closeYear() {
     if (!allowClose.value) return;
     const msg =
         props.next_year_openings_exist && !forceRewrite.value
-            ? `Saldo awal ${props.next_year} dari tutup buku sudah ada. Aktifkan "Paksa tulis ulang" dulu, atau batalkan.`
-            : `Tutup seluruh tahun ${props.year} dan tulis saldo awal ${props.next_year}?`;
+            ? t('Saldo awal :year dari tutup buku sudah ada. Aktifkan ":action" dulu, atau batalkan.', { year: props.next_year, action: t('Paksa tulis ulang') })
+            : t('Tutup seluruh tahun :year dan tulis saldo awal :next?', { year: props.year, next: props.next_year });
     if (props.next_year_openings_exist && !forceRewrite.value) {
         await showAlert({ title: t('Perhatian'), message: msg });
         return;
@@ -108,7 +108,7 @@ async function closeYear() {
 }
 
 const statusTone = { open: 'success', closed: 'neutral', missing: 'warning' };
-const statusLabel = { open: 'Terbuka', closed: 'Ditutup', missing: 'Belum ada' };
+const statusLabel = { open: t('Terbuka'), closed: t('Ditutup'), missing: 'Belum ada' };
 
 function emptyCommunity() {
     const o = {};
@@ -238,7 +238,7 @@ async function submitAllocation() {
                     </p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Laba/rugi {{ year }}</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Laba/rugi') }} {{ year }}</p>
                     <p class="mt-2 text-2xl font-bold" :class="net_income < 0 ? 'text-error' : 'text-primary'">
                         {{ formatMoney(net_income) }}
                     </p>
@@ -258,7 +258,7 @@ async function submitAllocation() {
             <!-- TAB 1: periods -->
             <AppCard v-show="tab === 'periods'" class="overflow-hidden p-0">
                 <div class="border-b border-outline-variant px-4 py-3">
-                    <h2 class="text-sm font-bold text-primary">Periode bulanan {{ year }}</h2>
+                    <h2 class="text-sm font-bold text-primary">{{ t('Periode bulanan') }} {{ year }}</h2>
                     <p class="text-xs text-on-surface-variant">
                         {{ t('Periode tertutup menolak posting jurnal baru.') }}
                     </p>
@@ -326,7 +326,7 @@ async function submitAllocation() {
             <AppCard v-show="tab === 'trial_balance'" class="overflow-hidden p-0">
                 <div class="flex flex-wrap items-start justify-between gap-2 border-b border-outline-variant px-4 py-3">
                     <div>
-                        <h2 class="text-sm font-bold text-primary">Neraca Saldo per 31-12-{{ year }}</h2>
+                        <h2 class="text-sm font-bold text-primary">{{ t('Neraca Saldo per 31-12-') }}{{ year }}</h2>
                         <p class="text-xs text-on-surface-variant">
                             {{ t('Saldo akun pada akhir tahun buku — debit/kredit seimbang sebagai syarat tutup tahun.') }}
                         </p>
@@ -392,14 +392,14 @@ async function submitAllocation() {
                 </div>
 
                 <p class="border-t border-outline-variant/40 px-4 py-2 text-xs text-on-surface-variant">
-                    Laba/Rugi berjalan: <span class="font-semibold text-on-surface">{{ formatMoneyDecimal(trial_balance.net_income) }}</span>
+                    {{ t('Laba/Rugi berjalan:') }} <span class="font-semibold text-on-surface">{{ formatMoneyDecimal(trial_balance.net_income) }}</span>
                 </p>
 
                 <div
                     v-if="next_year_openings_exist"
                     class="border-t border-outline-variant bg-surface-container-low/50 px-4 py-2 text-sm text-on-surface-variant"
                 >
-                    Saldo awal {{ next_year }} dari tutup buku sudah ada.
+                    {{ t('Saldo awal') }} {{ next_year }} {{ t('dari tutup buku sudah ada.') }}
                 </div>
 
                 <div class="space-y-3 border-t border-outline-variant px-4 py-3">
@@ -417,7 +417,7 @@ async function submitAllocation() {
                             :disabled="!can_close_year || yearForm.processing || !trial_balance.balanced"
                             @click="closeYear"
                         >
-                            Tutup tahun {{ year }}
+                            {{ t('Tutup tahun') }} {{ year }}
                         </AppButton>
                     </div>
                     <p v-if="allowClose && !trial_balance.balanced" class="text-xs text-error">
@@ -429,10 +429,9 @@ async function submitAllocation() {
             <!-- TAB 3: allocate -->
             <AppCard v-show="tab === 'allocate'" class="overflow-hidden p-0">
                 <div class="border-b border-outline-variant px-4 py-3">
-                    <h2 class="text-sm font-bold text-primary">Alokasi laba tahun {{ year }}</h2>
+                    <h2 class="text-sm font-bold text-primary">{{ t('Alokasi laba tahun') }} {{ year }}</h2>
                     <p class="text-xs text-on-surface-variant">
-                        Dr {{ allocation.accounts?.earnings?.code || '3.2.02.01' }} → Cr utang laba / laba ditahan.
-                        Tanggal biasanya 1 Jan tahun berikutnya (periode harus terbuka).
+                        {{ t('Dr') }} {{ allocation.accounts?.earnings?.code || '3.2.02.01' }} {{ t('→ Cr utang laba / laba ditahan. Tanggal biasanya 1 Jan tahun berikutnya (periode harus terbuka).') }}
                     </p>
                 </div>
 
@@ -598,7 +597,7 @@ async function submitAllocation() {
                         >
                             <div class="text-sm">
                                 <p class="text-on-surface-variant">
-                                    Total alokasi
+                                    {{ t('Total alokasi') }}
                                     <span class="ml-1 text-lg font-bold tabular-nums text-primary">
                                         {{ formatMoney(allocTotal) }}
                                     </span>
@@ -608,10 +607,10 @@ async function submitAllocation() {
                                     :class="allocOver ? 'font-semibold text-error' : 'text-on-surface-variant'"
                                 >
                                     <template v-if="allocOver">
-                                        Melebihi sisa {{ formatMoney(allocation.remaining) }}
+                                        {{ t('Melebihi sisa') }} {{ formatMoney(allocation.remaining) }}
                                     </template>
                                     <template v-else>
-                                        Sisa setelah alokasi
+                                        {{ t('Sisa setelah alokasi') }}
                                         {{ formatMoney(Math.max(0, Number(allocation.remaining || 0) - allocTotal)) }}
                                     </template>
                                 </p>
@@ -631,9 +630,9 @@ async function submitAllocation() {
                         v-else-if="allowClose && allocation.remaining <= 0"
                         class="px-4 py-6 text-sm text-on-surface-variant"
                     >
-                        Tidak ada sisa laba untuk dialokasi
+                        {{ t('Tidak ada sisa laba untuk dialokasi') }}
                         <span v-if="allocation.already_allocated > 0">
-                            (sudah {{ formatMoney(allocation.already_allocated) }}).
+                            {{ t('(sudah') }} {{ formatMoney(allocation.already_allocated) }}).
                         </span>
                         <span v-else-if="allocation.available <= 0">{{ t('(laba/rugi ≤ 0).') }}</span>
                     </p>

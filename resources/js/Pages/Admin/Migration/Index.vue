@@ -109,7 +109,7 @@ const legacyTenantOptions = computed(() =>
             subtitle: tenant
                 ? `Target: ${tenant.name} (${tenant.code})`
                 : 'Belum ada tenant Next — tenant baru dapat dibuat otomatis.',
-            badge: tenant ? tenant.name : 'Belum ada tenant Next',
+            badge: tenant ? tenant.name : t('Belum ada tenant Next'),
         };
     }),
 );
@@ -504,15 +504,15 @@ const getStepStatusVariant = (status) => {
                                         />
                                         <div class="flex items-center justify-between gap-2 text-xs">
                                             <span class="text-on-surface-variant">
-                                                <template v-if="isDiscovering">Memindai database legacy… ({{ Math.round(70) }}s)</template>
+                                                <template v-if="isDiscovering">{{ t('Memindai database legacy… (') }}{{ Math.round(70) }}{{ t('s)') }}</template>
                                                 <template v-else-if="discoveryError">
                                                     <span class="text-error">{{ t('Gagal memindai:') }} {{ discoveryError }}</span>
                                                 </template>
                                                 <template v-else-if="discoveredSuffixes.length > 0">
-                                                    {{ discoveryCount }} suffix terdeteksi.
+                                                    {{ discoveryCount }} {{ t('suffix terdeteksi.') }}
                                                 </template>
                                                 <template v-else>
-                                                    Belum ada suffix terdeteksi — klik "Pindai Ulang DB Legacy".
+                                                    {{ t('Belum ada suffix terdeteksi — klik "Pindai Ulang DB Legacy".') }}
                                                 </template>
                                             </span>
                                             <AppButton
@@ -605,19 +605,19 @@ const getStepStatusVariant = (status) => {
 
                             <div class="flex items-start space-x-2">
                                 <span class="shrink-0 font-bold text-secondary">1.</span>
-                                <p>Sistem membaca database MySQL legacy <code class="rounded bg-surface-container px-1 py-0.5 font-mono text-[11px]">{{ props.legacy_config?.database || 'siupk' }}</code> yang telah dikonfigurasi di file <code class="rounded bg-surface-container px-1 py-0.5 font-mono text-[11px] font-mono text-[11px] font-mono text-[11px] font-mono text-[11px] font-mono text-[11px]">.env</code>.</p>
+                                <p>{{ t('Sistem membaca database MySQL legacy') }} <code class="rounded bg-surface-container px-1 py-0.5 font-mono text-[11px]">{{ props.legacy_config?.database || 'siupk' }}</code> {{ t('yang telah dikonfigurasi di file') }} <code class="rounded bg-surface-container px-1 py-0.5 font-mono text-[11px] font-mono text-[11px] font-mono text-[11px] font-mono text-[11px] font-mono text-[11px]">.env</code>.</p>
                             </div>
                             <div class="flex items-start space-x-2">
                                 <span class="shrink-0 font-bold text-secondary">2.</span>
-                                <p>Tabel legacy dibedakan oleh akhiran angka (Suffix ID), seperti <code class="rounded bg-surface-container px-1 py-0.5 font-mono text-[11px]">transaksi_1</code> atau <code class="rounded bg-surface-container px-1 py-0.5 font-mono text-[11px]">saldo_1</code>.</p>
+                                <p>{{ t('Tabel legacy dibedakan oleh akhiran angka (Suffix ID), seperti') }} <code class="rounded bg-surface-container px-1 py-0.5 font-mono text-[11px]">transaksi_1</code> {{ t('atau') }} <code class="rounded bg-surface-container px-1 py-0.5 font-mono text-[11px]">saldo_1</code>.</p>
                             </div>
                             <div class="flex items-start space-x-2">
                                 <span class="shrink-0 font-bold text-secondary">3.</span>
-                                <p>Pilihlah <strong>Suffix Terdeteksi</strong> dari daftar dropdown. Sistem akan otomatis memindai tabel yang tersedia.</p>
+                                <p>{{ t('Pilihlah') }} <strong>{{ t('Suffix Terdeteksi') }}</strong> {{ t('dari daftar dropdown. Sistem akan otomatis memindai tabel yang tersedia.') }}</p>
                             </div>
                             <div class="flex items-start space-x-2">
                                 <span class="shrink-0 font-bold text-secondary">4.</span>
-                                <p>Disarankan melakukan <strong>Mode Dry-Run</strong> terlebih dahulu untuk mensimulasikan validasi data tanpa mengubah database utama.</p>
+                                <p>{{ t('Disarankan melakukan') }} <strong>{{ t('Mode Dry-Run') }}</strong> {{ t('terlebih dahulu untuk mensimulasikan validasi data tanpa mengubah database utama.') }}</p>
                             </div>
                         </div>
                     </AppCard>
@@ -702,9 +702,9 @@ const getStepStatusVariant = (status) => {
                     <div class="flex items-center justify-between border-b border-outline-variant p-4">
                         <div>
                             <h3 class="text-lg font-bold text-primary">
-                                Monitoring Cutover Run #{{ selectedRun.id }} — {{ selectedRun.tenant_name }}
+                                {{ t('Monitoring Cutover Run #') }}{{ selectedRun.id }} — {{ selectedRun.tenant_name }}
                             </h3>
-                            <p class="text-xs text-on-surface-variant">Suffix: {{ selectedRun.suffix }} | Mode: {{ selectedRun.is_dry_run ? t('Dry Run') : t('Live') }}</p>
+                            <p class="text-xs text-on-surface-variant">{{ t('Suffix:') }} {{ selectedRun.suffix }} {{ t('| Mode:') }} {{ selectedRun.is_dry_run ? t('Dry Run') : t('Live') }}</p>
                         </div>
                         <AppButton variant="ghost" size="compact" icon="close" @click="closeLogModal" />
                     </div>

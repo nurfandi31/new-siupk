@@ -82,7 +82,7 @@ function submit() {
 </script>
 
 <template>
-    <Head :title="editing ? `Role: ${role.name}` : 'Tambah Role Kustom'" />
+    <Head :title="editing ? `Role: ${role.name}` : t('Tambah Role Kustom')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-5xl space-y-6">
             <header>

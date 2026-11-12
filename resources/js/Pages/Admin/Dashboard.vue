@@ -78,7 +78,7 @@ const donutSlices = computed(() => {
                     <p class="mt-3 text-2xl font-extrabold text-secondary">{{ money(kpis.revenue_this_month) }}</p>
                     <div class="mt-2 flex items-center gap-2 text-xs">
                         <AppBadge v-if="kpis.revenue_last_month > 0" :tone="kpis.revenue_growth >= 0 ? 'success' : 'error'">
-                            {{ kpis.revenue_growth >= 0 ? '+' : '' }}{{ kpis.revenue_growth }}% MoM
+                            {{ kpis.revenue_growth >= 0 ? '+' : '' }}{{ kpis.revenue_growth }}{{ t('% MoM') }}
                         </AppBadge>
                         <span class="text-on-surface-variant">{{ t('Tagihan:') }} <strong class="text-on-surface">{{ money(kpis.invoiced_this_month) }}</strong></span>
                     </div>
@@ -104,9 +104,9 @@ const donutSlices = computed(() => {
                         {{ money(kpis.total_outstanding) }}
                     </p>
                     <p class="mt-2 text-xs text-on-surface-variant">
-                        {{ kpis.invoices_open_count }} belum lunas
+                        {{ kpis.invoices_open_count }} {{ t('belum lunas') }}
                         <span v-if="kpis.invoices_overdue_count > 0" class="ml-1 font-bold text-error">
-                            ({{ kpis.invoices_overdue_count }} overdue)
+                            ({{ kpis.invoices_overdue_count }} {{ t('overdue)') }}
                         </span>
                     </p>
                 </AppCard>
@@ -121,7 +121,7 @@ const donutSlices = computed(() => {
                         <span class="text-sm font-normal text-on-surface-variant">/ {{ kpis.tenants_total }}</span>
                     </p>
                     <p class="mt-2 text-xs text-on-surface-variant">
-                        {{ kpis.users_total }} pengguna
+                        {{ kpis.users_total }} {{ t('pengguna') }}
                     </p>
                 </AppCard>
             </div>

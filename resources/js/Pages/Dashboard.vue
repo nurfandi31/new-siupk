@@ -64,7 +64,7 @@ const trendSlices = computed(() => {
         const start = acc;
         acc += pct;
         return {
-            label: row.label ?? row.month ?? '',
+            label: t(row.label ?? row.month ?? ''),
             value,
             pct: Math.round(pct * 100) / 100,
             start: Math.round(start * 100) / 100,
@@ -142,6 +142,14 @@ function closePipeline() {
     });
 }
 
+function cardHint(card) {
+    if (card.key === 'overdue') {
+        const match = String(card.hint || '').match(/^(\d+)\s+angsuran lewat jatuh tempo$/);
+        if (match) return t(':count angsuran lewat jatuh tempo', { count: match[1] });
+    }
+    return t(card.hint || '');
+}
+
 function amountForRow(row) {
     if (row.allocated_amount !== null && row.allocated_amount !== undefined) return row.allocated_amount;
     if (row.verification_amount !== null && row.verification_amount !== undefined) return row.verification_amount;
@@ -154,10 +162,10 @@ function dateForRow(row) {
 }
 
 const sourceLabel = {
-    loan: 'Pinjaman',
-    installment: 'Angsuran',
-    manual: 'Manual',
-    general: 'Umum',
+    loan: t('Pinjaman'),
+    installment: t('Angsuran'),
+    manual: t('Manual'),
+    general: t('Umum'),
 };
 
 const kpiTones = {
@@ -230,15 +238,15 @@ function cardKpiTextClass(card) {
                         </h1>
                     </div>
                     <p class="mt-1 text-xs text-on-surface-variant sm:text-sm">
-                        Ringkasan operasional · per {{ formatDate(as_of) }}
+                        {{ t('Ringkasan operasional · per') }} {{ formatDate(as_of) }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2 text-xs text-on-surface-variant">
                     <span class="inline-flex items-center gap-1.5 rounded-full bg-secondary-container px-2.5 py-1 font-semibold text-on-secondary-container">
-                        <span class="size-1.5 rounded-full bg-secondary" />{{ counts.active_loans }} pinjaman aktif
+                        <span class="size-1.5 rounded-full bg-secondary" />{{ counts.active_loans }} {{ t('pinjaman aktif') }}
                     </span>
                     <span class="inline-flex items-center gap-1.5 rounded-full bg-primary-container px-2.5 py-1 font-semibold text-on-primary-container">
-                        <span class="size-1.5 rounded-full bg-primary" />{{ counts.members }} anggota
+                        <span class="size-1.5 rounded-full bg-primary" />{{ counts.members }} {{ t('anggota') }}
                     </span>
                 </div>
             </div>
@@ -259,7 +267,7 @@ function cardKpiTextClass(card) {
                             <AppIcon :name="card.icon" class="text-2xl" />
                         </span>
                         <div class="min-w-0 flex-1">
-                            <p class="truncate text-[11px] font-bold uppercase leading-none tracking-wider opacity-80" :class="cardKpiTextClass(card)">{{ card.label }}</p>
+                            <p class="truncate text-[11px] font-bold uppercase leading-none tracking-wider opacity-80" :class="cardKpiTextClass(card)">{{ t(card.label) }}</p>
                             <p class="mt-1.5 truncate text-2xl font-extrabold leading-tight tabular-nums" :class="cardKpiTextClass(card)">{{ formatValue(card) }}</p>
                         </div>
                     </div>
@@ -270,11 +278,11 @@ function cardKpiTextClass(card) {
                             class="inline-flex items-center gap-1 rounded-md bg-white/15 px-1.5 py-0.5 text-[10px] font-bold tabular-nums backdrop-blur-sm"
                             :class="cardKpiTextClass(card)"
                         >
-                            <span class="opacity-75">{{ label }}</span>
+                            <span class="opacity-75">{{ t(label) }}</span>
                             <span class="opacity-100">{{ count }}</span>
                         </span>
                     </div>
-                    <p v-else-if="card.hint" class="mt-2 truncate text-[11px] leading-tight opacity-80" :class="cardKpiTextClass(card)">{{ card.hint }}</p>
+                    <p v-else-if="card.hint" class="mt-2 truncate text-[11px] leading-tight opacity-80" :class="cardKpiTextClass(card)">{{ cardHint(card) }}</p>
                 </article>
             </section>
 
@@ -285,7 +293,7 @@ function cardKpiTextClass(card) {
                     <template #header>
                         <div class="flex items-center gap-2">
                             <AppIcon name="monitoring" tone="success" :container-size="10" container-shape="rounded" />
-                            <h2 class="truncate text-base font-bold leading-none text-primary">Tren {{ trendSummary.months }} Bulan</h2>
+                            <h2 class="truncate text-base font-bold leading-none text-primary">{{ t('Tren') }} {{ trendSummary.months }} {{ t('Bulan') }}</h2>
                         </div>
                         <Link href="/accounting/reports" class="shrink-0 text-xs font-bold text-primary hover:underline">{{ t('Detail →') }}</Link>
                     </template>
@@ -360,7 +368,7 @@ function cardKpiTextClass(card) {
                                 class="absolute left-1/2 top-1.5 size-1.5 -translate-x-1/2 rounded-full transition-transform group-hover:scale-150"
                                 :class="stage.count > 0 ? 'bg-secondary' : 'bg-outline-variant/50'"
                             />
-                            <span class="mt-1 text-[11px] font-bold uppercase leading-none tracking-wider text-on-surface-variant">{{ stage.label }}</span>
+                            <span class="mt-1 text-[11px] font-bold uppercase leading-none tracking-wider text-on-surface-variant">{{ t(stage.label) }}</span>
                             <span class="text-3xl font-extrabold leading-tight tabular-nums text-primary">{{ stage.count }}</span>
                             <span class="truncate text-xs font-semibold tabular-nums leading-none text-primary">{{ formatMoney(stage.amount) }}</span>
                         </button>
@@ -433,7 +441,7 @@ function cardKpiTextClass(card) {
                             <AppIcon name="event_note" tone="tertiary" :container-size="10" container-shape="rounded" />
                             <h2 class="truncate text-base font-bold leading-none text-primary">{{ t('Jatuh Tempo') }}</h2>
                         </div>
-                        <AppBadge v-if="overdue_summary.count" tone="error">{{ overdue_summary.count }} lewat</AppBadge>
+                        <AppBadge v-if="overdue_summary.count" tone="error">{{ overdue_summary.count }} {{ t('lewat') }}</AppBadge>
                     </template>
                     <div v-if="upcoming_due.length" class="flex-1 space-y-2 overflow-y-auto p-3">
                         <article
@@ -480,26 +488,26 @@ function cardKpiTextClass(card) {
         <!-- Modal pipeline -->
         <AppModal
             :model-value="open"
-            :title="`Pinjaman · ${pipeline_modal?.label ?? ''}`"
+            :title="`${t('Pinjaman')} · ${t(pipeline_modal?.label ?? '')}`"
             size="fullscreen"
             @update:model-value="(value) => { if (!value) closePipeline(); }"
         >
             <div v-if="pipeline_modal" class="space-y-3">
                 <p class="text-xs text-on-surface-variant">
-                    Menampilkan
+                    {{ t('Menampilkan') }}
                     <span class="font-semibold text-primary">{{ filteredPipelineRows.length }}</span>
-                    dari
+                    {{ t('dari') }}
                     <span class="font-semibold text-primary">{{ pipeline_modal.total }}</span>
-                    pinjaman pada tahap
-                    <span class="font-semibold text-primary">{{ pipeline_modal.label }}</span>.
+                    {{ t('pinjaman pada tahap') }}
+                    <span class="font-semibold text-primary">{{ t(pipeline_modal.label) }}</span>.
                 </p>
 
                 <div class="flex items-center gap-1 rounded-lg bg-surface-container-low p-1 chip-shadow ring-1 ring-outline-variant/40">
                     <button
                         v-for="opt in [
-                            { value: 'semua', label: 'Semua', icon: 'all_inclusive', count: pipeline_modal.rows.length },
-                            { value: 'kelompok', label: 'Kelompok', icon: 'groups', count: pipelineBreakdown.kelompok },
-                            { value: 'individu', label: 'Individu', icon: 'person', count: pipelineBreakdown.individu },
+                            { value: 'semua', label: t('Semua'), icon: 'all_inclusive', count: pipeline_modal.rows.length },
+                            { value: 'kelompok', label: t('Kelompok'), icon: 'groups', count: pipelineBreakdown.kelompok },
+                            { value: 'individu', label: t('Individu'), icon: 'person', count: pipelineBreakdown.individu },
                         ]"
                         :key="opt.value"
                         type="button"
@@ -563,11 +571,11 @@ function cardKpiTextClass(card) {
                 <div v-else class="rounded-lg border border-dashed border-outline-variant py-8 text-center">
                     <AppIcon name="inbox" tone="neutral" :container-size="14" container-shape="rounded" />
                     <p class="mt-2 text-sm font-semibold text-on-surface-variant">{{ t('Belum ada pinjaman') }}</p>
-                    <p class="text-[11px] text-on-surface-variant">Tidak ada pinjaman {{ borrowerFilter === 'semua' ? '' : `(${borrowerFilter}) ` }}pada tahap {{ pipeline_modal.label }}.</p>
+                    <p class="text-[11px] text-on-surface-variant">{{ t('Tidak ada pinjaman') }} {{ borrowerFilter === 'semua' ? '' : `(${borrowerFilter}) ` }}{{ t('pada tahap') }} {{ t(pipeline_modal.label) }}.</p>
                 </div>
 
                 <p v-if="pipeline_modal.total > pipeline_modal.limit" class="text-[11px] text-on-surface-variant">
-                    Preview terbatas {{ pipeline_modal.limit }} baris. Buka halaman penuh untuk melihat semua data.
+                    {{ t('Preview terbatas') }} {{ pipeline_modal.limit }} {{ t('baris. Buka halaman penuh untuk melihat semua data.') }}
                 </p>
             </div>
 

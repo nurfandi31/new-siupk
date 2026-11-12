@@ -40,9 +40,9 @@ function applyFilter() {
             <!-- Header -->
             <div class="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Dashboard Provinsi {{ province_name }}</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Dashboard Provinsi') }} {{ province_name }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Monitoring & konsolidasi laporan keuangan gabungan lintas Kabupaten se-Provinsi {{ province_name }}.
+                        {{ t('Monitoring & konsolidasi laporan keuangan gabungan lintas Kabupaten se-Provinsi') }} {{ province_name }}.
                     </p>
                 </div>
 
@@ -90,7 +90,7 @@ function applyFilter() {
                         <AppIcon name="account_balance_wallet" tone="success" :container-size="9" />
                     </div>
                     <p class="mt-3 text-2xl font-bold text-primary">{{ money(metrics.summary.total_cash) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">Gabungan {{ metrics.summary.total_kecamatans }} Kecamatan</p>
+                    <p class="mt-1 text-xs text-on-surface-variant">{{ t('Gabungan') }} {{ metrics.summary.total_kecamatans }} {{ t('Kecamatan') }}</p>
                 </AppCard>
 
                 <AppCard class="relative overflow-hidden">
@@ -99,7 +99,7 @@ function applyFilter() {
                         <AppIcon name="credit_score" tone="info" :container-size="9" />
                     </div>
                     <p class="mt-3 text-2xl font-bold text-primary">{{ money(metrics.summary.active_loan_principal) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">{{ metrics.summary.active_loans_count }} Pinjaman Berjalan</p>
+                    <p class="mt-1 text-xs text-on-surface-variant">{{ metrics.summary.active_loans_count }} {{ t('Pinjaman Berjalan') }}</p>
                 </AppCard>
 
                 <AppCard class="relative overflow-hidden">
@@ -116,8 +116,8 @@ function applyFilter() {
                         <span class="text-sm font-semibold text-on-surface-variant">{{ t('Cakupan Wilayah') }}</span>
                         <AppIcon name="map" tone="primary" :container-size="9" />
                     </div>
-                    <p class="mt-3 text-2xl font-bold text-primary">{{ metrics.summary.total_regencies }} Kabupaten</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">{{ metrics.summary.total_kecamatans }} Unit Pengelola</p>
+                    <p class="mt-3 text-2xl font-bold text-primary">{{ metrics.summary.total_regencies }} {{ t('Kabupaten') }}</p>
+                    <p class="mt-1 text-xs text-on-surface-variant">{{ metrics.summary.total_kecamatans }} {{ t('Unit Pengelola') }}</p>
                 </AppCard>
             </div>
 

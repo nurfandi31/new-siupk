@@ -365,14 +365,14 @@ function typeTone(type) {
                     <div class="flex flex-1 items-center justify-between gap-3 px-4 py-3">
                         <div class="flex items-center gap-2">
                             <AppIcon name="south_west" class="text-sm text-secondary" />
-                            <span class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Masuk') }}</span>
+                            <span class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Dana Masuk') }}</span>
                         </div>
                         <span class="truncate text-sm font-bold text-secondary">{{ money(account.stats.total_in) }}</span>
                     </div>
                     <div class="flex flex-1 items-center justify-between gap-3 px-4 py-3">
                         <div class="flex items-center gap-2">
                             <AppIcon name="north_east" class="text-sm text-tertiary" />
-                            <span class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Keluar') }}</span>
+                            <span class="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant">{{ t('Dana Keluar') }}</span>
                         </div>
                         <span class="truncate text-sm font-bold text-tertiary">{{ money(account.stats.total_out) }}</span>
                     </div>

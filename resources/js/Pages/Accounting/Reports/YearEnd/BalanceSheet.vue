@@ -61,7 +61,7 @@ const pdfHref = computed(() => {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Neraca Tutup Buku') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        Posisi per {{ as_of }} · Tahun Buku {{ year }}
+                        {{ t('Posisi per') }} {{ as_of }} {{ t('· Tahun Buku') }} {{ year }}
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -188,7 +188,7 @@ const pdfHref = computed(() => {
                     </tfoot>
                 </table>
                 <p class="border-t border-outline-variant/40 px-4 py-3 text-xs text-on-surface-variant">
-                    Saldo Laba Ditahan (termasuk laba tahun ini):
+                    {{ t('Saldo Laba Ditahan (termasuk laba tahun ini):') }}
                     <span class="font-semibold text-on-surface">
                         {{ money.format(totals.retained_balance) }}
                     </span>
@@ -197,10 +197,7 @@ const pdfHref = computed(() => {
 
             <AppCard class="p-5">
                 <p class="text-xs text-on-surface-variant">
-                    <strong class="text-on-surface">Catatan:</strong> Neraca ini adalah PREVIEW/SIMULASI yang
-                    ditampilkan SETELAH jurnal tutup buku diposting. Akun nominal (pendapatan &amp; beban) sudah
-                    dinolkan dan laba tahun berjalan sudah direklas ke Laba Ditahan. Posisi akhir sesuai Neraca
-                    posisi {{ t('31 Desember') }} {{ year }}.
+                    <strong class="text-on-surface">{{ t('Catatan:') }}</strong> {{ t('Neraca ini adalah PREVIEW/SIMULASI yang ditampilkan SETELAH jurnal tutup buku diposting. Akun nominal (pendapatan & beban) sudah dinolkan dan laba tahun berjalan sudah direklas ke Laba Ditahan. Posisi akhir sesuai Neraca posisi') }} {{ t('31 Desember') }} {{ year }}.
                 </p>
             </AppCard>
         </div>

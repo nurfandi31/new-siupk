@@ -100,7 +100,7 @@ const pdfUrl = computed(() => {
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Pinjaman') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Kelompok Aktif') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Daftar kelompok yang memiliki pinjaman aktif per
+                        {{ t('Daftar kelompok yang memiliki pinjaman aktif per') }}
                         <span class="font-semibold text-primary">{{ period_label }}</span>
                         — {{ identity.legal_name }}
                     </p>

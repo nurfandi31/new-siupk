@@ -162,7 +162,7 @@ searchMembers();
 </script>
 
 <template>
-    <Head :title="editing ? 'Edit Kelompok' : 'Tambah Kelompok'" />
+    <Head :title="editing ? t('Edit Kelompok') : t('Tambah Kelompok')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
             <header class="mb-6">

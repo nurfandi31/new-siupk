@@ -62,7 +62,7 @@ function save() {
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Catatan Atas Laporan Keuangan') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ period.period_label }} · ringkasan otomatis + catatan lembaga
+                        {{ period.period_label }} {{ t('· ringkasan otomatis + catatan lembaga') }}
                     </p>
                 </div>
                 <a :href="pdfHref" target="_blank" rel="noopener">
@@ -84,7 +84,7 @@ function save() {
                 <p class="mt-2 text-lg font-bold text-primary">{{ identity.legal_name }}</p>
                 <p v-if="identity.address" class="text-sm text-on-surface-variant">{{ identity.address }}</p>
                 <p v-if="identity.registration_number || identity.tax_number" class="mt-1 text-xs text-on-surface-variant">
-                    <span v-if="identity.registration_number">Registrasi {{ identity.registration_number }}</span>
+                    <span v-if="identity.registration_number">{{ t('Registrasi') }} {{ identity.registration_number }}</span>
                     <span v-if="identity.registration_number && identity.tax_number"> · </span>
                     <span v-if="identity.tax_number">NPWP {{ identity.tax_number }}</span>
                 </p>

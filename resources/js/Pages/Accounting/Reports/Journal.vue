@@ -107,7 +107,7 @@ function goPage(page) {
                 </div>
                 <div v-if="pagination.last_page > 1" class="flex items-center justify-between border-t border-outline-variant/40 px-4 py-3 text-sm">
                     <span class="text-on-surface-variant">
-                        Halaman {{ pagination.page }} / {{ pagination.last_page }} · {{ pagination.total }} baris
+                        {{ t('Halaman') }} {{ pagination.page }} / {{ pagination.last_page }} · {{ pagination.total }} {{ t('baris') }}
                     </span>
                     <div class="flex gap-2">
                         <AppButton

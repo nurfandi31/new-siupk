@@ -91,7 +91,7 @@ watch([status, planId, perPage], () => {
                         <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Tenant Lunas') }}</p>
                         <AppIcon name="check_circle" tone="success" container-size="8" container-shape="pill" />
                     </div>
-                    <p class="mt-2 text-2xl font-extrabold text-secondary">{{ summary.tenants_paid }} <span class="text-xs font-medium text-on-surface-variant">/ {{ summary.total_tenants }} tenant</span></p>
+                    <p class="mt-2 text-2xl font-extrabold text-secondary">{{ summary.tenants_paid }} <span class="text-xs font-medium text-on-surface-variant">/ {{ summary.total_tenants }} {{ t('tenant') }}</span></p>
                     <p class="mt-1.5 text-xs text-on-surface-variant">
                         {{ t('Total Pemasukan:') }} <strong class="text-secondary">{{ money(summary.total_collected) }}</strong>
                     </p>
@@ -128,7 +128,7 @@ watch([status, planId, perPage], () => {
                         {{ money(summary.total_outstanding) }}
                     </p>
                     <p class="mt-1.5 text-xs text-on-surface-variant">
-                        {{ summary.tenants_no_invoice }} tenant belum memiliki tagihan
+                        {{ summary.tenants_no_invoice }} {{ t('tenant belum memiliki tagihan') }}
                     </p>
                 </AppCard>
             </div>
@@ -189,7 +189,7 @@ watch([status, planId, perPage], () => {
                                         </Link>
                                         <div class="mt-0.5 flex items-center gap-2 text-xs text-on-surface-variant">
                                             <span>{{ tenant.code }}</span>
-                                            <span v-if="tenant.district_code">· kec. {{ tenant.district_code }}</span>
+                                            <span v-if="tenant.district_code">{{ t('· kec.') }} {{ tenant.district_code }}</span>
                                             <AppBadge :tone="tenant.tenant_status === 'active' ? 'success' : 'error'" size="sm">
                                                 {{ tenant.tenant_status === 'active' ? 'Aktif' : 'Suspended' }}
                                             </AppBadge>
@@ -290,7 +290,7 @@ watch([status, planId, perPage], () => {
                     class="flex items-center justify-between border-t border-outline-variant px-6 py-4 text-sm"
                 >
                     <p class="text-on-surface-variant">
-                        Menampilkan {{ tenants.from || 0 }} - {{ tenants.to || 0 }} dari {{ tenants.total }} tenant
+                        {{ t('Menampilkan') }} {{ tenants.from || 0 }} - {{ tenants.to || 0 }} {{ t('dari') }} {{ tenants.total }} {{ t('tenant') }}
                     </p>
                     <div class="flex gap-2">
                         <AppButton

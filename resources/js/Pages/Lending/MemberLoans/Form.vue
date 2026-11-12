@@ -255,7 +255,7 @@ function submit() {
 </script>
 
 <template>
-    <Head :title="isEdit ? 'Edit Proposal Pinjaman Individu' : 'Register Proposal Pinjaman Individu'" />
+    <Head :title="isEdit ? t('Edit Proposal Pinjaman Individu') : t('Register Proposal Pinjaman Individu')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl space-y-6 pb-12">
             <header class="mb-2 flex flex-wrap items-end justify-between gap-3">
@@ -264,9 +264,8 @@ function submit() {
                         {{ isEdit ? t('Edit Proposal Pinjaman Individu') : t('Register Proposal Pinjaman Individu') }}
                     </h1>
                     <p v-if="isEdit" class="mt-1 text-sm text-on-surface-variant">
-                        Ubah parameter pinjaman untuk proposal
-                        <strong class="text-on-surface">{{ loan?.loan_number || `#${loan?.row_id}` }}</strong>.
-                        Produk &amp; anggota tidak dapat diubah pada tahap ini.
+                        {{ t('Ubah parameter pinjaman untuk proposal') }}
+                        <strong class="text-on-surface">{{ loan?.loan_number || `#${loan?.row_id}` }}</strong>{{ t('. Produk & anggota tidak dapat diubah pada tahap ini.') }}
                     </p>
                 </div>
                 <Link v-if="isEdit" :href="`/lending/member-loans/${loan.row_id}`" class="text-sm font-semibold text-primary hover:underline">
@@ -305,7 +304,7 @@ function submit() {
 
                     <div v-if="selectedProduct" class="col-span-12 -mt-1 rounded-lg border border-secondary/30 bg-secondary/10 px-3 py-2 text-xs text-primary">
                         <span class="font-semibold">{{ selectedProduct.name }} ({{ selectedProduct.code }})</span>
-                        <span class="text-on-surface-variant"> · Jasa default {{ formatRate(selectedProduct.default_interest_rate) }}% / Tenor {{ selectedProduct.default_term_months }} bln</span>
+                        <span class="text-on-surface-variant"> {{ t('· Jasa default') }} {{ formatRate(selectedProduct.default_interest_rate) }}{{ t('% / Tenor') }} {{ selectedProduct.default_term_months }} {{ t('bln') }}</span>
                     </div>
 
                     <div v-if="selectedMember" class="col-span-12 -mt-1 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-xs text-primary">
@@ -365,8 +364,7 @@ function submit() {
                     </div>
 
                     <div v-if="periodPreview" class="col-span-12 -mt-1 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-xs text-on-surface-variant">
-                        Pokok: {{ periodPreview.principal.periods }}× angsuran ≈ {{ periodPreview.principal.perPeriod }} ·
-                        Jasa: {{ periodPreview.interest.periods }}× angsuran ≈ {{ periodPreview.interest.perPeriod }}
+                        {{ t('Pokok:') }} {{ periodPreview.principal.periods }}{{ t('× angsuran ≈') }} {{ periodPreview.principal.perPeriod }} {{ t('· Jasa:') }} {{ periodPreview.interest.periods }}{{ t('× angsuran ≈') }} {{ periodPreview.interest.perPeriod }}
                     </div>
 
                     <div class="col-span-12 my-1 border-t border-outline-variant"></div>

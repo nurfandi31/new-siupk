@@ -76,7 +76,7 @@ const emptyMessage = computed(() => emptyMessages[props.tab] ?? { title: t('Belu
 
             <AppCard :padded="false">
                 <div class="flex flex-wrap items-center justify-between gap-2 px-4 pt-3 text-xs text-on-surface-variant">
-                    <span>Total {{ loans?.total ?? 0 }} pinjaman pada tahap <strong class="text-on-surface">{{ tab.charAt(0).toUpperCase() + tab.slice(1) }}</strong>.</span>
+                    <span>{{ t('Total') }} {{ loans?.total ?? 0 }} {{ t('pinjaman pada tahap') }} <strong class="text-on-surface">{{ tab.charAt(0).toUpperCase() + tab.slice(1) }}</strong>.</span>
                 </div>
                 <SmartDataTable
                     :rows="loans.data"

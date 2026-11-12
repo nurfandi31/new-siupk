@@ -76,8 +76,7 @@ const formattedPeriod = computed(() => props.period_label);
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Pinjaman') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Daftar Waiting List Pinjaman') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Pinjaman yang masuk antrian persetujuan / pencairan.
-                        Periode: <span class="font-semibold text-primary">{{ formattedPeriod }}</span>
+                        {{ t('Pinjaman yang masuk antrian persetujuan / pencairan. Periode:') }} <span class="font-semibold text-primary">{{ formattedPeriod }}</span>
                     </p>
                 </div>
             </header>

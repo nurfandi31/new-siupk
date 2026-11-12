@@ -161,7 +161,7 @@ function formatDate(s: string | null | undefined): string {
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Jumlah Pinjaman') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.count }}</p>
-                    <p class="mt-1 text-[11px] text-on-surface-variant">Sisa tenor ≤ {{ max_remaining_tenor }} angsuran</p>
+                    <p class="mt-1 text-[11px] text-on-surface-variant">{{ t('Sisa tenor ≤') }} {{ max_remaining_tenor }} {{ t('angsuran') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Pokok') }}</p>
@@ -185,12 +185,12 @@ function formatDate(s: string | null | undefined): string {
                     <div>
                         <span class="font-bold text-primary">{{ t('Konteks:') }}</span>
                         <span class="text-on-surface">
-                            Pinjaman aktif dengan angsuran berikutnya jatuh tempo antara
+                            {{ t('Pinjaman aktif dengan angsuran berikutnya jatuh tempo antara') }}
                             <strong>{{ formatDate(as_of) }}</strong> s.d. <strong>{{ formatDate(horizon_end) }}</strong>
                         </span>
                     </div>
                     <div class="text-xs text-on-surface-variant">
-                        Sort: <span class="font-semibold text-primary">{{ t('tgl jatuh tempo paling dekat di atas') }}</span>
+                        {{ t('Sort:') }} <span class="font-semibold text-primary">{{ t('tgl jatuh tempo paling dekat di atas') }}</span>
                     </div>
                 </div>
             </AppCard>
@@ -258,7 +258,7 @@ function formatDate(s: string | null | undefined): string {
                             <td class="p-3 text-right">{{ formatMoney(totals.principal_total) }}</td>
                             <td class="p-3 text-right text-primary">{{ formatMoney(totals.remaining_principal_total) }}</td>
                             <td colspan="5" class="p-3 text-center text-on-surface-variant">
-                                {{ totals.count }} pinjaman
+                                {{ totals.count }} {{ t('pinjaman') }}
                             </td>
                         </tr>
                     </tfoot>

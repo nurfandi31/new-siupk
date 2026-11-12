@@ -50,8 +50,8 @@ function statusBadgeClass(status) {
 }
 
 function statusLabel(status) {
-    if (status === 'done') return 'Selesai';
-    if (status === 'current') return 'Aktif';
+    if (status === 'done') return t('Selesai');
+    if (status === 'current') return t('Aktif');
     return 'Akan Datang';
 }
 </script>

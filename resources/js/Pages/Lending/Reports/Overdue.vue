@@ -132,7 +132,7 @@ function kolekClass(k: string): string {
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Piutang') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Daftar Tunggakan') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Pinjaman aktif dengan angsuran lewat jatuh tempo — {{ period.period_label }} — {{ identity.legal_name }}
+                        {{ t('Pinjaman aktif dengan angsuran lewat jatuh tempo —') }} {{ period.period_label }} — {{ identity.legal_name }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -159,22 +159,22 @@ function kolekClass(k: string): string {
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pinjaman Menunggak') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ totals.loan_count }}</p>
-                    <p class="text-xs text-on-surface-variant">{{ totals.overdue_installment_count }} angsuran lewat tempo</p>
+                    <p class="text-xs text-on-surface-variant">{{ totals.overdue_installment_count }} {{ t('angsuran lewat tempo') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total Tunggakan') }}</p>
                     <p class="mt-2 text-xl font-bold text-error">{{ formatMoney(totals.overdue_amount) }}</p>
-                    <p class="text-xs text-on-surface-variant">Pokok {{ formatMoney(totals.overdue_principal) }} · Bunga {{ formatMoney(totals.overdue_interest) }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Pokok') }} {{ formatMoney(totals.overdue_principal) }} {{ t('· Bunga') }} {{ formatMoney(totals.overdue_interest) }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Rata-rata Keterlambatan') }}</p>
-                    <p class="mt-2 text-xl font-bold text-primary">{{ totals.avg_days_overdue }} hari</p>
-                    <p class="text-xs text-on-surface-variant">Maks: {{ totals.max_days_overdue }} hari</p>
+                    <p class="mt-2 text-xl font-bold text-primary">{{ totals.avg_days_overdue }} {{ t('hari') }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Maks:') }} {{ totals.max_days_overdue }} {{ t('hari') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Sisa Pokok') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ formatMoney(totals.principal_remaining) }}</p>
-                    <p class="text-xs text-on-surface-variant">dari alokasi {{ formatMoney(totals.principal_disbursed) }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('dari alokasi') }} {{ formatMoney(totals.principal_disbursed) }}</p>
                 </AppCard>
             </div>
 
@@ -280,15 +280,15 @@ function kolekClass(k: string): string {
                         </tbody>
                         <tfoot v-if="rows.length > 0">
                             <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                <td class="px-3 py-2" colspan="4">TOTAL ({{ totals.loan_count }} pinjaman)</td>
+                                <td class="px-3 py-2" colspan="4">TOTAL ({{ totals.loan_count }} {{ t('pinjaman)') }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.principal_disbursed) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.principal_remaining) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.overdue_principal) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.overdue_interest) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums text-error">{{ formatMoney(totals.overdue_amount) }}</td>
                                 <td class="px-3 py-2 text-center">{{ totals.overdue_installment_count }}</td>
-                                <td class="px-3 py-2 text-center">maks {{ totals.max_days_overdue }}</td>
-                                <td class="px-3 py-2 text-center">rerata {{ totals.avg_days_overdue }}</td>
+                                <td class="px-3 py-2 text-center">{{ t('maks') }} {{ totals.max_days_overdue }}</td>
+                                <td class="px-3 py-2 text-center">{{ t('rerata') }} {{ totals.avg_days_overdue }}</td>
                             </tr>
                         </tfoot>
                     </table>

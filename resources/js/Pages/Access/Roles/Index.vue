@@ -84,7 +84,7 @@ async function confirmDelete(role) {
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span v-if="role.is_locked" class="font-semibold text-primary text-xs">{{ t('Semua Akses (*)') }}</span>
-                                    <span v-else class="text-xs font-medium text-on-surface-variant">{{ role.permissions_count }} izin</span>
+                                    <span v-else class="text-xs font-medium text-on-surface-variant">{{ role.permissions_count }} {{ t('izin') }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-1">

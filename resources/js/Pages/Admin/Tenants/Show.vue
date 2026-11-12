@@ -220,7 +220,7 @@ async function autoLogin(domain = null, userId = null) {
                             <span>{{ t('kec.') }} {{ tenant.district_code || '—' }}</span>
                             <template v-if="tenant.placement?.shard?.code">
                                 <span class="text-outline">·</span>
-                                <span>shard {{ tenant.placement.shard.code }}</span>
+                                <span>{{ t('shard') }} {{ tenant.placement.shard.code }}</span>
                             </template>
                         </p>
                     </div>

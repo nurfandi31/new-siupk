@@ -15,7 +15,7 @@ import { useI18n } from '../i18n';
 const { t, locale } = useI18n();
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
-const appName = computed(() => page.props.appName || 'siupk Next');
+const appName = computed(() => page.props.appName || t('siupk Next'));
 const currentPath = computed(() => page.url.split('?')[0]);
 const mobileMenuOpen = ref(false);
 const sidebarCollapsed = ref(false);
@@ -36,7 +36,7 @@ watch(sidebarCollapsed, (v) => {
 });
 
 function navLabel(label) {
-    if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : 'Beranda';
+    if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : t('Beranda');
     return t(label);
 }
 
@@ -235,7 +235,7 @@ function logout() {
                     class="ml-1 flex shrink-0 items-center gap-2 rounded-full chip-shadow bg-surface-container-lowest py-1 pl-1 pr-3 ring-1 ring-outline-variant transition hover:bg-surface-container-low hover:ring-primary/40"
                     :aria-label="t('Buka Profil')"
                 >
-                    <span class="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'Admin'" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'A' }}</span></span>
+                    <span class="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || t('Admin')" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'A' }}</span></span>
                     <span class="hidden min-w-0 flex-col leading-tight sm:flex">
                         <span class="truncate text-xs font-bold text-primary">{{ user?.name || t('Superadmin') }}</span>
                         <span class="truncate text-[10px] font-medium text-on-surface-variant">{{ t('Superadmin Platform') }}</span>

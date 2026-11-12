@@ -28,9 +28,9 @@ const page = usePage();
 const flash = computed(() => page.props.flash?.success);
 
 const tabs = [
-    { key: 'personal', label: t('Data Pribadi'), shortLabel: 'Pribadi', icon: 'badge' },
-    { key: 'account', label: t('Akun'), shortLabel: 'Akun', icon: 'manage_accounts' },
-    { key: 'photo', label: t('Foto'), shortLabel: 'Foto', icon: 'account_circle' },
+    { key: 'personal', label: t('Data Pribadi'), shortLabel: t('Pribadi'), icon: 'badge' },
+    { key: 'account', label: t('Akun'), shortLabel: t('Akun'), icon: 'manage_accounts' },
+    { key: 'photo', label: t('Foto'), shortLabel: t('Foto'), icon: 'account_circle' },
 ];
 
 const mobileTabs = tabs.map(({ key, shortLabel, icon }) => ({ key, label: shortLabel, icon }));

@@ -477,7 +477,7 @@ onBeforeUnmount(() => {
                 </div>
 
                 <p class="border-t border-outline-variant/60 pt-3 text-xs text-on-surface-variant">
-                    Hasil {{ outputDimensions.width }} × {{ outputDimensions.height }} px · {{ outputFormatLabel }}
+                    {{ t('Hasil') }} {{ outputDimensions.width }} × {{ outputDimensions.height }} {{ t('px ·') }} {{ outputFormatLabel }}
                 </p>
             </div>
         </div>

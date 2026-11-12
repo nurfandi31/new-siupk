@@ -144,10 +144,9 @@ function transactionTypeLabel(value) {
         <div class="mx-auto max-w-4xl space-y-6">
             <header>
                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Koreksi Transaksi') }}</p>
-                <h1 class="mt-1 text-2xl font-bold text-primary sm:text-3xl">Koreksi Jurnal #{{ originalEntry.id }}</h1>
+                <h1 class="mt-1 text-2xl font-bold text-primary sm:text-3xl">{{ t('Koreksi Jurnal #') }}{{ originalEntry.id }}</h1>
                 <p class="mt-1 text-sm text-on-surface-variant">
-                    Jurnal lama akan di-<strong>reverse</strong> dan diganti dengan jurnal baru menggunakan data di bawah ini.
-                    Audit trail tetap utuh.
+                    {{ t('Jurnal lama akan di-') }}<strong>{{ t('reverse') }}</strong> {{ t('dan diganti dengan jurnal baru menggunakan data di bawah ini. Audit trail tetap utuh.') }}
                 </p>
             </header>
 
@@ -174,8 +173,7 @@ function transactionTypeLabel(value) {
                             </li>
                         </ul>
                         <p class="mt-2 text-sm text-warning">
-                            Jurnal lama tidak berubah sampai Anda klik <strong>Simpan Koreksi</strong>.
-                            Kedua jurnal (reversal + baru) akan dibuat bersamaan dalam satu transaksi.
+                            {{ t('Jurnal lama tidak berubah sampai Anda klik') }} <strong>{{ t('Simpan Koreksi') }}</strong>{{ t('. Kedua jurnal (reversal + baru) akan dibuat bersamaan dalam satu transaksi.') }}
                         </p>
                     </div>
                 </div>
@@ -215,7 +213,7 @@ function transactionTypeLabel(value) {
                         <SmartSelect
                             v-model="form.sumber_dana_row_id"
                             :options="sumberDanaOptions"
-                            :label="sumberDanaLabel + ' (Kredit)'"
+                            :label="sumberDanaLabel + t(' (Kredit)')"
                             :placeholder="t('Pilih akun')"
                             :disabled="!currentType"
                             required
@@ -224,7 +222,7 @@ function transactionTypeLabel(value) {
                         <SmartSelect
                             v-model="form.disimpan_ke_row_id"
                             :options="disimpanKeOptions"
-                            :label="disimpanKeLabel + ' (Debit)'"
+                            :label="disimpanKeLabel + t(' (Debit)')"
                             :placeholder="t('Pilih akun')"
                             :disabled="!currentType"
                             required
@@ -252,7 +250,7 @@ function transactionTypeLabel(value) {
                                 required
                                 :error="form.errors.asset_useful_life_months"
                                 :placeholder="currentType === 'pembelian_aset_tanah' ? '0' : '48'"
-                                :hint="currentType === 'pembelian_aset_tanah' ? 'Tanah: 0 = tidak disusutkan' : null"
+                                :hint="currentType === 'pembelian_aset_tanah' ? t('Tanah: 0 = tidak disusutkan') : null"
                             />
                             <AppCurrencyInput v-model="form.amount" :label="t('Harga Perolehan')" icon="payments" :min="1" required readonly :error="form.errors.amount" placeholder="0" :hint="t('Otomatis: unit × harga satuan')" />
                         </div>

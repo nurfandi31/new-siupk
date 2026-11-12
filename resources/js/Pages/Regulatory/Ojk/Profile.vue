@@ -134,7 +134,7 @@ function formatDate(value: string | null): string {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Profil Kelembagaan') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Untuk periode yang berakhir pada {{ date_formatted }}
+                        {{ t('Untuk periode yang berakhir pada') }} {{ date_formatted }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -352,7 +352,7 @@ function formatDate(value: string | null): string {
                     {{ t('5. Tanda Tangan Pengesahan') }}
                 </h3>
                 <p class="mb-3 text-sm text-on-surface-variant">
-                    Laporan ini disusun dan disahkan oleh pengurus pada tanggal {{ date_formatted }}.
+                    {{ t('Laporan ini disusun dan disahkan oleh pengurus pada tanggal') }} {{ date_formatted }}.
                 </p>
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
                     <div v-if="identity.manager_name" class="text-center">

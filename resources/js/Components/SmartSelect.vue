@@ -80,7 +80,7 @@ const visibleRows = computed(() => {
     for (const option of opts) {
         const group = option[props.groupKey] || '';
         if (group !== lastGroup) {
-            rows.push({ kind: 'header', label: group || 'Lainnya' });
+            rows.push({ kind: 'header', label: group || t('Lainnya') });
             lastGroup = group;
         }
         rows.push({ kind: 'option', option, index: index++ });

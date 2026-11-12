@@ -116,14 +116,14 @@ const termMonths = computed(() => {
         <dl class="space-y-1 px-4 pb-3 text-xs text-on-surface-variant">
             <div class="flex items-center gap-2">
                 <AppIcon name="group" class="shrink-0 text-base text-outline" />
-                <span class="truncate">{{ beneficiariesCount }} pemanfaat</span>
+                <span class="truncate">{{ beneficiariesCount }} {{ t('pemanfaat') }}</span>
                 <span v-if="termMonths" class="ml-auto shrink-0 rounded-full bg-surface-container px-2 py-0.5 text-[11px] font-semibold text-on-surface-variant">
                     {{ termMonths }}
                 </span>
             </div>
             <div v-if="Number(loan.service_rate ?? 0) > 0" class="flex items-center gap-2">
                 <AppIcon name="percent" class="shrink-0 text-base text-outline" />
-                <span>Jasa {{ Number(loan.service_rate).toFixed(2) }}%</span>
+                <span>{{ t('Jasa') }} {{ Number(loan.service_rate).toFixed(2) }}%</span>
             </div>
             <div v-if="stageDateText" class="flex items-center gap-2">
                 <AppIcon name="event" class="shrink-0 text-base text-outline" />

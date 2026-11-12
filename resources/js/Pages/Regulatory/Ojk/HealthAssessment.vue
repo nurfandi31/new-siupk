@@ -151,7 +151,7 @@ function statusClass(status: string): string {
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('OJK • Regulatory') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ title }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        {{ framework_label }} · {{ period_label }} · per {{ as_of ?? '-' }}
+                        {{ framework_label }} · {{ period_label }} {{ t('· per') }} {{ as_of ?? '-' }}
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -289,7 +289,7 @@ function statusClass(status: string): string {
             </AppCard>
 
             <p class="text-xs text-on-surface-variant">
-                Dicetak: {{ generated_at ?? '-' }}. Nilai bersumber dari neraca OJK, laba rugi OJK, kolektibilitas, dan CKPN pada periode terpilih.
+                {{ t('Dicetak:') }} {{ generated_at ?? '-' }}{{ t('. Nilai bersumber dari neraca OJK, laba rugi OJK, kolektibilitas, dan CKPN pada periode terpilih.') }}
             </p>
         </div>
     </AuthenticatedLayout>

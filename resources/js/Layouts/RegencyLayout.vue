@@ -11,14 +11,14 @@ import { useI18n } from '../i18n';
 const { t, locale } = useI18n();
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
-const appName = computed(() => page.props.appName || 'siupk Next');
+const appName = computed(() => page.props.appName || t('siupk Next'));
 const currentPath = computed(() => page.url.split('?')[0]);
 const mobileMenuOpen = ref(false);
 const logoutForm = useForm({});
 const avatarError = ref(false);
 
 function navLabel(label) {
-    if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : 'Beranda';
+    if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : t('Beranda');
     return t(label);
 }
 
@@ -29,7 +29,7 @@ const navigation = [
     { label: t('Perubahan Modal'), icon: 'balance', href: '/regency/reports/equity-changes' },
     { label: t('Buku Besar'), icon: 'menu_book', href: '/regency/reports/general-ledger' },
     { label: t('Arus Kas'), icon: 'payments', href: '/regency/reports/cash-flow' },
-    { label: 'CALK', icon: 'description', href: '/regency/reports/calk' },
+    { label: t('CALK'), icon: 'description', href: '/regency/reports/calk' },
 ];
 
 function isActive(item) {
@@ -87,7 +87,7 @@ function logout() {
 
             <div class="mt-4 border-t border-primary-container/40 px-4 pt-4">
                 <div class="flex min-w-0 items-center gap-3 rounded-xl bg-primary-container/50 p-3 shadow-inner shadow-black/20">
-                    <div class="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-sm font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || 'Kabupaten'" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'K' }}</span></div>
+                    <div class="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-sm font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || t('Kabupaten')" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'K' }}</span></div>
                     <div class="min-w-0 flex-1">
                         <p class="truncate font-bold text-on-primary">{{ user?.name || t('Supervisor') }}</p>
                         <p class="truncate text-xs text-primary-fixed-dim">{{ t('Level Kabupaten') }}</p>

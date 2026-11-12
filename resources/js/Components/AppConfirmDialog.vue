@@ -61,7 +61,7 @@ const tone = computed(() => tones[confirmState.variant] || tones.primary);
 
 const eyebrow = computed(() => {
     if (!confirmState.cancelLabel && confirmState.variant !== 'danger') {
-        return 'Pemberitahuan';
+        return t('Pemberitahuan');
     }
     return tone.value.eyebrow;
 });

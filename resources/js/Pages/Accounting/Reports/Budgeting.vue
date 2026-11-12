@@ -202,7 +202,7 @@ watch(
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('E-Budgeting per Triwulan') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ period.range_label }} · Rencana Anggaran vs Realisasi
+                        {{ period.range_label }} {{ t('· Rencana Anggaran vs Realisasi') }}
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -278,7 +278,7 @@ watch(
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <AppCard class="p-4">
                     <p class="text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                        Anggaran {{ quarterLabel }}
+                        {{ t('Anggaran') }} {{ quarterLabel }}
                     </p>
                     <p class="mt-2 text-xl font-bold text-primary">
                         {{ fmt(props.totals.revenue.budget_quarter) }}
@@ -289,7 +289,7 @@ watch(
                 </AppCard>
                 <AppCard class="p-4">
                     <p class="text-xs font-bold uppercase tracking-wide text-on-surface-variant">
-                        Realisasi {{ quarterLabel }}
+                        {{ t('Realisasi') }} {{ quarterLabel }}
                     </p>
                     <p class="mt-2 text-xl font-bold text-primary">
                         {{ fmt(props.totals.expense.realized_quarter - props.totals.revenue.realized_quarter) }}
@@ -309,7 +309,7 @@ watch(
                         {{ fmt(props.totals.net.variance) }}
                     </p>
                     <p class="text-xs text-on-surface-variant">
-                        Selisih anggaran vs realisasi {{ quarterLabel }}
+                        {{ t('Selisih anggaran vs realisasi') }} {{ quarterLabel }}
                     </p>
                 </AppCard>
                 <AppCard class="p-4">
@@ -532,7 +532,7 @@ watch(
             </AppCard>
 
             <p v-if="generated_at" class="text-right text-[11px] text-on-surface-variant">
-                Digenerate pada {{ generated_at }}
+                {{ t('Digenerate pada') }} {{ generated_at }}
             </p>
         </div>
     </AuthenticatedLayout>

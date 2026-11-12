@@ -60,7 +60,7 @@ watch(selectedYear, (value) => {
 const form = useForm({ amounts: {} });
 const editable = computed(() => props.sheet.editable);
 const statusTone = computed(() => (props.budget.status === 'approved' ? 'success' : 'warning'));
-const statusLabel = computed(() => (props.budget.status === 'approved' ? 'Disetujui' : 'Draft'));
+const statusLabel = computed(() => (props.budget.status === 'approved' ? t('Disetujui') : t('Draft')));
 
 const liveTotals = computed(() => {
     const totals = { revenue: 0, expense: 0, surplus: 0 };
@@ -191,7 +191,7 @@ function monthMeta(month) {
             </div>
 
             <div v-if="!editable" class="rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
-                Anggaran tahun {{ year }} sudah disetujui. Buka draft untuk mengubah.
+                {{ t('Anggaran tahun') }} {{ year }} {{ t('sudah disetujui. Buka draft untuk mengubah.') }}
             </div>
 
             <AppCard v-for="group in sheet.groups" :key="group.type" :padded="false">
@@ -203,7 +203,7 @@ function monthMeta(month) {
                 </div>
 
                 <div v-if="group.accounts.length === 0" class="px-6 py-8 text-sm text-on-surface-variant">
-                    Belum ada akun {{ group.label.toLowerCase() }} postable.
+                    {{ t('Belum ada akun') }} {{ group.label.toLowerCase() }} postable.
                 </div>
 
                 <div v-else class="divide-y divide-outline-variant">
@@ -214,7 +214,7 @@ function monthMeta(month) {
                     >
                         <div>
                             <p class="font-semibold text-primary">{{ account.code }} · {{ account.name }}</p>
-                            <p class="text-xs text-on-surface-variant">Akun {{ group.label.toLowerCase() }}</p>
+                            <p class="text-xs text-on-surface-variant">{{ t('Akun') }} {{ group.label.toLowerCase() }}</p>
                         </div>
                         <AppCurrencyInput
                             v-model="amounts[account.row_id]"
@@ -236,7 +236,7 @@ function monthMeta(month) {
                 <div class="min-w-0 text-sm text-on-surface-variant">
                     <span class="font-semibold text-primary">{{ monthLabels[month] }} {{ year }}</span>
                     <span class="mx-2 text-outline">·</span>
-                    Surplus {{ formatMoney(liveTotals.surplus) }}
+                    {{ t('Surplus') }} {{ formatMoney(liveTotals.surplus) }}
                 </div>
                 <div v-if="can('budgeting.manage')" class="flex flex-wrap items-center gap-2">
                     <AppButton
@@ -250,7 +250,7 @@ function monthMeta(month) {
                         {{ t('Salin bulan lalu') }}
                     </AppButton>
                     <AppButton icon="save" :loading="form.processing" @click="submit">
-                        Simpan {{ monthLabels[month] }}
+                        {{ t('Simpan') }} {{ monthLabels[month] }}
                     </AppButton>
                 </div>
             </div>

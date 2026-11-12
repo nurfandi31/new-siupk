@@ -37,7 +37,7 @@ const tabs = [
                 <div>
                     <h1 class="text-2xl font-bold text-primary">{{ t('Paket Laporan Keuangan Konsolidasi') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        5 Laporan Keuangan Standar Provinsi {{ province_name }} ({{ pack.period?.period_label }}).
+                        {{ t('5 Laporan Keuangan Standar Provinsi') }} {{ province_name }} ({{ pack.period?.period_label }}).
                     </p>
                 </div>
 
@@ -214,7 +214,7 @@ const tabs = [
                     </div>
                     <div>
                         <h3 class="font-bold text-primary">{{ t('3. Cakupan Konsolidasi') }}</h3>
-                        <p class="mt-1 text-on-surface-variant">Laporan ini mencakup {{ pack.calk.tenants_count }} Unit Pengelola Kegiatan se-Provinsi.</p>
+                        <p class="mt-1 text-on-surface-variant">{{ t('Laporan ini mencakup') }} {{ pack.calk.tenants_count }} {{ t('Unit Pengelola Kegiatan se-Provinsi.') }}</p>
                     </div>
                 </div>
             </AppCard>

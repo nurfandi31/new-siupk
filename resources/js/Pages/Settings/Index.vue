@@ -661,9 +661,9 @@ function applySignatureStarter() {
                         <div class="flex items-start gap-3 rounded-2xl border border-info/30 bg-info-container/30 p-4">
                             <AppIcon name="tips_and_updates" tone="info" :container-size="9" />
                             <p class="text-sm text-on-surface">
-                                Tanda tangan gambar akan otomatis disisipkan ke PDF melalui placeholder
+                                {{ t('Tanda tangan gambar akan otomatis disisipkan ke PDF melalui placeholder') }}
                                 <code class="rounded bg-surface-container px-1.5 py-0.5 font-mono text-xs font-bold">{ttd_image}</code>
-                                atau langsung ke baris kosong pertama pada template.
+                                {{ t('atau langsung ke baris kosong pertama pada template.') }}
                             </p>
                         </div>
 

@@ -142,7 +142,7 @@ function backHref(): string {
 </script>
 
 <template>
-    <Head :title="isEdit ? 'Edit Catatan Pengawas' : 'Catatan Pengawas Baru'" />
+    <Head :title="isEdit ? t('Edit Catatan Pengawas') : t('Catatan Pengawas Baru')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-4xl space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

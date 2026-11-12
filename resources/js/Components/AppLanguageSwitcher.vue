@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { router } from '@inertiajs/vue3';
 import AppIcon from './AppIcon.vue';
 import { useI18n } from '../i18n';
 
@@ -46,15 +45,13 @@ const triggerClass = computed(() => {
 });
 
 function choose(code) {
-    const changed = code !== locale.value;
     setLocale(code);
     open.value = false;
 
-    // Sebagian label disusun saat setup (mis. kolom tabel & menu), jadi muat
-    // ulang halaman agar seluruh UI langsung memakai bahasa yang dipilih.
-    if (changed) {
-        router.reload({ preserveScroll: true, preserveState: false });
-    }
+    // Label yang disusun saat setup (kolom tabel, menu, opsi filter) tidak
+    // otomatis reaktif terhadap locale. Halaman Inertia di-remount lewat
+    // wrapper ber-key di app.js setiap kali locale berubah, sehingga tidak
+    // perlu reload jaringan/reset state halaman.
 }
 
 function onDocumentPointerDown(event) {

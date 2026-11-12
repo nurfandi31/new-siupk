@@ -55,7 +55,7 @@ const shortcutGroups = computed(() => [
     <AppModal v-model="model" :title="t('Pintasan Keyboard (Shortcuts)')" size="lg">
         <div class="space-y-6">
             <p class="text-xs text-on-surface-variant leading-relaxed">
-                Gunakan kombinasi tombol berikut untuk mempercepat navigasi dan pengoperasian aplikasi di <strong>Desktop</strong> maupun <strong>Website</strong>.
+                {{ t('Gunakan kombinasi tombol berikut untuk mempercepat navigasi dan pengoperasian aplikasi di') }} <strong>{{ t('Desktop') }}</strong> {{ t('maupun') }} <strong>{{ t('Website') }}</strong>.
             </p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -96,7 +96,7 @@ const shortcutGroups = computed(() => [
             <div class="rounded-lg bg-surface-container-high/60 px-3.5 py-2.5 text-[11px] text-on-surface-variant flex items-center gap-2">
                 <AppIcon name="info" class="text-primary text-sm shrink-0" />
                 <span>
-                    <strong>Tips:</strong> Pintasan kombinasi <code>{{ modifierKey }}</code> dapat ditekan kapan saja tanpa mengganggu pengetikan formulir.
+                    <strong>{{ t('Tips:') }}</strong> {{ t('Pintasan kombinasi') }} <code>{{ modifierKey }}</code> {{ t('dapat ditekan kapan saja tanpa mengganggu pengetikan formulir.') }}
                 </span>
             </div>
         </div>

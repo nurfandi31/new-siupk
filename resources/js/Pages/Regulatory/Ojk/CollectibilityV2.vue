@@ -177,7 +177,7 @@ const pdfUrl = computed<string>(() => {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Kolektibilitas OJK v2 (KBP2)') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ props.period_label }} · per {{ props.as_of ?? '-' }}
+                        {{ props.period_label }} {{ t('· per') }} {{ props.as_of ?? '-' }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -250,8 +250,7 @@ const pdfUrl = computed<string>(() => {
                             {{ prod.product_name }} ({{ prod.product_code }})
                         </h2>
                         <span class="text-xs text-on-surface-variant">
-                            {{ Number(prod.loan_count) }} pinjaman ·
-                            outstanding {{ fmt(prod.outstanding) }}
+                            {{ Number(prod.loan_count) }} {{ t('pinjaman · outstanding') }} {{ fmt(prod.outstanding) }}
                         </span>
                     </div>
 
@@ -316,7 +315,7 @@ const pdfUrl = computed<string>(() => {
             </p>
 
             <p v-if="generated_at" class="text-right text-[11px] text-on-surface-variant">
-                Digenerate pada {{ generated_at }}
+                {{ t('Digenerate pada') }} {{ generated_at }}
             </p>
         </div>
     </AuthenticatedLayout>

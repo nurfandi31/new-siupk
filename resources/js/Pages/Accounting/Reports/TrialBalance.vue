@@ -29,7 +29,7 @@ const money = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximum
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Neraca Saldo') }}</h1>
-                    <p class="text-sm text-on-surface-variant">{{ period.period_label }} · per {{ period.as_of }}</p>
+                    <p class="text-sm text-on-surface-variant">{{ period.period_label }} {{ t('· per') }} {{ period.as_of }}</p>
                 </div>
                 <AppBadge :tone="balanced ? 'success' : 'error'">
                     {{ balanced ? t('Seimbang') : t('Tidak seimbang') }}
@@ -96,8 +96,8 @@ const money = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximum
                     </table>
                 </div>
                 <p class="border-t border-outline-variant/40 px-4 py-3 text-xs text-on-surface-variant">
-                    Laba/Rugi berjalan: <span class="font-semibold text-on-surface">{{ money.format(net_income) }}</span>
-                    (plug ke footer agar kolom seimbang, seperti legacy)
+                    {{ t('Laba/Rugi berjalan:') }} <span class="font-semibold text-on-surface">{{ money.format(net_income) }}</span>
+                    {{ t('(plug ke footer agar kolom seimbang, seperti legacy)') }}
                 </p>
             </AppCard>
         </div>

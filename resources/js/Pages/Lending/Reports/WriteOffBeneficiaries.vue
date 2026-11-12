@@ -135,9 +135,8 @@ function openDetail(rowId: number): void {
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Laporan Piutang') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Pinjaman Dihapusbukukan — Anggota Kelompok') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Daftar pinjaman kelompok (<span class="font-semibold text-primary">legacy_source = group_loan</span>)
-                        yang berstatus <AppBadge tone="error">{{ t('Dihapusbukukan') }}</AppBadge>
-                        per <span class="font-semibold text-primary">{{ period_label }}</span>
+                        {{ t('Daftar pinjaman kelompok (') }}<span class="font-semibold text-primary">legacy_source = group_loan</span>{{ t(') yang berstatus') }} <AppBadge tone="error">{{ t('Dihapusbukukan') }}</AppBadge>
+                        {{ t('per') }} <span class="font-semibold text-primary">{{ period_label }}</span>
                         — {{ identity.legal_name }}
                     </p>
                 </div>
@@ -249,7 +248,7 @@ function openDetail(rowId: number): void {
                     </tbody>
                     <tfoot v-if="rows.length > 0" class="bg-surface-variant/40 font-bold text-on-surface">
                         <tr class="border-t-2 border-outline">
-                            <td colspan="4" class="p-3">TOTAL ({{ totals.count }} pinjaman)</td>
+                            <td colspan="4" class="p-3">TOTAL ({{ totals.count }} {{ t('pinjaman)') }}</td>
                             <td class="p-3 text-right tabular-nums">{{ formatMoney(totals.principal_total) }}</td>
                             <td class="p-3 text-right tabular-nums">{{ formatMoney(totals.sisa_pokok_total) }}</td>
                             <td class="p-3 text-right tabular-nums text-error">{{ formatMoney(totals.ckpn_total) }}</td>

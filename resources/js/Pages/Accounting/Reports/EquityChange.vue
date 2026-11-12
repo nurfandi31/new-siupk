@@ -30,7 +30,7 @@ function formatMoney(v) {
                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
                 <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Laporan Perubahan Ekuitas') }}</h1>
                 <p class="text-sm text-on-surface-variant">
-                    {{ period.period_label }} · opening → laba/mutasi → closing (bukan daftar saldo saja)
+                    {{ period.period_label }} {{ t('· opening → laba/mutasi → closing (bukan daftar saldo saja)') }}
                 </p>
             </div>
 

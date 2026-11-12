@@ -92,7 +92,7 @@ const pdfUrl = computed(() => {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Cover Laporan OJK') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Halaman sampul untuk periode {{ period_label }}
+                        {{ t('Halaman sampul untuk periode') }} {{ period_label }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -148,7 +148,7 @@ const pdfUrl = computed(() => {
                                 {{ t('Laporan Keuangan') }}
                             </h3>
                             <p class="mt-1 text-base font-semibold text-primary sm:text-lg">
-                                Periode {{ period_label }}
+                                {{ t('Periode') }} {{ period_label }}
                             </p>
                         </div>
 

@@ -110,9 +110,9 @@ function asLoanRow(r: Record<string, unknown>): LoanRow {
 }
 
 function kolekLabel(k: number): string {
-    if (k === 1) return 'Lancar';
-    if (k === 2) return 'Diragukan';
-    return 'Macet';
+    if (k === 1) return t('Lancar');
+    if (k === 2) return t('Diragukan');
+    return t('Macet');
 }
 </script>
 
@@ -163,10 +163,10 @@ function kolekLabel(k: number): string {
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div class="text-sm">
                         <span class="font-bold text-primary">{{ t('Periode Mingguan Aktif:') }}</span>
-                        <span class="text-on-surface">Minggu ke-{{ week }} • {{ week_start }} s.d. {{ week_end }}</span>
+                        <span class="text-on-surface">{{ t('Minggu ke-') }}{{ week }} • {{ week_start }} s.d. {{ week_end }}</span>
                     </div>
                     <div class="text-xs text-on-surface-variant">
-                        Subjek: <span class="font-semibold text-primary">{{ t('Individu') }}</span>
+                        {{ t('Subjek:') }} <span class="font-semibold text-primary">{{ t('Individu') }}</span>
                     </div>
                 </div>
             </AppCard>
@@ -219,12 +219,12 @@ function kolekLabel(k: number): string {
                                     </td>
                                 </tr>
                                 <tr class="bg-surface-variant/20 font-semibold">
-                                    <td colspan="2" class="p-2.5">Subtotal {{ v.village_name }}</td>
+                                    <td colspan="2" class="p-2.5">{{ t('Subtotal') }} {{ v.village_name }}</td>
                                     <td class="p-2.5 text-right">{{ formatMoney(v.subtotal.alokasi) }}</td>
                                     <td class="p-2.5 text-right text-primary">{{ formatMoney(v.subtotal.saldo) }}</td>
                                     <td class="p-2.5 text-right border-l border-outline-variant/20">{{ formatMoney(v.subtotal.tunggakan_pokok) }}</td>
                                     <td class="p-2.5 text-right">{{ formatMoney(v.subtotal.tunggakan_jasa) }}</td>
-                                    <td class="p-2.5 text-center border-l border-outline-variant/20">{{ v.subtotal.peminjam_count }} peminjam</td>
+                                    <td class="p-2.5 text-center border-l border-outline-variant/20">{{ v.subtotal.peminjam_count }} {{ t('peminjam') }}</td>
                                 </tr>
                             </template>
                         </tbody>
@@ -239,7 +239,7 @@ function kolekLabel(k: number): string {
                                 <td class="p-3 text-right" :class="prod.totals.tunggakan_jasa > 0 ? 'text-error' : ''">
                                     {{ formatMoney(prod.totals.tunggakan_jasa) }}
                                 </td>
-                                <td class="p-3 text-center border-l border-outline-variant/20">{{ prod.totals.peminjam_count }} peminjam</td>
+                                <td class="p-3 text-center border-l border-outline-variant/20">{{ prod.totals.peminjam_count }} {{ t('peminjam') }}</td>
                             </tr>
                         </tfoot>
                     </table>

@@ -48,7 +48,7 @@ const loanStatus = {
     cancelled: { label: t('Batal'), tone: 'error' },
     written_off: { label: t('Dihapus'), tone: 'error' },
 };
-const positionLabels = { chair: 'Ketua', secretary: 'Sekretaris', treasurer: 'Bendahara' };
+const positionLabels = { chair: t('Ketua'), secretary: t('Sekretaris'), treasurer: t('Bendahara') };
 
 const loanColumns = [
     { key: 'loan_number', label: t('Nomor'), class: 'w-36' },
@@ -119,7 +119,7 @@ function formatDate(value) {
                         <template #cell-disbursed_at="{ row }">{{ formatDate(row.disbursed_at) }}</template>
                         <template #cell-status="{ row }"><AppBadge :tone="(loanStatus[row.status] || loanStatus.draft).tone">{{ (loanStatus[row.status] || { label: row.status }).label }}</AppBadge></template>
                         <template #cell-principal_amount="{ row }">{{ money(row.principal_amount) }}</template>
-                        <template #cell-term_months="{ row }">{{ row.term_months }} bulan</template>
+                        <template #cell-term_months="{ row }">{{ row.term_months }} {{ t('bulan') }}</template>
                         <template #cell-paid="{ row }">{{ money(row.paid) }}</template>
                         <template #cell-arrears="{ row }"><AppBadge :tone="row.has_arrears ? 'warning' : 'success'">{{ row.has_arrears ? t('Ada tunggakan') : t('Lancar') }}</AppBadge></template>
                         <template #cell-detail="{ row }">

@@ -219,9 +219,9 @@ function entryHref(entryPublicId) {
 }
 
 const periodFieldLabel = computed(() => {
-    if (historyForm.value.period === 'daily') return 'Tanggal';
-    if (historyForm.value.period === 'monthly') return 'Bulan';
-    return 'Tahun';
+    if (historyForm.value.period === 'daily') return t('Tanggal');
+    if (historyForm.value.period === 'monthly') return t('Bulan');
+    return t('Tahun');
 });
 
 const periodValue = computed({
@@ -288,7 +288,7 @@ function closeHistoryModal() {
                         <p class="text-base font-bold text-primary">{{ flashEntry.message }}</p>
                         <p class="mt-1 text-sm text-on-surface-variant">
                             <span class="font-semibold">{{ flashEntry.entry.transaction_date }}</span>
-                            <span v-if="flashEntry.entry.journal_number"> · No. {{ flashEntry.entry.journal_number }}</span>
+                            <span v-if="flashEntry.entry.journal_number"> {{ t('· No.') }} {{ flashEntry.entry.journal_number }}</span>
                             · {{ transactionTypeLabel(flashEntry.entry.transaction_type) }}
                         </p>
                         <p v-if="flashEntry.entry.description" class="mt-1 text-sm text-on-surface-variant">{{ flashEntry.entry.description }}</p>
@@ -353,8 +353,8 @@ function closeHistoryModal() {
                         </div>
 
                         <div class="grid gap-4 sm:grid-cols-2">
-                            <SmartSelect v-model="form.sumber_dana_row_id" :options="sumberDanaOptions" :label="sumberDanaLabel + ' (Kredit)'" :placeholder="t('Pilih akun')" :disabled="!currentType" required :error="form.errors.sumber_dana_row_id" />
-                            <SmartSelect v-model="form.disimpan_ke_row_id" :options="disimpanKeOptions" :label="disimpanKeLabel + ' (Debit)'" :placeholder="t('Pilih akun')" :disabled="!currentType" required :error="form.errors.disimpan_ke_row_id" />
+                            <SmartSelect v-model="form.sumber_dana_row_id" :options="sumberDanaOptions" :label="sumberDanaLabel + t(' (Kredit)')" :placeholder="t('Pilih akun')" :disabled="!currentType" required :error="form.errors.sumber_dana_row_id" />
+                            <SmartSelect v-model="form.disimpan_ke_row_id" :options="disimpanKeOptions" :label="disimpanKeLabel + t(' (Debit)')" :placeholder="t('Pilih akun')" :disabled="!currentType" required :error="form.errors.disimpan_ke_row_id" />
                         </div>
 
                         <p v-if="form.errors.sumber_dana_row_id || form.errors.disimpan_ke_row_id" class="text-sm text-error">{{ form.errors.sumber_dana_row_id || form.errors.disimpan_ke_row_id }}</p>
@@ -375,7 +375,7 @@ function closeHistoryModal() {
                                     required
                                     :error="form.errors.asset_useful_life_months"
                                     :placeholder="currentType === 'pembelian_aset_tanah' ? '0' : '48'"
-                                    :hint="currentType === 'pembelian_aset_tanah' ? 'Tanah: 0 = tidak disusutkan' : null"
+                                    :hint="currentType === 'pembelian_aset_tanah' ? t('Tanah: 0 = tidak disusutkan') : null"
                                 />
                                 <AppCurrencyInput v-model="form.amount" :label="t('Harga Perolehan')" icon="payments" :min="1" required readonly :error="form.errors.amount" placeholder="0" :hint="t('Otomatis: unit × harga satuan')" />
                             </div>
@@ -440,7 +440,7 @@ function closeHistoryModal() {
 
         <AppModal v-model="historyModalOpen" :title="`Riwayat · ${props.history?.account?.code ?? ''}`" size="full" @update:model-value="closeHistoryModal">
             <div v-if="props.history?.account" class="space-y-4">
-                <p class="text-sm text-on-surface-variant">{{ props.history.account.name }} · {{ props.history.account.account_type }} · Saldo Normal {{ props.history.account.normal_balance === 'D' ? 'Debit' : 'Kredit' }}</p>
+                <p class="text-sm text-on-surface-variant">{{ props.history.account.name }} · {{ props.history.account.account_type }} {{ t('· Saldo Normal') }} {{ props.history.account.normal_balance === 'D' ? 'Debit' : 'Kredit' }}</p>
                 <p class="text-xs text-on-surface-variant">{{ periodDetail }}<span v-if="historyRange"> · {{ historyRange.start }} → {{ historyRange.end }}</span></p>
 
                 <div v-if="historySummary" class="grid gap-3 sm:grid-cols-4">

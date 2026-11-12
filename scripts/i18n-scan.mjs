@@ -28,6 +28,7 @@ const I18N_FILE = path.join(JS_DIR, 'i18n', 'index.js');
 
 const args = process.argv.slice(2);
 const WRITE = args.includes('--write');
+const AGGRESSIVE = args.includes('--aggressive');
 const JSON_OUT = (() => {
     const hit = args.find((a) => a.startsWith('--json='));
     return hit ? path.resolve(ROOT, hit.slice('--json='.length)) : null;
@@ -298,7 +299,11 @@ function scanTemplateBody(source, masked, range) {
             block.texts.push({ start, end, text });
             if (isTranslatableText(text)) block.hasMeaningfulText = true;
         }
-        if (!isTranslatableText(text) || isTechnicalWord(trimmed)) return;
+        // Kata tunggal huruf kecil (mis. "pengguna" pada "{{ n }} pengguna")
+        // hanya diterjemahkan bila berada dalam konteks fragmen. Keputusan itu
+        // diambil di akhir setelah jumlah teks/interpolasi blok diketahui.
+        const singleLowerWord = /^[a-z][a-z-]*$/.test(trimmed);
+        if ((!isTranslatableText(text) && !singleLowerWord) || isTechnicalWord(trimmed)) return;
 
         pending.push({ start, end, text, raw, block });
     };
@@ -428,24 +433,29 @@ function scanTemplateBody(source, masked, range) {
 
     for (const item of pending) {
         const { block, text } = item;
+        // Kata tunggal huruf kecil tanpa konteks fragmen biasanya bukan teks UI
+        // (mis. nama ikon ligatur), jadi jangan dibungkus.
+        if (/^[a-z][a-z-]*$/.test(text.trim()) && !(block.interpolations > 0 || block.texts.length > 1)) {
+            continue;
+        }
         // <option> tanpa atribut value: teks = nilai yang dikirim ke server.
         if (block.tag === 'option' && !block.hasValueAttr) {
             manual.push({ key: text.trim().replace(/\s+/g, ' '), reason: 'option-value' });
             continue;
         }
         const isOnlyText = block.texts.length === 1 && block.texts[0].start === item.start;
-        if (!isOnlyText) {
+        if (!AGGRESSIVE && !isOnlyText) {
             manual.push({ key: text.trim().replace(/\s+/g, ' '), reason: 'fragmented' });
             continue;
         }
-        if (block.interpolations > 0) {
+        if (!AGGRESSIVE && block.interpolations > 0) {
             const isLabelWithValue = block.texts.length === 1 && /[:：]\s*$/.test(text);
             if (!isLabelWithValue) {
                 manual.push({ key: text.trim().replace(/\s+/g, ' '), reason: 'interpolated' });
                 continue;
             }
         }
-        if (block.childHasText) {
+        if (!AGGRESSIVE && block.childHasText) {
             manual.push({ key: text.trim().replace(/\s+/g, ' '), reason: 'mixed' });
             continue;
         }

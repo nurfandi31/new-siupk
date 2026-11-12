@@ -741,10 +741,153 @@
     </div>
 
     <script>
+        var __errorLocale = 'id';
+        try {
+            if (localStorage.getItem('siupk-locale') === 'en') __errorLocale = 'en';
+        } catch (e) {}
+
+        var __errorTranslations = {
+            'Catatan Sistem:': 'System Note:',
+            'Langkah yang disarankan': 'Recommended steps',
+            'Periksa kembali alamat URL atau tombol yang Anda tuju.': 'Double-check the URL or button you are trying to access.',
+            'Muat ulang halaman untuk memastikan koneksi dan status sesi terkini.': 'Reload the page to ensure the connection and session status are current.',
+            'Hubungi tim pengelola/administrator jika kendala ini terus berulang.': 'Contact the administrator if this issue keeps recurring.',
+            'Ke Dashboard': 'Go to Dashboard',
+            'Ke Dashboard Utama': 'Go to Main Dashboard',
+            'Halaman Sebelumnya': 'Previous Page',
+            'Salin Info Error': 'Copy Error Info',
+            'Lihat Detail Teknis (Debug Mode Aktif)': 'View Technical Details (Debug Mode Active)',
+            'Info error berhasil disalin!': 'Error info copied successfully!',
+            'Berhasil disalin ke clipboard': 'Copied to clipboard',
+            'Gagal menyalin info error.': 'Failed to copy error info.',
+            'Muat ulang halaman': 'Reload page',
+            'Sistem & Navigasi': 'System & Navigation',
+            'Terjadi Kesalahan': 'An Error Occurred',
+            'Permintaan Anda tidak dapat diproses saat ini. Silakan coba kembali beberapa saat lagi.': 'Your request cannot be processed right now. Please try again later.',
+            'Akses Dibatasi': 'Access Restricted',
+            'Otorisasi & Wewenang': 'Authorization & Permissions',
+            'Halaman Tidak Ditemukan': 'Page Not Found',
+            'Navigasi & URL': 'Navigation & URL',
+            'Terjadi Kesalahan Server': 'Server Error Occurred',
+            'Kendala Teknis Server': 'Server Technical Issue',
+            'Sesi Belum Terautentikasi': 'Session Not Authenticated',
+            'Autentikasi Pengguna': 'User Authentication',
+            'Langganan Tenant Diperlukan': 'Tenant Subscription Required',
+            'Langganan & Tagihan': 'Subscription & Billing',
+            'Permintaan Tidak Valid': 'Invalid Request',
+            '400 - Permintaan Tidak Valid': '400 - Invalid Request',
+            'Format & Parameter': 'Format & Parameters',
+            'Sesi Formulir Kedaluwarsa': 'Form Session Expired',
+            'Keamanan Sesi': 'Session Security',
+            'Terlalu Banyak Permintaan': 'Too Many Requests',
+            'Batas Frekuensi': 'Rate Limit',
+            'Sistem Dalam Pemeliharaan': 'System Under Maintenance',
+            'Pemeliharaan Sistem': 'System Maintenance',
+            'Server tidak dapat memproses permintaan Anda karena format data, sintaks, atau parameter URL yang dikirim tidak sesuai dengan spesifikasi sistem.': 'The server cannot process your request because the data format, syntax, or URL parameters do not match the system specification.',
+            'Akses ke modul atau layanan ini membutuhkan identifikasi pengguna yang valid. Silakan masuk terlebih dahulu untuk melanjutkan pekerjaan Anda di siupk Next.': 'Access to this module or service requires valid user identification. Please sign in first to continue working in siupk Next.',
+            'Masa aktif langganan instansi BUMDesma Anda telah berakhir atau akun tenant memerlukan paket berlangganan aktif untuk dapat menggunakan modul ini.': "Your BUMDesma institution's subscription has expired or your tenant account requires an active subscription plan to use this module.",
+            'Anda tidak memiliki hak akses (permission) yang memadai untuk membuka modul, data keuangan, atau tindakan ini. Area ini dibatasi khusus untuk wewenang pengguna tertentu.': 'You do not have sufficient permissions to open this module, financial data, or action. This area is restricted to specific authorized users.',
+            'Maaf, halaman atau dokumen keuangan yang Anda cari tidak ditemukan. Tautan mungkin telah kedaluwarsa, dipindahkan, atau alamat URL yang Anda masukkan salah.': 'Sorry, the page or financial document you are looking for was not found. The link may have expired, been moved, or the URL you entered is incorrect.',
+            'Sesi keamanan (CSRF Token) formulir Anda telah kedaluwarsa karena halaman tidak aktif dalam durasi tertentu. Hal ini otomatis dilakukan oleh sistem demi melindungi keamanan data keuangan Anda.': "Your form's security session (CSRF token) has expired because the page was inactive for a certain period. This is done automatically by the system to protect your financial data.",
+            'Sistem mendeteksi terlalu banyak permintaan dalam waktu singkat. Pembatasan sementara ini diberlakukan demi menjaga stabilitas dan performa seluruh pengguna siupk Next.': 'The system detected too many requests in a short period. This temporary restriction is applied to maintain stability and performance for all siupk Next users.',
+            'Terjadi kendala teknis internal pada server saat memproses transaksi atau permintaan Anda. Tenang, seluruh data yang telah tersimpan sebelumnya tetap aman di basis data.': 'An internal technical issue occurred on the server while processing your transaction or request. Rest assured, all previously saved data remains safe in the database.',
+            'Kami sedang melakukan peningkatan performa dan pemeliharaan sistem rutin. Layanan siupk Next akan segera beroperasi normal kembali.': 'We are performing performance improvements and routine system maintenance. siupk Next services will return to normal shortly.',
+            'Pastikan nilai formulir, tanggal, atau nominal diisi dengan format yang benar.': 'Ensure form values, dates, or amounts are entered in the correct format.',
+            'Hindari memodifikasi tautan atau query URL secara manual.': 'Avoid modifying links or URL query parameters manually.',
+            'Muat ulang halaman dan ulangi proses input data dari awal.': 'Reload the page and repeat the data entry process from the beginning.',
+            'Masuk menggunakan alamat email atau username serta kata sandi akun Anda.': 'Sign in using your account email or username and password.',
+            'Pastikan Anda tidak sedang membuka tautan ini dalam mode penyamaran jika sesi sering terputus.': 'Make sure you are not opening this link in incognito mode if your session frequently disconnects.',
+            'Jika lupa kata sandi atau akun dinonaktifkan, hubungi administrator BUMDesma Anda.': 'If you forgot your password or your account is disabled, contact your BUMDesma administrator.',
+            'Periksa status tagihan dan langganan aktif pada menu Pengaturan Billing & Invoicing.': 'Check billing and active subscription status in the Billing & Invoicing Settings menu.',
+            'Lakukan perpanjangan paket melalui opsi pembayaran instan yang tersedia.': 'Renew your plan through the available instant payment options.',
+            'Jika telah melakukan pembayaran tetapi status belum aktif, hubungi Admin siupk Next.': 'If you have paid but the status is not yet active, contact the siupk Next Admin.',
+            'Pastikan Anda masuk menggunakan akun dengan hak akses yang sesuai (Superadmin, Supervisor, Bendahara, atau Pengelola).': 'Make sure you are signed in with an account that has the appropriate access rights (Superadmin, Supervisor, Treasurer, or Manager).',
+            'Hubungi administrator BUMDesma / Tenancy Anda untuk mengajukan penambahan izin atau wewenang.': 'Contact your BUMDesma / Tenancy administrator to request additional permissions or authority.',
+            'Jika baru saja diberikan perubahan hak akses, silakan logout dan login kembali untuk memperbarui sesi Anda.': 'If access rights were just changed, please log out and log back in to refresh your session.',
+            'Periksa kembali penulisan URL di bilah alamat browser Anda.': "Double-check the URL in your browser's address bar.",
+            'Gunakan menu navigasi utama untuk mencari modul atau laporan yang diinginkan.': 'Use the main navigation menu to find the module or report you need.',
+            'Jika Anda membuka tautan dari notifikasi atau pesan lama, data mungkin telah diarsipkan.': 'If you opened the link from an old notification or message, the data may have been archived.',
+            "Klik tombol 'Muat Ulang Halaman' di bawah untuk memperbarui token keamanan sesi Anda.": "Click the 'Reload Page' button below to refresh your session security token.",
+            'Pastikan untuk menyimpan draf atau formulir secara berkala saat bekerja.': 'Make sure to save drafts or forms periodically while working.',
+            'Jika Anda diarahkan ke halaman login, silakan masukkan kembali akun Anda.': 'If you are redirected to the login page, please re-enter your account.',
+            'Tunggu 30 hingga 60 detik sebelum mengklik kembali atau memuat ulang halaman.': 'Wait 30 to 60 seconds before clicking again or reloading the page.',
+            "Hindari menekan tombol 'Simpan' atau 'Proses' berulang-ulang dalam waktu cepat.": "Avoid pressing 'Save' or 'Process' repeatedly in quick succession.",
+            'Pastikan tidak ada plugin otomatis atau multi-tab yang memicu request bersamaan.': 'Make sure no automatic plugin or multiple tabs are triggering simultaneous requests.',
+            'Coba muat ulang halaman ini dalam beberapa saat.': 'Try reloading this page in a moment.',
+            "Gunakan tombol 'Salin Info Error' di bawah jika ingin meneruskan laporan ke tim IT BUMDesma.": "Use the 'Copy Error Info' button below if you want to forward the report to the BUMDesma IT team.",
+            'Kembali ke dashboard untuk melanjutkan modul pembukuan lainnya.': 'Return to the dashboard to continue with other accounting modules.',
+            'Pemeliharaan berkala biasanya berlangsung dalam beberapa menit.': 'Routine maintenance usually takes a few minutes.',
+            'Seluruh data transaksi dan catatan keuangan Anda tetap aman.': 'All your transaction data and financial records remain safe.',
+            "Silakan klik 'Coba Lagi' secara berkala untuk mengecek kesiapan server.": "Please click 'Try Again' periodically to check server readiness.",
+            'Kembali ke Dashboard': 'Back to Dashboard',
+            'Masuk ke Portal': 'Sign in to Portal',
+            'Kembali ke Beranda': 'Back to Home',
+            'Menu Tagihan & Billing': 'Billing & Invoices Menu',
+            'Ganti Akun': 'Switch Account',
+            'Muat Ulang Halaman': 'Reload Page',
+            'Masuk Kembali': 'Sign In Again',
+            'Coba Muat Ulang': 'Try Reloading',
+            'Coba Lagi Sekarang': 'Try Again Now',
+            'Halaman Depan': 'Home Page',
+            'Beranda': 'Home'
+        };
+
+        var __errorReplacements = [
+            ['Tata Kelola Dana Bergulir BUMDesma LKD', 'BUMDesma LKD Revolving Fund Governance'],
+            ['Standar SAK EP & PP No. 11/2021', 'SAK EP & PP No. 11/2021 Standards']
+        ];
+
+        function __errorTr(key) {
+            return (__errorLocale === 'en' && __errorTranslations[key]) ? __errorTranslations[key] : key;
+        }
+
+        function __translateErrorPage() {
+            if (__errorLocale !== 'en') return;
+            document.documentElement.lang = 'en';
+            var baseTitle = document.title.replace(/ - (?:siupk Next|SIUPK Next)$/i, '');
+            document.title = __errorTr(baseTitle) + ' - siupk Next';
+
+            var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+            var node;
+            while ((node = walker.nextNode())) {
+                var raw = node.nodeValue;
+                var key = raw.trim();
+                if (!key) continue;
+                var translated = __errorTr(key);
+                if (translated !== key) {
+                    var lead = raw.match(/^\s*/)[0];
+                    var trail = raw.match(/\s*$/)[0];
+                    node.nodeValue = lead + translated + trail;
+                    continue;
+                }
+                __errorReplacements.forEach(function (pair) {
+                    if (node.nodeValue.indexOf(pair[0]) !== -1) {
+                        node.nodeValue = node.nodeValue.split(pair[0]).join(pair[1]);
+                    }
+                });
+            }
+
+            document.querySelectorAll('[title]').forEach(function (el) {
+                el.setAttribute('title', __errorTr(el.getAttribute('title')));
+            });
+
+            document.querySelectorAll('[aria-label]').forEach(function (el) {
+                el.setAttribute('aria-label', __errorTr(el.getAttribute('aria-label')));
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', __translateErrorPage);
+        } else {
+            __translateErrorPage();
+        }
+    </script>
+
+    <script>
         function showToast(message) {
             var toast = document.getElementById('toast');
             var msgEl = document.getElementById('toast-message');
-            msgEl.innerText = message || 'Berhasil disalin ke clipboard';
+            msgEl.innerText = message || __errorTr('Berhasil disalin ke clipboard');
             toast.classList.add('show');
             setTimeout(function () {
                 toast.classList.remove('show');
@@ -755,7 +898,7 @@
             var info = [
                 '=== siupk Next Error Report ===',
                 'Status Code: @yield("code", "500")',
-                'Error Title: @yield("title", "Terjadi Kesalahan")',
+                'Error Title: ' + __errorTr('@yield("title", "Terjadi Kesalahan")'),
                 'Path: ' + window.location.pathname,
                 'Timestamp: ' + new Date().toISOString(),
                 'User Agent: ' + navigator.userAgent
@@ -763,7 +906,7 @@
 
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(info).then(function() {
-                    showToast('Info error berhasil disalin!');
+                    showToast(__errorTr('Info error berhasil disalin!'));
                 }).catch(function() {
                     fallbackCopyText(info);
                 });
@@ -782,9 +925,9 @@
             textArea.select();
             try {
                 document.execCommand('copy');
-                showToast('Info error berhasil disalin!');
+                showToast(__errorTr('Info error berhasil disalin!'));
             } catch (err) {
-                alert('Gagal menyalin info error.');
+                alert(__errorTr('Gagal menyalin info error.'));
             }
             document.body.removeChild(textArea);
         }

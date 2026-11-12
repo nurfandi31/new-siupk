@@ -301,7 +301,7 @@ function login(user) {
             </section>
 
             <footer class="mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/40 pt-4 text-[11px] text-outline">
-                <span>&copy; {{ new Date().getFullYear() }} siupk Next &mdash; {{ context.name }}</span>
+                <span>&copy; {{ new Date().getFullYear() }} {{ t('siupk Next —') }} {{ context.name }}</span>
                 <span>{{ t('Halaman bantuan demo — jangan gunakan pada instalasi produksi.') }}</span>
             </footer>
         </div>

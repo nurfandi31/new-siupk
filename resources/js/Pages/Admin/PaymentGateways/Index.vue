@@ -296,7 +296,7 @@ const gatewayTabs = [
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <div><SmartSelect v-model="duitkuForm.mode" :label="t('Mode Lingkungan')" :options="duitkuModeOptions" required /></div>
                             <div><AppInput v-model="duitkuForm.merchant_code" :label="t('Merchant Code')" :placeholder="t('Masukkan kode')" required /></div>
-                            <div class="sm:col-span-2"><AppInput v-model="duitkuForm.api_key" :label="t('API Key (Secret)')" type="password" :placeholder="props.duitku?.has_api_key ? 'Tersimpan' : 'Masukkan API key'" /></div>
+                            <div class="sm:col-span-2"><AppInput v-model="duitkuForm.api_key" :label="t('API Key (Secret)')" type="password" :placeholder="props.duitku?.has_api_key ? t('Tersimpan') : t('Masukkan API key')" /></div>
                             <div class="sm:col-span-2"><SmartSelect v-model="duitkuForm.default_method" :label="t('Metode Pembayaran Default')" :options="duitkuMethodOptions" required /></div>
                         </div>
 
@@ -337,8 +337,8 @@ const gatewayTabs = [
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <div><SmartSelect v-model="tripayForm.mode" :label="t('Mode Lingkungan')" :options="tripayModeOptions" required /></div>
                             <div><AppInput v-model="tripayForm.merchant_code" :label="t('Merchant Code')" :placeholder="t('Masukkan kode')" required /></div>
-                            <div><AppInput v-model="tripayForm.api_key" :label="t('API Key')" type="password" :placeholder="props.tripay?.has_api_key ? 'Tersimpan' : 'DEV-...' " /></div>
-                            <div><AppInput v-model="tripayForm.private_key" :label="t('Private Key')" type="password" :placeholder="props.tripay?.has_private_key ? 'Tersimpan' : 'Masukkan private key' " /></div>
+                            <div><AppInput v-model="tripayForm.api_key" :label="t('API Key')" type="password" :placeholder="props.tripay?.has_api_key ? t('Tersimpan') : t('DEV-...') " /></div>
+                            <div><AppInput v-model="tripayForm.private_key" :label="t('Private Key')" type="password" :placeholder="props.tripay?.has_private_key ? t('Tersimpan') : t('Masukkan private key') " /></div>
                             <div class="sm:col-span-2"><SmartSelect v-model="tripayForm.default_method" :label="t('Metode Pembayaran Default')" :options="tripayMethodOptions" required /></div>
                         </div>
 
@@ -379,7 +379,7 @@ const gatewayTabs = [
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <div><SmartSelect v-model="xenditForm.mode" :label="t('Mode Lingkungan')" :options="xenditModeOptions" required /></div>
                             <div><AppInput v-model="xenditForm.public_key" :label="t('Public Key (Optional)')" placeholder="xnd_public_..." /></div>
-                            <div class="sm:col-span-2"><AppInput v-model="xenditForm.secret_key" :label="t('Secret Key (API Key)')" type="password" :placeholder="props.xendit?.has_secret_key ? 'Tersimpan' : 'xnd_...'" /></div>
+                            <div class="sm:col-span-2"><AppInput v-model="xenditForm.secret_key" :label="t('Secret Key (API Key)')" type="password" :placeholder="props.xendit?.has_secret_key ? t('Tersimpan') : 'xnd_...'" /></div>
                             <div class="sm:col-span-2"><AppInput v-model="xenditForm.callback_token" :label="t('Webhook Verification Token (x-callback-token)')" type="password" :placeholder="t('Masukkan token webhook')" /></div>
                             <div class="sm:col-span-2"><SmartSelect v-model="xenditForm.default_method" :label="t('Metode Pembayaran Default')" :options="xenditMethodOptions" required /></div>
                         </div>

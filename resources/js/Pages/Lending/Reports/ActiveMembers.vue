@@ -102,10 +102,10 @@ function statusTone(status: string): 'success' | 'warning' | 'error' | 'neutral'
 }
 
 function statusLabel(status: string): string {
-    if (status === 'active') return 'Aktif';
-    if (status === 'suspended') return 'Ditangguhkan';
-    if (status === 'inactive') return 'Nonaktif';
-    if (status === 'closed') return 'Tutup';
+    if (status === 'active') return t('Aktif');
+    if (status === 'suspended') return t('Ditangguhkan');
+    if (status === 'inactive') return t('Nonaktif');
+    if (status === 'closed') return t('Ditutup');
     return status;
 }
 </script>
@@ -119,7 +119,7 @@ function statusLabel(status: string): string {
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Pinjaman') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Pemanfaat Aktif') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Daftar anggota yang memiliki pinjaman individu aktif per
+                        {{ t('Daftar anggota yang memiliki pinjaman individu aktif per') }}
                         <span class="font-semibold text-primary">{{ period_label }}</span>
                         — {{ identity.legal_name }}
                     </p>

@@ -71,7 +71,7 @@ async function toggleStatus(user) {
         message: disabling
             ? `User ${user.name} (@${user.username}) tidak akan bisa login ke aplikasi mana pun sampai akunnya diaktifkan kembali.`
             : `User ${user.name} (@${user.username}) akan dapat login kembali.`,
-        confirmLabel: disabling ? 'Nonaktifkan' : 'Aktifkan',
+        confirmLabel: disabling ? t('Nonaktifkan') : t('Aktifkan'),
         variant: disabling ? 'danger' : 'primary',
     });
     if (!ok) return;

@@ -170,7 +170,7 @@ function formatDateId(dateStr) {
     if (!dateStr) return '';
     const parts = String(dateStr).split('-');
     if (parts.length !== 3) return dateStr;
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const months = [t('Jan'), t('Feb'), t('Mar'), t('Apr'), t('Mei'), t('Jun'), t('Jul'), t('Agu'), t('Sep'), t('Okt'), t('Nov'), t('Des')];
     return `${parseInt(parts[2], 10)} ${months[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
 }
 
@@ -408,13 +408,13 @@ const simulationResult = computed(() => {
 const methodLabel = computed(() => {
     if (form.installment_method === 'flat') return 'Flat / Tetap';
     if (form.installment_method === 'declining') return 'Efektif Menurun';
-    return 'Anuitas';
+    return t('Anuitas');
 });
 
 const methodShort = computed(() => {
-    if (form.installment_method === 'flat') return 'Flat';
+    if (form.installment_method === 'flat') return t('Flat');
     if (form.installment_method === 'declining') return 'Menurun';
-    return 'Anuitas';
+    return t('Anuitas');
 });
 
 const methodDescription = computed(() => {
@@ -745,7 +745,7 @@ function formatNumber(value) {
                                                     : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high',
                                             ]"
                                         >
-                                            {{ t }} bln
+                                            {{ t }} {{ t('bln') }}
                                         </button>
                                     </div>
                                 </div>
@@ -824,7 +824,7 @@ function formatNumber(value) {
 
                                     <AppInput
                                         v-model="form.interest_rate"
-                                        :label="`Bunga (${form.rate_unit === 'monthly' ? '% per Bulan' : '% per Tahun / p.a.'})`"
+                                        :label="`Bunga (${form.rate_unit === 'monthly' ? t('% per Bulan') : t('% per Tahun / p.a.')})`"
                                         type="number"
                                         step="0.01"
                                         min="0"
@@ -835,7 +835,7 @@ function formatNumber(value) {
 
                                     <div class="mt-1.5 flex items-center justify-between rounded-lg bg-surface-container-low px-2.5 py-1.5 text-[10px] text-on-surface-variant sm:text-[11px]">
                                         <span>
-                                            Setara
+                                            {{ t('Setara') }}
                                             <strong class="text-on-surface">
                                                 {{ form.rate_unit === 'monthly'
                                                     ? `${equivalentAnnualRate.toFixed(2)}% p.a.`
@@ -843,7 +843,7 @@ function formatNumber(value) {
                                             </strong>
                                         </span>
                                         <span class="font-mono text-primary">
-                                            Ratio: {{ safeSummary.interest_ratio.toFixed(1) }}%
+                                            {{ t('Ratio:') }} {{ safeSummary.interest_ratio.toFixed(1) }}%
                                         </span>
                                     </div>
                                 </div>
@@ -891,7 +891,7 @@ function formatNumber(value) {
                                 <p class="text-[10px] text-on-surface-variant sm:text-[11px]">{{ t('Ringkasan finansial, parameter & proporsi') }}</p>
                             </div>
                             <AppBadge tone="primary-soft" class="shrink-0 whitespace-nowrap">
-                                {{ methodShort }} • {{ safeSchedule.length }}x
+                                {{ methodShort }} • {{ safeSchedule.length }}{{ t('x') }}
                             </AppBadge>
                         </header>
 
@@ -917,7 +917,7 @@ function formatNumber(value) {
                                         {{ money(safeSummary.total_interest) }}
                                     </dd>
                                     <dd class="text-[9px] text-on-surface-variant sm:text-[10px]">
-                                        {{ safeSummary.interest_ratio.toFixed(1) }}% dari plafon
+                                        {{ safeSummary.interest_ratio.toFixed(1) }}{{ t('% dari plafon') }}
                                     </dd>
                                 </div>
                                 <div class="min-w-0">
@@ -939,7 +939,7 @@ function formatNumber(value) {
                                         {{ money(safeSummary.estimated_monthly) }}
                                     </dd>
                                     <dd class="text-[9px] text-on-surface-variant sm:text-[10px]">
-                                        / {{ form.term_months }} bulan
+                                        / {{ form.term_months }} {{ t('bulan') }}
                                     </dd>
                                 </div>
                             </dl>
@@ -975,10 +975,10 @@ function formatNumber(value) {
                                             {{ t('Tenor') }}
                                         </dt>
                                         <dd class="truncate text-xs font-bold text-on-surface sm:text-sm">
-                                            {{ form.term_months }} bulan
+                                            {{ form.term_months }} {{ t('bulan') }}
                                         </dd>
                                         <dd class="truncate text-[10px] text-on-surface-variant">
-                                            Mulai {{ formatDateId(form.start_date) }}
+                                            {{ t('Mulai') }} {{ formatDateId(form.start_date) }}
                                         </dd>
                                     </div>
                                     <div class="min-w-0">
@@ -1058,7 +1058,7 @@ function formatNumber(value) {
                             </span>
                             <div class="min-w-0 flex-1">
                                 <h2 class="text-xs font-bold text-on-surface sm:text-sm">{{ t('Proyeksi Jadwal Angsuran') }}</h2>
-                                <p class="text-[10px] text-on-surface-variant sm:text-[11px]">{{ safeSchedule.length }} periode pembayaran</p>
+                                <p class="text-[10px] text-on-surface-variant sm:text-[11px]">{{ safeSchedule.length }} {{ t('periode pembayaran') }}</p>
                             </div>
                             <div class="hidden gap-1.5 sm:flex sm:items-center">
                                 <span class="rounded bg-surface-container px-1.5 py-0.5 text-[9px] font-bold uppercase text-on-surface-variant">

@@ -148,12 +148,12 @@ const orgName = computed(() => props.identity.short_name || props.identity.legal
                     <p class="mt-1 text-sm text-on-surface-variant">NPWP: {{ identity.tax_number || t('Belum diisi (Pengaturan)') }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">PPh Final {{ rates.final }}%</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('PPh Final') }} {{ rates.final }}%</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(live.pph_final) }}</p>
                     <p class="mt-1 text-xs text-on-surface-variant">{{ t('Dari total pendapatan terpilih') }}</p>
                 </AppCard>
                 <AppCard>
-                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">PPh Badan {{ rates.corporate }}%</p>
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('PPh Badan') }} {{ rates.corporate }}%</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ formatMoney(live.pph_corporate) }}</p>
                     <p class="mt-1 text-xs text-on-surface-variant">{{ t('Dari laba (min. 0)') }}</p>
                 </AppCard>

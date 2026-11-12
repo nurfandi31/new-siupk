@@ -24,9 +24,9 @@ const baseUrl = '/province/reports/cash-flow';
         <div class="space-y-6">
             <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Arus Kas Konsolidasi Provinsi {{ province_name }}</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Arus Kas Konsolidasi Provinsi') }} {{ province_name }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Arus Kas Operasional, Investasi, dan Pendanaan ({{ report.period?.period_label }}).
+                        {{ t('Arus Kas Operasional, Investasi, dan Pendanaan (') }}{{ report.period?.period_label }}).
                     </p>
                 </div>
 

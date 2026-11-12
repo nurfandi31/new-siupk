@@ -156,7 +156,7 @@ function isEmptyKind(kind: SavingsKind): boolean {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Daftar Rincian Tabungan') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ periodLabel }} · per {{ period.as_of ?? '-' }}
+                        {{ periodLabel }} {{ t('· per') }} {{ period.as_of ?? '-' }}
                     </p>
                 </div>
                 <AppBadge :tone="hasData ? 'success' : 'warning'">
@@ -191,29 +191,29 @@ function isEmptyKind(kind: SavingsKind): boolean {
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Simpanan Pokok') }}</p>
                     <p class="mt-2 text-lg font-bold text-primary">{{ fmt(by_kind.pokok?.closing_balance ?? 0) }}</p>
-                    <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.pokok?.count ?? 0 }} akun</p>
+                    <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.pokok?.count ?? 0 }} {{ t('akun') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Simpanan Wajib') }}</p>
                     <p class="mt-2 text-lg font-bold text-primary">{{ fmt(by_kind.wajib?.closing_balance ?? 0) }}</p>
-                    <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.wajib?.count ?? 0 }} akun</p>
+                    <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.wajib?.count ?? 0 }} {{ t('akun') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Simpanan Sukarela') }}</p>
                     <p class="mt-2 text-lg font-bold text-primary">{{ fmt(by_kind.sukarela?.closing_balance ?? 0) }}</p>
-                    <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.sukarela?.count ?? 0 }} akun</p>
+                    <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.sukarela?.count ?? 0 }} {{ t('akun') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Simpanan Berjangka') }}</p>
                     <p class="mt-2 text-lg font-bold text-primary">{{ fmt(by_kind.berjangka?.closing_balance ?? 0) }}</p>
-                    <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.berjangka?.count ?? 0 }} akun</p>
+                    <p class="mt-1 text-[10px] text-on-surface-variant">{{ by_kind.berjangka?.count ?? 0 }} {{ t('akun') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Total') }}</p>
                     <p :class="totals.closing_balance < 0 ? 'mt-2 text-lg font-bold text-error' : 'mt-2 text-lg font-bold text-primary'">
                         {{ fmt(totals.closing_balance) }}
                     </p>
-                    <p class="mt-1 text-[10px] text-on-surface-variant">{{ rows.length }} akun total</p>
+                    <p class="mt-1 text-[10px] text-on-surface-variant">{{ rows.length }} {{ t('akun total') }}</p>
                 </AppCard>
             </div>
 
@@ -304,7 +304,7 @@ function isEmptyKind(kind: SavingsKind): boolean {
             </AppCard>
 
             <p v-if="generated_at" class="text-right text-[11px] text-on-surface-variant">
-                Digenerate pada {{ generated_at }}
+                {{ t('Digenerate pada') }} {{ generated_at }}
             </p>
         </div>
     </AuthenticatedLayout>

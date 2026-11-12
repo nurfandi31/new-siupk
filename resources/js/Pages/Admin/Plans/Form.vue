@@ -43,7 +43,7 @@ function submit() {
 </script>
 
 <template>
-    <Head :title="editing ? 'Edit Plan' : 'Tambah Plan'" />
+    <Head :title="editing ? t('Edit Plan') : t('Tambah Plan')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header>

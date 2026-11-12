@@ -166,7 +166,7 @@ const pdfUrl = computed<string>(() => {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Kolektibilitas OJK (KBP)') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ props.period_label }} · per {{ props.as_of ?? '-' }}
+                        {{ props.period_label }} {{ t('· per') }} {{ props.as_of ?? '-' }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -293,14 +293,11 @@ const pdfUrl = computed<string>(() => {
             </AppCard>
 
             <p class="text-xs text-on-surface-variant">
-                <b>Keterangan:</b> Cadangan Wajib dihitung dari outstanding × tarif OJK
-                (Lancar 0.5% / DPK 3% / Kurang Lancar 10% / Diragukan 50% / Macet 100%).
-                Cadangan Dibentuk adalah saldo akun 1.1.04.* (Cadangan Kerugian Piutang)
-                yang didistribusikan secara proporsional ke tiap golongan.
+                <b>{{ t('Keterangan:') }}</b> {{ t('Cadangan Wajib dihitung dari outstanding × tarif OJK (Lancar 0.5% / DPK 3% / Kurang Lancar 10% / Diragukan 50% / Macet 100%). Cadangan Dibentuk adalah saldo akun 1.1.04.* (Cadangan Kerugian Piutang) yang didistribusikan secara proporsional ke tiap golongan.') }}
             </p>
 
             <p v-if="generated_at" class="text-right text-[11px] text-on-surface-variant">
-                Digenerate pada {{ generated_at }}
+                {{ t('Digenerate pada') }} {{ generated_at }}
             </p>
         </div>
     </AuthenticatedLayout>

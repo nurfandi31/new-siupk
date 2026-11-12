@@ -699,7 +699,7 @@ onBeforeUnmount(() => {
                                         >
                                             <img
                                                 :src="att.url"
-                                                :alt="att.name || 'Gambar terlampir'"
+                                                :alt="att.name || t('Gambar terlampir')"
                                                 class="max-h-48 w-full object-cover transition duration-150 group-hover:brightness-95 cursor-pointer"
                                                 @click="previewImage(att.url)"
                                             />

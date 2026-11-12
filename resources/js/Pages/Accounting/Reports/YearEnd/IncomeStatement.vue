@@ -50,7 +50,7 @@ const pdfHref = computed(() => {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Laporan Laba Rugi Tutup Buku') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        Tahun Buku {{ year }} · per {{ as_of }}
+                        {{ t('Tahun Buku') }} {{ year }} {{ t('· per') }} {{ as_of }}
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
@@ -132,7 +132,7 @@ const pdfHref = computed(() => {
                         <thead class="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                             <tr>
                                 <th class="px-3 py-2 text-left">{{ t('Rekening') }}</th>
-                                <th class="px-3 py-2 text-right">Tahun {{ year }}</th>
+                                <th class="px-3 py-2 text-right">{{ t('Tahun') }} {{ year }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -159,7 +159,7 @@ const pdfHref = computed(() => {
                                     </td>
                                 </tr>
                                 <tr class="bg-surface-container-low text-sm font-semibold">
-                                    <td class="px-3 py-1.5">Jumlah {{ group.name }}</td>
+                                    <td class="px-3 py-1.5">{{ t('Jumlah') }} {{ group.name }}</td>
                                     <td class="px-3 py-1.5 text-right tabular-nums">{{ money.format(group.ytd) }}</td>
                                 </tr>
                             </template>
@@ -196,9 +196,7 @@ const pdfHref = computed(() => {
 
             <AppCard class="p-5">
                 <p class="text-xs text-on-surface-variant">
-                    <strong class="text-on-surface">Catatan:</strong> Laba Rugi tutup buku menampilkan ringkasan
-                    akhir tahun. Setelah jurnal tutup buku diposting, akun nominal (pendapatan &amp; beban)
-                    bersaldo 0 dan saldonya pindah ke Ikhtisar Laba Rugi lalu ke Laba Ditahan.
+                    <strong class="text-on-surface">{{ t('Catatan:') }}</strong> {{ t('Laba Rugi tutup buku menampilkan ringkasan akhir tahun. Setelah jurnal tutup buku diposting, akun nominal (pendapatan & beban) bersaldo 0 dan saldonya pindah ke Ikhtisar Laba Rugi lalu ke Laba Ditahan.') }}
                 </p>
             </AppCard>
         </div>

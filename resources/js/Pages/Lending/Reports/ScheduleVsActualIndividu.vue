@@ -200,7 +200,7 @@ function statusClass(s: string): string {
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan Piutang') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Rencana & Realisasi — Pinjaman Individu') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Bandingkan rencana angsuran vs realisasi per pinjaman individu —
+                        {{ t('Bandingkan rencana angsuran vs realisasi per pinjaman individu —') }}
                         {{ period.period_label }} — {{ identity.legal_name }}
                     </p>
                 </div>
@@ -238,24 +238,24 @@ function statusClass(s: string): string {
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Rencana Pokok') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ formatMoney(totals.plan_principal) }}</p>
-                    <p class="text-xs text-on-surface-variant">Rencana Jasa {{ formatMoney(totals.plan_interest) }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Rencana Jasa') }} {{ formatMoney(totals.plan_interest) }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Realisasi Pokok') }}</p>
                     <p class="mt-2 text-xl font-bold text-primary">{{ formatMoney(totals.actual_principal) }}</p>
-                    <p class="text-xs text-on-surface-variant">Realisasi Jasa {{ formatMoney(totals.actual_interest) }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ t('Realisasi Jasa') }} {{ formatMoney(totals.actual_interest) }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('% Realisasi') }}</p>
                     <p class="mt-2 text-xl font-bold" :class="totals.pct_realization >= 90 ? 'text-secondary' : 'text-warning'">
                         {{ totals.pct_realization }}%
                     </p>
-                    <p class="text-xs text-on-surface-variant">{{ totals.realized_count }} dari {{ totals.installment_count }} angsuran</p>
+                    <p class="text-xs text-on-surface-variant">{{ totals.realized_count }} {{ t('dari') }} {{ totals.installment_count }} {{ t('angsuran') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Rata-rata Keterlambatan') }}</p>
-                    <p class="mt-2 text-xl font-bold text-primary">{{ totals.avg_delay_days }} hari</p>
-                    <p class="text-xs text-on-surface-variant">{{ totals.late_count }} angsuran terlambat</p>
+                    <p class="mt-2 text-xl font-bold text-primary">{{ totals.avg_delay_days }} {{ t('hari') }}</p>
+                    <p class="text-xs text-on-surface-variant">{{ totals.late_count }} {{ t('angsuran terlambat') }}</p>
                 </AppCard>
             </div>
 
@@ -275,21 +275,21 @@ function statusClass(s: string): string {
                             </span>
                         </h2>
                         <p class="text-xs text-on-surface-variant">
-                            {{ loan.village_name }} · {{ loan.product_code }} · Alokasi {{ formatMoney(loan.principal_amount) }}
+                            {{ loan.village_name }} · {{ loan.product_code }} {{ t('· Alokasi') }} {{ formatMoney(loan.principal_amount) }}
                         </p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 text-xs">
                         <span class="inline-flex rounded-full bg-surface-container px-3 py-1 font-semibold">
-                            Realisasi {{ loan.totals.pct_realization }}%
+                            {{ t('Realisasi') }} {{ loan.totals.pct_realization }}%
                         </span>
                         <span
                             class="inline-flex rounded-full px-3 py-1 font-semibold"
                             :class="loan.totals.gap_principal + loan.totals.gap_interest > 0 ? 'bg-warning/10 text-warning' : 'bg-secondary/10 text-secondary'"
                         >
-                            Gap {{ formatMoney(loan.totals.gap_principal + loan.totals.gap_interest) }}
+                            {{ t('Gap') }} {{ formatMoney(loan.totals.gap_principal + loan.totals.gap_interest) }}
                         </span>
                         <span v-if="loan.totals.late_count > 0" class="inline-flex rounded-full bg-error/10 px-3 py-1 font-semibold text-error">
-                            {{ loan.totals.late_count }} terlambat (rerata {{ loan.totals.avg_delay_days }} hari)
+                            {{ loan.totals.late_count }} {{ t('terlambat (rerata') }} {{ loan.totals.avg_delay_days }} {{ t('hari)') }}
                         </span>
                     </div>
                 </div>
@@ -371,7 +371,7 @@ function statusClass(s: string): string {
 
             <AppCard v-if="loans.length > 0" class="overflow-hidden p-0">
                 <div class="border-b border-outline-variant/40 p-4">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant">Rekap Seluruh Pinjaman ({{ totals.loan_count }} pinjaman)</h2>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Rekap Seluruh Pinjaman (') }}{{ totals.loan_count }} {{ t('pinjaman)') }}</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
@@ -401,7 +401,7 @@ function statusClass(s: string): string {
                                     </span>
                                 </td>
                                 <td class="px-3 py-2 text-center">
-                                    <span v-if="totals.late_count > 0" class="text-error font-semibold">{{ totals.late_count }} ({{ totals.avg_delay_days }} hari)</span>
+                                    <span v-if="totals.late_count > 0" class="text-error font-semibold">{{ totals.late_count }} ({{ totals.avg_delay_days }} {{ t('hari)') }}</span>
                                     <span v-else class="text-secondary">0</span>
                                 </td>
                             </tr>

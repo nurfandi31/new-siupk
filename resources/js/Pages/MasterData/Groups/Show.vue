@@ -46,11 +46,11 @@ function formatDate(v) {
     return new Intl.DateTimeFormat(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' }).format(d);
 }
 
-const statusLabels = { active: 'Aktif', inactive: 'Tidak aktif' };
+const statusLabels = { active: t('Aktif'), inactive: t('Tidak Aktif') };
 const positionLabels = {
-    chair: 'Ketua',
-    secretary: 'Sekretaris',
-    treasurer: 'Bendahara',
+    chair: t('Ketua'),
+    secretary: t('Sekretaris'),
+    treasurer: t('Bendahara'),
 };
 const positionIcons = {
     chair: 'workspace_premium',
@@ -125,7 +125,7 @@ const accordionItems = computed(() => [
                         <div class="min-w-0">
                             <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Riwayat pinjaman') }}</p>
                             <p class="text-2xl font-bold text-primary">{{ summary.loan_count }}</p>
-                            <p class="text-xs text-on-surface-variant">{{ summary.active_loan_count }} aktif</p>
+                            <p class="text-xs text-on-surface-variant">{{ summary.active_loan_count }} {{ t('aktif') }}</p>
                         </div>
                     </div>
                 </AppCard>

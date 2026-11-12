@@ -71,8 +71,8 @@ function markRead(row) {
                 <div>
                     <h1 class="text-2xl font-bold text-primary">{{ t('Pesan Masuk') }}</h1>
                     <p class="mt-1 text-on-surface-variant">
-                        Pesan dari formulir kontak publik
-                        <span v-if="unreadCount" class="ml-2 inline-flex items-center rounded-full bg-warning-container px-2 py-0.5 text-xs font-bold text-on-warning-container">{{ unreadCount }} belum dibaca</span>
+                        {{ t('Pesan dari formulir kontak publik') }}
+                        <span v-if="unreadCount" class="ml-2 inline-flex items-center rounded-full bg-warning-container px-2 py-0.5 text-xs font-bold text-on-warning-container">{{ unreadCount }} {{ t('belum dibaca') }}</span>
                     </p>
                 </div>
             </header>
@@ -132,7 +132,7 @@ function markRead(row) {
                     </div>
                 </AppCard>
 
-            <AppModal v-model="showDetail" :title="detail ? `Pesan dari ${detail.name}` : 'Detail pesan'" size="md">
+            <AppModal v-model="showDetail" :title="detail ? `Pesan dari ${detail.name}` : t('Detail pesan')" size="md">
                 <div v-if="detail" class="space-y-3 text-sm">
                     <div class="grid grid-cols-2 gap-3 text-xs">
                         <div><p class="font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Email') }}</p><p class="mt-1 text-primary">{{ detail.email || '—' }}</p></div>

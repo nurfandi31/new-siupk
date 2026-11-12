@@ -517,7 +517,7 @@ function submitResetTraining() {
                         <p class="font-bold text-secondary">{{ t('Data yang TETAP UTUH & TERLINDUNGI:') }}</p>
                         <ul class="list-disc pl-4 space-y-0.5">
                             <li>{{ t('Saldo Awal Akun') }} (`account_opening_balances`)</li>
-                            <li>{{ t('Bagan Akun & Master COA') }} (`accounts`)</li>
+                            <li>{{ t('Bagan Akun & Master COA') }} {{ t('(`accounts`)') }}</li>
                             <li>{{ t('Data Anggota, Kelompok, Desa & Unit Organisasi') }}</li>
                             <li>{{ t('Data Pengguna, Akun Login & Hak Akses') }}</li>
                             <li>{{ t('Data Historis Migrasi Legacy') }} (`legacy_transaksi`)</li>

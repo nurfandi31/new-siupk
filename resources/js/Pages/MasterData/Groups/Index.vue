@@ -31,7 +31,7 @@ const columns = [
 ];
 
 const csvColumns = ['nama', 'desa', 'alamat', 'no_hp', 'tanggal_berdiri', 'status'];
-const statusLabels = { active: 'Aktif', inactive: 'Tidak aktif' };
+const statusLabels = { active: t('Aktif'), inactive: t('Tidak Aktif') };
 </script>
 
 <template>

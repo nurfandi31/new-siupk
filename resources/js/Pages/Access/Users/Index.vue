@@ -161,7 +161,7 @@ async function confirmDelete(user) {
             <!-- Reset Password Modal -->
             <AppModal v-model="resetModalOpen" :title="`Reset Password: ${resetTargetUser?.name ?? ''}`" size="md">
                 <form class="space-y-4" @submit.prevent="submitResetPassword">
-                    <p class="text-sm text-on-surface-variant">Masukkan password baru untuk pengguna <strong>{{ resetTargetUser?.username }}</strong>.</p>
+                    <p class="text-sm text-on-surface-variant">{{ t('Masukkan password baru untuk pengguna') }} <strong>{{ resetTargetUser?.username }}</strong>.</p>
                     <AppInput v-model="resetForm.password" :label="t('Password Baru')" type="password" required :error="resetForm.errors.password" />
                     <AppInput v-model="resetForm.password_confirmation" :label="t('Konfirmasi Password')" type="password" required />
                 </form>

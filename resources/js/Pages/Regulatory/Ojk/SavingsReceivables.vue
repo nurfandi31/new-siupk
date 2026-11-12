@@ -199,7 +199,7 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Simpanan & Piutang (SMPN)') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ periodLabel }} · per {{ period.as_of ?? '-' }}
+                        {{ periodLabel }} {{ t('· per') }} {{ period.as_of ?? '-' }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -261,7 +261,7 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
                 <div class="flex items-center justify-between border-b border-outline-variant/40 bg-surface-container-low px-4 py-3">
                     <h2 class="text-base font-bold text-on-surface">{{ t('Rekapitulasi Pasiva vs Aktiva') }}</h2>
                     <p class="text-xs text-on-surface-variant">
-                        Per {{ period.as_of ?? '-' }}
+                        {{ t('Per') }} {{ period.as_of ?? '-' }}
                     </p>
                 </div>
                 <div class="grid grid-cols-1 gap-0 md:grid-cols-2">
@@ -332,14 +332,14 @@ const receivableKindOrder: Array<'pokok' | 'bunga' | 'lain'> = ['pokok', 'bunga'
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <span><b>{{ t('Selisih (Simpanan − Piutang):') }}</b> {{ fmt(totals.selisih) }}</span>
                         <span class="text-on-surface-variant">
-                            Rasio Piutang Pokok / Simpanan: <b>{{ Number(ratio.pokok_to_simpanan).toFixed(2) }}%</b>
+                            {{ t('Rasio Piutang Pokok / Simpanan:') }} <b>{{ Number(ratio.pokok_to_simpanan).toFixed(2) }}%</b>
                         </span>
                     </div>
                 </div>
             </AppCard>
 
             <p v-if="generated_at" class="text-right text-[11px] text-on-surface-variant">
-                Digenerate pada {{ generated_at }}
+                {{ t('Digenerate pada') }} {{ generated_at }}
             </p>
         </div>
     </AuthenticatedLayout>

@@ -64,13 +64,13 @@ function saveNotes() {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Alokasi Laba') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        Tahun Buku {{ year }} · Simulasi alokasi surplus laba
+                        {{ t('Tahun Buku') }} {{ year }} {{ t('· Simulasi alokasi surplus laba') }}
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     <AppBadge tone="warning">PREVIEW / SIMULASI</AppBadge>
                     <AppBadge :tone="totals.remaining < 0.01 ? 'success' : 'error'">
-                        Teralokasi {{ totals.pct_allocated.toFixed(2) }}%
+                        {{ t('Teralokasi') }} {{ totals.pct_allocated.toFixed(2) }}%
                     </AppBadge>
                     <a :href="pdfHref" target="_blank" rel="noopener">
                         <AppButton variant="secondary" icon="picture_as_pdf" size="compact">PDF</AppButton>
@@ -209,10 +209,7 @@ function saveNotes() {
 
             <AppCard class="p-5">
                 <p class="text-xs text-on-surface-variant">
-                    <strong class="text-on-surface">Catatan:</strong> Laporan ini adalah PREVIEW/SIMULASI.
-                    Jurnal alokasi sebenarnya diproses oleh modul Tutup Buku (PeriodClose) setelah pengesahan RAT.
-                    Pos &ldquo;Laba Ditahan (sisa)&rdquo; dihitung otomatis sebagai sisa surplus yang
-                    belum dialokasikan ke pos lain.
+                    <strong class="text-on-surface">{{ t('Catatan:') }}</strong> {{ t('Laporan ini adalah PREVIEW/SIMULASI. Jurnal alokasi sebenarnya diproses oleh modul Tutup Buku (PeriodClose) setelah pengesahan RAT. Pos “Laba Ditahan (sisa)” dihitung otomatis sebagai sisa surplus yang belum dialokasikan ke pos lain.') }}
                 </p>
             </AppCard>
         </div>

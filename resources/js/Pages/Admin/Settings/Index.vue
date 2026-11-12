@@ -140,7 +140,7 @@ async function removeSetting(key) {
                     <AppButton type="submit" icon="save" :loading="createForm.processing">{{ t('Simpan') }}</AppButton>
                 </form>
                 <p class="mt-3 text-xs text-on-surface-variant">
-                    Key yang mengandung <code>secret / api_key / private_key / token / password</code> otomatis disimpan terenkripsi dan nilainya tidak akan pernah dikirim balik ke browser.
+                    {{ t('Key yang mengandung') }} <code>secret / api_key / private_key / token / password</code> {{ t('otomatis disimpan terenkripsi dan nilainya tidak akan pernah dikirim balik ke browser.') }}
                 </p>
             </AppCard>
 
@@ -173,7 +173,7 @@ async function removeSetting(key) {
                                 hide-label
                                 class="min-w-64 flex-1"
                                 :type="row.is_sensitive ? 'password' : 'text'"
-                                :placeholder="row.is_sensitive ? 'Ganti nilai' : 'Nilai baru'"
+                                :placeholder="row.is_sensitive ? t('Ganti nilai') : t('Nilai baru')"
                             />
                             <AppButton type="submit" variant="success" size="compact" icon="check" :loading="editForm.processing">{{ t('Simpan') }}</AppButton>
                             <AppButton variant="ghost" size="compact" @click="cancelEdit">{{ t('Batal') }}</AppButton>

@@ -134,14 +134,14 @@ function formatCompactCurrency(value) {
 }
 
 const stats = computed(() => [
-    { label: t('Anggota Aktif Terdaftar'), value: formatNumber(props.stats?.members_active), top: 'Anggota', icon: 'groups' },
-    { label: t('Kelompok Pemanfaat Aktif'), value: formatNumber(props.stats?.groups_active), top: 'Kelompok', icon: 'groups_2' },
-    { label: t('Pinjaman Aktif Berjalan'), value: formatNumber(props.stats?.loans_active), top: 'Pinjaman', icon: 'account_balance_wallet' },
-    { label: t('Kolektabilitas Angsuran Jatuh Tempo'), value: formatPercent(props.stats?.collection_rate), top: 'Kolektabilitas', icon: 'verified' },
+    { label: t('Anggota Aktif Terdaftar'), value: formatNumber(props.stats?.members_active), top: t('Anggota'), icon: 'groups' },
+    { label: t('Kelompok Pemanfaat Aktif'), value: formatNumber(props.stats?.groups_active), top: t('Kelompok'), icon: 'groups_2' },
+    { label: t('Pinjaman Aktif Berjalan'), value: formatNumber(props.stats?.loans_active), top: t('Pinjaman'), icon: 'account_balance_wallet' },
+    { label: t('Kolektabilitas Angsuran Jatuh Tempo'), value: formatPercent(props.stats?.collection_rate), top: t('Kolektabilitas'), icon: 'verified' },
 ]);
 
 const layananModul = computed(() => [
-    { num: '01', icon: 'how_to_reg', title: t('Verifikasi Anggota'), desc: t('Form digital, validasi NIK, dan lampiran dokumen otomatis untuk pengurus kelompok.'), tone: 'indigo', tag: 'Onboarding', period: 'Real-time', stats: [
+    { num: '01', icon: 'how_to_reg', title: t('Verifikasi Anggota'), desc: t('Form digital, validasi NIK, dan lampiran dokumen otomatis untuk pengurus kelompok.'), tone: 'indigo', tag: t('Onboarding'), period: t('Real-time'), stats: [
         { value: formatNumber(props.stats?.members_active), label: t('Anggota aktif'), highlight: true },
         { value: formatNumber(props.stats?.groups_active), label: t('Kelompok'), highlight: false },
     ] },
@@ -149,19 +149,19 @@ const layananModul = computed(() => [
         { value: formatNumber(props.stats?.loans_pending), label: t('Menunggu'), highlight: true },
         { value: formatNumber(props.stats?.loan_products_total), label: t('Produk'), highlight: false },
     ] },
-    { num: '03', icon: 'account_balance_wallet', title: t('Pencairan & Angsuran'), desc: t('Jadwal angsuran, kolektabilitas, dan tanda terima digital real-time.'), tone: 'amber', tag: 'Transaksi', period: 'Real-time', stats: [
+    { num: '03', icon: 'account_balance_wallet', title: t('Pencairan & Angsuran'), desc: t('Jadwal angsuran, kolektabilitas, dan tanda terima digital real-time.'), tone: 'amber', tag: t('Transaksi'), period: t('Real-time'), stats: [
         { value: formatCompactCurrency(props.stats?.outstanding_principal), label: t('Outstanding'), highlight: true },
         { value: formatPercent(props.stats?.collection_rate), label: t('Kolektabilitas'), highlight: false },
     ] },
-    { num: '04', icon: 'fact_check', title: t('Berita Acara'), desc: t('Template BA tersinkronisasi dengan format kecamatan dan kabupaten.'), tone: 'rose', tag: 'Dokumen', period: 'Otomatis', stats: [
+    { num: '04', icon: 'fact_check', title: t('Berita Acara'), desc: t('Template BA tersinkronisasi dengan format kecamatan dan kabupaten.'), tone: 'rose', tag: t('Dokumen'), period: t('Otomatis'), stats: [
         { value: formatNumber(props.stats?.documents_total), label: t('Dokumen'), highlight: true },
         { value: formatNumber(props.stats?.installments_total), label: t('Angsuran'), highlight: false },
     ] },
-    { num: '05', icon: 'analytics', title: t('Laporan Keuangan'), desc: t('Neraca, laba-rugi, arus kas, dan CALK otomatis sesuai standar.'), tone: 'teal', tag: 'Reporting', period: 'Bulanan', stats: [
+    { num: '05', icon: 'analytics', title: t('Laporan Keuangan'), desc: t('Neraca, laba-rugi, arus kas, dan CALK otomatis sesuai standar.'), tone: 'teal', tag: 'Reporting', period: t('Bulanan'), stats: [
         { value: formatNumber(props.stats?.fiscal_periods_total), label: t('Periode'), highlight: true },
         { value: 'SAK EP', label: t('Standar'), highlight: false },
     ] },
-    { num: '06', icon: 'inventory_2', title: t('Aset & Inventaris'), desc: t('Manajemen aset tetap, inventaris, dan penyusutan otomatis.'), tone: 'violet', tag: 'Aset', period: 'Update berkala', stats: [
+    { num: '06', icon: 'inventory_2', title: t('Aset & Inventaris'), desc: t('Manajemen aset tetap, inventaris, dan penyusutan otomatis.'), tone: 'violet', tag: t('Aset'), period: 'Update berkala', stats: [
         { value: formatNumber(props.stats?.assets_total), label: t('Item aset'), highlight: true },
         { value: 'Auto', label: t('Penyusutan'), highlight: false },
     ] },
@@ -172,8 +172,8 @@ const produkCards = computed(() => [
         key: 'kelompok',
         icon: 'groups',
         tone: 'indigo',
-        headline: 'Solidaritas & gotong-royong',
-        ringkasan: 'Pinjaman untuk satu kelompok usaha/masyarakat beranggotakan 5–20 orang.',
+        headline: t('Solidaritas & gotong-royong'),
+        ringkasan: t('Pinjaman untuk satu kelompok usaha/masyarakat beranggotakan 5–20 orang.'),
         desc: t('Skema penyaluran dimana pengurus kelompok bersama anggotanya bertanggung jawab secara kolektif atas kelancaran angsuran. Cocok untuk anggota yang baru memulai usaha.'),
         stats: [
             { label: t('Porsi penyaluran'), value: formatPercent(props.stats?.group_share), icon: 'pie_chart' },
@@ -182,26 +182,26 @@ const produkCards = computed(() => [
             { label: t('Total pinjaman'), value: formatNumber(props.stats?.group_loans_total), icon: 'receipt_long' },
         ],
         manfaat: [
-            'Risiko gagal bayar lebih rendah',
-            'Verifikasi kolektif oleh pengurus',
-            'Berita acara cukup satu dokumen',
-            'Pendampingan intensif',
-            'Cocok untuk usaha pemula',
-            'Monitoring real-time',
+            t('Risiko gagal bayar lebih rendah'),
+            t('Verifikasi kolektif oleh pengurus'),
+            t('Berita acara cukup satu dokumen'),
+            t('Pendampingan intensif'),
+            t('Cocok untuk usaha pemula'),
+            t('Monitoring real-time'),
         ],
         syarat: [
-            'Kelompok minimal 5 anggota',
-            'Memiliki pengurus aktif',
-            'Berita acara musyawarah kelompok',
-            'Rekomendasi pendamping kecamatan',
+            t('Kelompok minimal 5 anggota'),
+            t('Memiliki pengurus aktif'),
+            t('Berita acara musyawarah kelompok'),
+            t('Rekomendasi pendamping kecamatan'),
         ],
     },
     {
         key: 'individu',
         icon: 'person',
         tone: 'amber',
-        headline: 'Fleksibel & personal',
-        ringkasan: 'Pinjaman untuk peminjam perorangan dengan plafon lebih besar.',
+        headline: t('Fleksibel & personal'),
+        ringkasan: t('Pinjaman untuk peminjam perorangan dengan plafon lebih besar.'),
         desc: t('Skema penyaluran kepada peminjam perorangan dengan analisis profil risiko yang lebih ketat. Cocok untuk anggota yang butuh plafon lebih besar dan sudah memiliki catatan usaha.'),
         stats: [
             { label: t('Porsi penyaluran'), value: formatPercent(props.stats?.member_share), icon: 'pie_chart' },
@@ -210,18 +210,18 @@ const produkCards = computed(() => [
             { label: t('Total pinjaman'), value: formatNumber(props.stats?.member_loans_total), icon: 'receipt_long' },
         ],
         manfaat: [
-            'Plafon lebih tinggi per peminjam',
-            'Skoring risiko otomatis',
-            'Reminder WhatsApp otomatis',
-            'Jadwal angsuran custom',
-            'Cocok untuk usaha berkembang',
-            'Pencairan lebih cepat',
+            t('Plafon lebih tinggi per peminjam'),
+            t('Skoring risiko otomatis'),
+            t('Reminder WhatsApp otomatis'),
+            t('Jadwal angsuran custom'),
+            t('Cocok untuk usaha berkembang'),
+            t('Pencairan lebih cepat'),
         ],
         syarat: [
-            'Anggota aktif minimal 1 tahun',
-            'Riwayat pinjaman sebelumnya',
-            'Profil usaha terdaftar',
-            'Rekomendasi pengurus',
+            t('Anggota aktif minimal 1 tahun'),
+            t('Riwayat pinjaman sebelumnya'),
+            t('Profil usaha terdaftar'),
+            t('Rekomendasi pengurus'),
         ],
     },
 ]);
@@ -236,17 +236,17 @@ const toneStyles = {
 };
 
 const alur = [
-    { num: '01', title: t('Musyawarah Desa'), desc: t('Verifikasi calon anggota dan rencana kebutuhan oleh pengurus & LKD desa.'), role: 'Pengurus + LKD', duration: '1–3 hari', icon: 'groups_2' },
-    { num: '02', title: t('Verifikasi & SPK'), desc: t('Pemeriksaan data, berita acara, dan penandatanganan perjanjian kredit.'), role: 'Tim Teknis', duration: '2–5 hari', icon: 'task_alt' },
-    { num: '03', title: t('Penyaluran & Angsuran'), desc: t('Pencairan, jadwal angsuran, dan monitoring kolektabilitas real-time.'), role: 'Operator', duration: 'Otomatis', icon: 'sync_alt' },
-    { num: '04', title: t('Pelaporan'), desc: t('Laporan keuangan, berita acara, dan dokumentasi tersimpan otomatis.'), role: 'Pengurus + Dinas', duration: 'Bulanan', icon: 'analytics' },
+    { num: '01', title: t('Musyawarah Desa'), desc: t('Verifikasi calon anggota dan rencana kebutuhan oleh pengurus & LKD desa.'), role: t('Pengurus + LKD'), duration: t('1–3 hari'), icon: 'groups_2' },
+    { num: '02', title: t('Verifikasi & SPK'), desc: t('Pemeriksaan data, berita acara, dan penandatanganan perjanjian kredit.'), role: t('Tim Teknis'), duration: t('2–5 hari'), icon: 'task_alt' },
+    { num: '03', title: t('Penyaluran & Angsuran'), desc: t('Pencairan, jadwal angsuran, dan monitoring kolektabilitas real-time.'), role: t('Operator'), duration: t('Otomatis'), icon: 'sync_alt' },
+    { num: '04', title: t('Pelaporan'), desc: t('Laporan keuangan, berita acara, dan dokumentasi tersimpan otomatis.'), role: t('Pengurus + Dinas'), duration: t('Bulanan'), icon: 'analytics' },
 ];
 
 const regulasi = [
     { label: t('PP No. 11/2021'), sub: t('BUMDesma'), desc: t('Pendirian & pengelolaan badan usaha milik desa sesuai regulasi.'), tone: 'indigo', icon: 'policy' },
-    { label: 'SAK EP / ETAP', sub: t('Standar Akuntansi'), desc: t('Bagan akun entitas mikro & privat yang berlaku nasional.'), tone: 'sky', icon: 'menu_book' },
+    { label: t('SAK EP / ETAP'), sub: t('Standar Akuntansi'), desc: t('Bagan akun entitas mikro & privat yang berlaku nasional.'), tone: 'sky', icon: 'menu_book' },
     { label: t('Sharding DB'), sub: t('Isolasi Tenant'), desc: t('Ruang data independen per BUMDesma untuk keamanan.'), tone: 'teal', icon: 'database' },
-    { label: 'QRIS & VA', sub: t('Payment Gateway'), desc: t('Pembayaran nasional multi-bank yang aman & cepat.'), tone: 'amber', icon: 'qr_code_2' },
+    { label: t('QRIS & VA'), sub: t('Payment Gateway'), desc: t('Pembayaran nasional multi-bank yang aman & cepat.'), tone: 'amber', icon: 'qr_code_2' },
 ];
 
 let observerInstance = null;

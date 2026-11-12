@@ -182,7 +182,7 @@ const pdfUrl = computed<string>(() => {
                         {{ t('Penyisihan Cadangan Penghapusan Piutang (PCPP / CKPN)') }}
                     </h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ props.period_label }} · per {{ props.as_of ?? '-' }}
+                        {{ props.period_label }} {{ t('· per') }} {{ props.as_of ?? '-' }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -344,14 +344,13 @@ const pdfUrl = computed<string>(() => {
                         {{ t('Cadangan Dibentuk adalah saldo akun 1.1.04.XX (Cadangan Kerugian Piutang) yang didistribusikan secara proporsional ke tiap golongan berdasarkan porsi outstanding.') }}
                     </li>
                     <li>
-                        Selisih negatif menandakan lembaga <b>belum memenuhi</b> kewajiban CKPN.
-                        Nilai 100% atau lebih menandakan <b>memenuhi</b> ketentuan OJK.
+                        {{ t('Selisih negatif menandakan lembaga') }} <b>{{ t('belum memenuhi') }}</b> {{ t('kewajiban CKPN. Nilai 100% atau lebih menandakan') }} <b>{{ t('memenuhi') }}</b> {{ t('ketentuan OJK.') }}
                     </li>
                 </ul>
             </AppCard>
 
             <p v-if="generated_at" class="text-right text-[11px] text-on-surface-variant">
-                Digenerate pada {{ generated_at }}
+                {{ t('Digenerate pada') }} {{ generated_at }}
             </p>
         </div>
     </AuthenticatedLayout>

@@ -80,7 +80,7 @@ const pdfHref = computed(() => {
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-on-surface-variant">{{ t('Pelaporan') }}</p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Rencana vs Realisasi') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        Angsuran jatuh tempo {{ period.period_label }} · due vs paid di jadwal
+                        {{ t('Angsuran jatuh tempo') }} {{ period.period_label }} {{ t('· due vs paid di jadwal') }}
                     </p>
                 </div>
                 <a :href="pdfHref" target="_blank" rel="noopener">
@@ -182,7 +182,7 @@ const pdfHref = computed(() => {
                         </tbody>
                         <tfoot v-if="rows.length > 0">
                             <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                <td class="px-3 py-2" colspan="3">Jumlah ({{ totals.count }})</td>
+                                <td class="px-3 py-2" colspan="3">{{ t('Jumlah (') }}{{ totals.count }})</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.plan_principal) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.actual_principal) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums text-error">{{ formatMoney(totals.gap_principal) }}</td>

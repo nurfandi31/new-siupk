@@ -52,7 +52,7 @@ function resetTenantFilter() {
             <!-- Header -->
             <div class="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Dashboard Kabupaten {{ regency_name }}</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Dashboard Kabupaten') }} {{ regency_name }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         {{ t('Rekapitulasi dan monitoring keuangan gabungan seluruh kecamatan (UPK DBM).') }}
                     </p>
@@ -97,7 +97,7 @@ function resetTenantFilter() {
                         <AppIcon name="sync_alt" tone="primary" :container-size="9" />
                     </div>
                     <p class="mt-3 text-2xl font-bold text-primary">{{ money(metrics.summary.total_turnover) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">Total dana bergulir gabungan {{ metrics.summary.total_kecamatans }} Kecamatan</p>
+                    <p class="mt-1 text-xs text-on-surface-variant">{{ t('Total dana bergulir gabungan') }} {{ metrics.summary.total_kecamatans }} {{ t('Kecamatan') }}</p>
                 </AppCard>
 
                 <!-- Akumulasi Aset Gabungan -->
@@ -130,7 +130,7 @@ function resetTenantFilter() {
                         <AppIcon name="account_balance_wallet" tone="primary" :container-size="9" />
                     </div>
                     <p class="mt-3 text-2xl font-bold text-primary">{{ money(metrics.summary.total_cash) }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">{{ metrics.summary.active_loans_count }} Pinjaman Aktif Berjalan</p>
+                    <p class="mt-1 text-xs text-on-surface-variant">{{ metrics.summary.active_loans_count }} {{ t('Pinjaman Aktif Berjalan') }}</p>
                 </AppCard>
             </div>
 

@@ -48,7 +48,7 @@ watch(selectedTenant, () => {
                 <div>
                     <h1 class="text-2xl font-bold text-primary">{{ t('Catatan Atas Laporan Keuangan (CALK)') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Kabupaten {{ regency_name }} · {{ report.period?.period_label }} · {{ report.is_consolidated ? t('Gabungan Seluruh Kecamatan') : t('Kecamatan Terpilih') }}
+                        {{ t('Kabupaten') }} {{ regency_name }} · {{ report.period?.period_label }} · {{ report.is_consolidated ? t('Gabungan Seluruh Kecamatan') : t('Kecamatan Terpilih') }}
                     </p>
                 </div>
             </div>
@@ -88,7 +88,7 @@ watch(selectedTenant, () => {
                 <h2 class="text-base font-bold text-primary">{{ t('I. Gambaran Umum Wilayah Kabupaten') }}</h2>
                 <div class="mt-3 space-y-2 text-sm text-on-surface leading-relaxed">
                     <p>
-                        Laporan keuangan konsolidasi Kabupaten <strong>{{ regency_name }}</strong> mencakup seluruh unit pengelola kegiatan (UPK DBM / BUMDesma) yang berada dalam naungan administrasi kabupaten.
+                        {{ t('Laporan keuangan konsolidasi Kabupaten') }} <strong>{{ regency_name }}</strong> {{ t('mencakup seluruh unit pengelola kegiatan (UPK DBM / BUMDesma) yang berada dalam naungan administrasi kabupaten.') }}
                     </p>
                     <p>
                         {{ t('Penggabungan laporan menggunakan basis data shard tunggal yang memastikan standarisasi bagan akun standar (Chart of Accounts), eliminasi transaksi intra-kabupaten, serta kepatuhan pada regulasi pelaporan keuangan dana bergulir masyarakat.') }}
@@ -102,19 +102,19 @@ watch(selectedTenant, () => {
                 <div class="mt-3 space-y-3 text-sm text-on-surface">
                     <div class="flex gap-3">
                         <span class="font-bold text-primary">1.</span>
-                        <p><strong>Dasar Penyusunan:</strong> Laporan disajikan menggunakan basis akrual dan standar akuntansi entitas tanpa akuntabilitas publik (SAK ETAP / EP) yang disesuaikan untuk lembaga pengelola DBM.</p>
+                        <p><strong>{{ t('Dasar Penyusunan:') }}</strong> {{ t('Laporan disajikan menggunakan basis akrual dan standar akuntansi entitas tanpa akuntabilitas publik (SAK ETAP / EP) yang disesuaikan untuk lembaga pengelola DBM.') }}</p>
                     </div>
                     <div class="flex gap-3">
                         <span class="font-bold text-primary">2.</span>
-                        <p><strong>Kas dan Setara Kas:</strong> Mencakup kas di brankas kasir unit kerja dan saldo giro/tabungan di bank operasional yang dapat ditarik sewaktu-waktu.</p>
+                        <p><strong>{{ t('Kas dan Setara Kas:') }}</strong> {{ t('Mencakup kas di brankas kasir unit kerja dan saldo giro/tabungan di bank operasional yang dapat ditarik sewaktu-waktu.') }}</p>
                     </div>
                     <div class="flex gap-3">
                         <span class="font-bold text-primary">3.</span>
-                        <p><strong>Pinjaman Bergulir:</strong> Dicatat sebesar nilai pokok pinjaman yang disalurkan kepada kelompok pemanfaat, dikurangi cadangan penyisihan penghapusan pinjaman ragu-ragu jika ada.</p>
+                        <p><strong>{{ t('Pinjaman Bergulir:') }}</strong> {{ t('Dicatat sebesar nilai pokok pinjaman yang disalurkan kepada kelompok pemanfaat, dikurangi cadangan penyisihan penghapusan pinjaman ragu-ragu jika ada.') }}</p>
                     </div>
                     <div class="flex gap-3">
                         <span class="font-bold text-primary">4.</span>
-                        <p><strong>Pendapatan Jasa Pinjaman:</strong> Diakui saat angsuran diterima atau pada saat jatuh tempo tagihan sesuai jadwal pengembalian kelompok.</p>
+                        <p><strong>{{ t('Pendapatan Jasa Pinjaman:') }}</strong> {{ t('Diakui saat angsuran diterima atau pada saat jatuh tempo tagihan sesuai jadwal pengembalian kelompok.') }}</p>
                     </div>
                 </div>
             </AppCard>

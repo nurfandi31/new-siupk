@@ -189,7 +189,7 @@ async function createSession(instance) {
     loadingAction.value = instance.row_id;
     try {
         const res = await requestJson(`/settings/whatsapp/instances/${instance.row_id}/create-session`, { method: 'POST' });
-        toast.success(res.message || 'Berhasil');
+        toast.success(res.message || t('Berhasil'));
         if (res.success) openQr(instance, res);
     } catch (e) {
         toast.error(e?.message || 'Gagal membuat sesi gateway.');
@@ -304,7 +304,7 @@ function statusTone(status) {
 
 function statusLabel(status) {
     const value = (status || '').toLowerCase();
-    if (['open', 'connected'].includes(value)) return 'Terhubung';
+    if (['open', 'connected'].includes(value)) return t('Terhubung');
     if (['connecting', 'pending'].includes(value)) return 'Menghubungkan';
     if (['missing'].includes(value)) return 'Belum Dibuat';
     if (['close', 'closed'].includes(value)) return 'Terputus';
@@ -390,9 +390,9 @@ const billingForm = useForm({
 
 const gatewayOk = computed(() => props.billing_gateway?.configured && props.billing_gateway?.enabled);
 const sourceLabel = {
-    group: 'Kelompok',
-    member: 'Anggota',
-    beneficiary: 'Pemanfaat',
+    group: t('Kelompok'),
+    member: t('Anggota'),
+    beneficiary: t('Pemanfaat'),
     none: '—',
 };
 const sourceTone = {
@@ -700,7 +700,7 @@ async function sendBillingWithProgress() {
                 </form>
             </AppCard>
 
-        <AppModal v-model="showCreateModal" :title="editingInstance ? 'Edit Instance' : 'Tambah Instance'" size="md">
+        <AppModal v-model="showCreateModal" :title="editingInstance ? t('Edit Instance') : t('Tambah Instance')" size="md">
             <form class="space-y-5" @submit.prevent="submitInstance">
                 <AppInput v-model="form.name" :label="t('Nama Instance')" required :placeholder="t('Masukkan nama')" :error="form.errors.name" />
                 <AppInput v-model="form.phone_number" :label="t('Nomor WhatsApp (opsional)')" placeholder="08xxxxxxxxxx" :error="form.errors.phone_number" :hint="t('Boleh diisi setelah nomor tersambung.')" />
@@ -724,7 +724,7 @@ async function sendBillingWithProgress() {
             >
                 <AppIcon name="warning" class="shrink-0 text-warning" />
                 <p class="min-w-0 flex-1 text-sm font-semibold text-primary">
-                    Gateway belum siap. Atur di tab
+                    {{ t('Gateway belum siap. Atur di tab') }}
                     <button class="underline" @click="go('instances')">{{ t('Status & Instance') }}</button>.
                 </p>
                 <AppBadge tone="warning">{{ props.billing_gateway?.configured ? t('Nonaktif') : t('Belum Diatur') }}</AppBadge>
@@ -737,9 +737,9 @@ async function sendBillingWithProgress() {
             >
                 <AppIcon name="task_alt" class="shrink-0 text-success" />
                 <p class="min-w-0 flex-1 text-sm font-semibold text-primary">
-                    <span class="text-success">{{ lastResult.sent ?? 0 }}</span> terkirim ·
-                    <span class="text-error">{{ lastResult.failed ?? 0 }}</span> gagal ·
-                    {{ lastResult.skipped ?? 0 }} dilewati
+                    <span class="text-success">{{ lastResult.sent ?? 0 }}</span> {{ t('terkirim ·') }}
+                    <span class="text-error">{{ lastResult.failed ?? 0 }}</span> {{ t('gagal ·') }}
+                    {{ lastResult.skipped ?? 0 }} {{ t('dilewati') }}
                 </p>
                 <button class="text-on-surface-variant hover:text-primary" @click="lastResult = null">
                     <AppIcon name="close" />
@@ -844,7 +844,7 @@ async function sendBillingWithProgress() {
                         <div class="min-w-0 flex-1 basis-full sm:basis-auto">
                             <h2 class="text-sm font-bold text-primary">{{ t('Pinjaman Jatuh Tempo') }}</h2>
                             <p class="text-xs text-on-surface-variant">
-                                {{ filteredItems.length }} baris · {{ filteredItems.filter((i) => i.can_send).length }} siap kirim
+                                {{ filteredItems.length }} {{ t('baris ·') }} {{ filteredItems.filter((i) => i.can_send).length }} {{ t('siap kirim') }}
                             </p>
                         </div>
                         <div class="flex flex-wrap gap-2">
@@ -916,7 +916,7 @@ async function sendBillingWithProgress() {
                     <!-- Footer sticky: tombol kirim -->
                     <footer class="flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant bg-surface-container-lowest px-4 py-3">
                         <p class="min-w-0 flex-1 text-sm font-semibold text-primary">
-                            {{ selectedIds.length }} dipilih · {{ money(selectedAmount) }}
+                            {{ selectedIds.length }} {{ t('dipilih ·') }} {{ money(selectedAmount) }}
                         </p>
                         <AppButton
                             icon="send"
@@ -935,7 +935,7 @@ async function sendBillingWithProgress() {
             </div>
         </div>
 
-        <AppModal v-model="showQrModal" :title="qrInstance ? `Status ${qrInstance.name}` : 'Status Instance'" size="sm">
+        <AppModal v-model="showQrModal" :title="qrInstance ? `Status ${qrInstance.name}` : t('Status Instance')" size="sm">
             <div class="space-y-4 text-center">
                 <AppBadge :tone="qrTone">{{ statusLabel(qrStatus) }}</AppBadge>
                 <div v-if="qrCode" class="rounded-xl border border-outline-variant bg-surface-container-low p-4">

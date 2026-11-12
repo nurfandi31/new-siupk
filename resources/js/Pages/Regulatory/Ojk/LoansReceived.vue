@@ -159,7 +159,7 @@ function badgeTone(tone: string): string {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Rincian Pinjaman Diterima') }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
-                        Daftar pinjaman dari pihak ketiga yang diterima pada periode
+                        {{ t('Daftar pinjaman dari pihak ketiga yang diterima pada periode') }}
                         <span class="font-semibold text-primary">{{ period_label }}</span>
                         — {{ identity.legal_name }}
                     </p>
@@ -213,9 +213,9 @@ function badgeTone(tone: string): string {
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Status') }}</p>
                     <div class="mt-2 flex flex-wrap gap-2 text-xs">
-                        <AppBadge tone="success">{{ totals.active_count }} Aktif</AppBadge>
-                        <AppBadge tone="neutral">{{ totals.paid_count }} Lunas</AppBadge>
-                        <AppBadge tone="error">{{ totals.written_off_count }} Hapusbuku</AppBadge>
+                        <AppBadge tone="success">{{ totals.active_count }} {{ t('Aktif') }}</AppBadge>
+                        <AppBadge tone="neutral">{{ totals.paid_count }} {{ t('Lunas') }}</AppBadge>
+                        <AppBadge tone="error">{{ totals.written_off_count }} {{ t('Hapusbuku') }}</AppBadge>
                     </div>
                 </AppCard>
             </div>
@@ -252,7 +252,7 @@ function badgeTone(tone: string): string {
                             <td class="p-2.5 text-right font-semibold">{{ formatMoney(row.principal_amount) }}</td>
                             <td class="p-2.5 text-right">{{ formatMoney(row.principal_remaining) }}</td>
                             <td class="p-2.5 text-center">{{ row.interest_rate.toFixed(2) }}% ({{ row.interest_type }})</td>
-                            <td class="p-2.5 text-center">{{ row.tenor_remaining_months }}/{{ row.tenor_months }} bln</td>
+                            <td class="p-2.5 text-center">{{ row.tenor_remaining_months }}/{{ row.tenor_months }} {{ t('bln') }}</td>
                             <td class="p-2.5 text-center text-on-surface-variant">{{ formatDate(row.due_date) }}</td>
                             <td class="p-2.5 text-center">
                                 <AppBadge :tone="badgeTone(row.status_tone)">{{ row.status_label }}</AppBadge>

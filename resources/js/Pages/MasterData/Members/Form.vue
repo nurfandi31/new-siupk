@@ -62,7 +62,7 @@ function fields(member = null) {
 
 const form = useForm(fields(props.member));
 const genderOptions = [{ value: 'L', label: t('Laki-laki'), icon: 'male' }, { value: 'P', label: t('Perempuan'), icon: 'female' }];
-const statusOptions = [{ value: 'active', label: t('Aktif') }, { value: 'exited', label: t('Keluar') }, { value: 'deceased', label: t('Meninggal') }];
+const statusOptions = [{ value: 'active', label: t('Aktif') }, { value: 'exited', label: t('Sudah Keluar') }, { value: 'deceased', label: t('Meninggal') }];
 const villageOptions = computed(() => props.villages.map((village) => ({ value: village.row_id, label: village.name })));
 
 const lastLookedUpNik = ref('');
@@ -119,7 +119,7 @@ function submit() {
 </script>
 
 <template>
-    <Head :title="editing ? 'Edit Anggota' : 'Tambah Anggota'" />
+    <Head :title="editing ? t('Edit Anggota') : t('Tambah Anggota')" />
     <AuthenticatedLayout>
         <div class="mx-auto max-w-7xl">
             <header class="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
@@ -146,7 +146,7 @@ function submit() {
                     </div>
 
                     <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                        <AppInput v-model="form.nik" label="NIK" icon="badge" inputmode="numeric" maxlength="16" required :hint="lookupLoading ? 'Memeriksa data anggota…' : null" :error="form.errors.nik || lookupError" />
+                        <AppInput v-model="form.nik" label="NIK" icon="badge" inputmode="numeric" maxlength="16" required :hint="lookupLoading ? t('Memeriksa data anggota…') : null" :error="form.errors.nik || lookupError" />
                         <AppInput v-model="form.name" :label="t('Nama Lengkap')" icon="person" required :error="form.errors.name" />
                         <AppInput v-model="form.family_card_number" :label="t('Nomor KK')" icon="badge" inputmode="numeric" maxlength="16" :error="form.errors.family_card_number" />
                         <AppRadioGroup v-model="form.gender" :label="t('Jenis Kelamin')" :options="genderOptions" required :error="form.errors.gender" />

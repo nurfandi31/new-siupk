@@ -43,7 +43,7 @@ function submit() {
 </script>
 
 <template>
-    <Head :title="editing ? 'Edit User' : 'Tambah User'" />
+    <Head :title="editing ? t('Edit User') : t('Tambah User')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl space-y-6">
             <header>
@@ -56,7 +56,7 @@ function submit() {
                     <AppInput v-model="form.username" :label="t('Username')" required :error="form.errors.username" />
                     <AppInput v-model="form.email" :label="t('Email')" type="email" :error="form.errors.email" />
                     <AppInput v-model="form.phone" :label="t('Nomor HP (WhatsApp)')" icon="phone" type="tel" inputmode="tel" autocomplete="tel" required :error="form.errors.phone" />
-                    <AppInput v-model="form.password" :label="editing ? 'Password baru (opsional)' : 'Password'" type="password" :required="!editing" :error="form.errors.password" />
+                    <AppInput v-model="form.password" :label="editing ? t('Password baru (opsional)') : t('Password')" type="password" :required="!editing" :error="form.errors.password" />
                     <AppInput v-model="form.password_confirmation" :label="t('Konfirmasi password')" type="password" :required="!editing || !!form.password" />
                     <SmartSelect v-model="form.status" :label="t('Status')" :options="statusOptions" required :error="form.errors.status" />
                     <SmartSelect v-model="form.role" :label="t('Role')" :options="roleOptions" :error="form.errors.role" />

@@ -46,10 +46,10 @@ const statusMeta = {
 };
 
 const roleLabels = {
-    borrower: 'Peminjam',
-    beneficiary: 'Pemanfaat',
-    'borrower+beneficiary': 'Peminjam',
-    group: 'Kelompok',
+    borrower: t('Peminjam'),
+    beneficiary: t('Pemanfaat'),
+    'borrower+beneficiary': t('Peminjam'),
+    group: t('Kelompok'),
 };
 </script>
 
@@ -100,7 +100,7 @@ const roleLabels = {
                     <td class="px-3 py-2 text-on-surface-variant">
                         {{ roleLabels[loan.role] || loan.role || '—' }}
                         <div v-if="loan.allocated_amount != null" class="whitespace-nowrap text-xs">
-                            alokasi {{ formatMoney(loan.allocated_amount) }}
+                            {{ t('alokasi') }} {{ formatMoney(loan.allocated_amount) }}
                         </div>
                     </td>
                     <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">{{ formatMoney(loan.principal_amount) }}</td>

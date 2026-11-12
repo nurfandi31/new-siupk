@@ -264,8 +264,8 @@ onUnmounted(() => {
                     <AppIcon name="map" tone="primary" :container-size="9" />
                     <div>
                         <div class="flex items-center gap-2">
-                            <h2 class="font-bold text-primary">Peta Sebaran BUMDesma {{ regencyName }}</h2>
-                            <AppBadge tone="primary-soft">{{ kecamatans.length }} Kecamatan</AppBadge>
+                            <h2 class="font-bold text-primary">{{ t('Peta Sebaran BUMDesma') }} {{ t(regencyName) }}</h2>
+                            <AppBadge tone="primary-soft">{{ kecamatans.length }} {{ t('Kecamatan') }}</AppBadge>
                         </div>
                         <p class="text-xs text-on-surface-variant">
                             {{ t('Visualisasi spasial sebaran BUMDesma, total perputaran dana, akumulasi aset, dan rasio NPL per wilayah.') }}
@@ -327,7 +327,7 @@ onUnmounted(() => {
                 <button
                     type="button"
                     class="flex size-9 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface shadow-md hover:bg-surface-container cursor-pointer"
-                    :title="isExpanded ? 'Kecilkan Peta' : 'Layar Penuh'"
+                    :title="isExpanded ? t('Kecilkan Peta') : t('Layar Penuh')"
                     @click="toggleFullscreen"
                 >
                     <AppIcon :name="isExpanded ? 'fullscreen_exit' : 'fullscreen'" />
@@ -406,7 +406,7 @@ onUnmounted(() => {
                     </div>
                     <div class="rounded-lg bg-surface-container-low p-2.5">
                         <span class="text-[10px] text-on-surface-variant font-medium">{{ t('Pinjaman Aktif') }}</span>
-                        <p class="mt-0.5 font-bold text-primary">{{ selectedKecamatan.active_loans }} Pinjaman</p>
+                        <p class="mt-0.5 font-bold text-primary">{{ selectedKecamatan.active_loans }} {{ t('Pinjaman') }}</p>
                     </div>
                     <div class="rounded-lg bg-surface-container-low p-2.5">
                         <span class="text-[10px] text-on-surface-variant font-medium">{{ t('Kas & Bank') }}</span>
@@ -415,9 +415,9 @@ onUnmounted(() => {
                 </div>
 
                 <div class="mt-2.5 flex items-center justify-between text-xs text-on-surface-variant px-1">
-                    <span>{{ selectedKecamatan.groups_count }} Kelompok</span>
+                    <span>{{ selectedKecamatan.groups_count }} {{ t('Kelompok') }}</span>
                     <span>•</span>
-                    <span>{{ selectedKecamatan.members_count }} Anggota</span>
+                    <span>{{ selectedKecamatan.members_count }} {{ t('Anggota') }}</span>
                 </div>
 
                 <div class="mt-3 pt-3 border-t border-outline-variant/60">

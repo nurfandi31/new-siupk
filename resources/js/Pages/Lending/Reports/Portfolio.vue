@@ -140,7 +140,7 @@ const villageSections = computed(() => {
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Pinjaman') }}</p>
                     <p class="mt-2 text-2xl font-bold text-primary">{{ totals.count }}</p>
-                    <p class="mt-1 text-xs text-on-surface-variant">{{ totals.overdue_count }} tunggakan</p>
+                    <p class="mt-1 text-xs text-on-surface-variant">{{ totals.overdue_count }} {{ t('tunggakan') }}</p>
                 </AppCard>
                 <AppCard>
                     <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ t('Sisa Pokok') }}</p>
@@ -164,7 +164,7 @@ const villageSections = computed(() => {
                     <p class="mt-2 text-lg font-bold text-primary">{{ bucket.count }}</p>
                     <p class="mt-1 text-sm tabular-nums text-on-surface">{{ formatMoney(bucket.principal) }}</p>
                     <p v-if="bucket.overdue > 0" class="mt-0.5 text-xs tabular-nums text-error">
-                        tunggakan {{ formatMoney(bucket.overdue) }}
+                        {{ t('tunggakan') }} {{ formatMoney(bucket.overdue) }}
                     </p>
                 </AppCard>
             </div>
@@ -229,9 +229,9 @@ const villageSections = computed(() => {
                                 </tr>
                                 <tr class="border-y border-outline-variant bg-surface-container-low">
                                     <td colspan="11" class="px-3 py-2.5 text-sm font-bold uppercase tracking-wide text-primary">
-                                        Desa {{ section.village }}
+                                        {{ t('Desa') }} {{ section.village }}
                                         <span class="ml-2 font-medium normal-case tracking-normal text-on-surface-variant">
-                                            · {{ section.count }} pinjaman
+                                            · {{ section.count }} {{ t('pinjaman') }}
                                         </span>
                                     </td>
                                 </tr>
@@ -278,9 +278,9 @@ const villageSections = computed(() => {
                                 </tr>
                                 <tr class="border-t border-outline-variant bg-surface-container-low/50 text-sm font-semibold">
                                     <td class="px-3 py-2.5" colspan="4">
-                                        Total {{ section.village }}
+                                        {{ t('Total') }} {{ section.village }}
                                         <span v-if="section.overdue_count" class="ml-1 font-medium text-error">
-                                            · {{ section.overdue_count }} nunggak
+                                            · {{ section.overdue_count }} {{ t('nunggak') }}
                                         </span>
                                     </td>
                                     <td class="px-3 py-2.5 text-right tabular-nums">{{ formatMoney(section.principal_disbursed) }}</td>
@@ -294,7 +294,7 @@ const villageSections = computed(() => {
                         </tbody>
                         <tfoot v-if="rows.length > 0">
                             <tr class="border-t-2 border-outline bg-surface-container-low font-semibold">
-                                <td class="px-3 py-2" colspan="4">Jumlah seluruh desa ({{ totals.count }})</td>
+                                <td class="px-3 py-2" colspan="4">{{ t('Jumlah seluruh desa (') }}{{ totals.count }})</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.principal_disbursed) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.principal_remaining) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ formatMoney(totals.interest_remaining) }}</td>

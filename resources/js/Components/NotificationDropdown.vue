@@ -182,7 +182,7 @@ onBeforeUnmount(() => {
                         <AppIcon name="notifications" class="text-lg text-primary" />
                         <h3 class="text-sm font-bold text-primary">{{ t('Notifikasi') }}</h3>
                         <span v-if="unreadCount > 0" class="rounded-full bg-error/15 px-2 py-0.5 text-[10px] font-bold text-error">
-                            {{ unreadCount }} baru
+                            {{ unreadCount }} {{ t('baru') }}
                         </span>
                     </div>
                     <button
@@ -203,7 +203,7 @@ onBeforeUnmount(() => {
                         :class="activeTab === 'all' ? 'border-primary text-primary font-bold' : 'border-transparent text-on-surface-variant hover:text-primary'"
                         @click.stop="activeTab = 'all'"
                     >
-                        Semua ({{ items.length }})
+                        {{ t('Semua (') }}{{ items.length }})
                     </button>
                     <button
                         type="button"
@@ -211,7 +211,7 @@ onBeforeUnmount(() => {
                         :class="activeTab === 'unread' ? 'border-primary text-primary font-bold' : 'border-transparent text-on-surface-variant hover:text-primary'"
                         @click.stop="activeTab = 'unread'"
                     >
-                        Belum Dibaca ({{ unreadCount }})
+                        {{ t('Belum Dibaca (') }}{{ unreadCount }})
                     </button>
                 </div>
 
@@ -221,7 +221,7 @@ onBeforeUnmount(() => {
                         {{ t('Memuat notifikasi...') }}
                     </div>
                     <div v-else-if="filteredItems.length === 0" class="py-8 text-center text-xs text-on-surface-variant">
-                        Tidak ada notifikasi {{ activeTab === 'unread' ? 'belum dibaca' : '' }}.
+                        {{ t('Tidak ada notifikasi') }} {{ activeTab === 'unread' ? 'belum dibaca' : '' }}.
                     </div>
                     <div
                         v-for="item in filteredItems"
@@ -249,7 +249,7 @@ onBeforeUnmount(() => {
 
                             <!-- Subtle metadata (actor if recorded by someone) -->
                             <div v-if="item.actor" class="pt-0.5 text-[10px] text-outline">
-                                Oleh <span class="font-semibold text-on-surface-variant">{{ item.actor }}</span>
+                                {{ t('Oleh') }} <span class="font-semibold text-on-surface-variant">{{ item.actor }}</span>
                             </div>
                         </div>
 

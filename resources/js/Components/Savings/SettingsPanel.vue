@@ -299,7 +299,7 @@ async function deleteProduct(product) {
                             <span class="whitespace-nowrap">{{ t('Bunga') }} <strong class="font-semibold text-on-surface">{{ product.interest_rate }}%</strong></span>
                             <span class="whitespace-nowrap">{{ t('Pajak') }} <strong class="font-semibold text-on-surface">{{ product.tax_rate }}%</strong></span>
                             <span class="whitespace-nowrap">{{ t('Admin') }} <strong class="font-semibold text-on-surface">{{ money(product.admin_fee) }}</strong></span>
-                            <span class="whitespace-nowrap">{{ t('Min') }} <strong class="font-semibold text-on-surface">{{ money(product.minimum_balance) }}</strong></span>
+                            <span class="whitespace-nowrap">{{ t('Min.') }} <strong class="font-semibold text-on-surface">{{ money(product.minimum_balance) }}</strong></span>
                             <span class="whitespace-nowrap"><strong class="font-semibold text-on-surface">{{ product.accounts_count }}</strong> {{ t('rekening') }}</span>
                         </div>
 

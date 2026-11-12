@@ -188,7 +188,7 @@ const pdfUrl = computed<string>(() => {
                     </p>
                     <h1 class="mt-1 text-2xl font-bold text-primary">{{ t('Daftar Bunga Simpanan') }}</h1>
                     <p class="text-sm text-on-surface-variant">
-                        {{ period.period_label ?? '' }} · per {{ period.as_of ?? '-' }}
+                        {{ period.period_label ?? '' }} {{ t('· per') }} {{ period.as_of ?? '-' }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -232,7 +232,7 @@ const pdfUrl = computed<string>(() => {
                             {{ ratePercent }}%
                         </p>
                         <p class="text-xs text-on-surface-variant">
-                            {{ days_in_period }} hari periode
+                            {{ days_in_period }} {{ t('hari periode') }}
                         </p>
                     </div>
                 </div>
@@ -388,7 +388,7 @@ const pdfUrl = computed<string>(() => {
             </AppCard>
 
             <p v-if="generated_at" class="text-right text-[11px] text-on-surface-variant">
-                Digenerate pada {{ generated_at }}
+                {{ t('Digenerate pada') }} {{ generated_at }}
             </p>
         </div>
     </AuthenticatedLayout>

@@ -45,7 +45,7 @@ watch(selectedTenant, () => {
         <div class="space-y-6">
             <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Laporan Perubahan Modal Kabupaten {{ regency_name }}</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Laporan Perubahan Modal Kabupaten') }} {{ regency_name }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         {{ report.period?.period_label }} · {{ report.is_consolidated ? t('Gabungan Seluruh Kecamatan') : t('Kecamatan Terpilih') }}
                     </p>

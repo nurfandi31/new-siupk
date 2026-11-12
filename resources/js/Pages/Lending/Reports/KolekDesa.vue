@@ -59,9 +59,9 @@ const levelColumns = computed(() => {
         return props.levels;
     }
     return [
-        { level: 1, nama: 'Lancar', prosentase: 0.5, bucket_key: 'kolek1_lancar' },
-        { level: 2, nama: 'Diragukan', prosentase: 50, bucket_key: 'kolek2_diragukan' },
-        { level: 3, nama: 'Macet', prosentase: 100, bucket_key: 'kolek3_macet' },
+        { level: 1, nama: t('Lancar'), prosentase: 0.5, bucket_key: 'kolek1_lancar' },
+        { level: 2, nama: t('Diragukan'), prosentase: 50, bucket_key: 'kolek2_diragukan' },
+        { level: 3, nama: t('Macet'), prosentase: 100, bucket_key: 'kolek3_macet' },
     ];
 });
 
@@ -120,7 +120,7 @@ function formatLevelHeader(lvl) {
                     <span class="material-symbols-outlined text-base">rule</span>
                     <span>{{ t('Aturan kolek aktif:') }}</span>
                     <span v-for="lvl in levelColumns" :key="lvl.bucket_key" class="rounded-full bg-surface-variant/50 px-2 py-0.5">
-                        Tingkat {{ lvl.level }} — <strong>{{ lvl.nama }}</strong> (CKPN {{ lvl.prosentase }}%)
+                        {{ t('Tingkat') }} {{ lvl.level }} — <strong>{{ lvl.nama }}</strong> (CKPN {{ lvl.prosentase }}%)
                     </span>
                     <a href="/settings/sop?tab=kolek" class="ml-auto text-xs font-bold text-primary hover:underline">{{ t('Ubah aturan →') }}</a>
                 </div>
@@ -170,7 +170,7 @@ function formatLevelHeader(lvl) {
                                 <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Pokok') }}</th>
                                 <th class="p-2 text-right">{{ t('Jasa') }}</th>
                                 <th v-for="lvl in levelColumns" :key="`sub-${lvl.bucket_key}`" class="p-2 text-right" :class="{ 'border-l border-outline-variant/20': $index === 0 }">
-                                    <span class="text-on-surface-variant">Tingkat {{ lvl.level }}</span>
+                                    <span class="text-on-surface-variant">{{ t('Tingkat') }} {{ lvl.level }}</span>
                                 </th>
                             </tr>
                         </thead>

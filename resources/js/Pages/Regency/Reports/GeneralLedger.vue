@@ -58,7 +58,7 @@ watch([selectedTenant, selectedAccountId], () => {
             <!-- Header & Filter -->
             <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-primary">Buku Besar Kabupaten {{ regency_name }}</h1>
+                    <h1 class="text-2xl font-bold text-primary">{{ t('Buku Besar Kabupaten') }} {{ regency_name }}</h1>
                     <p class="mt-1 text-sm text-on-surface-variant">
                         {{ report.account?.code }} - {{ report.account?.name }} · {{ report.period?.period_label }}
                     </p>
