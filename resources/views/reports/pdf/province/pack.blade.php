@@ -281,20 +281,24 @@
         <div class="section-title">3. Cakupan Konsolidasi</div>
         <p>Laporan konsolidasi ini mencakup <b>{{ $calk['tenants_count'] ?? 0 }}</b> Unit Pengelola / BUMDesma di bawah koordinasi Provinsi {{ $province }}.</p>
 
-        <table class="signature-table">
-            <tr>
-                <td width="50%">
-                    <p>Disetujui Oleh,<br><b>Ketua Tim Supervisor Provinsi</b></p>
-                    <br><br><br>
-                    <p><b>( _______________________ )</b></p>
-                </td>
-                <td width="50%">
-                    <p>Disusun Oleh,<br><b>Analis Keuangan Provinsi</b></p>
-                    <br><br><br>
-                    <p><b>( _______________________ )</b></p>
-                </td>
-            </tr>
-        </table>
+        @if (! empty($signature_html))
+            <div data-report-signature style="margin-top:24px;page-break-inside:avoid;font-size:11px;">{!! $signature_html !!}</div>
+        @else
+            <table class="signature-table">
+                <tr>
+                    <td width="50%">
+                        <p>Disetujui Oleh,<br><b>Ketua Tim Supervisor Provinsi</b></p>
+                        <br><br><br>
+                        <p><b>( _______________________ )</b></p>
+                    </td>
+                    <td width="50%">
+                        <p>Disusun Oleh,<br><b>Analis Keuangan Provinsi</b></p>
+                        <br><br><br>
+                        <p><b>( _______________________ )</b></p>
+                    </td>
+                </tr>
+            </table>
+        @endif
     </div>
 
 </body>

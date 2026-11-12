@@ -96,7 +96,9 @@
     @endif
 </table>
 
-@if(!empty($signatures))
+@if (!empty($signature_html))
+    <div data-report-signature style="margin-top:24px;page-break-inside:avoid;font-size:11px;">{!! $signature_html !!}</div>
+@elseif(!empty($signatures))
     <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 10px; margin-top: 30px; page-break-inside: avoid;">
         <tr>
             <td width="25%" align="center">

@@ -13,6 +13,7 @@ const props = defineProps({
     month: { type: Number, required: true },
     period_label: { type: String, required: true },
     identity: { type: Object, required: true },
+    levels: { type: Array, default: () => [] },
     products: { type: Array, required: true },
     totals: { type: Object, required: true },
     filters: { type: Object, required: true },
@@ -72,13 +73,29 @@ const pdfUrl = computed(() => {
     return `/lending/reports/cadangan-penghapusan-individu/pdf?${q.toString()}`;
 });
 
-// Hitung CKPN agregat per produk: Lancar (0.5%), Diragukan (50%), Macet (100%).
-function ckpnForBucket(lancar, diragukan, macet) {
-    const ckpn1 = round2(Number(lancar || 0) * 0.005);
-    const ckpn2 = round2(Number(diragukan || 0) * 0.50);
-    const ckpn3 = round2(Number(macet || 0) * 1.00);
-    return { ckpn1, ckpn2, ckpn3, total: round2(ckpn1 + ckpn2 + ckpn3) };
+const levelColumns = computed(() => {
+    if (props.levels && props.levels.length > 0) {
+        return props.levels;
+    }
+    return [
+        { level: 1, nama: t('Lancar'), prosentase: 0.5, bucket_key: 'kolek1_lancar' },
+        { level: 2, nama: t('Diragukan'), prosentase: 50, bucket_key: 'kolek2_diragukan' },
+        { level: 3, nama: t('Macet'), prosentase: 100, bucket_key: 'kolek3_macet' },
+    ];
+});
+
+function formatPct(value) {
+    return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(Number(value || 0));
 }
+
+function ckpnForLevel(row, level) {
+    return round2(Number(row[level.bucket_key] || 0) * (Number(level.prosentase || 0) / 100));
+}
+
+function totalCkpn(row) {
+    return round2(levelColumns.value.reduce((sum, level) => sum + ckpnForLevel(row, level), 0));
+}
+
 function round2(n) {
     return Math.round(n * 100) / 100;
 }
@@ -135,17 +152,25 @@ function round2(n) {
                                 <th rowspan="2" class="p-3 text-left">{{ t('Desa') }}</th>
                                 <th rowspan="2" class="p-3 text-right">{{ t('Peminjam') }}</th>
                                 <th rowspan="2" class="p-3 text-right">{{ t('Saldo Pokok') }}</th>
-                                <th colspan="3" class="p-3 border-l border-outline-variant/20">{{ t('Saldo per Kolek') }}</th>
-                                <th colspan="3" class="p-3 border-l border-outline-variant/20">CKPN</th>
+                                <th :colspan="levelColumns.length" class="p-3 border-l border-outline-variant/20">{{ t('Saldo per Kolek') }}</th>
+                                <th :colspan="levelColumns.length" class="p-3 border-l border-outline-variant/20">CKPN</th>
                                 <th rowspan="2" class="p-3 border-l border-outline-variant/20 text-right">{{ t('Total CKPN') }}</th>
                             </tr>
                             <tr class="border-b border-outline-variant/30 text-center text-[11px] text-on-surface-variant">
-                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('Lancar') }}</th>
-                                <th class="p-2 text-right">{{ t('Diragukan') }}</th>
-                                <th class="p-2 text-right">{{ t('Macet') }}</th>
-                                <th class="p-2 border-l border-outline-variant/20 text-right">{{ t('0.5% Lancar') }}</th>
-                                <th class="p-2 text-right">{{ t('50% Diragukan') }}</th>
-                                <th class="p-2 text-right">{{ t('100% Macet') }}</th>
+                                <th
+                                    v-for="lvl in levelColumns"
+                                    :key="`kolek-${lvl.bucket_key}`"
+                                    class="p-2 border-l border-outline-variant/20 text-right"
+                                >
+                                    {{ lvl.nama }}
+                                </th>
+                                <th
+                                    v-for="lvl in levelColumns"
+                                    :key="`ckpn-${lvl.bucket_key}`"
+                                    class="p-2 border-l border-outline-variant/20 text-right"
+                                >
+                                    {{ formatPct(lvl.prosentase) }}% {{ lvl.nama }}
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/20">
@@ -153,20 +178,24 @@ function round2(n) {
                                 <td class="p-3 font-medium text-on-surface">{{ v.village_name }}</td>
                                 <td class="p-3 text-right">{{ v.subtotal.peminjam_count }}</td>
                                 <td class="p-3 text-right font-semibold text-primary">{{ formatMoney(v.subtotal.saldo) }}</td>
-                                <td class="p-3 text-right border-l border-outline-variant/20 text-secondary">{{ formatMoney(v.subtotal.kolek1_lancar) }}</td>
-                                <td class="p-3 text-right" :class="v.subtotal.kolek2_diragukan > 0 ? 'text-tertiary' : ''">{{ formatMoney(v.subtotal.kolek2_diragukan) }}</td>
-                                <td class="p-3 text-right" :class="v.subtotal.kolek3_macet > 0 ? 'text-error' : ''">{{ formatMoney(v.subtotal.kolek3_macet) }}</td>
-                                <td class="p-3 text-right border-l border-outline-variant/20">
-                                    {{ formatMoney(ckpnForBucket(v.subtotal.kolek1_lancar, 0, 0).ckpn1) }}
+                                <td
+                                    v-for="lvl in levelColumns"
+                                    :key="`v-${lvl.bucket_key}-${v.village_name}`"
+                                    class="p-3 border-l border-outline-variant/20 text-right"
+                                    :class="(v.subtotal[lvl.bucket_key] || 0) > 0 ? (lvl.level === levelColumns.length ? 'text-error' : 'text-secondary') : ''"
+                                >
+                                    {{ formatMoney(v.subtotal[lvl.bucket_key]) }}
                                 </td>
-                                <td class="p-3 text-right">
-                                    {{ formatMoney(ckpnForBucket(0, v.subtotal.kolek2_diragukan, 0).ckpn2) }}
-                                </td>
-                                <td class="p-3 text-right" :class="v.subtotal.kolek3_macet > 0 ? 'text-error font-medium' : ''">
-                                    {{ formatMoney(ckpnForBucket(0, 0, v.subtotal.kolek3_macet).ckpn3) }}
+                                <td
+                                    v-for="lvl in levelColumns"
+                                    :key="`v-ckpn-${lvl.bucket_key}-${v.village_name}`"
+                                    class="p-3 text-right"
+                                    :class="(v.subtotal[lvl.bucket_key] || 0) > 0 && lvl.level === levelColumns.length ? 'text-error font-medium' : ''"
+                                >
+                                    {{ formatMoney(ckpnForLevel(v.subtotal, lvl)) }}
                                 </td>
                                 <td class="p-3 text-right border-l border-outline-variant/20 font-semibold text-primary">
-                                    {{ formatMoney(ckpnForBucket(v.subtotal.kolek1_lancar, v.subtotal.kolek2_diragukan, v.subtotal.kolek3_macet).total) }}
+                                    {{ formatMoney(totalCkpn(v.subtotal)) }}
                                 </td>
                             </tr>
                         </tbody>
@@ -175,20 +204,19 @@ function round2(n) {
                                 <td class="p-3">TOTAL {{ prod.product_code }}</td>
                                 <td class="p-3 text-right">{{ prod.totals.peminjam_count }}</td>
                                 <td class="p-3 text-right text-primary">{{ formatMoney(prod.totals.saldo) }}</td>
-                                <td class="p-3 text-right border-l border-outline-variant/20 text-secondary">{{ formatMoney(prod.totals.kolek1_lancar) }}</td>
-                                <td class="p-3 text-right">{{ formatMoney(prod.totals.kolek2_diragukan) }}</td>
-                                <td class="p-3 text-right">{{ formatMoney(prod.totals.kolek3_macet) }}</td>
-                                <td class="p-3 text-right border-l border-outline-variant/20">
-                                    {{ formatMoney(ckpnForBucket(prod.totals.kolek1_lancar, 0, 0).ckpn1) }}
+                                <td
+                                    v-for="lvl in levelColumns"
+                                    :key="`f-${lvl.bucket_key}`"
+                                    class="p-3 border-l border-outline-variant/20 text-right"
+                                    :class="(prod.totals[lvl.bucket_key] || 0) > 0 ? (lvl.level === levelColumns.length ? 'text-error' : 'text-secondary') : ''"
+                                >
+                                    {{ formatMoney(prod.totals[lvl.bucket_key]) }}
                                 </td>
-                                <td class="p-3 text-right">
-                                    {{ formatMoney(ckpnForBucket(0, prod.totals.kolek2_diragukan, 0).ckpn2) }}
-                                </td>
-                                <td class="p-3 text-right">
-                                    {{ formatMoney(ckpnForBucket(0, 0, prod.totals.kolek3_macet).ckpn3) }}
+                                <td v-for="lvl in levelColumns" :key="`f-ckpn-${lvl.bucket_key}`" class="p-3 text-right">
+                                    {{ formatMoney(ckpnForLevel(prod.totals, lvl)) }}
                                 </td>
                                 <td class="p-3 text-right border-l border-outline-variant/20 text-primary">
-                                    {{ formatMoney(ckpnForBucket(prod.totals.kolek1_lancar, prod.totals.kolek2_diragukan, prod.totals.kolek3_macet).total) }}
+                                    {{ formatMoney(totalCkpn(prod.totals)) }}
                                 </td>
                             </tr>
                         </tfoot>

@@ -178,17 +178,23 @@
                     <strong>{{ $legalName }}</strong>
                 </td>
             </tr>
-            <tr>
-                <td style="border: none; height: 60px;"></td>
-                <td style="border: none;"></td>
-            </tr>
-            <tr>
-                <td style="border: none;"></td>
-                <td style="border: none;" class="center">
-                    <strong><u>{{ $id['manager_name'] ?? '' }}</u></strong><br>
-                    <span>{{ $id['manager_title'] ?? 'Ketua' }}</span>
-                </td>
-            </tr>
+            @if (! empty($signature_html))
+                <tr>
+                    <td colspan="2" style="border: none;" data-report-signature>{!! $signature_html !!}</td>
+                </tr>
+            @else
+                <tr>
+                    <td style="border: none; height: 60px;"></td>
+                    <td style="border: none;"></td>
+                </tr>
+                <tr>
+                    <td style="border: none;"></td>
+                    <td style="border: none;" class="center">
+                        <strong><u>{{ $id['manager_name'] ?? '' }}</u></strong><br>
+                        <span>{{ $id['manager_title'] ?? 'Ketua' }}</span>
+                    </td>
+                </tr>
+            @endif
         </table>
     </div>
 </body>

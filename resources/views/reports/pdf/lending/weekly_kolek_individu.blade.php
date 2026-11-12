@@ -49,8 +49,9 @@
                     </tr>
                     @foreach ($v['loans'] as $loan)
                         @php
-                            $kolekLabel = $loan['kolek'] === 1 ? 'Lancar' : ($loan['kolek'] === 2 ? 'Diragukan' : 'Macet');
-                            $kolekColor = $loan['kolek'] === 1 ? '#2f855a' : ($loan['kolek'] === 2 ? '#d69e2e' : '#c53030');
+                            $lastLevel = max(1, count($levels ?? []));
+                            $kolekLabel = $loan['kolek_nama'] ?? ('Tingkat '.$loan['kolek']);
+                            $kolekColor = $loan['kolek'] <= 1 ? '#2f855a' : ($loan['kolek'] >= $lastLevel ? '#c53030' : '#d69e2e');
                         @endphp
                         <tr>
                             <td class="l b">{{ $v['village_name'] }}</td>

@@ -724,7 +724,7 @@ function applySignatureStarter() {
                 </Transition>
             </div>
 
-            <AppModal v-model="showSignaturePad" :title="t('Gambar Tanda Tangan')" size="md">
+            <AppModal v-model="showSignaturePad" :title="t('Gambar Tanda Tangan')" size="md" centered>
                 <SignaturePad ref="signatureImagePad" @save="saveSignatureImage" @cancel="showSignaturePad = false" />
             </AppModal>
         </div>

@@ -127,26 +127,30 @@
     memenuhi CKPN sesuai standar OJK.
 </p>
 
-{{-- Tanda tangan pengurus --}}
-<table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 11px; margin-top: 24px;">
-    <tr>
-        @php
-            $managerName = (string) ($identity['manager_name'] ?? '');
-            $managerTitle = (string) ($identity['manager_title'] ?? '');
-            $treasurerName = (string) ($identity['treasurer_name'] ?? '');
-            $treasurerTitle = (string) ($identity['treasurer_title'] ?? '');
-            if ($managerTitle === '') { $managerTitle = 'Ketua / Manager'; }
-            if ($treasurerTitle === '') { $treasurerTitle = 'Bendahara'; }
-        @endphp
-        <td width="33%" align="center">Mengetahui,<br /><b>{{ $managerTitle }}</b></td>
-        <td width="34%"></td>
-        <td width="33%" align="center">Dibuat oleh,<br /><b>{{ $treasurerTitle }}</b></td>
-    </tr>
-    <tr><td colspan="3" height="48"></td></tr>
-    <tr>
-        <td align="center"><b><u>{{ $managerName !== '' ? $managerName : '...........................................' }}</u></b></td>
-        <td></td>
-        <td align="center"><b><u>{{ $treasurerName !== '' ? $treasurerName : '...........................................' }}</u></b></td>
-    </tr>
-</table>
+@if (! empty($signature_html))
+    <div data-report-signature style="margin-top:24px;page-break-inside:avoid;font-size:11px;">{!! $signature_html !!}</div>
+@else
+    {{-- Tanda tangan pengurus --}}
+    <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 11px; margin-top: 24px;">
+        <tr>
+            @php
+                $managerName = (string) ($identity['manager_name'] ?? '');
+                $managerTitle = (string) ($identity['manager_title'] ?? '');
+                $treasurerName = (string) ($identity['treasurer_name'] ?? '');
+                $treasurerTitle = (string) ($identity['treasurer_title'] ?? '');
+                if ($managerTitle === '') { $managerTitle = 'Ketua / Manager'; }
+                if ($treasurerTitle === '') { $treasurerTitle = 'Bendahara'; }
+            @endphp
+            <td width="33%" align="center">Mengetahui,<br /><b>{{ $managerTitle }}</b></td>
+            <td width="34%"></td>
+            <td width="33%" align="center">Dibuat oleh,<br /><b>{{ $treasurerTitle }}</b></td>
+        </tr>
+        <tr><td colspan="3" height="48"></td></tr>
+        <tr>
+            <td align="center"><b><u>{{ $managerName !== '' ? $managerName : '...........................................' }}</u></b></td>
+            <td></td>
+            <td align="center"><b><u>{{ $treasurerName !== '' ? $treasurerName : '...........................................' }}</u></b></td>
+        </tr>
+    </table>
+@endif
 @endsection

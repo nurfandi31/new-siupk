@@ -360,7 +360,7 @@ final class LoanReportController
         $this->authorize($request);
         [$year, $month] = $this->yearMonth($request);
         $product = $request->query('product', 'all');
-        $data = $this->collectibility->buildIndividu($year, $month, is_string($product) ? $product : null);
+        $data = $this->collectibility->buildCadanganIndividu($year, $month, is_string($product) ? $product : null);
 
         return $this->pdf->stream(
             'reports.pdf.lending.cadangan_penghapusan_individu',

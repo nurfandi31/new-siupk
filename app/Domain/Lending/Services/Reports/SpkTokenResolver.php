@@ -166,9 +166,6 @@ final class SpkTokenResolver
             '{jenis_jaminan}' => $collateralLabel,
             '{detail_jaminan}' => $collateralDetail,
             '{nilai_jaminan}' => $this->money($this->collateralValue($collateral)),
-
-            // Sign block injection (di-replace nanti oleh SignatureImageService)
-            '{ttd_image}' => '',
         ];
     }
 

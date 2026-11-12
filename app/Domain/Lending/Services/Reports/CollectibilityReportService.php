@@ -250,8 +250,30 @@ final class CollectibilityReportService
      */
     public function buildCadangan(int $year, int $month, ?string $productCode = null, ?string $borrowerScope = null): array
     {
-        $data = $this->buildDesa($year, $month, $productCode, $borrowerScope);
+        return $this->applyCadangan($this->buildDesa($year, $month, $productCode, $borrowerScope));
+    }
 
+    /**
+     * Cadangan Penghapusan Piutang (CKPN) khusus pinjaman INDIVIDU.
+     *
+     * @return array<string, mixed>
+     */
+    public function buildCadanganIndividu(int $year, int $month, ?string $productCode = null): array
+    {
+        return $this->applyCadangan($this->buildIndividu($year, $month, $productCode), true);
+    }
+
+    /**
+     * Tambahkan perhitungan CKPN ke data laporan kolektibilitas.
+     *
+     * Data rekap desa menyimpan nilai kolek langsung di tiap village, sedangkan
+     * laporan individu menyimpannya di dalam key `subtotal`.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function applyCadangan(array $data, bool $nestedVillages = false): array
+    {
         $levels = $data['levels'] ?? [];
         $totalCkpn = 0.0;
 
@@ -278,14 +300,24 @@ final class CollectibilityReportService
             $prod['totals']['total_ckpn'] = round($prodCkpnTotal, 2);
 
             foreach ($prod['villages'] as &$village) {
+                if ($nestedVillages) {
+                    if (! isset($village['subtotal']) || ! is_array($village['subtotal'])) {
+                        continue;
+                    }
+                    $row = &$village['subtotal'];
+                } else {
+                    $row = &$village;
+                }
+
                 $villageCkpn = 0.0;
                 foreach ($levels as $level) {
                     $pct = (float) $level['prosentase'];
-                    $ckpn = round(((float) ($village[$level['bucket_key']] ?? 0)) * ($pct / 100), 2);
-                    $village["ckpn_{$level['level']}"] = $ckpn;
+                    $ckpn = round(((float) ($row[$level['bucket_key']] ?? 0)) * ($pct / 100), 2);
+                    $row["ckpn_{$level['level']}"] = $ckpn;
                     $villageCkpn += $ckpn;
                 }
-                $village['total_ckpn'] = round($villageCkpn, 2);
+                $row['total_ckpn'] = round($villageCkpn, 2);
+                unset($row);
             }
             unset($village);
         }

@@ -78,20 +78,24 @@
         </tfoot>
     </table>
 
-    <table border="0" width="100%" style="margin-top: 25px; font-size: 10px;">
-        <tr>
-            <td width="50%" align="center">
-                <div>Mengetahui,</div>
-                <div><b>Badan Pengawas</b></div>
-                <div style="height: 45px;"></div>
-                <div><u>( {{ $identity['supervisor_name'] ?? '........................' }} )</u></div>
-            </td>
-            <td width="50%" align="center">
-                <div>{{ $identity['district_name'] ?? '' }}, {{ date('d F Y') }}</div>
-                <div><b>Direktur Utama</b></div>
-                <div style="height: 45px;"></div>
-                <div><u>( {{ $identity['director_name'] ?? '........................' }} )</u></div>
-            </td>
-        </tr>
-    </table>
+    @if (! empty($signature_html))
+        <div data-report-signature style="margin-top:24px;page-break-inside:avoid;font-size:11px;">{!! $signature_html !!}</div>
+    @else
+        <table border="0" width="100%" style="margin-top: 25px; font-size: 10px;">
+            <tr>
+                <td width="50%" align="center">
+                    <div>Mengetahui,</div>
+                    <div><b>Badan Pengawas</b></div>
+                    <div style="height: 45px;"></div>
+                    <div><u>( {{ $identity['supervisor_name'] ?? '........................' }} )</u></div>
+                </td>
+                <td width="50%" align="center">
+                    <div>{{ $identity['district_name'] ?? '' }}, {{ date('d F Y') }}</div>
+                    <div><b>Direktur Utama</b></div>
+                    <div style="height: 45px;"></div>
+                    <div><u>( {{ $identity['director_name'] ?? '........................' }} )</u></div>
+                </td>
+            </tr>
+        </table>
+    @endif
 @endsection

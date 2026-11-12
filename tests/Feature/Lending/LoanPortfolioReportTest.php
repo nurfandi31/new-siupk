@@ -9,6 +9,7 @@ use App\Domain\Lending\Models\LoanBorrower;
 use App\Domain\Lending\Models\LoanInstallment;
 use App\Domain\Lending\Services\Reports\LoanPortfolioReportService;
 use App\Domain\Membership\Models\Group;
+use App\Domain\Membership\Models\OrganizationProfile;
 use App\Models\Tenant\OrganizationUnit;
 use App\Models\User;
 use App\Tenancy\Middleware\ResolveTenant;
@@ -178,6 +179,40 @@ final class LoanPortfolioReportTest extends TestCase
             ->assertHeader('content-type', 'application/pdf');
     }
 
+    public function test_kolek_desa_and_cadangan_pdf_render_with_two_active_levels(): void
+    {
+        $this->useTwoActiveCollectibilityLevels();
+        $this->seedActiveLoanWithOverdue();
+
+        foreach ([
+            '/lending/reports/kolek-desa/pdf?year=2026&month=7',
+            '/lending/reports/cadangan-penghapusan/pdf?year=2026&month=7',
+            '/lending/reports/weekly/kolek-kelompok/pdf?year=2026&month=7&week=1',
+        ] as $url) {
+            $this->actingAs($this->user)
+                ->get($url)
+                ->assertOk()
+                ->assertHeader('content-type', 'application/pdf');
+        }
+    }
+
+    public function test_kolek_desa_individu_and_cadangan_individu_pdf_render_with_two_active_levels(): void
+    {
+        $this->useTwoActiveCollectibilityLevels();
+        $this->seedActiveMemberLoanWithOverdue();
+
+        foreach ([
+            '/lending/reports/kolek-desa-individu/pdf?year=2026&month=7',
+            '/lending/reports/cadangan-penghapusan-individu/pdf?year=2026&month=7',
+            '/lending/reports/weekly/kolek-individu/pdf?year=2026&month=7&week=1',
+        ] as $url) {
+            $this->actingAs($this->user)
+                ->get($url)
+                ->assertOk()
+                ->assertHeader('content-type', 'application/pdf');
+        }
+    }
+
     public function test_portfolio_scope_member_filter_excludes_group_loans(): void
     {
         $groupLoan = $this->seedActiveLoanWithOverdue();
@@ -247,6 +282,75 @@ final class LoanPortfolioReportTest extends TestCase
         $groupLegacy = array_column($groupOnly['rows'], 'legacy_source');
         self::assertContains('group_loan', $groupLegacy, 'scope=group harus berisi group_loan');
         self::assertNotContains('member_loan', $groupLegacy, 'scope=group TIDAK boleh berisi member_loan');
+    }
+
+    private function useTwoActiveCollectibilityLevels(): void
+    {
+        OrganizationProfile::query()->create([
+            'id' => 1,
+            'legal_name' => 'BUMDesma Laporan',
+            'short_name' => 'Laporan',
+            'collectibility_rules' => [
+                ['nama' => 'Lancar', 'prosentase' => '0.5', 'durasi' => '3', 'satuan' => 'bulan'],
+                ['nama' => 'Diragukan', 'prosentase' => '50', 'durasi' => '999', 'satuan' => 'bulan'],
+                ['nama' => '', 'prosentase' => '', 'durasi' => '', 'satuan' => 'bulan'],
+                ['nama' => '', 'prosentase' => '', 'durasi' => '', 'satuan' => 'bulan'],
+                ['nama' => '', 'prosentase' => '', 'durasi' => '', 'satuan' => 'bulan'],
+            ],
+        ]);
+    }
+
+    private function seedActiveMemberLoanWithOverdue(): Loan
+    {
+        $loan = Loan::query()->create([
+            'legacy_source' => 'member_loan',
+            'loan_product_row_id' => $this->productId,
+            'sequence_number' => 100,
+            'loan_number' => 'PK-RPT-IND-CKPN',
+            'proposed_at' => '2026-01-01',
+            'disbursed_at' => '2026-01-15',
+            'principal_amount' => 2000000,
+            'interest_rate' => 1.5,
+            'term_months' => 12,
+            'installment_method' => 'flat',
+            'status' => 'active',
+        ]);
+
+        LoanBorrower::query()->create([
+            'loan_row_id' => $loan->row_id,
+            'group_row_id' => null,
+            'member_row_id' => 999,
+        ]);
+
+        LoanInstallment::query()->create([
+            'loan_row_id' => $loan->row_id,
+            'component' => 'principal',
+            'installment_number' => 1,
+            'due_date' => '2026-06-15',
+            'principal_due' => 500000,
+            'principal_paid' => 0,
+            'interest_due' => 0,
+            'interest_paid' => 0,
+            'penalty_due' => 0,
+            'penalty_paid' => 0,
+            'status' => 'due',
+        ]);
+
+        LoanInstallment::query()->create([
+            'loan_row_id' => $loan->row_id,
+            'component' => 'principal',
+            'installment_number' => 2,
+            'due_date' => '2026-08-15',
+            'principal_due' => 1500000,
+            'principal_paid' => 0,
+            'interest_due' => 0,
+            'interest_paid' => 0,
+            'penalty_due' => 0,
+            'penalty_paid' => 0,
+            'status' => 'pending',
+        ]);
+
+        return $loan;
     }
 
     private function seedActiveLoanWithOverdue(): Loan
