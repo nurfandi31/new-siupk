@@ -1179,6 +1179,41 @@ final class LoanDocumentTest extends TestCase
         ], json_decode((string) $payload['pinkel']->jaminan, true));
     }
 
+    public function test_loan_card_and_settlement_letter_routes_stream(): void
+    {
+        $groupLoan = $this->seedLoan('active');
+        $this->seedGroupInstallments($groupLoan);
+
+        $this->actingAs($this->user)
+            ->get('/lending/loans/'.$groupLoan->row_id.'/card')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $this->actingAs($this->user)
+            ->get('/lending/loans/'.$groupLoan->row_id.'/card/reprint')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $completedGroupLoan = $this->seedLoan('completed');
+        $this->actingAs($this->user)
+            ->get('/lending/loans/'.$completedGroupLoan->row_id.'/settlement-letter')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $memberLoan = $this->seedMemberLoan('completed');
+        $this->seedMemberInstallments($memberLoan);
+
+        $this->actingAs($this->user)
+            ->get('/lending/member-loans/'.$memberLoan->row_id.'/card')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $this->actingAs($this->user)
+            ->get('/lending/member-loans/'.$memberLoan->row_id.'/settlement-letter')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
     private function seedMemberInstallments(Loan $loan, bool $withPayment = true): void
     {
         // 8jt / 12 bulan / 18% flat → pokok 666.666,67 + jasa 120.000 per bulan.

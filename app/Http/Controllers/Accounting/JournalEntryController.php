@@ -594,6 +594,59 @@ final class JournalEntryController
     }
 
     /**
+     * Struk angsuran untuk printer thermal 58/80 mm.
+     */
+    public function installmentReceiptThermal(
+        Request $request,
+        JournalEntry $entry,
+        InstallmentReceiptService $receipts,
+        ReportPdf $pdf,
+    ): HttpResponse|StreamedResponse {
+        try {
+            $data = $receipts->build($entry);
+        } catch (DomainException $e) {
+            abort(422, $e->getMessage());
+        }
+
+        $paper = (string) $request->query('kertas', '80') === '58' ? '58' : '80';
+        $data['paper'] = $paper;
+        $size = $paper === '58'
+            ? [0, 0, 164.41, 192.76]   // 58mm x 68mm
+            : [0, 0, 226.77, 255.12];  // 80mm x 90mm
+
+        return $pdf->stream(
+            'reports.pdf.installment_receipt_thermal',
+            $data,
+            'struk-thermal-'.$entry->id.'.pdf',
+            'portrait',
+            $size,
+        );
+    }
+
+    /**
+     * Struk angsuran untuk printer dot-matrix (A5 landscape).
+     */
+    public function installmentReceiptMatrix(
+        JournalEntry $entry,
+        InstallmentReceiptService $receipts,
+        ReportPdf $pdf,
+    ): HttpResponse|StreamedResponse {
+        try {
+            $data = $receipts->build($entry);
+        } catch (DomainException $e) {
+            abort(422, $e->getMessage());
+        }
+
+        return $pdf->stream(
+            'reports.pdf.installment_receipt_matrix',
+            $data,
+            'struk-matrix-'.$entry->id.'.pdf',
+            'landscape',
+            [0, 0, 595.28, 419.53], // A5 landscape
+        );
+    }
+
+    /**
      * @return array{
      *     account: array{row_id:int,code:string,name:string,normal_balance:string,account_type:string}|null,
      *     period: string,

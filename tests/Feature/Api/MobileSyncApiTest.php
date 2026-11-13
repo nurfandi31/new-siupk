@@ -129,7 +129,16 @@ final class MobileSyncApiTest extends TestCase
         $this->push([$mutation])->assertOk()
             ->assertJsonPath('data.accepted.0', $mutationUuid);
 
-        $this->assertSame(1, DB::connection('tenant')->table('loan_payments')->where('reference_number', $mutationUuid)->count());
+        $payment = DB::connection('tenant')->table('loan_payments')->where('reference_number', $mutationUuid)->first();
+        $this->assertNotNull($payment);
+        $allocations = DB::connection('tenant')
+            ->table('loan_payment_allocations')
+            ->where('payment_row_id', $payment->row_id)
+            ->orderBy('component')
+            ->get();
+        $this->assertCount(2, $allocations);
+        $this->assertSame(1000000.0, (float) $allocations->firstWhere('component', 'principal')->amount);
+        $this->assertSame(120000.0, (float) $allocations->firstWhere('component', 'interest')->amount);
         $this->assertSame(0, DB::connection('tenant')->table('sync_mutations')->where('mutation_uuid', $mutationUuid)->count());
         $this->assertSame(1, DB::connection('tenant')->table('journal_entries')->where('source_type', 'loan_installment')->count());
     }

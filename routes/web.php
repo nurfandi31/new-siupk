@@ -830,6 +830,10 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::get('/journals/{entry}/cash-evidence/{kind}', [CashEvidenceController::class, 'document'])
             ->where('kind', '[A-Z]{3}')
             ->name('journals.cash-evidence.kind-explicit');
+        Route::get('/journals/{entry}/kuitansi', [CashEvidenceController::class, 'kuitansi'])
+            ->name('journals.kuitansi');
+        Route::get('/journals/{entry}/kuitansi/thermal', [CashEvidenceController::class, 'kuitansiThermal'])
+            ->name('journals.kuitansi.thermal');
 
         Route::get('/journal-entries', [JournalBrowseController::class, 'index'])->name('journal-entries.index');
         Route::get('/journal-entries/create', [JournalEntryController::class, 'create'])->name('journal-entries.create');
@@ -839,6 +843,8 @@ Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function ():
         Route::post('/journal-entries/installment', [JournalEntryController::class, 'storeInstallment'])->name('journal-entries.installment.store');
         Route::post('/journal-entries/installment-individual', [JournalEntryController::class, 'storeIndividualInstallment'])->name('journal-entries.installment-individual.store');
         Route::get('/journal-entries/{entry}/installment-receipt', [JournalEntryController::class, 'installmentReceipt'])->name('journal-entries.installment.receipt');
+        Route::get('/journal-entries/{entry}/installment-receipt/thermal', [JournalEntryController::class, 'installmentReceiptThermal'])->name('journal-entries.installment.receipt.thermal');
+        Route::get('/journal-entries/{entry}/installment-receipt/matrix', [JournalEntryController::class, 'installmentReceiptMatrix'])->name('journal-entries.installment.receipt.matrix');
         Route::get('/loans/{loan}/group-detail', [JournalEntryController::class, 'loanGroupDetail'])->name('loans.group-detail');
         Route::get('/loans/{loan}/installment-history', [JournalEntryController::class, 'loanInstallmentHistory'])->name('loans.installment-history');
         Route::get('/loans/{loan}/member-options', [JournalEntryController::class, 'groupMemberOptions'])->name('loans.member-options');

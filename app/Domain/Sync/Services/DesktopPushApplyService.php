@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Domain\Sync\Services;
 
 use App\Domain\Lending\Models\Loan;
-use App\Domain\Lending\Models\LoanPayment;
 use App\Domain\Lending\Models\LoanStatusHistory;
 use App\Domain\Lending\Services\LoanService;
 use App\Models\Platform\Tenant;
@@ -478,23 +477,11 @@ final class DesktopPushApplyService
             'principal_amount' => $principal,
             'interest_amount' => $interest,
             'penalty_amount' => $penalty,
-            'description' => (string) ($payload['description'] ?? 'Pembayaran via Mobile Sync'),
-        ], (int) ($actorUserId ?? 0));
-
-        $payment = new LoanPayment;
-        $payment->setConnection($connection);
-        $payment->fill([
-            'tenant_id' => $tenantId,
-            'loan_row_id' => (int) $loan->row_id,
             'payment_number' => 'MOB-'.$mutationUuid,
-            'paid_at' => $payload['transaction_date'] ?? now()->toDateTimeString(),
-            'amount' => round($principal + $interest + $penalty, 2),
             'payment_method' => 'mobile_sync',
             'reference_number' => $mutationUuid,
-            'journal_entry_row_id' => (int) $posted->row_id,
-            'created_by_user_id' => $actorUserId,
-        ]);
-        $payment->save();
+            'description' => (string) ($payload['description'] ?? 'Pembayaran via Mobile Sync'),
+        ], (int) ($actorUserId ?? 0));
 
         $this->recordAudit(
             $connection,

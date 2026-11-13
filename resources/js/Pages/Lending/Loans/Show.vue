@@ -21,6 +21,7 @@ import { useCan } from '../../../composables/useCan';
 
 const props = defineProps({
     loan: { type: Object, required: true },
+    documents: { type: Array, default: () => [] },
     card_url: { type: String, default: null },
     settlement_letter_url: { type: String, default: null },
     disbursement_account: { type: Object, default: null },
@@ -529,45 +530,6 @@ const STAGE_PROPOSAL = ['draft', 'verified', 'waiting', 'approved', 'active', 'd
 const STAGE_VERIFICATION = ['verified', 'waiting', 'approved', 'active', 'disbursed', 'completed'];
 const STAGE_DISBURSEMENT = ['waiting', 'approved', 'active', 'disbursed', 'completed'];
 
-const LOAN_DOCUMENTS = [
-    { key: 'cover_proposal', label: t('Cover Proposal'), stage: 'proposal', icon: 'auto_stories' },
-    { key: 'pengajuan_kredit', label: t('Surat Pengajuan Kredit'), stage: 'proposal', icon: 'mail' },
-    { key: 'profil_kelompok', label: t('Profil Kelompok'), stage: 'proposal', icon: 'groups' },
-    { key: 'susunan_pengurus', label: t('Susunan Pengurus Kelompok'), stage: 'proposal', icon: 'badge' },
-    { key: 'daftar_pemanfaat', label: t('Daftar Pemanfaat & Alokasi'), stage: 'proposal', icon: 'list_alt' },
-    { key: 'pernyataan_tanggung_renteng', label: t('Pernyataan Tanggung Renteng'), stage: 'proposal', icon: 'handshake' },
-    { key: 'check', label: t('Checklist Proposal'), stage: 'proposal', icon: 'checklist' },
-    { key: 'anggota', label: t('Daftar Anggota Kelompok'), stage: 'proposal', icon: 'people' },
-    { key: 'ktp', label: t('Cetak KTP Pemanfaat'), stage: 'proposal', icon: 'badge' },
-    { key: 'catatan_bimbingan', label: t('Catatan Bimbingan Kelompok'), stage: 'proposal', icon: 'support_agent' },
-    { key: 'rekomendasi_kredit', label: t('Surat Rekomendasi Kredit'), stage: 'verification', icon: 'verified' },
-    { key: 'ba_musyawarah', label: t('Berita Acara Musyawarah'), stage: 'verification', icon: 'groups' },
-    { key: 'surat_verifikasi', label: t('Surat Undangan Verifikasi'), stage: 'verification', icon: 'mark_email_read' },
-    { key: 'surat_kelayakan', label: t('Surat Kelayakan Piutang'), stage: 'verification', icon: 'verified_user' },
-    { key: 'form_verifikasi', label: t('Form Verifikasi Kelompok'), stage: 'verification', icon: 'assignment' },
-    { key: 'form_verifikasi_anggota', label: t('Form Verifikasi Anggota'), stage: 'verification', icon: 'assignment_ind' },
-    { key: 'daftar_hadir_verifikasi', label: t('Daftar Hadir Verifikasi'), stage: 'verification', icon: 'event_available' },
-    { key: 'cover_pencairan', label: t('Cover Pencairan'), stage: 'disbursement', icon: 'auto_stories' },
-    { key: 'spk', label: t('Surat Perjanjian Kredit (SPK)'), stage: 'disbursement', icon: 'gavel' },
-    { key: 'berita_acara_pencairan', label: t('Berita Acara Pencairan'), stage: 'disbursement', icon: 'fact_check' },
-    { key: 'ba_pendanaan', label: t('BA Rapat Pendanaan'), stage: 'disbursement', icon: 'fact_check' },
-    { key: 'rencana_angsuran', label: t('Rencana Angsuran'), stage: 'disbursement', icon: 'calendar_month' },
-    { key: 'kartu_angsuran_anggota', label: t('Kartu Angsuran per Anggota'), stage: 'disbursement', icon: 'credit_card' },
-    { key: 'pemberitahuan_desa', label: t('Pemberitahuan ke Desa'), stage: 'disbursement', icon: 'campaign' },
-    { key: 'peserta_asuransi', label: t('Daftar Peserta Asuransi'), stage: 'disbursement', icon: 'health_and_safety' },
-    { key: 'tanda_terima', label: t('Tanda Terima Dana'), stage: 'disbursement', icon: 'task_alt' },
-    { key: 'kuitansi_pencairan', label: t('Kuitansi Pencairan'), stage: 'disbursement', icon: 'receipt_long' },
-    { key: 'kuitansi_anggota', label: t('Kuitansi per Anggota'), stage: 'disbursement', icon: 'receipt' },
-    { key: 'tagihan', label: t('Surat Tagihan'), stage: 'disbursement', icon: 'request_quote' },
-    { key: 'surat_ahli_waris', label: t('Surat Pernyataan Ahli Waris'), stage: 'disbursement', icon: 'family_restroom' },
-    { key: 'surat_kuasa', label: t('Surat Kuasa SPK'), stage: 'disbursement', icon: 'assignment_late' },
-    { key: 'tanggung_renteng_kematian', label: t('Surat Pernyataan TR Kematian'), stage: 'disbursement', icon: 'volunteer_activism' },
-    { key: 'iptw', label: t('Daftar Penerima IPTW'), stage: 'disbursement', icon: 'savings' },
-    { key: 'rekening_koran', label: t('Rekening Koran Pinjaman'), stage: 'disbursement', icon: 'account_balance' },
-    { key: 'pernyataan_peminjam', label: t('Surat Pengakuan Utang Peminjam'), stage: 'disbursement', icon: 'history_edu' },
-    { key: 'daftar_hadir_pencairan', label: t('Daftar Hadir Pencairan'), stage: 'disbursement', icon: 'event_available' },
-];
-
 const docSearch = ref('');
 
 // ===== Documents modal =====
@@ -599,7 +561,9 @@ const availableDocuments = computed(() => {
         if (stage === 'disbursement') return STAGE_DISBURSEMENT.includes(statusValue);
         return false;
     };
-    return LOAN_DOCUMENTS.filter((d) => stageAllowed(d.stage)).map((d) => ({ ...d, url: `/lending/loans/${props.loan.row_id}/documents/${d.key}` }));
+    return (props.documents ?? [])
+        .filter((d) => stageAllowed(d.stage))
+        .map((d) => ({ ...d, url: `/lending/loans/${props.loan.row_id}/documents/${d.key}` }));
 });
 
 const documentsByStage = computed(() => {

@@ -892,6 +892,23 @@ final class MemberLoanLifecycleTest extends TestCase
         $jasaLine = $lines->where('line_number', 3)->first();
         self::assertNotNull($jasaLine);
         self::assertSame($interest, (float) $jasaLine->credit);
+
+        // Ledger pembayaran harus ditulis oleh service, bukan hanya jurnal.
+        $payment = DB::connection('tenant')
+            ->table('loan_payments')
+            ->where('journal_entry_row_id', $posted->row_id)
+            ->first();
+        self::assertNotNull($payment);
+        self::assertSame((float) ($principal + $interest), (float) $payment->amount);
+
+        $allocations = DB::connection('tenant')
+            ->table('loan_payment_allocations')
+            ->where('payment_row_id', $payment->row_id)
+            ->orderBy('component')
+            ->get();
+        self::assertCount(2, $allocations);
+        self::assertSame($principal, (float) $allocations->firstWhere('component', 'principal')->amount);
+        self::assertSame($interest, (float) $allocations->firstWhere('component', 'interest')->amount);
     }
 
     /**

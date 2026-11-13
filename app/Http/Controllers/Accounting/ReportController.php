@@ -120,6 +120,55 @@ final class ReportController
         );
     }
 
+    public function journalsExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->period($request);
+        $data = $this->journals->build($year, $month, $this->optionalDay($request), 1, 50, true);
+
+        return $this->excel->journals($data);
+    }
+
+    public function trialBalanceExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->period($request, defaultMonth: (int) date('n'));
+
+        return $this->excel->trialBalance($this->trialBalance->build($year, $month));
+    }
+
+    public function balanceSheetExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->period($request, defaultMonth: (int) date('n'));
+
+        return $this->excel->balanceSheet($this->balanceSheet->build($year, $month));
+    }
+
+    public function incomeStatementExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->period($request, defaultMonth: (int) date('n'));
+
+        return $this->excel->incomeStatement($this->incomeStatement->build($year, $month));
+    }
+
+    public function cashFlowExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->period($request, defaultMonth: (int) date('n'));
+
+        return $this->excel->cashFlow($this->cashFlow->build($year, $month));
+    }
+
+    public function equityChangeExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->period($request, defaultMonth: (int) date('n'));
+
+        return $this->excel->equityChange($this->equityChange->build($year, $month));
+    }
+
     public function trialBalance(Request $request): InertiaResponse
     {
         $this->authorize($request);
@@ -274,24 +323,10 @@ final class ReportController
     {
         $this->authorize($request);
         $validated = $request->validate([
-            'year' => ['required', 'integer', 'min:2000', 'max:2100'],
-            'month' => ['nullable', 'integer', 'min:1', 'max:12'],
-            'basis_notes' => ['nullable', 'string', 'max:5000'],
-            'receivable_notes' => ['nullable', 'string', 'max:5000'],
-            'events_after_notes' => ['nullable', 'string', 'max:5000'],
-            'other_notes' => ['nullable', 'string', 'max:5000'],
+            'notes' => ['nullable', 'string', 'max:20000'],
         ]);
 
-        $this->calk->saveNotes(
-            (int) $validated['year'],
-            isset($validated['month']) ? (int) $validated['month'] : null,
-            [
-                'basis_notes' => $validated['basis_notes'] ?? null,
-                'receivable_notes' => $validated['receivable_notes'] ?? null,
-                'events_after_notes' => $validated['events_after_notes'] ?? null,
-                'other_notes' => $validated['other_notes'] ?? null,
-            ],
-        );
+        $this->calk->saveNotes((string) ($validated['notes'] ?? ''));
 
         return back()->with('success', 'Catatan CALK berhasil disimpan.');
     }
@@ -348,6 +383,19 @@ final class ReportController
         );
     }
 
+    public function generalLedgerExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->period($request, defaultMonth: (int) date('n'));
+        $day = $this->optionalDay($request);
+        $accountId = (int) $request->query('account', 0);
+        if ($accountId <= 0) {
+            abort(422, 'Pilih akun untuk Buku Besar.');
+        }
+
+        return $this->excel->generalLedger($this->generalLedger->build($year, $month, $accountId, $day));
+    }
+
     // --- Penilaian Kesehatan Keuangan ---
     public function financialHealth(Request $request): InertiaResponse
     {
@@ -402,6 +450,22 @@ final class ReportController
             sprintf('rekapitulasi-aset-tak-berwujud-%04d-%02d.pdf', $year, $month ?? 12),
             'landscape',
         );
+    }
+
+    public function fixedAssetsExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->period($request, defaultMonth: (int) date('n'));
+
+        return $this->excel->fixedAssets($this->assetReportService->build($year, $month, 'tangible'), 'tangible');
+    }
+
+    public function intangibleAssetsExcel(Request $request): StreamedResponse
+    {
+        $this->authorize($request);
+        [$year, $month] = $this->period($request, defaultMonth: (int) date('n'));
+
+        return $this->excel->fixedAssets($this->assetReportService->build($year, $month, 'intangible'), 'intangible');
     }
 
     // --- Paket Dokumen Laporan Tahunan / Administratif ---

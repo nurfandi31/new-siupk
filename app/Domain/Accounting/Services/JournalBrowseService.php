@@ -146,6 +146,10 @@ final class JournalBrowseService
             $canEdit = $canReverse
                 && in_array((string) ($e->source_type ?? ''), JournalEditService::EDITABLE_SOURCE_TYPES, true);
 
+            $receiptUrl = $this->receiptUrl($rowId, (string) ($e->source_type ?? ''), (string) ($e->description ?? ''));
+
+            $kuitansiUrl = $receiptUrl === null ? '/accounting/journals/'.$rowId.'/kuitansi' : null;
+
             $rows[] = [
                 'row_id' => $rowId,
                 'id' => (int) $e->id,
@@ -161,7 +165,11 @@ final class JournalBrowseService
                 'reversal' => $reversedOf[$rowId] ?? null,
                 'can_reverse' => $canReverse,
                 'can_edit' => $canEdit,
-                'receipt_url' => $this->receiptUrl($rowId, (string) ($e->source_type ?? ''), (string) ($e->description ?? '')),
+                'receipt_url' => $receiptUrl,
+                'receipt_thermal_url' => $receiptUrl !== null ? $receiptUrl.'/thermal' : null,
+                'receipt_matrix_url' => $receiptUrl !== null ? $receiptUrl.'/matrix' : null,
+                'kuitansi_url' => $kuitansiUrl,
+                'kuitansi_thermal_url' => $kuitansiUrl !== null ? $kuitansiUrl.'/thermal' : null,
                 'cash_evidence_kind' => $this->cashEvidenceKind($sideCodes[$rowId] ?? ['debit' => null, 'credit' => null]),
                 'cash_evidence_url' => '/accounting/journals/'.$rowId.'/cash-evidence',
             ];

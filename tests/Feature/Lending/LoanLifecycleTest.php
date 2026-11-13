@@ -125,6 +125,7 @@ final class LoanLifecycleTest extends TestCase
                 ->has('loan.beneficiaries', 3)
                 ->has('loan.installments')
                 ->has('loan.status_histories')
+                ->has('documents', 17)
                 ->has('disbursementAccounts')
             );
     }

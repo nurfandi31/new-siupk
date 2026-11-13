@@ -438,7 +438,7 @@ final class LoanController
         return to_route('lending.loans.show', ['loan' => $loan->row_id])->with('success', 'Pemanfaat berhasil dihapus dari proposal.');
     }
 
-    public function show(Loan $loan): Response
+    public function show(Loan $loan, LoanDocumentService $documents): Response
     {
         $loan->load([
             'product:row_id,code,name,default_interest_rate,default_term_months',
@@ -458,6 +458,7 @@ final class LoanController
 
         return Inertia::render('Lending/Loans/Show', [
             'loan' => $this->presentLoanDetail($loan),
+            'documents' => $documents->availableDocuments($loan),
             'card_url' => $loan->installments->isNotEmpty()
                 ? route('lending.loans.card', ['loan' => $loan->row_id])
                 : null,

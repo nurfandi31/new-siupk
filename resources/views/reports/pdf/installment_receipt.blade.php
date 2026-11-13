@@ -14,6 +14,22 @@
     } elseif ($phone !== '') {
         $infoLine = 'Telp. ' . $phone;
     }
+
+    $schedule = $schedule ?? [];
+    $installmentNumber = (int) ($schedule['installment_number'] ?? 1);
+    $installmentTotal = (int) ($schedule['installment_total'] ?? 0);
+    $loanAmount = (float) ($schedule['loan_amount'] ?? 0);
+    $loanInterest = (float) ($schedule['loan_interest'] ?? 0);
+    $targetPrincipal = (float) ($schedule['target_principal'] ?? 0);
+    $targetInterest = (float) ($schedule['target_interest'] ?? 0);
+    $nextPrincipal = (float) ($schedule['next_principal'] ?? 0);
+    $nextInterest = (float) ($schedule['next_interest'] ?? 0);
+    $tunggakanPrincipal = (float) ($schedule['tunggakan_principal'] ?? 0);
+    $tunggakanInterest = (float) ($schedule['tunggakan_interest'] ?? 0);
+    $saldoPrincipal = (float) ($schedule['saldo_principal'] ?? 0);
+    $saldoInterest = (float) ($schedule['saldo_interest'] ?? 0);
+    $totalTagihan = (float) ($schedule['total_tagihan'] ?? 0);
+    $terbilang = (string) ($schedule['terbilang'] ?? '');
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -101,6 +117,34 @@
             <td style="padding: 4px 6px; color: #555;">Keterangan</td>
             <td style="padding: 4px 6px;">{{ $entry['description'] ?? '—' }}</td>
         </tr>
+        <tr>
+            <td style="padding: 4px 6px; color: #555;">Angsuran ke</td>
+            <td style="padding: 4px 6px;">{{ $installmentNumber }} dari {{ $installmentTotal > 0 ? $installmentTotal : '—' }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 6px; color: #555;">Alokasi pinjaman</td>
+            <td style="padding: 4px 6px;">Pokok {{ number_format($loanAmount, 2) }} &middot; Jasa {{ number_format($loanInterest, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 6px; color: #555;">Target pengembalian</td>
+            <td style="padding: 4px 6px;">Pokok {{ number_format($targetPrincipal, 2) }} &middot; Jasa {{ number_format($targetInterest, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 6px; color: #555;">Saldo pinjaman</td>
+            <td style="padding: 4px 6px;">Pokok {{ number_format($saldoPrincipal, 2) }} &middot; Jasa {{ number_format($saldoInterest, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 6px; color: #555;">Tunggakan s.d. bulan ini</td>
+            <td style="padding: 4px 6px;">Pokok {{ number_format($tunggakanPrincipal, 2) }} &middot; Jasa {{ number_format($tunggakanInterest, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 6px; color: #555;">Tagihan bulan depan</td>
+            <td style="padding: 4px 6px;">Pokok {{ number_format($nextPrincipal, 2) }} &middot; Jasa {{ number_format($nextInterest, 2) }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 6px; color: #555;">Total tagihan (M+1)</td>
+            <td style="padding: 4px 6px;"><b>{{ number_format($totalTagihan, 2) }}</b></td>
+        </tr>
     </table>
 
     <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 11px;">
@@ -146,6 +190,15 @@
         @endforeach
     </table>
 
+    @if ($terbilang !== '')
+        <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 11px; margin-top: 10px;">
+            <tr>
+                <td style="padding: 2px 4px; color: #555;">Terbilang</td>
+                <td style="padding: 2px 4px; font-weight: bold; text-transform: uppercase;">{{ $terbilang }}</td>
+            </tr>
+        </table>
+    @endif
+
     <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 11px; margin-top: 28px;">
         <tr>
             <td width="50%" align="center">Penyetor</td>
@@ -166,6 +219,10 @@
             <td align="center">
                 Dicetak {{ now()->timezone(config('app.timezone'))->format('d/m/Y H:i') }}
                 &middot; ID jurnal {{ $entry['id'] }}
+                <br>
+                Lembar 1 untuk Kelompok, lembar 2 Arsip UPK.
+                <br>
+                Bawalah kartu angsuran dan slip ini pada saat mengangsur bulan depan.
             </td>
         </tr>
     </table>

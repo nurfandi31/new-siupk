@@ -455,6 +455,50 @@ function submitBulkReverse() {
                                             <span>{{ t('Kuitansi') }}</span>
                                         </a>
                                         <a
+                                            v-if="row.receipt_thermal_url"
+                                            :href="row.receipt_thermal_url"
+                                            target="_blank"
+                                            rel="noopener"
+                                            class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-primary hover:bg-primary/10"
+                                            :title="t('Cetak Struk Thermal')"
+                                        >
+                                            <AppIcon name="print" class="text-base" />
+                                            <span>{{ t('Thermal') }}</span>
+                                        </a>
+                                        <a
+                                            v-if="row.receipt_matrix_url"
+                                            :href="row.receipt_matrix_url"
+                                            target="_blank"
+                                            rel="noopener"
+                                            class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-primary hover:bg-primary/10"
+                                            :title="t('Cetak Struk Dot Matrix')"
+                                        >
+                                            <AppIcon name="print" class="text-base" />
+                                            <span>{{ t('Matrix') }}</span>
+                                        </a>
+                                        <a
+                                            v-if="row.kuitansi_url"
+                                            :href="row.kuitansi_url"
+                                            target="_blank"
+                                            rel="noopener"
+                                            class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-primary hover:bg-primary/10"
+                                            :title="t('Cetak Kuitansi Jurnal')"
+                                        >
+                                            <AppIcon name="receipt_long" class="text-base" />
+                                            <span>{{ t('Kuitansi') }}</span>
+                                        </a>
+                                        <a
+                                            v-if="row.kuitansi_thermal_url"
+                                            :href="row.kuitansi_thermal_url"
+                                            target="_blank"
+                                            rel="noopener"
+                                            class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-primary hover:bg-primary/10"
+                                            :title="t('Cetak Kuitansi Thermal')"
+                                        >
+                                            <AppIcon name="print" class="text-base" />
+                                            <span>{{ t('Thermal') }}</span>
+                                        </a>
+                                        <a
                                             v-if="!row.receipt_url && row.cash_evidence_url"
                                             :href="row.cash_evidence_url"
                                             target="_blank"

@@ -8,6 +8,7 @@ use App\Domain\Access\Services\PermissionChecker;
 use App\Domain\Accounting\Models\JournalEntry;
 use App\Domain\Accounting\Services\Reports\CashEvidenceService;
 use App\Domain\Accounting\Services\Reports\DocumentKindClassifier;
+use App\Domain\Accounting\Services\Reports\JournalKuitansiService;
 use App\Models\User;
 use App\Support\ReportPdf;
 use DomainException;
@@ -28,6 +29,7 @@ final class CashEvidenceController
     public function __construct(
         private readonly PermissionChecker $permissions,
         private readonly CashEvidenceService $service,
+        private readonly JournalKuitansiService $kuitansi,
         private readonly DocumentKindClassifier $classifier,
         private readonly ReportPdf $pdf,
     ) {}
@@ -91,6 +93,61 @@ final class CashEvidenceController
             strtolower($payload['kind']).'-jurnal-'.$payload['entry']['id'].'.pdf',
             'landscape',
             $paper,
+        );
+    }
+
+    /**
+     * Cetak kuitansi jurnal umum. Memakai JournalEntry dan classifier yang
+     * sama dengan Bukti Kas, sehingga nominal, jenis BKM/BKK, dan relasi
+     * tidak pernah berbeda antara kedua dokumen.
+     */
+    public function kuitansi(Request $request, JournalEntry $entry): Response|StreamedResponse
+    {
+        $this->denyAccess();
+
+        try {
+            $payload = $this->kuitansi->build($entry, $request->user());
+        } catch (DomainException $e) {
+            abort(422, $e->getMessage());
+        }
+
+        // 20cm x 10cm in points (1cm = 28.3465pt)
+        $paper = [0, 0, 566.93, 283.46];
+
+        return $this->pdf->stream(
+            'reports.pdf.cash_evidence.kuitansi',
+            $payload,
+            'kuitansi-jurnal-'.$payload['entry']['id'].'.pdf',
+            'landscape',
+            $paper,
+        );
+    }
+
+    /**
+     * Kuitansi jurnal versi printer thermal 58/80 mm.
+     */
+    public function kuitansiThermal(Request $request, JournalEntry $entry): Response|StreamedResponse
+    {
+        $this->denyAccess();
+
+        try {
+            $payload = $this->kuitansi->build($entry, $request->user());
+        } catch (DomainException $e) {
+            abort(422, $e->getMessage());
+        }
+
+        $paper = (string) $request->query('kertas', '80') === '58' ? '58' : '80';
+        $payload['paper'] = $paper;
+        $size = $paper === '58'
+            ? [0, 0, 164.41, 192.76]   // 58mm x 68mm
+            : [0, 0, 226.77, 255.12];  // 80mm x 90mm
+
+        return $this->pdf->stream(
+            'reports.pdf.cash_evidence.kuitansi_thermal',
+            $payload,
+            'kuitansi-thermal-'.$payload['entry']['id'].'.pdf',
+            'portrait',
+            $size,
         );
     }
 

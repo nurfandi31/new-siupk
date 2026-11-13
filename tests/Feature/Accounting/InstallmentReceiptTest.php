@@ -130,6 +130,10 @@ final class InstallmentReceiptTest extends TestCase
         self::assertSame('Kelompok Receipt', $data['loan']['group_name']);
         self::assertSame('Siti Penyetor', $data['payer']['name']);
         self::assertCount(3, $data['lines']);
+        self::assertArrayHasKey('installment_number', $data['schedule']);
+        self::assertArrayHasKey('saldo_principal', $data['schedule']);
+        self::assertArrayHasKey('total_tagihan', $data['schedule']);
+        self::assertStringContainsString('Rupiah', $data['schedule']['terbilang']);
     }
 
     public function test_receipt_rejects_non_installment_journal(): void
@@ -235,6 +239,21 @@ final class InstallmentReceiptTest extends TestCase
 
         $this->actingAs($this->user)
             ->get('/accounting/journal-entries/'.$entry->row_id.'/installment-receipt')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_receipt_thermal_and_matrix_routes_stream(): void
+    {
+        $entry = $this->postedInstallmentJournal();
+
+        $this->actingAs($this->user)
+            ->get('/accounting/journal-entries/'.$entry->row_id.'/installment-receipt/thermal?kertas=58')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $this->actingAs($this->user)
+            ->get('/accounting/journal-entries/'.$entry->row_id.'/installment-receipt/matrix')
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
     }

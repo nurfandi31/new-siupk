@@ -13,6 +13,7 @@ use App\Domain\Lending\Models\LoanBeneficiary;
 use App\Domain\Lending\Models\LoanBeneficiaryWriteOff;
 use App\Domain\Lending\Models\LoanCommittee;
 use App\Domain\Lending\Models\LoanInstallment;
+use App\Domain\Lending\Models\LoanPayment;
 use App\Domain\Lending\Models\LoanProduct;
 use App\Domain\Lending\Models\LoanWriteOff;
 use App\Domain\Membership\Models\Group;
@@ -1228,7 +1229,7 @@ final class LoanService
             // 6) Update loan_installments: principal_paid, interest_paid, penalty_paid, paid_at, running_*.
             //    KUNCI PARITAS DENGAN SIUPK: baris yang SUDAH ADA installments wajib di-update
             //    agar laporan saldo & kolek tidak selalu 0.
-            $this->applyInstallmentAllocations(
+            $installmentTargets = $this->applyInstallmentAllocations(
                 loan: $loan,
                 principalPaid: $principalAmount,
                 interestPaid: $interestAmount,
@@ -1236,6 +1237,21 @@ final class LoanService
                 installmentRowId: $installmentRowId,
                 installmentNumber: $installmentNumber,
                 paidAt: $transactionDate,
+            );
+
+            // 6b) Catat pembayaran ke ledger `loan_payments` + alokasi komponen.
+            //     Laporan LPP/kolektibilitas/OJK membaca tabel ini, bukan hanya
+            //     kolom paid pada `loan_installments`.
+            $this->recordLoanPayment(
+                loan: $loan,
+                posted: $posted,
+                principalAmount: $principalAmount,
+                interestAmount: $interestAmount,
+                penaltyAmount: $penaltyAmount,
+                installmentTargets: $installmentTargets,
+                transactionDate: $transactionDate,
+                data: $data,
+                userId: $userId,
             );
 
             // 7) Catatan alokasi per-anggota (untuk pinjaman kelompok).
@@ -1258,6 +1274,62 @@ final class LoanService
     }
 
     /**
+     * Simpan pembayaran angsuran ke `loan_payments` dan pecah komponennya
+     * ke `loan_payment_allocations`.
+     *
+     * Sebelumnya hanya mobile/desktop sync yang menulis ledger ini, sehingga
+     * pembayaran dari web tidak muncul di LPP, kolektibilitas, CKPN, dan OJK.
+     *
+     * @param  array<string, int|null>  $installmentTargets
+     * @param  array<string, mixed>  $data
+     */
+    private function recordLoanPayment(
+        Loan $loan,
+        JournalEntry $posted,
+        float $principalAmount,
+        float $interestAmount,
+        float $penaltyAmount,
+        array $installmentTargets,
+        string $transactionDate,
+        array $data,
+        int $userId,
+    ): void {
+        $paymentNumber = trim((string) ($data['payment_number'] ?? ''));
+        if ($paymentNumber === '') {
+            $paymentNumber = 'RA-'.$posted->row_id;
+        }
+
+        $reference = $data['reference_number'] ?? ($data['reference'] ?? null);
+
+        $payment = LoanPayment::query()->create([
+            'loan_row_id' => (int) $loan->row_id,
+            'payment_number' => $paymentNumber,
+            'paid_at' => CarbonImmutable::parse($transactionDate)->startOfDay(),
+            'amount' => round($principalAmount + $interestAmount + $penaltyAmount, 2),
+            'payment_method' => (string) ($data['payment_method'] ?? 'cash'),
+            'reference_number' => $reference !== null && $reference !== '' ? (string) $reference : null,
+            'journal_entry_row_id' => (int) $posted->row_id,
+            'created_by_user_id' => $userId > 0 ? $userId : null,
+        ]);
+
+        foreach ([
+            'principal' => $principalAmount,
+            'interest' => $interestAmount,
+            'penalty' => $penaltyAmount,
+        ] as $component => $amount) {
+            if (round($amount, 2) <= 0.0) {
+                continue;
+            }
+
+            $payment->allocations()->create([
+                'installment_row_id' => $installmentTargets[$component] ?? null,
+                'component' => $component,
+                'amount' => round($amount, 2),
+            ]);
+        }
+    }
+
+    /**
      * Update baris `loan_installments` untuk pembayaran angsuran.
      *
      * Algoritma paritas dengan SIUPK original (TransaksiController::angsuran):
@@ -1265,6 +1337,10 @@ final class LoanService
      *   - Untuk angsuran #1, #2, dst: kurangi sisa_pokok_atau_jasa dengan pembayaran.
      *   - Set `paid_at` jika pembayaran >= jatuh tempo angsuran tsb.
      *   - Recompute `running_principal` & `running_interest` (alokasi - paid).
+     *
+     * @return array{principal: int|null, interest: int|null, penalty: int|null}
+     *                                                                           row_id angsuran terakhir yang menerima tiap komponen; dipakai
+     *                                                                           untuk menautkan `loan_payment_allocations.installment_row_id`.
      */
     private function applyInstallmentAllocations(
         Loan $loan,
@@ -1274,35 +1350,34 @@ final class LoanService
         int $installmentRowId,
         int $installmentNumber,
         string $paidAt,
-    ): void {
+    ): array {
         // Jadwal angsuran dapat tersimpan dalam dua bentuk:
         //  - combined  : satu baris per angsuran (principal_due + interest_due), atau
         //  - split     : baris terpisah per `component` (principal / interest).
         // Karena itu pembayaran harus dialokasikan per kelompok nomor angsuran,
         // bukan menulis pokok + jasa ke baris pertama yang ditemukan.
         $query = $loan->installments()->orderBy('installment_number')->orderBy('component');
+        $targets = ['principal' => null, 'interest' => null, 'penalty' => null];
 
         if ($installmentRowId > 0) {
             $target = $query->clone()->where('row_id', $installmentRowId)->lockForUpdate()->first();
-            if (! $target) {
-                return;
+            if ($target) {
+                $rows = $query->clone()
+                    ->where('installment_number', (int) $target->installment_number)
+                    ->lockForUpdate()
+                    ->get();
+                $this->applyToInstallmentGroup($rows, $principalPaid, $interestPaid, $penaltyPaid, $paidAt);
+                $targets = $this->mergeInstallmentTargets($targets, $this->groupTargetRows($rows));
             }
-
-            $rows = $query->clone()
-                ->where('installment_number', (int) $target->installment_number)
-                ->lockForUpdate()
-                ->get();
-            $this->applyToInstallmentGroup($rows, $principalPaid, $interestPaid, $penaltyPaid, $paidAt);
         } elseif ($installmentNumber > 0) {
             $rows = $query->clone()
                 ->where('installment_number', $installmentNumber)
                 ->lockForUpdate()
                 ->get();
-            if ($rows->isEmpty()) {
-                return;
+            if ($rows->isNotEmpty()) {
+                $this->applyToInstallmentGroup($rows, $principalPaid, $interestPaid, $penaltyPaid, $paidAt);
+                $targets = $this->mergeInstallmentTargets($targets, $this->groupTargetRows($rows));
             }
-
-            $this->applyToInstallmentGroup($rows, $principalPaid, $interestPaid, $penaltyPaid, $paidAt);
         } else {
             // Walk: bayar angsuran tertua dulu (mirror siupk), tetap per kelompok
             // nomor angsuran agar baris split tidak saling menimpa.
@@ -1330,6 +1405,10 @@ final class LoanService
                     $paidAt,
                 );
 
+                if ($applied['principal'] > 0 || $applied['interest'] > 0 || $applied['penalty'] > 0) {
+                    $targets = $this->mergeInstallmentTargets($targets, $this->groupTargetRows($group->values()));
+                }
+
                 $remainingP = round($remainingP - $applied['principal'], 2);
                 $remainingI = round($remainingI - $applied['interest'], 2);
                 $remainingD = round($remainingD - $applied['penalty'], 2);
@@ -1338,6 +1417,58 @@ final class LoanService
 
         // Refresh running totals di seluruh installments (computed property).
         $this->recomputeRunningTotals($loan);
+
+        return $targets;
+    }
+
+    /**
+     * Tentukan baris target per komponen untuk satu kelompok angsuran.
+     *
+     * @param  Collection<int, LoanInstallment>  $rows
+     * @return array{principal: int|null, interest: int|null, penalty: int|null}
+     */
+    private function groupTargetRows(Collection $rows): array
+    {
+        if ($rows->isEmpty()) {
+            return ['principal' => null, 'interest' => null, 'penalty' => null];
+        }
+
+        $isSplit = $rows->contains(
+            fn (LoanInstallment $row): bool => in_array((string) $row->component, ['principal', 'interest', 'penalty'], true),
+        );
+
+        if (! $isSplit) {
+            $rowId = (int) $rows->first()->row_id;
+
+            return ['principal' => $rowId, 'interest' => $rowId, 'penalty' => $rowId];
+        }
+
+        $principalRow = $rows->first(fn (LoanInstallment $row): bool => (string) $row->component === 'principal');
+        $interestRow = $rows->first(fn (LoanInstallment $row): bool => (string) $row->component === 'interest');
+        $penaltyRow = $rows->first(fn (LoanInstallment $row): bool => (string) $row->component === 'penalty');
+        $penaltyFallback = $penaltyRow ?? $interestRow ?? $principalRow;
+
+        return [
+            'principal' => $principalRow?->row_id !== null ? (int) $principalRow->row_id : null,
+            'interest' => $interestRow?->row_id !== null ? (int) $interestRow->row_id : null,
+            'penalty' => $penaltyFallback?->row_id !== null ? (int) $penaltyFallback->row_id : null,
+        ];
+    }
+
+    /**
+     * @param  array{principal: int|null, interest: int|null, penalty: int|null}  $base
+     * @param  array{principal: int|null, interest: int|null, penalty: int|null}  $next
+     * @return array{principal: int|null, interest: int|null, penalty: int|null}
+     */
+    private function mergeInstallmentTargets(array $base, array $next): array
+    {
+        foreach (['principal', 'interest', 'penalty'] as $component) {
+            if ($next[$component] !== null) {
+                $base[$component] = $next[$component];
+            }
+        }
+
+        return $base;
     }
 
     /**

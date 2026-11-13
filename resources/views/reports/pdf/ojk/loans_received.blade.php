@@ -1,6 +1,8 @@
 @php
     $id = $identity;
     $periodLabel = strtoupper($period_label ?? '');
+    $legalName = strtoupper((string) ($id['legal_name'] ?? $id['short_name'] ?? config('app.name')));
+    $asOfLabel = $as_of ?? $periodLabel;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -113,7 +115,7 @@
 
     <p style="margin-top: 8px; font-size: 9px;">
         <i>Keterangan: DRPY adalah laporan rincian pinjaman dari pihak ketiga yang diterima oleh
-        {{ $legalName }}. Disusun untuk memenuhi kewajiban pelaporan OJK. Posisi per {{ $as_of }}.</i>
+        {{ $legalName }}. Disusun untuk memenuhi kewajiban pelaporan OJK. Posisi per {{ $asOfLabel }}.</i>
     </p>
 </body>
 </html>

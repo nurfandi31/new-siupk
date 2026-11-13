@@ -17,7 +17,11 @@ use App\Domain\Accounting\Services\Reports\GeneralLedgerService;
 use App\Domain\Accounting\Services\Reports\IncomeStatementService;
 use App\Domain\Accounting\Services\Reports\JournalListingService;
 use App\Domain\Accounting\Services\Reports\TrialBalanceService;
+use App\Models\User;
+use App\Tenancy\Middleware\ResolveTenant;
 use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Support\Str;
 use Tests\Concerns\BuildsTenantTestDatabase;
 use Tests\TestCase;
 
@@ -33,10 +37,22 @@ final class AccountingReportsTest extends TestCase
 
     private Account $expense;
 
+    private User $user;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->rebuildTenantTestDatabases();
+        $this->withoutMiddleware([ResolveTenant::class, PreventRequestForgery::class]);
+        $this->user = User::query()->create([
+            'public_id' => (string) Str::ulid(),
+            'tenant_id' => $this->testTenant->row_id,
+            'name' => 'Admin Laporan',
+            'email' => 'reports@example.test',
+            'username' => 'reports_user',
+            'password' => 'password',
+            'status' => 'active',
+        ]);
         $this->seedCoaAndPeriod();
         $this->postSampleJournals();
     }
@@ -123,6 +139,37 @@ final class AccountingReportsTest extends TestCase
         app(CalkService::class)->saveNotes('Catatan uji CALK');
         $again = app(CalkService::class)->build(2026, 7);
         self::assertSame('Catatan uji CALK', $again['notes']);
+    }
+
+    public function test_report_excel_exports_stream(): void
+    {
+        $routes = [
+            '/accounting/reports/journals/excel?year=2026&month=7',
+            '/accounting/reports/trial-balance/excel?year=2026&month=7',
+            '/accounting/reports/balance-sheet/excel?year=2026&month=7',
+            '/accounting/reports/income-statement/excel?year=2026&month=7',
+            '/accounting/reports/cash-flow/excel?year=2026&month=7',
+            '/accounting/reports/equity-change/excel?year=2026&month=7',
+            '/accounting/reports/general-ledger/excel?year=2026&month=7&account='.$this->cash->row_id,
+            '/accounting/reports/assets/fixed/excel?year=2026&month=7',
+            '/accounting/reports/assets/intangible/excel?year=2026&month=7',
+        ];
+
+        foreach ($routes as $route) {
+            $this->actingAs($this->user)->get($route)->assertOk();
+        }
+    }
+
+    public function test_calk_notes_route_saves_notes(): void
+    {
+        $this->actingAs($this->user)
+            ->put('/accounting/reports/calk/notes', ['notes' => 'Catatan dari route CALK'])
+            ->assertRedirect();
+
+        self::assertSame(
+            'Catatan dari route CALK',
+            app(CalkService::class)->build(2026, 7)['notes'],
+        );
     }
 
     private function seedCoaAndPeriod(): void
