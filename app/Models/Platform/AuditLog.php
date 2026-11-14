@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Platform;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class AuditLog extends PlatformModel

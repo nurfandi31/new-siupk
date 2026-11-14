@@ -41,9 +41,19 @@ final class AuditLogTest extends TestCase
 
     public function test_superadmin_can_open_audit_log_page(): void
     {
-        $this->actingAs($this->superadmin())
-            ->get('/admin/audit-logs')
-            ->assertOk();
+        $this->actingAs($this->superadmin());
+
+        // Baris log wajib ada agar relasi actor benar-benar di-instansiasi.
+        app(AuditLogger::class)->record('system.smoke_test', description: 'Audit log page regression');
+
+        $this->get('/admin/audit-logs')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/AuditLogs/Index')
+                ->has('logs.data', 1)
+                ->where('logs.data.0.action', 'system.smoke_test')
+                ->where('logs.data.0.actor_name', 'Super Admin')
+            );
     }
 
     public function test_non_superadmin_cannot_access_audit_logs(): void
