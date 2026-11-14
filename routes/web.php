@@ -46,6 +46,7 @@ use App\Http\Controllers\Admin\ShardController;
 use App\Http\Controllers\Admin\TenantController as AdminTenantController;
 use App\Http\Controllers\Admin\TenantDataPurifierController;
 use App\Http\Controllers\Admin\TenantImpersonationController as AdminTenantImpersonationController;
+use App\Http\Controllers\Admin\TenantMenuAccessController as AdminTenantMenuAccessController;
 use App\Http\Controllers\Admin\TenantSavingsModuleController;
 use App\Http\Controllers\Admin\TenantUserController as AdminTenantUserController;
 use App\Http\Controllers\Admin\UserManagementController;
@@ -255,6 +256,10 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->name('admin.')->grou
         Route::post('/disable', [TenantSavingsModuleController::class, 'disable'])->name('disable');
     });
 
+    Route::get('/tenants/{tenant}/menus', [AdminTenantMenuAccessController::class, 'index'])->name('tenants.menus.index');
+    Route::get('/tenants/{tenant}/menus/{role}', [AdminTenantMenuAccessController::class, 'edit'])->whereNumber('role')->name('tenants.menus.edit');
+    Route::put('/tenants/{tenant}/menus/{role}', [AdminTenantMenuAccessController::class, 'update'])->whereNumber('role')->name('tenants.menus.update');
+
     Route::get('/tenants/{tenant}/users', [AdminTenantUserController::class, 'index'])->name('tenants.users.index');
     Route::get('/tenants/{tenant}/users/create', [AdminTenantUserController::class, 'create'])->name('tenants.users.create');
     Route::post('/tenants/{tenant}/users', [AdminTenantUserController::class, 'store'])->name('tenants.users.store');
@@ -395,7 +400,7 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->name('admin.')->grou
     });
 });
 
-Route::middleware(['auth', 'tenant', 'subscription.active'])->group(function (): void {
+Route::middleware(['auth', 'tenant', 'menu.access', 'subscription.active'])->group(function (): void {
     if (file_exists(base_path('vendor/enpii/assistant/routes/api.php'))) {
         Route::prefix('assistant')->group(function (): void {
             require base_path('vendor/enpii/assistant/routes/api.php');

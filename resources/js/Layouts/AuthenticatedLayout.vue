@@ -23,6 +23,8 @@ const logoPath = computed(() => page.props.logoPath ?? null);
 const user = computed(() => page.props.auth?.user);
 const permissions = computed(() => page.props.auth?.permissions ?? []);
 const navMap = computed(() => page.props.auth?.nav_map ?? {});
+const menuAccess = computed(() => page.props.auth?.menu_access ?? null);
+const menuMap = computed(() => page.props.auth?.menu_map ?? {});
 const assistantEnabled = computed(() => {
     if (!page.props.assistant?.enabled) return false;
     return can('assistant.use');
@@ -95,6 +97,29 @@ function permissionForHref(href) {
     return null;
 }
 
+function menuKeyForHref(href) {
+    if (!href) return null;
+    const map = menuMap.value || {};
+    const path = href.split('?')[0];
+    if (map[path] !== undefined) return map[path];
+    const keys = Object.keys(map).sort((a, b) => b.length - a.length);
+    for (const prefix of keys) {
+        if (path.length > prefix.length && path.startsWith(prefix)) {
+            const next = path.charAt(prefix.length);
+            if (next === '/') return map[prefix];
+        }
+    }
+    return null;
+}
+
+function menuAllowed(href) {
+    const access = menuAccess.value;
+    if (!Array.isArray(access)) return true; // null / not restricted
+    const key = menuKeyForHref(href);
+    if (!key) return true; // menus outside the catalog keep their default behavior
+    return access.includes(key);
+}
+
 function filterNavItems(items) {
     if (!Array.isArray(items)) return [];
     return items
@@ -107,6 +132,7 @@ function filterNavItems(items) {
             if (item.href) {
                 const need = permissionForHref(item.href);
                 if (need && !can(need)) return null;
+                if (!menuAllowed(item.href)) return null;
             }
             return item;
         })

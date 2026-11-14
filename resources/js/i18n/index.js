@@ -4216,6 +4216,32 @@ const en = {
     'Arus kas dari aktivitas pendanaan': 'Cash flows from financing activities',
     ':count angsuran lewat jatuh tempo': ':count overdue installments',
     'Semua sumber': 'All sources',
+
+    // ===== Tenant menu access (pusat) =====
+    'Hak Akses Menu': 'Menu Access',
+    'Atur menu yang boleh dibuka tiap role tenant. Role yang belum dibatasi mengikuti izin modul seperti biasa.':
+        'Choose which menus each tenant role may open. Roles without a restriction keep following module permissions as before.',
+    'Akses Menu': 'Menu Access',
+    'Akses penuh (terkunci)': 'Full access (locked)',
+    'Semua menu (default)': 'All menus (default)',
+    'Tidak dapat diubah': 'Cannot be changed',
+    'Atur Menu': 'Configure Menus',
+    'Belum ada role pada tenant ini.': 'This tenant has no roles yet.',
+    'Hak akses menu hanya mempersempit tampilan dan akses halaman. Role tetap harus memiliki izin modul terkait (contoh: Laporan Keuangan butuh izin "Lihat Laporan Keuangan").':
+        'Menu access only narrows what is shown and reachable. Roles still need the related module permission (for example, Financial Reports require "View Financial Reports").',
+    'Role Administrator Terkunci': 'Administrator Role Locked',
+    'Role Administrator selalu memiliki akses penuh ke seluruh menu dan tidak dapat dibatasi.':
+        'The Administrator role always has full access to every menu and cannot be restricted.',
+    'Mode Akses Menu': 'Menu Access Mode',
+    'Batasi menu untuk role ini': 'Restrict menus for this role',
+    'Jika dimatikan, role mengikuti izin modul seperti biasa. Jika dinyalakan, hanya menu yang dicentang yang tampil dan bisa dibuka.':
+        'When off, the role follows module permissions as before. When on, only checked menus are shown and reachable.',
+    'Daftar Menu': 'Menu List',
+    'menu dipilih': 'menus selected',
+    'Pilih Grup Ini': 'Select This Group',
+    'Role ini masih memakai semua menu. Nyalakan "Batasi menu untuk role ini" untuk memilih menu yang boleh diakses.':
+        'This role still uses every menu. Turn on "Restrict menus for this role" to choose the allowed menus.',
+    'Simpan Hak Akses Menu': 'Save Menu Access',
 };
 
 const state = reactive({

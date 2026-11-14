@@ -17,6 +17,10 @@ const props = defineProps({ unitName: { type: String, default: null } });
 
 const page = usePage();
 const user = computed(() => page.props.auth?.user);
+const permissions = computed(() => page.props.auth?.permissions ?? []);
+const navMap = computed(() => page.props.auth?.nav_map ?? {});
+const menuAccess = computed(() => page.props.auth?.menu_access ?? null);
+const menuMap = computed(() => page.props.auth?.menu_map ?? {});
 const appName = computed(() => page.props.appName || t('siupk Next'));
 const logoPath = computed(() => page.props.logoPath ?? null);
 const currentPath = computed(() => page.url.split('?')[0]);
@@ -41,6 +45,69 @@ watch(sidebarCollapsed, (v) => {
 function navLabel(label) {
     if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : t('Beranda');
     return t(label);
+}
+
+function can(permission) {
+    if (!permission) return true;
+    const perms = permissions.value;
+    if (!Array.isArray(perms) || perms.length === 0) return true; // legacy unrestricted / not loaded
+    if (perms.includes('*')) return true;
+    return perms.includes(permission);
+}
+
+function permissionForHref(href) {
+    if (!href) return null;
+    const map = navMap.value || {};
+    const keys = Object.keys(map).sort((a, b) => b.length - a.length);
+    if (map[href] !== undefined) return map[href];
+    for (const prefix of keys) {
+        if (href.length > prefix.length && href.startsWith(prefix)) {
+            const next = href.charAt(prefix.length);
+            if (next === '/' || next === '?' || next === '#') return map[prefix];
+        }
+    }
+    return null;
+}
+
+function menuKeyForHref(href) {
+    if (!href) return null;
+    const map = menuMap.value || {};
+    const path = href.split('?')[0];
+    if (map[path] !== undefined) return map[path];
+    const keys = Object.keys(map).sort((a, b) => b.length - a.length);
+    for (const prefix of keys) {
+        if (path.length > prefix.length && path.startsWith(prefix)) {
+            if (path.charAt(prefix.length) === '/') return map[prefix];
+        }
+    }
+    return null;
+}
+
+function menuAllowed(href) {
+    const access = menuAccess.value;
+    if (!Array.isArray(access)) return true;
+    const key = menuKeyForHref(href);
+    if (!key) return true;
+    return access.includes(key);
+}
+
+function filterNavItems(items) {
+    if (!Array.isArray(items)) return [];
+    return items
+        .map((item) => {
+            if (item.children) {
+                const children = filterNavItems(item.children);
+                if (!children.length) return null;
+                return { ...item, children };
+            }
+            if (item.href) {
+                const need = permissionForHref(item.href);
+                if (need && !can(need)) return null;
+                if (!menuAllowed(item.href)) return null;
+            }
+            return item;
+        })
+        .filter(Boolean);
 }
 
 const sections = [
@@ -78,6 +145,16 @@ const sections = [
         ],
     },
 ];
+
+const visibleSections = computed(() =>
+    sections
+        .map((section) => {
+            const items = filterNavItems(section.items);
+            if (!items.length) return null;
+            return { ...section, items };
+        })
+        .filter(Boolean),
+);
 
 function isActive(item) {
     if (!item.href) return false;
@@ -181,7 +258,7 @@ function logout() {
             </div>
 
             <nav class="scrollbar-hidden flex-1 space-y-5 overflow-y-auto px-2" :aria-label="t('Navigasi admin tenant')">
-                <section v-for="section in sections" :key="section.label">
+                <section v-for="section in visibleSections" :key="section.label">
                     <h2 class="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && 'lg:hidden'">
                         {{ navLabel(section.label) }}
                     </h2>

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\BlockOfflineMutations;
+use App\Http\Middleware\EnsureMenuAccess;
 use App\Http\Middleware\EnsurePermission;
 use App\Http\Middleware\EnsureProvinceSupervisor;
 use App\Http\Middleware\EnsureRegencySupervisor;
@@ -83,6 +84,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'subscription.active' => EnsureSubscriptionActive::class,
             'savings.enabled' => EnsureSavingsModule::class,
             'permission' => EnsurePermission::class,
+            'menu.access' => EnsureMenuAccess::class,
             'orchestrator.signature' => VerifyOrchestratorSignature::class,
             'assistant.signature' => VerifyOrchestratorSignature::class,
             'assistant.actor' => ResolveAssistantActor::class,

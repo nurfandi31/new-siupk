@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Domain\Access\Services\MenuAccess;
 use App\Domain\Access\Services\PermissionChecker;
 use App\Domain\Membership\Models\OrganizationProfile;
 use App\Domain\Savings\Services\SavingsModuleManager;
+use App\Models\User;
 use App\Services\OfflineAccessService;
 use App\Tenancy\TenantContext;
 use Enpii\Assistant\Services\Tools\ToolRegistry;
@@ -86,6 +88,8 @@ final class HandleInertiaRequests extends Middleware
                 ) : null,
                 'permissions' => $this->resolvePermissions($request),
                 'nav_map' => config('permissions.nav_map', []),
+                'menu_access' => $this->resolveMenuAccess($user),
+                'menu_map' => app(MenuAccess::class)->pathMap(),
                 'impersonated_by' => $request->session()?->get('impersonated_by'),
                 'impersonator_name' => $request->session()?->get('impersonator_name'),
             ],
@@ -140,6 +144,22 @@ final class HandleInertiaRequests extends Middleware
             return app(PermissionChecker::class)->listFor($user);
         } catch (Throwable) {
             return [];
+        }
+    }
+
+    /**
+     * @return list<string>|null null = unrestricted
+     */
+    private function resolveMenuAccess(?User $user): ?array
+    {
+        if ($user === null) {
+            return null;
+        }
+
+        try {
+            return app(MenuAccess::class)->forUser($user);
+        } catch (Throwable) {
+            return null;
         }
     }
 

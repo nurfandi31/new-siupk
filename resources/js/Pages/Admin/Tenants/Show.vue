@@ -266,6 +266,7 @@ async function autoLogin(domain = null, userId = null) {
                         >{{ t('Login Tenant') }}</AppButton>
                         <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="edit" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/edit`)">{{ t('Edit') }}</AppButton>
                         <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="group" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/users`)">{{ t('Users') }}</AppButton>
+                        <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="admin_panel_settings" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/menus`)">{{ t('Hak Akses Menu') }}</AppButton>
                         <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="account_balance_wallet" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/onboarding/import`)">{{ t('Onboarding') }}</AppButton>
                         <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="cleaning_services" @click="$inertia.visit(`/admin/tenants/${tenant.row_id}/data-purifier`)">{{ t('Data Purifier') }}</AppButton>
                         <AppButton class="min-w-0 flex-1 sm:min-w-[150px]" variant="secondary" icon="receipt_long" @click="$inertia.visit(`/admin/invoices/create?tenant_id=${tenant.row_id}`)">{{ t('Buat Invoice') }}</AppButton>

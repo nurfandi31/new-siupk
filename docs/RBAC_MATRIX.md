@@ -90,6 +90,16 @@ Dashboard · Tenant CRUD · Users/role · Repair · Plans · Invoices/void/pay �
 
 Update packs / keys: `config/permissions.php`.
 
+## G. Hak akses menu tenant (diatur dari pusat)
+
+- Katalog menu: `config/tenant_menus.php` (path → menu key).
+- Disimpan per tenant di kolom `roles.menu_access` (JSON).
+- `NULL` = tidak dibatasi (mengikuti permission modul). `admin` selalu penuh.
+- Halaman pengaturan: `/admin/tenants/{tenant}/menus` (superadmin).
+- Sidebar difilter lewat `auth.menu_access` + `auth.menu_map` pada `AuthenticatedLayout` dan `TenantAdminLayout`.
+- Backend: middleware `menu.access` memblokir GET/HEAD ke path menu yang tidak diizinkan.
+- Sifatnya hanya **mempersempit**; izin modul tetap wajib agar halaman bisa dibuka.
+
 
 ## F. Peran Pengawasan Wilayah & Operator Desa (System Roles)
 

@@ -3,6 +3,23 @@
 Semua perubahan penting pada proyek **siupk Next** didokumentasikan dalam berkas ini.
 Format penulisan mengikuti panduan [Keep a Changelog](https://keepachangelog.com/id/1.0.0/).
 
+## [Unreleased] — Hak Akses Menu Tenant dari Panel Pusat
+
+### Added
+- **Halaman `/admin/tenants/{tenant}/menus`** — superadmin dapat membatasi daftar menu yang boleh dibuka tiap role tenant (mis. role `bendahara` hanya melihat menu Keuangan & Laporan). Role yang belum dibatasi tetap mengikuti izin modul seperti sebelumnya.
+- **Katalog menu tenant** `config/tenant_menus.php` — daftar menu beserta path dan key, dipakai bersama oleh halaman pusat, sidebar, dan middleware.
+- **Kolom `roles.menu_access`** (JSON, nullable) pada database shard — `NULL` berarti tidak dibatasi; array berarti allowlist menu.
+- **`App\Domain\Access\Services\MenuAccess`** — resolusi menu per user, pencocokan path terpanjang, dan penggabungan beberapa role.
+- **Middleware `menu.access`** — memblokir akses langsung (GET/HEAD) ke halaman menu yang tidak diizinkan, bukan sekadar menyembunyikan tautan.
+- **Filter sidebar** di `AuthenticatedLayout.vue` dan `TenantAdminLayout.vue` memakai `auth.menu_access` + `auth.menu_map`.
+- **Tombol "Hak Akses Menu"** pada detail tenant menuju halaman pengaturan.
+- **Test** `tests/Unit/Access/MenuAccessTest.php` dan `tests/Feature/Admin/TenantMenuAccessTest.php`.
+
+### Catatan
+- Role `admin` selalu memiliki akses penuh dan tidak dapat dibatasi.
+- Membatasi menu hanya **mempersempit**; role tetap membutuhkan izin modul terkait untuk membuka halaman.
+- Status enforcement lain (termasuk route `/access/*` yang belum memakai middleware permission) tetap seperti sebelumnya; lihat `docs/RBAC_MATRIX.md`.
+
 ## [Unreleased] — Dukungan Dua Bahasa UI (Indonesia / English)
 
 ### Added
