@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\MasterData;
 
+use App\Models\Tenant\OrganizationUnit;
 use App\Tenancy\TenantContext;
 use Illuminate\Validation\Rule;
 
@@ -18,7 +19,7 @@ final class OtherInstitutionRequest extends OrganizationUnitRequest
             'parent_row_id' => [
                 'required',
                 'integer',
-                Rule::exists('organization_units', 'row_id')
+                Rule::exists(OrganizationUnit::class, 'row_id')
                     ->where(fn ($query) => $query->where('tenant_id', $tenantId)->where('type', 'village')->where('is_active', true)),
             ],
             'name' => ['required', 'string', 'max:180'],
@@ -28,7 +29,7 @@ final class OtherInstitutionRequest extends OrganizationUnitRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('organization_units', 'institution_identity_number')
+                Rule::unique(OrganizationUnit::class, 'institution_identity_number')
                     ->where(fn ($query) => $query->where('tenant_id', $tenantId)->where('type', 'other_institution'))
                     ->ignore($unitId, 'row_id'),
             ],

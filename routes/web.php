@@ -365,9 +365,9 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->name('admin.')->grou
     }
 
     // Backward compatibility aliases
-    Route::get('/integrations', fn () => redirect()->route('payment-gateways.index'))->name('integrations.index');
+    Route::get('/integrations', fn () => redirect()->route('admin.payment-gateways.index'))->name('integrations.index');
     Route::get('/integrations/orchestrator', fn () => redirect()->route(
-        class_exists(ToolRegistry::class) ? 'ai-assistant.index' : 'payment-gateways.index',
+        class_exists(ToolRegistry::class) ? 'ai-assistant.index' : 'admin.payment-gateways.index',
     ));
     Route::post('/integrations/active-gateway', [PaymentGatewayController::class, 'updateActiveGateway'])->name('integrations.active-gateway');
     Route::post('/integrations/tripay', [PaymentGatewayController::class, 'updateTripay'])->name('integrations.tripay');
