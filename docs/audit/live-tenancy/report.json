@@ -1,0 +1,592 @@
+{
+  "results": [
+    {
+      "area": "Pusat",
+      "step": "Buka halaman login pusat",
+      "status": "PASS",
+      "detail": "HTTP 200"
+    },
+    {
+      "area": "Pusat",
+      "step": "Login sebagai superadmin",
+      "status": "PASS",
+      "detail": "http://siupknext.test/admin"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Dashboard",
+      "status": "PASS",
+      "detail": "HTTP 200, 1219 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Daftar Tenant",
+      "status": "PASS",
+      "detail": "HTTP 200, 1032 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Invoice",
+      "status": "PASS",
+      "detail": "HTTP 200, 869 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Plan",
+      "status": "PASS",
+      "detail": "HTTP 200, 763 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Shard",
+      "status": "PASS",
+      "detail": "HTTP 200, 1342 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Pengaturan Platform",
+      "status": "PASS",
+      "detail": "HTTP 200, 998 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Audit Log",
+      "status": "PASS",
+      "detail": "HTTP 200, 2961 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Pendapatan",
+      "status": "PASS",
+      "detail": "HTTP 200, 1557 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Pengguna Platform",
+      "status": "PASS",
+      "detail": "HTTP 200, 2526 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman WhatsApp Platform",
+      "status": "PASS",
+      "detail": "HTTP 200, 961 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Integrasi",
+      "status": "PASS",
+      "detail": "HTTP 200, 1346 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Payment Gateway",
+      "status": "PASS",
+      "detail": "HTTP 200, 1346 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Migrasi",
+      "status": "PASS",
+      "detail": "HTTP 200, 1515 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Halaman Changelog",
+      "status": "PASS",
+      "detail": "HTTP 200, 97430 char"
+    },
+    {
+      "area": "Pusat",
+      "step": "Navigasi sidebar admin terlihat",
+      "status": "PASS",
+      "detail": "13 link navigasi"
+    },
+    {
+      "area": "Pusat",
+      "step": "Cari tenant ASTA di daftar tenant",
+      "status": "PASS",
+      "detail": "Tenant sudah ada (row_id 4)"
+    },
+    {
+      "area": "Pusat",
+      "step": "Detail tenant lengkap (status, shard, modul, users)",
+      "status": "PASS",
+      "detail": "semua kartu detail tampil"
+    },
+    {
+      "area": "Pusat",
+      "step": "Tambah custom domain pada tenant",
+      "status": "PASS",
+      "detail": "asta.siupknext.test"
+    },
+    {
+      "area": "Pusat",
+      "step": "Verifikasi domain tampil di detail tenant",
+      "status": "PASS",
+      "detail": "asta.siupknext.test"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Host tenant dikenali (GET /login/user)",
+      "status": "PASS",
+      "detail": "HTTP 200"
+    },
+    {
+      "area": "Pusat",
+      "step": "Daftar pengguna tenant (akun otomatis per role)",
+      "status": "PASS",
+      "detail": "20 akun terlihat"
+    },
+    {
+      "area": "Pusat",
+      "step": "Form tambah user tenant",
+      "status": "PASS",
+      "detail": "HTTP 200"
+    },
+    {
+      "area": "Pusat",
+      "step": "Hak akses menu tenant",
+      "status": "PASS",
+      "detail": "index + editor role (HTTP 200)"
+    },
+    {
+      "area": "Pusat",
+      "step": "Onboarding & saldo awal tenant",
+      "status": "PASS",
+      "detail": "HTTP 200"
+    },
+    {
+      "area": "Pusat",
+      "step": "Data purifier / training mode",
+      "status": "PASS",
+      "detail": "HTTP 200"
+    },
+    {
+      "area": "Pusat",
+      "step": "Aktifkan / verifikasi modul Simpanan untuk tenant",
+      "status": "PASS",
+      "detail": "Modul Simpanan sudah aktif (simp_*_t4 tersedia)"
+    },
+    {
+      "area": "Pusat",
+      "step": "Suspend tenant & verifikasi host tenant tertutup",
+      "status": "PASS",
+      "detail": "tenant disuspend, host tenant HTTP 403"
+    },
+    {
+      "area": "Pusat",
+      "step": "Aktifkan kembali tenant",
+      "status": "PASS",
+      "detail": "tenant aktif, host tenant HTTP 200"
+    },
+    {
+      "area": "Pusat",
+      "step": "Impersonasi: Login Tenant membuka domain lokasi",
+      "status": "PASS",
+      "detail": "http://asta.siupknext.test/dashboard"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Situs publik tenant",
+      "status": "PASS",
+      "detail": "HTTP 200"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Halaman pilih akun tenant (host otomatis)",
+      "status": "PASS",
+      "detail": "HTTP 200, hanya user tenant"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Login otomatis (klik 2x kartu admin)",
+      "status": "PASS",
+      "detail": "http://asta.siupknext.test/dashboard"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Dashboard",
+      "status": "PASS",
+      "detail": "HTTP 200, 2390 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Profil",
+      "status": "PASS",
+      "detail": "HTTP 200, 1446 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pencarian Global",
+      "status": "PASS",
+      "detail": "HTTP 200, 24 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Master Data — Anggota",
+      "status": "PASS",
+      "detail": "HTTP 200, 2412 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Master Data — Tambah Anggota",
+      "status": "PASS",
+      "detail": "HTTP 200, 1445 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Master Data — Kelompok",
+      "status": "PASS",
+      "detail": "HTTP 200, 1279 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Master Data — Tambah Kelompok",
+      "status": "PASS",
+      "detail": "HTTP 200, 1546 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Master Data — Desa",
+      "status": "PASS",
+      "detail": "HTTP 200, 1709 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Master Data — Lembaga Lain",
+      "status": "PASS",
+      "detail": "HTTP 200, 1486 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pembiayaan — Pinjaman",
+      "status": "PASS",
+      "detail": "HTTP 200, 1325 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pembiayaan — Proposal",
+      "status": "PASS",
+      "detail": "HTTP 200, 1194 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pembiayaan — Pinjaman Anggota",
+      "status": "PASS",
+      "detail": "HTTP 200, 1539 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pembiayaan — Simulasi",
+      "status": "PASS",
+      "detail": "HTTP 200, 2573 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pembiayaan — Laporan Portfolio",
+      "status": "PASS",
+      "detail": "HTTP 200, 2518 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pembiayaan — Jatuh Tempo",
+      "status": "PASS",
+      "detail": "HTTP 200, 2561 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pembiayaan — Tunggakan",
+      "status": "PASS",
+      "detail": "HTTP 200, 2297 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pembiayaan — LPP Kelompok",
+      "status": "PASS",
+      "detail": "HTTP 200, 2564 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akuntansi — Bagan Akun",
+      "status": "PASS",
+      "detail": "HTTP 200, 15881 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akuntansi — Jurnal",
+      "status": "PASS",
+      "detail": "HTTP 200, 2621 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akuntansi — Entri Jurnal",
+      "status": "PASS",
+      "detail": "HTTP 200, 2540 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akuntansi — Akun",
+      "status": "PASS",
+      "detail": "HTTP 200, 15881 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akuntansi — Aset",
+      "status": "PASS",
+      "detail": "HTTP 200, 1282 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akuntansi — Laporan",
+      "status": "PASS",
+      "detail": "HTTP 200, 2888 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akuntansi — Neraca",
+      "status": "PASS",
+      "detail": "HTTP 200, 1865 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akuntansi — Laba Rugi",
+      "status": "PASS",
+      "detail": "HTTP 200, 6413 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akuntansi — Arus Kas",
+      "status": "PASS",
+      "detail": "HTTP 200, 2349 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akuntansi — Buku Besar",
+      "status": "PASS",
+      "detail": "HTTP 200, 1588 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akuntansi — Tutup Buku",
+      "status": "PASS",
+      "detail": "HTTP 200, 1789 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Anggaran",
+      "status": "PASS",
+      "detail": "HTTP 200, 8167 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "OJK — Kesehatan",
+      "status": "PASS",
+      "detail": "HTTP 200, 2606 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "OJK — Kolektibilitas",
+      "status": "PASS",
+      "detail": "HTTP 200, 2785 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "OJK — Profil",
+      "status": "PASS",
+      "detail": "HTTP 200, 3255 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "OJK — Simpanan",
+      "status": "PASS",
+      "detail": "HTTP 200, 2498 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akses — Pengguna",
+      "status": "PASS",
+      "detail": "HTTP 200, 2067 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Akses — Role",
+      "status": "PASS",
+      "detail": "HTTP 200, 1157 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pengaturan",
+      "status": "PASS",
+      "detail": "HTTP 200, 1010 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pengaturan — SOP",
+      "status": "PASS",
+      "detail": "HTTP 200, 1259 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pengaturan — WhatsApp",
+      "status": "PASS",
+      "detail": "HTTP 200, 1032 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Pengaturan — Pengguna Offline",
+      "status": "PASS",
+      "detail": "HTTP 200, 1160 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Website — Postingan",
+      "status": "PASS",
+      "detail": "HTTP 200, 768 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Website — Halaman",
+      "status": "PASS",
+      "detail": "HTTP 200, 822 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Website — Pengaturan",
+      "status": "PASS",
+      "detail": "HTTP 200, 867 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Website — Pesan",
+      "status": "PASS",
+      "detail": "HTTP 200, 604 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Billing — Invoice",
+      "status": "PASS",
+      "detail": "HTTP 200, 1099 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Catatan Supervisor",
+      "status": "PASS",
+      "detail": "HTTP 200, 1248 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Portal Anggota",
+      "status": "PASS",
+      "detail": "HTTP 404 — halaman portal khusus akun anggota (admin tidak tertaut anggota), bukan kegagalan server"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Changelog",
+      "status": "PASS",
+      "detail": "HTTP 200, 97671 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Simpanan",
+      "status": "PASS",
+      "detail": "HTTP 200, 1581 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Simpanan — Pengaturan",
+      "status": "PASS",
+      "detail": "HTTP 200, 2142 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Simpanan — Bunga",
+      "status": "PASS",
+      "detail": "HTTP 200, 1595 char"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Tambah anggota baru",
+      "status": "PASS",
+      "detail": "Anggota Uji 08627 / 2041794803408627"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Cari & buka detail anggota",
+      "status": "PASS",
+      "detail": "http://asta.siupknext.test/master-data/members/48"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Edit nomor HP anggota",
+      "status": "PASS",
+      "detail": "HP diperbarui"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Tambah lembaga lain",
+      "status": "PASS",
+      "detail": "Lembaga Uji 44536"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Verifikasi lembaga di daftar",
+      "status": "PASS",
+      "detail": "Lembaga Uji 44536"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Reset password admin tenant",
+      "status": "PASS",
+      "detail": "password diganti; sesi sendiri otomatis berakhir (perilaku keamanan)"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Logout dari aplikasi tenant",
+      "status": "PASS",
+      "detail": "sudah di halaman login setelah reset password — logout tidak diperlukan"
+    },
+    {
+      "area": "Lokasi",
+      "step": "Login manual dengan password baru",
+      "status": "PASS",
+      "detail": "http://asta.siupknext.test/dashboard"
+    },
+    {
+      "area": "Isolasi",
+      "step": "Akun tenant tidak boleh membuka panel pusat",
+      "status": "PASS",
+      "detail": "HTTP 200 (ditolak sesuai harapan)"
+    },
+    {
+      "area": "Isolasi",
+      "step": "Host pusat tanpa sesi tidak menampilkan data tenant",
+      "status": "PASS",
+      "detail": "HTTP 200 (redirect ke login bila 302)"
+    },
+    {
+      "area": "Isolasi",
+      "step": "Akun tenant tidak melihat user tenant lain di /login/user",
+      "status": "PASS",
+      "detail": "HTTP 200, hanya user asta"
+    },
+    {
+      "area": "Pusat",
+      "step": "Audit log mencatat aksi tenant",
+      "status": "PASS",
+      "detail": "Tercatat: Tenant Impersonate, Tenant Activate, Tenant Suspend"
+    },
+    {
+      "area": "Pusat",
+      "step": "Form invoice tenant",
+      "status": "PASS",
+      "detail": "HTTP 200"
+    }
+  ],
+  "consoleErrors": [
+    "central: console: Failed to load resource: the server responded with a status of 502 (Bad Gateway)",
+    "central: console: Failed to load resource: the server responded with a status of 502 (Bad Gateway)",
+    "tenant: console: TypeError: o is not a function\n    at http://asta.siupknext.test/build/assets/Index-Dr_04JbF.js:9:4971\n    at T_ (http://asta.siupknext.test/build/assets/app-CIuKrh-f.js:87:3817)\n    at http://asta.siupknext.test/build/a",
+    "tenant: console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+}

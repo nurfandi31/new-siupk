@@ -1,0 +1,851 @@
+{
+  "results": [
+    {
+      "area": "Auth",
+      "step": "Login manual admin tenant",
+      "status": "PASS",
+      "detail": "http://asta.siupknext.test/dashboard"
+    },
+    {
+      "area": "Anggota",
+      "step": "Tambah & simpan anggota baru",
+      "status": "PASS",
+      "detail": "Anggota Alur 624024 / 3204480262402483 (row_id 46)"
+    },
+    {
+      "area": "Anggota",
+      "step": "Buka detail & verifikasi NIK",
+      "status": "PASS",
+      "detail": "http://asta.siupknext.test/master-data/members/46"
+    },
+    {
+      "area": "Anggota",
+      "step": "Edit nomor HP & simpan",
+      "status": "PASS",
+      "detail": "HP diperbarui menjadi 081298765432"
+    },
+    {
+      "area": "Anggota",
+      "step": "Hapus anggota (konfirmasi dialog)",
+      "status": "PASS",
+      "detail": "anggota hilang dari daftar"
+    },
+    {
+      "area": "Pinjaman",
+      "step": "Siapkan anggota peminjam",
+      "status": "PASS",
+      "detail": "Anggota Angsuran 678842 (row_id 47)"
+    },
+    {
+      "area": "Pinjaman",
+      "step": "Buat proposal pinjaman individu",
+      "status": "PASS",
+      "detail": "loan row_id 49"
+    },
+    {
+      "area": "Pinjaman",
+      "step": "Verifikasi proposal",
+      "status": "PASS",
+      "detail": "HTTP 303"
+    },
+    {
+      "area": "Pinjaman",
+      "step": "Tetapkan alokasi",
+      "status": "PASS",
+      "detail": "HTTP 303"
+    },
+    {
+      "area": "Pinjaman",
+      "step": "Catat pencairan & bentuk jadwal angsuran",
+      "status": "PASS",
+      "detail": "HTTP 303"
+    },
+    {
+      "area": "Pinjaman",
+      "step": "Verifikasi status aktif & jadwal angsuran",
+      "status": "PASS",
+      "detail": "4 baris jadwal; angsuran pertama pokok 48.000, jasa 72.000, jatuh tempo 2026-11-16"
+    },
+    {
+      "area": "Angsuran",
+      "step": "Posting pembayaran angsuran pertama",
+      "status": "PASS",
+      "detail": "HTTP 302"
+    },
+    {
+      "area": "Angsuran",
+      "step": "Verifikasi angsuran tercatat di detail pinjaman",
+      "status": "PASS",
+      "detail": "1/4\n\nANGSURAN"
+    },
+    {
+      "area": "Laporan",
+      "step": "Portfolio (/lending/reports/portfolio)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2518 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Jatuh Tempo (/lending/reports/due-today)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2561 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Tunggakan (/lending/reports/overdue)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2297 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Pinjaman Lunas (/lending/reports/paid)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2028 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Proposal (/lending/reports/proposals)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2156 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Verifikasi (/lending/reports/verifications)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1887 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Waiting List (/lending/reports/waiting-list)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1900 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Penghapusan (/lending/reports/write-offs)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2176 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Penghapusan Individu (/lending/reports/write-offs-individu)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2187 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Near Settlement (/lending/reports/near-settlement)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2739 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Jadwal vs Aktual (/lending/reports/schedule-vs-actual)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1881 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Jadwal vs Aktual Individu (/lending/reports/schedule-vs-actual-individu)",
+      "status": "PASS",
+      "detail": "HTTP 200, 4342 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Kolek Desa (/lending/reports/kolek-desa)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2041 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Kolek Individu (/lending/reports/kolek-individu)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2654 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Kolek Kelompok (/lending/reports/kolek-kelompok)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1837 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Kolek Desa Individu (/lending/reports/kolek-desa-individu)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2034 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "LPP Desa (/lending/reports/lpp-desa)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2034 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "LPP Individu (/lending/reports/lpp-individu)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2717 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "LPP Kelompok (/lending/reports/lpp-kelompok)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2564 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "LPP Desa Individu (/lending/reports/lpp-desa-individu)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2032 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Cadangan Penghapusan (/lending/reports/cadangan-penghapusan)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1876 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Cadangan Penghapusan Individu (/lending/reports/cadangan-penghapusan-individu)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1863 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Anggota Aktif (/lending/reports/members/active)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2537 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Kelompok Aktif (/lending/reports/groups/active)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1911 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Pemanfaat Aktif (/lending/reports/beneficiaries/active)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1766 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Neraca (/accounting/reports/balance-sheet)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1865 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Laba Rugi (/accounting/reports/income-statement)",
+      "status": "PASS",
+      "detail": "HTTP 200, 6413 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Arus Kas (/accounting/reports/cash-flow)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2349 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Buku Besar (/accounting/reports/general-ledger)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1588 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Neraca Saldo (/accounting/reports/trial-balance)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2008 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Perubahan Ekuitas (/accounting/reports/equity-change)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1977 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Jurnal (/accounting/reports/journals)",
+      "status": "PASS",
+      "detail": "HTTP 200, 3676 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Anggaran (/accounting/reports/budgeting)",
+      "status": "PASS",
+      "detail": "HTTP 200, 7869 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Kesehatan Keuangan (/accounting/reports/financial-health)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2205 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "CALK (/accounting/reports/calk)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2166 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Simpanan (/accounting/reports/simpanan)",
+      "status": "PASS",
+      "detail": "HTTP 200, 1823 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Kesehatan (/regulatory/ojk/health)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2606 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Kolektibilitas (/regulatory/ojk/collectibility)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2785 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Kolektibilitas v2 (/regulatory/ojk/collectibility-v2)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2443 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Profil (/regulatory/ojk/profile)",
+      "status": "PASS",
+      "detail": "HTTP 200, 3255 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Simpanan (/regulatory/ojk/savings)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2498 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Pinjaman Aktif (/regulatory/ojk/active-loans)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2748 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Penyisihan (/regulatory/ojk/allowance)",
+      "status": "PASS",
+      "detail": "HTTP 200, 3080 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Neraca (/regulatory/ojk/balance-sheet)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2525 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Cover (/regulatory/ojk/cover)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2225 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Laba Rugi (/regulatory/ojk/income-statement)",
+      "status": "PASS",
+      "detail": "HTTP 200, 6891 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Jasa Simpanan (/regulatory/ojk/interest)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2502 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Pinjaman Diterima (/regulatory/ojk/loans-received)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2163 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Pinjaman Lunas Kelompok (/regulatory/ojk/paid-group)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2221 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Pinjaman Lunas Individu (/regulatory/ojk/paid-individu)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2221 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "OJK Piutang Simpanan (/regulatory/ojk/savings-receivables)",
+      "status": "PASS",
+      "detail": "HTTP 200, 2448 char"
+    },
+    {
+      "area": "Laporan",
+      "step": "Aset Tetap & Aset Tidak Berwujud",
+      "status": "INFO",
+      "detail": "Tidak ada halaman UI; hanya tersedia ekspor PDF/Excel (divalidasi di matriks ekspor)"
+    },
+    {
+      "area": "Ekspor UI",
+      "step": "Tombol PDF & Excel — Jatuh Tempo",
+      "status": "PASS",
+      "detail": "PDF 3271 byte (/lending/reports/due-today/pdf?as_of=2026-11-16); Excel 3122 byte (/lending/reports/due-today/excel?as_of=2026-11-16)"
+    },
+    {
+      "area": "Ekspor UI",
+      "step": "Tombol PDF & Excel — Tunggakan",
+      "status": "PASS",
+      "detail": "PDF 2709 byte (/lending/reports/overdue/pdf?as_of=2026-11-16); Excel 2858 byte (/lending/reports/overdue/excel?as_of=2026-11-16)"
+    },
+    {
+      "area": "Ekspor UI",
+      "step": "Tombol PDF & Excel — Neraca",
+      "status": "PASS",
+      "detail": "PDF 2214 byte (/accounting/reports/balance-sheet/pdf?year=2026&month=11); Excel 2610 byte (/accounting/reports/balance-sheet/excel?year=2026&month=11)"
+    },
+    {
+      "area": "Ekspor UI",
+      "step": "Tombol PDF & Excel — Laba Rugi",
+      "status": "PASS",
+      "detail": "PDF 7717 byte (/accounting/reports/income-statement/pdf?year=2026&month=11); Excel 2639 byte (/accounting/reports/income-statement/excel?year=2026&month=11)"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-portfolio .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3659 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-due-today .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3271 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-due-today .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 3122 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-overdue .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2709 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-overdue .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2858 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-paid .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2767 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-proposals .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3124 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-proposals .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 3082 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-verifications .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2632 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-verifications .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2870 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-waiting-list .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2742 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-waiting-list .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2874 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-write-offs .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2840 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-write-offs .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2840 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-write-offs-individu .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2907 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-write-offs-individu .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2837 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-near-settlement .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3940 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-schedule-vs-actual .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2458 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-schedule-vs-actual-individu .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 10082 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-schedule-vs-actual-individu .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 3738 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-kolek-desa .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2926 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-kolek-individu .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 4941 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-kolek-kelompok .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 1450 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-kolek-desa-individu .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2925 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-lpp-desa .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3674 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-lpp-individu .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 6274 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-lpp-kelompok .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 6202 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-lpp-desa-individu .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3457 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-cadangan .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2950 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-cadangan-individu .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2954 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-members-active .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 4659 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-groups-active .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2656 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "lending-beneficiaries-active .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 1892 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-balance-sheet .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2214 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-balance-sheet .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2610 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-income-statement .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 7717 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-income-statement .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2639 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-cash-flow .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2424 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-cash-flow .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2662 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-general-ledger .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3236 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-general-ledger .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2930 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-trial-balance .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3183 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-trial-balance .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2870 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-equity-change .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2097 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-equity-change .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2547 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-journals .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 4567 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-journals .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2618 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-budgeting .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 13727 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-budgeting .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 6822 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-financial-health .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 4449 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-calk .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3076 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-simpanan .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 1755 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-simpanan .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2801 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-assets-fixed .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 1449 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-assets-fixed .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2824 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-assets-intangible .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 1449 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "accounting-assets-intangible .excel",
+      "status": "PASS",
+      "detail": "HTTP 200, 2836 byte, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-health .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 6170 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-collectibility .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 7275 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-collectibility-v2 .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 7579 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-profile .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 5288 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-savings .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 1978 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-active-loans .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 4473 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-allowance .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 5953 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-balance-sheet .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3196 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-cover .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2013 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-income-statement .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 8226 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-interest .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 2844 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-loans-received .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3305 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-paid-group .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3099 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-paid-individu .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3128 byte, application/pdf"
+    },
+    {
+      "area": "Matriks Ekspor",
+      "step": "ojk-savings-receivables .pdf",
+      "status": "PASS",
+      "detail": "HTTP 200, 3024 byte, application/pdf"
+    }
+  ],
+  "consoleErrors": []
+}
