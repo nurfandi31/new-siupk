@@ -74,6 +74,7 @@ final class MigrateLegacyAccountingTest extends TestCase
         self::assertSame(1, $first['inserted_journals']);
         self::assertSame(1, (int) DB::connection('tenant')->table('journal_entries')->count());
         self::assertSame(2, (int) DB::connection('tenant')->table('journal_lines')->count());
+        self::assertSame('2026-01-01', Account::query()->where('code', '1.1.01.01')->sole()->created_at->toDateString());
 
         $entry = DB::connection('tenant')->table('journal_entries')->first();
         self::assertSame(1001, (int) $entry->id);
@@ -97,6 +98,70 @@ final class MigrateLegacyAccountingTest extends TestCase
         self::assertSame(0, $second['inserted_journals']);
         self::assertSame(1, $second['would_skip_journals']);
         self::assertSame(1, (int) DB::connection('tenant')->table('journal_entries')->count());
+    }
+
+    public function test_migrates_old_three_digit_legacy_account_codes(): void
+    {
+        DB::connection('tenant')->table('transaksi_99')->insert([
+            'idt' => 1003,
+            'tgl_transaksi' => '2026-07-12',
+            'rekening_debit' => '221.03',
+            'rekening_kredit' => '413.01',
+            'jumlah' => '24124',
+            'urutan' => 1,
+            'idtp' => 0,
+            'id_pinj' => 0,
+            'id_pinj_i' => 0,
+            'keterangan_transaksi' => 'Admin SU',
+            'relasi' => null,
+            'id_user' => 1,
+            'deleted_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $result = app(AccountingMigrationPipeline::class)->run(
+            suffix: '99',
+            dryRun: false,
+            chunk: 100,
+            fromDate: null,
+            toDate: null,
+            failFast: true,
+            skipOpenings: true,
+            skipJournals: false,
+            skipRecalc: true,
+            skipReconcile: true,
+        );
+
+        self::assertSame('completed', $result['status'], json_encode($result));
+        self::assertSame(2, $result['inserted_journals']);
+
+        $debit = Account::query()->where('code', '2.21.03.01')->sole();
+        self::assertTrue($debit->is_postable);
+        self::assertSame('liability', $debit->account_type);
+        self::assertSame(4, (int) $debit->level);
+        self::assertNotNull($debit->parent_row_id);
+        self::assertSame('2.21.03.00', (string) $debit->parent->code);
+        self::assertSame('2.21.00.00', (string) $debit->parent->parent->code);
+        self::assertSame('2.0.00.00', (string) $debit->parent->parent->parent->code);
+
+        $credit = Account::query()->where('code', '4.13.01.01')->sole();
+        self::assertTrue($credit->is_postable);
+        self::assertSame('revenue', $credit->account_type);
+        self::assertNotNull($credit->parent_row_id);
+        self::assertSame('4.13.01.00', (string) $credit->parent->code);
+
+        $entry = DB::connection('tenant')->table('journal_entries')
+            ->where('legacy_debit_account_code', '221.03')
+            ->where('legacy_credit_account_code', '413.01')
+            ->first(['row_id']);
+        self::assertNotNull($entry);
+
+        $line = DB::connection('tenant')->table('journal_lines')
+            ->where('journal_entry_row_id', (int) $entry->row_id)
+            ->where('line_number', 1)
+            ->first(['account_row_id']);
+        self::assertSame((int) $debit->row_id, (int) $line->account_row_id);
     }
 
     private function pointLegacyAtTenant(): void

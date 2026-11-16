@@ -35,7 +35,8 @@ fiscal periods
   → accounting (transaksi + saldo0)
   → villages (legacy:sync-villages — termasuk desa custom)
   → membership (anggota + kelompok; pipeline juga auto-sync villages)
-  → lending (pinjaman_kelompok + pinjaman_anggota + rencana + real)
+  → lending (pinjaman_kelompok + pinjaman_anggota kelompok/individu + rencana + real)
+  → savings (produk + simpanan_anggota + real_simpanan/mutasi)
   → apply payment → installment progress
   → reconcile lending (§65 + exceptions)
   → sequences (pipeline biasanya sudah bump)
@@ -59,6 +60,10 @@ docker exec new_siupk-app-1 php artisan legacy:cutover-tenant local 1 \
 # Skip step yang sudah hijau
 docker exec new_siupk-app-1 php artisan legacy:cutover-tenant local 1 \
   --skip-fiscal --skip-coa --skip-accounting
+
+# Lewati pinjaman individu / simpanan (mis. tenant tanpa data simpanan)
+docker exec new_siupk-app-1 php artisan legacy:cutover-tenant local 1 \
+  --skip-member-lending --skip-savings
 ```
 
 ## Manual step-by-step (jika orchestrator tidak dipakai)
@@ -84,17 +89,24 @@ php artisan legacy:migrate-accounting TENANT SUFFIX --chunk=500 --no-fail-fast
 php artisan legacy:migrate-membership TENANT SUFFIX --dry-run --chunk=500
 php artisan legacy:migrate-membership TENANT SUFFIX --chunk=500 --no-fail-fast
 
-# 5. Lending
+# 5. Lending (kelompok + individu)
 php artisan legacy:migrate-lending TENANT SUFFIX --dry-run --chunk=500
 php artisan legacy:migrate-lending TENANT SUFFIX --chunk=500 --no-fail-fast
+# Jika sengaja hanya ingin pinjaman kelompok:
+# php artisan legacy:migrate-lending TENANT SUFFIX --chunk=500 \
+#   --skip-member-loans --skip-member-installments --skip-member-payments
 
-# 6. Progress angsuran (jika lending sudah pernah load tanpa apply)
+# 6. Savings (produk + rekening + mutasi)
+php artisan legacy:migrate-savings TENANT SUFFIX --dry-run --chunk=500
+php artisan legacy:migrate-savings TENANT SUFFIX --chunk=500 --no-fail-fast
+
+# 7. Progress angsuran (jika lending sudah pernah load tanpa apply)
 php artisan legacy:apply-loan-payment-progress TENANT
 
-# 7. Recon pinjaman
+# 8. Recon pinjaman
 php artisan legacy:reconcile-lending TENANT SUFFIX
 
-# 8. Sequences (opsional; pipeline biasanya sudah)
+# 9. Sequences (opsional; pipeline biasanya sudah)
 php artisan tenancy:initialize-sequences TENANT
 ```
 
@@ -105,6 +117,9 @@ php artisan tenancy:initialize-sequences TENANT
 - [ ] `anggota_N` active ≈ `members`  
 - [ ] `kelompok_N` ≈ `groups`  
 - [ ] `pinjaman_kelompok_N` = `loans` where `legacy_source=group_loan`  
+- [ ] `pinjaman_anggota_N` (`jenis_pinjaman='I'`) = `loans` where `legacy_source=member_loan`
+- [ ] `simpanan_anggota_N` = `savings_accounts` (nomor rekening duplikat legacy di-dedup)
+- [ ] `real_simpanan_N` (mutasi non-zero) = `savings_transactions`
 - [ ] `transaksi_N` migratable ≈ `journal_entries` source legacy (± exception disetujui)  
 
 ### Accounting
@@ -116,13 +131,24 @@ php artisan tenancy:initialize-sequences TENANT
 ### Lending
 
 - [ ] `legacy:reconcile-lending` → `group_loans` **matched**  
+- [ ] `member_loans` / `member_installments` / `member_payments` **matched**
+- [ ] `member_loan_balance` matched **atau** partial + exception ditinjau
 - [ ] `loan_balance` matched **atau** partial + exception `pending_approval` ditinjau  
 - [ ] Spot 1 pinjaman aktif: sisa pokok = last `saldo_pokok` legacy  
 - [ ] UI detail pinjaman menampilkan **legacy `id`**, bukan hanya `row_id`  
 
+### Savings
+
+- [ ] `legacy:migrate-savings` → `savings_accounts` **matched**
+- [ ] `savings_transactions` **matched**
+- [ ] `savings_balance` **matched** (selisih dilaporkan partial/mismatch)
+- [ ] Spot 1 rekening: saldo akhir = last `sum` legacy
+- [ ] Modul simpanan aktif (`TenantModule` code `savings`)
+
 ### Ops / data kotor (bukan silent fix)
 
 - [ ] Exception missing `nia` (beneficiary)  
+- [ ] Exception orphan parent `pinjaman_anggota.id_pinkel` (beneficiary)
 - [ ] Exception orphan `rencana`  
 - [ ] Pengurus kosong → isi via form “Simpan Pengurus” (sekali, irrevocable)  
 - [ ] Gap jurnal (jika ada) dicatat  
@@ -142,6 +168,7 @@ php artisan tenancy:initialize-sequences TENANT
 | Payments | **matched** 7542 | zero-placeholder skip; negative reversals loaded |
 | loan_balance §65 | **matched** 921/921 | outstanding = `disbursed − Σ realisasi` (ignore dirty last saldo) |
 | Beneficiaries 182 nia orphan | **approve_skip** | `nia` not in `anggota_1` (id range below min anggota) — no invent people |
+| Beneficiaries orphan parent | **approve_skip** | `id_pinkel` not in `pinjaman_kelompok_1` (mostly status `R`) — creating a parent loan would invent financial data |
 | Installments 24 orphan | **approve_skip** | `loan_id` not in `pinjaman_kelompok_1` — deleted parent |
 | Committee 0/921 | ops | free-text legacy; UI “Simpan Pengurus” one-shot |
 | `group_members` tipis | known | only resolvable officers at membership load |
@@ -149,7 +176,6 @@ php artisan tenancy:initialize-sequences TENANT
 ## Out of scope runbook ini
 
 - Multi-suffix production batch (Phase 6)  
-- UI admin migrasi  
 - Hapus / putus legacy DB  
 - Holding server terpisah  
 

@@ -29,6 +29,8 @@ final class CutoverTenant extends Command
         {--skip-accounting : Skip legacy:migrate-accounting}
         {--skip-membership : Skip legacy:migrate-membership}
         {--skip-lending : Skip legacy:migrate-lending}
+        {--skip-member-lending : Skip individual loans inside legacy:migrate-lending}
+        {--skip-savings : Skip legacy:migrate-savings}
         {--skip-payment-progress : Skip legacy:apply-loan-payment-progress}
         {--skip-reconcile : Skip legacy:reconcile-lending}
         {--skip-sequences : Skip tenancy:initialize-sequences}
@@ -175,6 +177,21 @@ final class CutoverTenant extends Command
         if ($toYear > 0) {
             $accountingFlags['--to-date'] = sprintf('%04d-12-31', $toYear);
         }
+        if ((bool) $this->option('skip-reconcile')) {
+            $accountingFlags['--skip-reconcile'] = true;
+        }
+
+        $lendingFlags = $commonFlags;
+        if ((bool) $this->option('skip-member-lending')) {
+            $lendingFlags['--skip-member-loans'] = true;
+            $lendingFlags['--skip-member-installments'] = true;
+            $lendingFlags['--skip-member-payments'] = true;
+        }
+
+        $savingsFlags = $commonFlags;
+        if ((bool) $this->option('skip-reconcile')) {
+            $savingsFlags['--skip-reconcile'] = true;
+        }
 
         return [
             [
@@ -217,8 +234,17 @@ final class CutoverTenant extends Command
                 'params' => array_merge([
                     'tenant' => $tenant,
                     'suffix' => $suffix,
-                ], $commonFlags),
+                ], $lendingFlags),
                 'skip' => (bool) $this->option('skip-lending'),
+            ],
+            [
+                'name' => 'savings',
+                'command' => 'legacy:migrate-savings',
+                'params' => array_merge([
+                    'tenant' => $tenant,
+                    'suffix' => $suffix,
+                ], $savingsFlags),
+                'skip' => (bool) $this->option('skip-savings'),
             ],
             [
                 'name' => 'loan-payment-progress',

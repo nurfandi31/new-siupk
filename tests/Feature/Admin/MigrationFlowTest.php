@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Admin;
 
 use App\Models\Platform\CutoverRun;
+use App\Models\Platform\DatabaseShard;
 use App\Models\Platform\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -26,6 +28,24 @@ final class MigrationFlowTest extends TestCase
             '--database' => 'platform',
             '--path' => 'database/migrations/platform',
             '--force' => true,
+        ]);
+        Artisan::call('migrate:fresh', [
+            '--database' => 'tenant',
+            '--path' => 'database/migrations/shard',
+            '--force' => true,
+        ]);
+
+        DatabaseShard::query()->create([
+            'public_id' => (string) Str::ulid(),
+            'code' => 'test-shard',
+            'name' => 'Test Shard',
+            'driver' => (string) config('database.connections.tenant.driver', 'sqlite'),
+            'host' => (string) config('database.connections.tenant.host', ''),
+            'port' => (int) config('database.connections.tenant.port', 0),
+            'database_name' => (string) config('database.connections.tenant.database'),
+            'credential_reference' => 'test',
+            'placement_type' => 'shared',
+            'status' => 'active',
         ]);
 
         Cache::clear();
@@ -95,7 +115,50 @@ final class MigrationFlowTest extends TestCase
         self::assertSame('102', $run->suffix);
         self::assertTrue($run->options['auto_provisioned']);
         self::assertSame('Sleman', $tenant->name);
-        self::assertSame('provisioning', $tenant->status);
+        self::assertSame('active', $tenant->status);
+        self::assertNotNull($tenant->placement);
+    }
+
+    public function test_legacy_tenants_normalizes_dotted_district_code_for_next_tenant_matching(): void
+    {
+        DB::connection('legacy')->table('kecamatan')->insert([
+            'id' => 103,
+            'nama_kec' => 'Tegalrejo',
+            'kd_kec' => '32.06.30',
+            'web_kec' => null,
+        ]);
+        $tenant = $this->createTenant('320630', 'dotted');
+
+        $response = $this->actingAs($this->superadmin())
+            ->getJson('/admin/migration/legacy-tenants');
+
+        $response->assertOk()
+            ->assertJsonPath('legacy_tenants.2.legacy_code', '320630')
+            ->assertJsonPath('legacy_tenants.2.legacy_code_raw', '32.06.30')
+            ->assertJsonPath('legacy_tenants.2.next_tenant.row_id', $tenant->row_id);
+    }
+
+    public function test_auto_provision_normalizes_dotted_legacy_district_code(): void
+    {
+        DB::connection('legacy')->table('kecamatan')->insert([
+            'id' => 103,
+            'nama_kec' => 'Tegalrejo',
+            'kd_kec' => '32.06.30',
+            'web_kec' => null,
+        ]);
+
+        $this->actingAs($this->superadmin())
+            ->post('/admin/migrations', [
+                'legacy_id' => 103,
+                'auto_provision' => true,
+                'is_dry_run' => true,
+            ])
+            ->assertRedirect();
+
+        $tenant = Tenant::query()->where('district_code', '320630')->sole();
+
+        self::assertSame('active', $tenant->status);
+        self::assertSame('kec-320630', $tenant->code);
     }
 
     public function test_store_without_next_tenant_and_auto_provision_fails(): void
@@ -120,6 +183,8 @@ final class MigrationFlowTest extends TestCase
                 'suffix' => 76,
                 'chunk' => 250,
                 'skip_membership' => true,
+                'skip_member_lending' => true,
+                'skip_savings' => true,
                 'is_dry_run' => true,
             ])
             ->assertRedirect();
@@ -130,6 +195,8 @@ final class MigrationFlowTest extends TestCase
         self::assertSame($tenant->row_id, (int) $run->tenant_id);
         self::assertSame(250, $run->options['chunk']);
         self::assertTrue($run->options['skip_membership']);
+        self::assertTrue($run->options['skip_member_lending']);
+        self::assertTrue($run->options['skip_savings']);
         self::assertArrayNotHasKey('legacy_id', $run->options);
     }
 

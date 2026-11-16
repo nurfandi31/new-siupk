@@ -7,6 +7,9 @@ namespace App\Domain\Migration\Lending;
 use App\Domain\Migration\Lending\DTO\NormalizedBeneficiary;
 use App\Domain\Migration\Lending\DTO\NormalizedGroupLoan;
 use App\Domain\Migration\Lending\DTO\NormalizedInstallment;
+use App\Domain\Migration\Lending\DTO\NormalizedMemberInstallment;
+use App\Domain\Migration\Lending\DTO\NormalizedMemberLoan;
+use App\Domain\Migration\Lending\DTO\NormalizedMemberPayment;
 use App\Domain\Migration\Lending\DTO\NormalizedPayment;
 use App\Tenancy\Services\TenantSequenceService;
 use App\Tenancy\TenantContext;
@@ -81,6 +84,7 @@ final class LegacyLoanLoader
 
                 $existingLoan = $db->table('loans')
                     ->where('tenant_id', $tenantId)
+                    ->where('legacy_source', 'group_loan')
                     ->where('id', $loan->legacyId)
                     ->first(['row_id']);
 
@@ -241,6 +245,180 @@ final class LegacyLoanLoader
                         'migrated_at' => $now,
                         'created_at' => $now,
                     ]
+                );
+
+                $inserted++;
+            }
+        }, 5);
+
+        return ['inserted' => $inserted, 'skipped' => $skipped, 'errors' => $errors];
+    }
+
+    /**
+     * @param  list<NormalizedMemberLoan>  $loans
+     * @return array{inserted: int, skipped: int, errors: list<string>}
+     */
+    public function loadMemberLoans(int $batchRowId, string $sourceTable, array $loans): array
+    {
+        if ($loans === []) {
+            return ['inserted' => 0, 'skipped' => 0, 'errors' => []];
+        }
+
+        $tenantId = $this->context->id();
+        $connName = (string) config('tenancy.tenant_connection', 'tenant');
+        $now = now()->format('Y-m-d H:i:s');
+        $inserted = 0;
+        $skipped = 0;
+        $errors = [];
+
+        $members = DB::connection($connName)->table('members')
+            ->where('tenant_id', $tenantId)
+            ->pluck('row_id', 'id')
+            ->map(fn ($v) => (int) $v)
+            ->all();
+
+        DB::connection($connName)->transaction(function (ConnectionInterface $db) use (
+            $tenantId, $batchRowId, $sourceTable, $loans, $now, $members,
+            &$inserted, &$skipped, &$errors,
+        ): void {
+            foreach ($loans as $loan) {
+                $exists = $db->table('legacy_record_mappings')
+                    ->where('tenant_id', $tenantId)
+                    ->where('source_table', $sourceTable)
+                    ->where('source_id', (string) $loan->legacyId)
+                    ->where('source_secondary_key', 'member_loan')
+                    ->exists();
+                if ($exists) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                $memberRowId = $members[$loan->memberLegacyId] ?? null;
+                if ($memberRowId === null) {
+                    $errors[] = "pi id={$loan->legacyId}: member nia={$loan->memberLegacyId} not migrated";
+
+                    continue;
+                }
+
+                $existingLoan = $db->table('loans')
+                    ->where('tenant_id', $tenantId)
+                    ->where('legacy_source', 'member_loan')
+                    ->where('id', $loan->legacyId)
+                    ->first(['row_id']);
+
+                $existingRowId = $existingLoan !== null ? (int) $existingLoan->row_id : null;
+                $loanNumber = $this->uniqueLoanNumber(
+                    $db,
+                    $tenantId,
+                    $loan->loanNumber ?? ('PI-'.$loan->legacyId),
+                    $existingRowId,
+                );
+
+                $payload = [
+                    'loan_number' => $loanNumber,
+                    'loan_product_row_id' => $loan->productRowId,
+                    'sequence_number' => $loan->sequenceNumber,
+                    'proposed_at' => $loan->proposedAt,
+                    'verified_at' => $loan->verifiedAt,
+                    'approved_at' => $loan->approvedAt,
+                    'funded_at' => $loan->fundedAt,
+                    'disbursed_at' => $loan->disbursedAt,
+                    'completed_at' => $loan->completedAt,
+                    'principal_amount' => $loan->principal,
+                    'interest_rate' => $loan->interestRate,
+                    'term_months' => $loan->termMonths,
+                    'installment_method' => $loan->installmentMethod,
+                    'principal_frequency' => $loan->principalFrequency,
+                    'interest_frequency' => $loan->interestFrequency,
+                    'principal_grace_months' => $loan->principalGraceMonths,
+                    'interest_grace_months' => $loan->interestGraceMonths,
+                    'service_rate_total' => $loan->interestRate,
+                    'status' => $loan->status,
+                    'verification_notes' => $loan->verificationNotes,
+                    'guidance_notes' => $loan->guidanceNotes,
+                    'verification_time' => $loan->verificationTime,
+                    'disbursement_schedule_text' => $loan->disbursementScheduleText,
+                    'updated_at' => $now,
+                ];
+
+                if ($existingLoan !== null) {
+                    $loanRowId = $existingRowId;
+                    $db->table('loans')->where('row_id', $loanRowId)->update($payload);
+                } else {
+                    $loanRowId = (int) $db->table('loans')->insertGetId([
+                        'tenant_id' => $tenantId,
+                        'id' => $loan->legacyId,
+                        'legacy_source' => 'member_loan',
+                        'public_id' => (string) Str::ulid(),
+                        'disbursement_account_row_id' => null,
+                        'disbursement_notes' => null,
+                        'created_by_user_id' => null,
+                        'created_at' => $now,
+                        ...$payload,
+                    ], 'row_id');
+                }
+
+                $hasBorrower = $db->table('loan_borrowers')
+                    ->where('tenant_id', $tenantId)
+                    ->where('loan_row_id', $loanRowId)
+                    ->exists();
+                if (! $hasBorrower) {
+                    $db->table('loan_borrowers')->insert([
+                        'tenant_id' => $tenantId,
+                        'id' => $this->sequences->next('loan_borrowers'),
+                        'loan_row_id' => $loanRowId,
+                        'member_row_id' => $memberRowId,
+                        'group_row_id' => null,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
+
+                $hasHist = $db->table('loan_status_histories')
+                    ->where('tenant_id', $tenantId)
+                    ->where('loan_row_id', $loanRowId)
+                    ->exists();
+                if (! $hasHist) {
+                    foreach ($this->statusStages($loan) as $stage) {
+                        $db->table('loan_status_histories')->insert([
+                            'tenant_id' => $tenantId,
+                            'id' => $this->sequences->next('loan_status_histories'),
+                            'loan_row_id' => $loanRowId,
+                            'from_status' => $stage['from_status'],
+                            'to_status' => $stage['to_status'],
+                            'principal_amount' => $stage['principal_amount'],
+                            'product_row_id' => $loan->productRowId,
+                            'term_months' => $loan->termMonths,
+                            'service_rate_total' => $loan->interestRate,
+                            'principal_frequency' => $loan->principalFrequency,
+                            'interest_frequency' => $loan->interestFrequency,
+                            'principal_grace_months' => $loan->principalGraceMonths,
+                            'interest_grace_months' => $loan->interestGraceMonths,
+                            'notes' => $stage['notes'],
+                            'changed_by_user_id' => null,
+                            'changed_at' => $stage['changed_at'].' 00:00:00',
+                            'created_at' => $now,
+                        ]);
+                    }
+                }
+
+                $db->table('legacy_record_mappings')->updateOrInsert(
+                    [
+                        'tenant_id' => $tenantId,
+                        'source_table' => $sourceTable,
+                        'source_id' => (string) $loan->legacyId,
+                        'source_secondary_key' => 'member_loan',
+                    ],
+                    [
+                        'batch_row_id' => $batchRowId,
+                        'target_table' => 'loans',
+                        'target_row_id' => $loanRowId,
+                        'target_local_id' => $loan->legacyId,
+                        'source_snapshot' => json_encode($loan->snapshot, JSON_THROW_ON_ERROR),
+                        'migrated_at' => $now,
+                        'created_at' => $now,
+                    ],
                 );
 
                 $inserted++;
@@ -443,6 +621,93 @@ final class LegacyLoanLoader
     }
 
     /**
+     * @param  list<NormalizedMemberInstallment>  $rows
+     * @return array{inserted: int, skipped: int, errors: list<string>, warnings: list<string>}
+     */
+    public function loadMemberInstallments(int $batchRowId, string $sourceTable, array $rows): array
+    {
+        if ($rows === []) {
+            return ['inserted' => 0, 'skipped' => 0, 'errors' => [], 'warnings' => []];
+        }
+
+        $tenantId = $this->context->id();
+        $connName = (string) config('tenancy.tenant_connection', 'tenant');
+        $now = now()->format('Y-m-d H:i:s');
+        $inserted = 0;
+        $skipped = 0;
+        $errors = [];
+        $warnings = [];
+        $loanMap = $this->loanRowMap($connName, $tenantId, 'member_loan');
+
+        DB::connection($connName)->transaction(function (ConnectionInterface $db) use (
+            $tenantId, $batchRowId, $sourceTable, $rows, $now, $loanMap,
+            &$inserted, &$skipped, &$errors, &$warnings,
+        ): void {
+            foreach ($rows as $inst) {
+                $exists = $db->table('legacy_record_mappings')
+                    ->where('tenant_id', $tenantId)
+                    ->where('source_table', $sourceTable)
+                    ->where('source_id', (string) $inst->legacyId)
+                    ->where('source_secondary_key', 'member_installment')
+                    ->exists();
+                if ($exists) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                $loanRowId = $loanMap[$inst->memberLoanLegacyId] ?? null;
+                if ($loanRowId === null) {
+                    $warnings[] = "rencana_i id={$inst->legacyId}: member loan {$inst->memberLoanLegacyId} missing";
+
+                    continue;
+                }
+
+                foreach (['principal', 'interest'] as $component) {
+                    $id = $this->sequences->next('loan_installments');
+                    $rowId = $db->table('loan_installments')->insertGetId([
+                        'tenant_id' => $tenantId,
+                        'id' => $id,
+                        'loan_row_id' => $loanRowId,
+                        'component' => $component,
+                        'installment_number' => $inst->installmentNumber,
+                        'due_date' => $inst->dueDate,
+                        'principal_due' => $component === 'principal' ? $inst->principalDue : '0.00',
+                        'interest_due' => $component === 'interest' ? $inst->interestDue : '0.00',
+                        'principal_paid' => '0.00',
+                        'interest_paid' => '0.00',
+                        'penalty_due' => '0.00',
+                        'penalty_paid' => '0.00',
+                        'status' => 'pending',
+                        'paid_at' => null,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ], 'row_id');
+
+                    if ($component === 'principal') {
+                        $db->table('legacy_record_mappings')->insert([
+                            'tenant_id' => $tenantId,
+                            'batch_row_id' => $batchRowId,
+                            'source_table' => $sourceTable,
+                            'source_id' => (string) $inst->legacyId,
+                            'source_secondary_key' => 'member_installment',
+                            'target_table' => 'loan_installments',
+                            'target_row_id' => $rowId,
+                            'target_local_id' => $id,
+                            'source_snapshot' => json_encode($inst->snapshot, JSON_THROW_ON_ERROR),
+                            'migrated_at' => $now,
+                            'created_at' => $now,
+                        ]);
+                    }
+                }
+                $inserted++;
+            }
+        }, 5);
+
+        return compact('inserted', 'skipped', 'errors', 'warnings');
+    }
+
+    /**
      * @param  list<NormalizedPayment>  $rows
      * @return array{inserted: int, skipped: int, errors: list<string>, warnings: list<string>}
      */
@@ -539,6 +804,113 @@ final class LegacyLoanLoader
                     'source_table' => $sourceTable,
                     'source_id' => (string) $pay->legacyId,
                     'source_secondary_key' => 'payment',
+                    'target_table' => 'loan_payments',
+                    'target_row_id' => $payRowId,
+                    'target_local_id' => $payId,
+                    'source_snapshot' => json_encode($pay->snapshot, JSON_THROW_ON_ERROR),
+                    'migrated_at' => $now,
+                    'created_at' => $now,
+                ]);
+                $inserted++;
+            }
+        }, 5);
+
+        return compact('inserted', 'skipped', 'errors', 'warnings');
+    }
+
+    /**
+     * @param  list<NormalizedMemberPayment>  $rows
+     * @return array{inserted: int, skipped: int, errors: list<string>, warnings: list<string>}
+     */
+    public function loadMemberPayments(int $batchRowId, string $sourceTable, array $rows): array
+    {
+        if ($rows === []) {
+            return ['inserted' => 0, 'skipped' => 0, 'errors' => [], 'warnings' => []];
+        }
+
+        $tenantId = $this->context->id();
+        $connName = (string) config('tenancy.tenant_connection', 'tenant');
+        $now = now()->format('Y-m-d H:i:s');
+        $inserted = 0;
+        $skipped = 0;
+        $errors = [];
+        $warnings = [];
+        $loanMap = $this->loanRowMap($connName, $tenantId, 'member_loan');
+
+        DB::connection($connName)->transaction(function (ConnectionInterface $db) use (
+            $tenantId, $batchRowId, $sourceTable, $rows, $now, $loanMap,
+            &$inserted, &$skipped, &$errors, &$warnings,
+        ): void {
+            foreach ($rows as $pay) {
+                $exists = $db->table('legacy_record_mappings')
+                    ->where('tenant_id', $tenantId)
+                    ->where('source_table', $sourceTable)
+                    ->where('source_id', (string) $pay->legacyId)
+                    ->where('source_secondary_key', 'member_payment')
+                    ->exists();
+                if ($exists) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                $loanRowId = $loanMap[$pay->memberLoanLegacyId] ?? null;
+                if ($loanRowId === null) {
+                    $warnings[] = "real_i id={$pay->legacyId}: member loan {$pay->memberLoanLegacyId} missing";
+
+                    continue;
+                }
+
+                $payId = $pay->legacyId;
+                $idTaken = $db->table('loan_payments')
+                    ->where('tenant_id', $tenantId)
+                    ->where('id', $payId)
+                    ->exists();
+                if ($idTaken) {
+                    $payId = $this->sequences->next('loan_payments');
+                }
+
+                $payRowId = $db->table('loan_payments')->insertGetId([
+                    'tenant_id' => $tenantId,
+                    'id' => $payId,
+                    'public_id' => (string) Str::ulid(),
+                    'loan_row_id' => $loanRowId,
+                    'payment_number' => $this->uniquePaymentNumber($db, $tenantId, 'RPI-'.$pay->legacyId),
+                    'paid_at' => $pay->paidAt,
+                    'amount' => $pay->amount,
+                    'payment_method' => 'legacy',
+                    'reference_number' => (string) $pay->legacyId,
+                    'journal_entry_row_id' => null,
+                    'created_by_user_id' => null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ], 'row_id');
+
+                foreach ([
+                    ['principal', $pay->principal],
+                    ['interest', $pay->interest],
+                ] as [$component, $amt]) {
+                    if (bccomp($amt, '0.00', 2) === 0) {
+                        continue;
+                    }
+                    $db->table('loan_payment_allocations')->insert([
+                        'tenant_id' => $tenantId,
+                        'id' => $this->sequences->next('loan_payment_allocations'),
+                        'payment_row_id' => $payRowId,
+                        'installment_row_id' => null,
+                        'component' => $component,
+                        'amount' => $amt,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
+
+                $db->table('legacy_record_mappings')->insert([
+                    'tenant_id' => $tenantId,
+                    'batch_row_id' => $batchRowId,
+                    'source_table' => $sourceTable,
+                    'source_id' => (string) $pay->legacyId,
+                    'source_secondary_key' => 'member_payment',
                     'target_table' => 'loan_payments',
                     'target_row_id' => $payRowId,
                     'target_local_id' => $payId,
@@ -712,14 +1084,94 @@ final class LegacyLoanLoader
     /**
      * @return array<int, int> legacy loan id => row_id
      */
-    private function loanRowMap(string $connName, int $tenantId): array
+    private function loanRowMap(string $connName, int $tenantId, string $legacySource = 'group_loan'): array
     {
         return DB::connection($connName)->table('loans')
             ->where('tenant_id', $tenantId)
-            ->where('legacy_source', 'group_loan')
+            ->where('legacy_source', $legacySource)
             ->pluck('row_id', 'id')
             ->map(fn ($v) => (int) $v)
             ->all();
+    }
+
+    private function uniqueLoanNumber(
+        ConnectionInterface $db,
+        int $tenantId,
+        string $base,
+        ?int $excludeRowId = null,
+    ): string {
+        $base = trim($base);
+        if ($base === '') {
+            $base = 'PI';
+        }
+
+        $candidate = $base;
+        $counter = 1;
+        while (true) {
+            $query = $db->table('loans')
+                ->where('tenant_id', $tenantId)
+                ->where('loan_number', $candidate);
+            if ($excludeRowId !== null) {
+                $query->where('row_id', '!=', $excludeRowId);
+            }
+            if (! $query->exists()) {
+                return $candidate;
+            }
+            $candidate = $base.'-'.(++$counter);
+        }
+    }
+
+    private function uniquePaymentNumber(ConnectionInterface $db, int $tenantId, string $base): string
+    {
+        $candidate = $base;
+        $counter = 1;
+        while ($db->table('loan_payments')->where('tenant_id', $tenantId)->where('payment_number', $candidate)->exists()) {
+            $candidate = $base.'-'.(++$counter);
+        }
+
+        return $candidate;
+    }
+
+    /**
+     * @return list<array{from_status: string|null, to_status: string, changed_at: string, principal_amount: ?string, notes: string}>
+     */
+    private function statusStages(NormalizedMemberLoan $loan): array
+    {
+        $stages = [
+            [
+                'from_status' => null,
+                'to_status' => 'draft',
+                'changed_at' => $loan->proposedAt,
+                'principal_amount' => $this->snapshotAmount($loan->snapshot, ['proposal'], $loan->principal),
+                'notes' => 'Proposal legacy.',
+            ],
+            [
+                'from_status' => 'draft',
+                'to_status' => 'verified',
+                'changed_at' => $loan->verifiedAt,
+                'principal_amount' => $this->snapshotAmount($loan->snapshot, ['verifikasi'], $loan->principal),
+                'notes' => $loan->verificationNotes ?? 'Verifikasi legacy.',
+            ],
+            [
+                'from_status' => 'verified',
+                'to_status' => 'waiting',
+                'changed_at' => $loan->fundedAt,
+                'principal_amount' => $this->snapshotAmount($loan->snapshot, ['alokasi'], $loan->principal),
+                'notes' => 'Penetapan alokasi legacy.',
+            ],
+            [
+                'from_status' => 'waiting',
+                'to_status' => 'active',
+                'changed_at' => $loan->disbursedAt,
+                'principal_amount' => $this->snapshotAmount($loan->snapshot, ['alokasi'], $loan->principal),
+                'notes' => 'Pencairan legacy.',
+            ],
+        ];
+
+        return array_values(array_filter(
+            $stages,
+            static fn (array $stage): bool => $stage['changed_at'] !== null,
+        ));
     }
 
     /**

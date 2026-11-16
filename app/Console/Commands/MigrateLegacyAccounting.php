@@ -80,6 +80,8 @@ final class MigrateLegacyAccounting extends Command
             $this->line('Would insert openings: '.$result['would_insert_openings']);
             $this->line('Inserted journals: '.$result['inserted_journals']);
             $this->line('Inserted openings: '.$result['inserted_openings']);
+            $this->line('Repaired accounts: '.($result['repaired_accounts'] ?? 0));
+            $this->line('Backdated accounts: '.($result['backdated_accounts'] ?? 0));
             $this->line('Status: '.$result['status']);
             if ($result['batch_row_id'] !== null) {
                 $this->line('Batch row_id: '.$result['batch_row_id']);

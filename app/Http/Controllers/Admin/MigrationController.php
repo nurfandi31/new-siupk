@@ -6,16 +6,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Domain\Migration\Accounting\LegacyAccountingDiscovery;
 use App\Domain\Migration\Support\LegacyConnection;
+use App\Domain\Migration\Support\LegacyMigrationExcelExporter;
 use App\Http\Controllers\Controller;
 use App\Jobs\RunTenantCutoverJob;
 use App\Models\Platform\CutoverRun;
 use App\Models\Platform\Tenant;
 use App\Services\Admin\TenantCutoverRunnerService;
+use App\Services\TenantRegistrationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -91,6 +92,8 @@ final class MigrationController extends Controller
             'skip_accounting' => ['boolean'],
             'skip_membership' => ['boolean'],
             'skip_lending' => ['boolean'],
+            'skip_member_lending' => ['boolean'],
+            'skip_savings' => ['boolean'],
             'skip_payment_progress' => ['boolean'],
             'skip_reconcile' => ['boolean'],
             'skip_sequences' => ['boolean'],
@@ -123,7 +126,7 @@ final class MigrationController extends Controller
                 ]);
             }
 
-            $legacyCode = (string) ($legacy->kd_kec ?? '');
+            $legacyCode = $this->normalizeDistrictCode((string) ($legacy->kd_kec ?? ''));
             $tenant = Tenant::query()->where('district_code', $legacyCode)->first();
 
             if ($tenant === null && (bool) ($validated['auto_provision'] ?? false)) {
@@ -174,6 +177,8 @@ final class MigrationController extends Controller
                 'skip_accounting' => (bool) ($validated['skip_accounting'] ?? false),
                 'skip_membership' => (bool) ($validated['skip_membership'] ?? false),
                 'skip_lending' => (bool) ($validated['skip_lending'] ?? false),
+                'skip_member_lending' => (bool) ($validated['skip_member_lending'] ?? false),
+                'skip_savings' => (bool) ($validated['skip_savings'] ?? false),
                 'skip_payment_progress' => (bool) ($validated['skip_payment_progress'] ?? false),
                 'skip_reconcile' => (bool) ($validated['skip_reconcile'] ?? false),
                 'skip_sequences' => (bool) ($validated['skip_sequences'] ?? false),
@@ -242,8 +247,9 @@ final class MigrationController extends Controller
 
         $codes = [];
         foreach ($rows as $row) {
-            if ((string) ($row->kd_kec ?? '') !== '') {
-                $codes[] = (string) $row->kd_kec;
+            $code = $this->normalizeDistrictCode((string) ($row->kd_kec ?? ''));
+            if ($code !== '') {
+                $codes[] = $code;
             }
         }
 
@@ -252,42 +258,96 @@ final class MigrationController extends Controller
             ->get(['row_id', 'code', 'name', 'district_code'])
             ->keyBy('district_code');
 
-        return array_map(static fn (object $row): array => [
-            'legacy_id' => (int) $row->id,
-            'legacy_name' => (string) $row->nama_kec,
-            'legacy_code' => (string) $row->kd_kec,
-            'legacy_domain' => $row->web_kec !== null ? (string) $row->web_kec : null,
-            'next_tenant' => $nextTenants->get((string) $row->kd_kec) !== null
-                ? [
-                    'row_id' => (int) $nextTenants->get((string) $row->kd_kec)->row_id,
-                    'code' => (string) $nextTenants->get((string) $row->kd_kec)->code,
-                    'name' => (string) $nextTenants->get((string) $row->kd_kec)->name,
-                ]
-                : null,
-        ], $rows);
+        return array_map(function (object $row) use ($nextTenants): array {
+            $code = $this->normalizeDistrictCode((string) ($row->kd_kec ?? ''));
+            $nextTenant = $code !== '' ? $nextTenants->get($code) : null;
+
+            return [
+                'legacy_id' => (int) $row->id,
+                'legacy_name' => (string) $row->nama_kec,
+                'legacy_code' => $code,
+                'legacy_code_raw' => (string) $row->kd_kec,
+                'legacy_domain' => $row->web_kec !== null ? (string) $row->web_kec : null,
+                'next_tenant' => $nextTenant !== null
+                    ? [
+                        'row_id' => (int) $nextTenant->row_id,
+                        'code' => (string) $nextTenant->code,
+                        'name' => (string) $nextTenant->name,
+                    ]
+                    : null,
+            ];
+        }, $rows);
+    }
+
+    /**
+     * Legacy stores kd_kec with dots (32.06.30); Next stores the six-digit
+     * district code (320630). Normalize before matching / inserting tenants.
+     */
+    private function normalizeDistrictCode(string $code): string
+    {
+        return preg_replace('/\D+/', '', $code) ?? '';
     }
 
     private function autoProvisionTenant(string $districtCode, string $name, string $domain): Tenant
     {
-        $code = $districtCode !== '' ? $districtCode : Str::slug($name);
-        if ($code === '') {
-            $code = 'tenant';
-        }
-
-        $baseCode = $code;
-        for ($suffix = 2; Tenant::query()->where('code', $code)->exists(); $suffix++) {
-            $code = $baseCode.'-'.$suffix;
-        }
-
-        return Tenant::query()->create([
-            'public_id' => (string) Str::ulid(),
-            'code' => $code,
+        $result = app(TenantRegistrationService::class)->register([
             'name' => $name !== '' ? $name : 'Tenant '.$districtCode,
             'district_code' => $districtCode !== '' ? $districtCode : null,
-            'status' => 'provisioning',
-            'timezone' => 'Asia/Jakarta',
-            'metadata' => $domain !== '' ? ['domains' => [$domain]] : null,
+            'code' => $districtCode !== '' ? 'kec-'.$districtCode : null,
+            'with_simpanan' => true,
         ]);
+
+        $tenant = $result['tenant'];
+
+        if ($domain !== '') {
+            $tenant->forceFill(['metadata' => ['domains' => [$domain]]])->save();
+        }
+
+        return $tenant;
+    }
+
+    public function exportGroupLoans(Request $request, LegacyMigrationExcelExporter $exporter): StreamedResponse
+    {
+        $suffix = $this->exportSuffix($request);
+
+        try {
+            return $exporter->groupLoans($suffix)->download("migrasi-pinjaman-kelompok-{$suffix}.xlsx");
+        } catch (\Throwable $e) {
+            abort(404, $e->getMessage());
+        }
+    }
+
+    public function exportMemberLoans(Request $request, LegacyMigrationExcelExporter $exporter): StreamedResponse
+    {
+        $suffix = $this->exportSuffix($request);
+
+        try {
+            return $exporter->memberLoans($suffix)->download("migrasi-pinjaman-individu-{$suffix}.xlsx");
+        } catch (\Throwable $e) {
+            abort(404, $e->getMessage());
+        }
+    }
+
+    public function exportSavings(Request $request, LegacyMigrationExcelExporter $exporter): StreamedResponse
+    {
+        $suffix = $this->exportSuffix($request);
+
+        try {
+            return $exporter->savings($suffix)->download("migrasi-simpanan-{$suffix}.xlsx");
+        } catch (\Throwable $e) {
+            abort(404, $e->getMessage());
+        }
+    }
+
+    private function exportSuffix(Request $request): string
+    {
+        $suffix = (string) $request->query('suffix', '');
+
+        if (! preg_match('/^\d+$/', $suffix)) {
+            abort(422, 'Parameter suffix wajib diisi dan harus berupa angka.');
+        }
+
+        return $suffix;
     }
 
     public function stream(CutoverRun $run, TenantCutoverRunnerService $runner): StreamedResponse

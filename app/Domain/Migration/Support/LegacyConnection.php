@@ -120,6 +120,40 @@ final class LegacyConnection
     }
 
     /**
+     * SIUPK menyimpan jadwal & realisasi pinjaman individu pada tabel
+     * terpisah dari pinjaman kelompok (akhiran `_i`).
+     */
+    public function rencanaAngsuranIndividuTable(string|int $suffix): string
+    {
+        return $this->suffixedTable('rencana_angsuran_i', $suffix);
+    }
+
+    public function realAngsuranIndividuTable(string|int $suffix): string
+    {
+        return $this->suffixedTable('real_angsuran_i', $suffix);
+    }
+
+    public function simpananAnggotaTable(string|int $suffix): string
+    {
+        return $this->suffixedTable('simpanan_anggota', $suffix);
+    }
+
+    public function realSimpananTable(string|int $suffix): string
+    {
+        return $this->suffixedTable('real_simpanan', $suffix);
+    }
+
+    public function jenisSimpananTable(): string
+    {
+        return 'jenis_simpanan';
+    }
+
+    public function kodeSimpTable(): string
+    {
+        return 'kode_simp';
+    }
+
+    /**
      * @return list<object{COLUMN_NAME: string, DATA_TYPE: string, IS_NULLABLE: string, COLUMN_KEY: string}>
      */
     public function columns(string $table): array

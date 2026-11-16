@@ -24,6 +24,9 @@ final class MigrateLegacyLending extends Command
         {--skip-beneficiaries : Skip pinjaman_anggota_*}
         {--skip-installments : Skip rencana_angsuran_*}
         {--skip-payments : Skip real_angsuran_*}
+        {--skip-member-loans : Skip pinjaman individu (jenis_pinjaman I)}
+        {--skip-member-installments : Skip rencana_angsuran_i_*}
+        {--skip-member-payments : Skip real_angsuran_i_*}
         {--skip-reconcile : Skip recon write}';
 
     protected $description = 'Migrate legacy pinjaman_kelompok/anggota + angsuran into loans for a Next tenant.';
@@ -67,15 +70,23 @@ final class MigrateLegacyLending extends Command
                 skipInstallments: (bool) $this->option('skip-installments'),
                 skipPayments: (bool) $this->option('skip-payments'),
                 skipReconcile: (bool) $this->option('skip-reconcile'),
+                skipMemberLoans: (bool) $this->option('skip-member-loans'),
+                skipMemberInstallments: (bool) $this->option('skip-member-installments'),
+                skipMemberPayments: (bool) $this->option('skip-member-payments'),
             );
 
             foreach ([
                 'source_loans', 'source_beneficiaries', 'source_installments', 'source_payments',
+                'source_member_loans', 'source_member_installments', 'source_member_payments',
                 'would_insert_loans', 'would_skip_loans',
                 'would_insert_beneficiaries', 'would_skip_beneficiaries',
                 'would_insert_installments', 'would_skip_installments',
                 'would_insert_payments', 'would_skip_payments',
+                'would_insert_member_loans', 'would_skip_member_loans',
+                'would_insert_member_installments', 'would_skip_member_installments',
+                'would_insert_member_payments', 'would_skip_member_payments',
                 'inserted_loans', 'inserted_beneficiaries', 'inserted_installments', 'inserted_payments',
+                'inserted_member_loans', 'inserted_member_installments', 'inserted_member_payments',
             ] as $k) {
                 $this->line($k.': '.($result[$k] ?? 0));
             }

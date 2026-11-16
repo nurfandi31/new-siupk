@@ -7,6 +7,9 @@ namespace App\Domain\Migration\Lending;
 use App\Domain\Migration\Lending\DTO\NormalizedBeneficiary;
 use App\Domain\Migration\Lending\DTO\NormalizedGroupLoan;
 use App\Domain\Migration\Lending\DTO\NormalizedInstallment;
+use App\Domain\Migration\Lending\DTO\NormalizedMemberInstallment;
+use App\Domain\Migration\Lending\DTO\NormalizedMemberLoan;
+use App\Domain\Migration\Lending\DTO\NormalizedMemberPayment;
 use App\Domain\Migration\Lending\DTO\NormalizedPayment;
 use App\Domain\Migration\Membership\Support\LegacyRow;
 use App\Domain\Migration\Support\LegacyAmountParser;
@@ -21,6 +24,8 @@ final class LegacyLendingNormalizer
 
     /** @var array<int, string> */
     private array $productCodes = [];
+
+    private int $individualProductRowId = 0;
 
     public function __construct(
         private TenantContext $context,
@@ -48,6 +53,7 @@ final class LegacyLendingNormalizer
             2 => $byCode['uep'] ?? ($byCode['spp'] ?? 0),
             3 => $byCode['pl'] ?? ($byCode['spp'] ?? 0),
         ];
+        $this->individualProductRowId = $byCode['pi'] ?? 0;
     }
 
     /**
@@ -124,6 +130,189 @@ final class LegacyLendingNormalizer
                 guidanceNotes: LegacyRow::str($row, ['catatan_bimbingan']),
                 verificationTime: $this->normalizeTime(LegacyRow::str($row, ['waktu_verifikasi'])),
                 disbursementScheduleText: LegacyRow::str($row, ['wt_cair']),
+                snapshot: LegacyRow::snapshot($row),
+            ),
+            'error' => null,
+            'skip' => false,
+        ];
+    }
+
+    /**
+     * Normalisasi pinjaman individu. SIUPK menyimpan header pinjaman individu
+     * di `pinjaman_anggota_{suffix}` dengan jenis_pinjaman='I' dan id_pinkel=0;
+     * jadwal/realisasi berada di tabel `*_i_{suffix}`.
+     *
+     * @return array{ok: NormalizedMemberLoan|null, error: string|null, skip: bool}
+     */
+    public function normalizeMemberLoan(object $row, string $sourceTable, callable $isMapped): array
+    {
+        $legacyId = (int) ($row->id ?? 0);
+        if ($legacyId <= 0) {
+            return ['ok' => null, 'error' => 'pinjaman_anggota (individu) missing id', 'skip' => false];
+        }
+        if ($isMapped($sourceTable, (string) $legacyId, 'member_loan')) {
+            return ['ok' => null, 'error' => null, 'skip' => true];
+        }
+
+        $memberId = (int) ($row->nia ?? 0);
+        if ($memberId <= 0) {
+            return ['ok' => null, 'error' => "pi id={$legacyId}: missing nia", 'skip' => false];
+        }
+
+        $jenisPp = (int) ($row->jenis_pp ?? 1);
+        $productRowId = $this->individualProductRowId;
+        if ($productRowId <= 0) {
+            $productRowId = $this->productsByJenis[$jenisPp] ?? ($this->productsByJenis[1] ?? 0);
+        }
+        if ($productRowId <= 0) {
+            return ['ok' => null, 'error' => "pi id={$legacyId}: no individual loan product", 'skip' => false];
+        }
+
+        try {
+            $principal = $this->parseMoney($row->alokasi ?? $row->verifikasi ?? $row->proposal ?? '0');
+        } catch (InvalidArgumentException $e) {
+            return ['ok' => null, 'error' => "pi id={$legacyId}: {$e->getMessage()}", 'skip' => false];
+        }
+
+        $rateRaw = LegacyRow::str($row, ['pros_jasa']) ?? '0';
+        try {
+            $rate = $this->parseMoney($rateRaw);
+        } catch (InvalidArgumentException) {
+            $rate = '0.00';
+        }
+
+        $term = max(0, (int) (LegacyRow::str($row, ['jangka']) ?? '0'));
+        $seq = max(1, (int) ($row->pinjaman_ke ?? 1));
+        $status = $this->mapStatus(LegacyRow::str($row, ['status']));
+        $method = $this->mapInstallmentMethod(LegacyRow::str($row, ['sistem_angsuran', 'jenis_jasa']));
+        $systemId = (int) (LegacyRow::str($row, ['sistem_angsuran']) ?? '0');
+        $system = $this->mapInstallmentSystem($systemId);
+
+        $spk = LegacyRow::str($row, ['spk_no']);
+        $loanNumber = $spk !== null && $spk !== '' && $spk !== '0' ? $spk : ('PI-'.$legacyId);
+
+        return [
+            'ok' => new NormalizedMemberLoan(
+                legacyId: $legacyId,
+                sequenceNumber: $seq,
+                memberLegacyId: $memberId,
+                productRowId: $productRowId,
+                productCode: $this->productCodes[$productRowId] ?? 'spp',
+                principal: $principal,
+                interestRate: $rate,
+                termMonths: $term,
+                installmentMethod: $method,
+                principalFrequency: $system['principal_frequency'],
+                interestFrequency: $system['interest_frequency'],
+                principalGraceMonths: $system['principal_grace_months'],
+                interestGraceMonths: $system['interest_grace_months'],
+                status: $status,
+                proposedAt: LegacyRow::date($row, ['tgl_proposal']),
+                verifiedAt: LegacyRow::date($row, ['tgl_verifikasi']),
+                approvedAt: LegacyRow::date($row, ['tgl_dana']),
+                fundedAt: LegacyRow::date($row, ['tgl_tunggu']),
+                disbursedAt: LegacyRow::date($row, ['tgl_cair']),
+                completedAt: LegacyRow::date($row, ['tgl_lunas']),
+                loanNumber: $loanNumber,
+                verificationNotes: LegacyRow::str($row, ['catatan_verifikasi']),
+                guidanceNotes: LegacyRow::str($row, ['catatan_bimbingan']),
+                verificationTime: $this->normalizeTime(LegacyRow::str($row, ['waktu_verifikasi'])),
+                disbursementScheduleText: LegacyRow::str($row, ['wt_cair']),
+                snapshot: LegacyRow::snapshot($row),
+            ),
+            'error' => null,
+            'skip' => false,
+        ];
+    }
+
+    /**
+     * @return array{ok: NormalizedMemberInstallment|null, error: string|null, skip: bool}
+     */
+    public function normalizeMemberInstallment(object $row, string $sourceTable, callable $isMapped): array
+    {
+        $legacyId = (int) ($row->id ?? 0);
+        if ($legacyId <= 0) {
+            return ['ok' => null, 'error' => 'rencana_angsuran_i missing id', 'skip' => false];
+        }
+        if ($isMapped($sourceTable, (string) $legacyId, 'member_installment')) {
+            return ['ok' => null, 'error' => null, 'skip' => true];
+        }
+
+        $loanId = (int) ($row->loan_id ?? 0);
+        $num = (int) ($row->angsuran_ke ?? 0);
+        if ($loanId <= 0 || $num <= 0) {
+            return ['ok' => null, 'error' => null, 'skip' => true];
+        }
+
+        $due = LegacyRow::date($row, ['jatuh_tempo']);
+        if ($due === null) {
+            return ['ok' => null, 'error' => "rencana_i id={$legacyId}: bad jatuh_tempo", 'skip' => false];
+        }
+
+        try {
+            $pokok = $this->parseMoneyAbs($row->wajib_pokok ?? $row->target_pokok ?? '0');
+            $jasa = $this->parseMoneyAbs($row->wajib_jasa ?? $row->target_jasa ?? '0');
+        } catch (InvalidArgumentException $e) {
+            return ['ok' => null, 'error' => "rencana_i id={$legacyId}: {$e->getMessage()}", 'skip' => false];
+        }
+
+        return [
+            'ok' => new NormalizedMemberInstallment(
+                legacyId: $legacyId,
+                memberLoanLegacyId: $loanId,
+                installmentNumber: $num,
+                dueDate: $due,
+                principalDue: $pokok,
+                interestDue: $jasa,
+                snapshot: LegacyRow::snapshot($row),
+            ),
+            'error' => null,
+            'skip' => false,
+        ];
+    }
+
+    /**
+     * @return array{ok: NormalizedMemberPayment|null, error: string|null, skip: bool}
+     */
+    public function normalizeMemberPayment(object $row, string $sourceTable, callable $isMapped): array
+    {
+        $legacyId = (int) ($row->id ?? 0);
+        if ($legacyId <= 0) {
+            return ['ok' => null, 'error' => null, 'skip' => true];
+        }
+        if ($isMapped($sourceTable, (string) $legacyId, 'member_payment')) {
+            return ['ok' => null, 'error' => null, 'skip' => true];
+        }
+
+        $loanId = (int) ($row->loan_id ?? 0);
+        if ($loanId <= 0) {
+            return ['ok' => null, 'error' => "real_i id={$legacyId}: missing loan_id", 'skip' => false];
+        }
+
+        $paidAt = LegacyRow::date($row, ['tgl_transaksi']);
+        if ($paidAt === null) {
+            return ['ok' => null, 'error' => "real_i id={$legacyId}: bad tgl_transaksi", 'skip' => false];
+        }
+
+        try {
+            $pokok = $this->parseMoney($row->realisasi_pokok ?? '0');
+            $jasa = $this->parseMoney($row->realisasi_jasa ?? '0');
+        } catch (InvalidArgumentException $e) {
+            return ['ok' => null, 'error' => "real_i id={$legacyId}: {$e->getMessage()}", 'skip' => false];
+        }
+
+        if (bccomp($pokok, '0.00', 2) === 0 && bccomp($jasa, '0.00', 2) === 0) {
+            return ['ok' => null, 'error' => null, 'skip' => true];
+        }
+
+        return [
+            'ok' => new NormalizedMemberPayment(
+                legacyId: $legacyId,
+                memberLoanLegacyId: $loanId,
+                paidAt: $paidAt.' 00:00:00',
+                principal: $pokok,
+                interest: $jasa,
+                amount: bcadd($pokok, $jasa, 2),
                 snapshot: LegacyRow::snapshot($row),
             ),
             'error' => null,

@@ -7,6 +7,9 @@ namespace App\Domain\Migration\Lending;
 use App\Domain\Migration\Lending\DTO\NormalizedBeneficiary;
 use App\Domain\Migration\Lending\DTO\NormalizedGroupLoan;
 use App\Domain\Migration\Lending\DTO\NormalizedInstallment;
+use App\Domain\Migration\Lending\DTO\NormalizedMemberInstallment;
+use App\Domain\Migration\Lending\DTO\NormalizedMemberLoan;
+use App\Domain\Migration\Lending\DTO\NormalizedMemberPayment;
 use App\Domain\Migration\Lending\DTO\NormalizedPayment;
 use App\Domain\Migration\Support\LegacyConnection;
 use App\Tenancy\Services\TenantLoanProductProvisioner;
@@ -42,6 +45,9 @@ final class LendingMigrationPipeline
         bool $skipInstallments,
         bool $skipPayments,
         bool $skipReconcile,
+        bool $skipMemberLoans = false,
+        bool $skipMemberInstallments = false,
+        bool $skipMemberPayments = false,
     ): array {
         if (! preg_match('/^\d+$/', $suffix)) {
             throw new RuntimeException('Suffix must be numeric.');
@@ -51,9 +57,28 @@ final class LendingMigrationPipeline
         $paTable = $this->legacy->pinjamanAnggotaTable($suffix);
         $rencanaTable = $this->legacy->rencanaAngsuranTable($suffix);
         $realTable = $this->legacy->realAngsuranTable($suffix);
+        $rencanaIndividuTable = $this->legacy->rencanaAngsuranIndividuTable($suffix);
+        $realIndividuTable = $this->legacy->realAngsuranIndividuTable($suffix);
 
         if (! $skipLoans && ! $this->legacy->tableExists($pkTable)) {
             throw new RuntimeException("Legacy table [{$pkTable}] not found.");
+        }
+        if (! $skipMemberLoans && ! $this->legacy->tableExists($paTable)) {
+            throw new RuntimeException("Legacy table [{$paTable}] not found.");
+        }
+        if (
+            ! $skipMemberInstallments
+            && $this->extractor->pinjamanIndividuCount($suffix) > 0
+            && ! $this->legacy->tableExists($rencanaIndividuTable)
+        ) {
+            throw new RuntimeException("Legacy table [{$rencanaIndividuTable}] not found.");
+        }
+        if (
+            ! $skipMemberPayments
+            && $this->extractor->pinjamanIndividuCount($suffix) > 0
+            && ! $this->legacy->tableExists($realIndividuTable)
+        ) {
+            throw new RuntimeException("Legacy table [{$realIndividuTable}] not found.");
         }
 
         $this->products->ensureDefaults();
@@ -76,6 +101,9 @@ final class LendingMigrationPipeline
             'source_beneficiaries' => $skipBeneficiaries ? 0 : $this->extractor->pinjamanAnggotaCount($suffix),
             'source_installments' => $skipInstallments ? 0 : $this->extractor->rencanaCount($suffix),
             'source_payments' => $skipPayments ? 0 : $this->extractor->realCount($suffix),
+            'source_member_loans' => $skipMemberLoans ? 0 : $this->extractor->pinjamanIndividuCount($suffix),
+            'source_member_installments' => $skipMemberInstallments ? 0 : $this->extractor->rencanaIndividuCount($suffix),
+            'source_member_payments' => $skipMemberPayments ? 0 : $this->extractor->realIndividuCount($suffix),
             'would_insert_loans' => 0,
             'would_skip_loans' => 0,
             'would_insert_beneficiaries' => 0,
@@ -84,11 +112,28 @@ final class LendingMigrationPipeline
             'would_skip_installments' => 0,
             'would_insert_payments' => 0,
             'would_skip_payments' => 0,
+            'would_insert_member_loans' => 0,
+            'would_skip_member_loans' => 0,
+            'would_insert_member_installments' => 0,
+            'would_skip_member_installments' => 0,
+            'would_insert_member_payments' => 0,
+            'would_skip_member_payments' => 0,
             'inserted_loans' => 0,
             'inserted_beneficiaries' => 0,
             'inserted_installments' => 0,
             'inserted_payments' => 0,
+            'inserted_member_loans' => 0,
+            'inserted_member_installments' => 0,
+            'inserted_member_payments' => 0,
         ];
+
+        // Beneficiaries whose parent group loan no longer exists in the source
+        // table cannot be inserted. Skip them up front so a rerun does not emit
+        // hundreds of warnings; they are still reported by the reconciler as
+        // exception_orphan_beneficiary.
+        $validBeneficiaryParents = $skipBeneficiaries
+            ? []
+            : $this->extractor->pinjamanKelompokIdSet($suffix);
 
         if (! $skipLoans) {
             foreach ($this->extractor->pinjamanKelompokChunks($suffix, $chunk) as $rows) {
@@ -115,6 +160,11 @@ final class LendingMigrationPipeline
         if (! $skipBeneficiaries && ! ($failFast && $errors !== []) && $this->legacy->tableExists($paTable)) {
             foreach ($this->extractor->pinjamanAnggotaChunks($suffix, $chunk) as $rows) {
                 foreach ($rows as $row) {
+                    if (! isset($validBeneficiaryParents[(int) ($row->id_pinkel ?? 0)])) {
+                        $counts['would_skip_beneficiaries']++;
+
+                        continue;
+                    }
                     $r = $this->normalizer->normalizeBeneficiary($row, $paTable, $isMapped);
                     if ($r['skip']) {
                         $counts['would_skip_beneficiaries']++;
@@ -178,6 +228,72 @@ final class LendingMigrationPipeline
             }
         }
 
+        if (! $skipMemberLoans && ! ($failFast && $errors !== []) && $this->legacy->tableExists($paTable)) {
+            foreach ($this->extractor->pinjamanIndividuChunks($suffix, $chunk) as $rows) {
+                foreach ($rows as $row) {
+                    $r = $this->normalizer->normalizeMemberLoan($row, $paTable, $isMapped);
+                    if ($r['skip']) {
+                        $counts['would_skip_member_loans']++;
+
+                        continue;
+                    }
+                    if ($r['error'] !== null) {
+                        $errors[] = $r['error'];
+                        if ($failFast) {
+                            break 2;
+                        }
+
+                        continue;
+                    }
+                    $counts['would_insert_member_loans']++;
+                }
+            }
+        }
+
+        if (! $skipMemberInstallments && ! ($failFast && $errors !== []) && $this->legacy->tableExists($rencanaIndividuTable)) {
+            foreach ($this->extractor->rencanaIndividuChunks($suffix, $chunk) as $rows) {
+                foreach ($rows as $row) {
+                    $r = $this->normalizer->normalizeMemberInstallment($row, $rencanaIndividuTable, $isMapped);
+                    if ($r['skip']) {
+                        $counts['would_skip_member_installments']++;
+
+                        continue;
+                    }
+                    if ($r['error'] !== null) {
+                        $errors[] = $r['error'];
+                        if ($failFast) {
+                            break 2;
+                        }
+
+                        continue;
+                    }
+                    $counts['would_insert_member_installments']++;
+                }
+            }
+        }
+
+        if (! $skipMemberPayments && ! ($failFast && $errors !== []) && $this->legacy->tableExists($realIndividuTable)) {
+            foreach ($this->extractor->realIndividuChunks($suffix, $chunk) as $rows) {
+                foreach ($rows as $row) {
+                    $r = $this->normalizer->normalizeMemberPayment($row, $realIndividuTable, $isMapped);
+                    if ($r['skip']) {
+                        $counts['would_skip_member_payments']++;
+
+                        continue;
+                    }
+                    if ($r['error'] !== null) {
+                        $errors[] = $r['error'];
+                        if ($failFast) {
+                            break 2;
+                        }
+
+                        continue;
+                    }
+                    $counts['would_insert_member_payments']++;
+                }
+            }
+        }
+
         $summary = [
             'dry_run' => $dryRun,
             'batch_row_id' => null,
@@ -203,7 +319,7 @@ final class LendingMigrationPipeline
         }
 
         $this->normalizer->warmCaches();
-        $this->reserveSequences($suffix, $skipLoans, $skipPayments);
+        $this->reserveSequences($suffix, $skipLoans, $skipPayments, $skipMemberPayments);
 
         $batchRowId = $this->createBatch($suffix);
         $summary['batch_row_id'] = $batchRowId;
@@ -228,10 +344,32 @@ final class LendingMigrationPipeline
                 }
             }
 
+            if (! $skipMemberLoans && $this->legacy->tableExists($paTable)) {
+                foreach ($this->extractor->pinjamanIndividuChunks($suffix, $chunk) as $rows) {
+                    $norm = [];
+                    foreach ($rows as $row) {
+                        $r = $this->normalizer->normalizeMemberLoan($row, $paTable, $isMapped);
+                        if ($r['ok'] instanceof NormalizedMemberLoan) {
+                            $norm[] = $r['ok'];
+                        }
+                    }
+                    if ($norm !== []) {
+                        $load = $this->loader->loadMemberLoans($batchRowId, $paTable, $norm);
+                        $summary['inserted_member_loans'] += $load['inserted'];
+                        foreach ($load['errors'] as $e) {
+                            $errors[] = $e;
+                        }
+                    }
+                }
+            }
+
             if (! $skipBeneficiaries && $this->legacy->tableExists($paTable)) {
                 foreach ($this->extractor->pinjamanAnggotaChunks($suffix, $chunk) as $rows) {
                     $norm = [];
                     foreach ($rows as $row) {
+                        if (! isset($validBeneficiaryParents[(int) ($row->id_pinkel ?? 0)])) {
+                            continue;
+                        }
                         $r = $this->normalizer->normalizeBeneficiary($row, $paTable, $isMapped);
                         if ($r['ok'] instanceof NormalizedBeneficiary) {
                             $norm[] = $r['ok'];
@@ -269,6 +407,25 @@ final class LendingMigrationPipeline
                 }
             }
 
+            if (! $skipMemberInstallments && $this->legacy->tableExists($rencanaIndividuTable)) {
+                foreach ($this->extractor->rencanaIndividuChunks($suffix, $chunk) as $rows) {
+                    $norm = [];
+                    foreach ($rows as $row) {
+                        $r = $this->normalizer->normalizeMemberInstallment($row, $rencanaIndividuTable, $isMapped);
+                        if ($r['ok'] instanceof NormalizedMemberInstallment) {
+                            $norm[] = $r['ok'];
+                        }
+                    }
+                    if ($norm !== []) {
+                        $load = $this->loader->loadMemberInstallments($batchRowId, $rencanaIndividuTable, $norm);
+                        $summary['inserted_member_installments'] += $load['inserted'];
+                        foreach ($load['warnings'] as $w) {
+                            $warnings[] = $w;
+                        }
+                    }
+                }
+            }
+
             if (! $skipPayments && $this->legacy->tableExists($realTable)) {
                 foreach ($this->extractor->realChunks($suffix, $chunk) as $rows) {
                     $norm = [];
@@ -288,8 +445,27 @@ final class LendingMigrationPipeline
                 }
             }
 
+            if (! $skipMemberPayments && $this->legacy->tableExists($realIndividuTable)) {
+                foreach ($this->extractor->realIndividuChunks($suffix, $chunk) as $rows) {
+                    $norm = [];
+                    foreach ($rows as $row) {
+                        $r = $this->normalizer->normalizeMemberPayment($row, $realIndividuTable, $isMapped);
+                        if ($r['ok'] instanceof NormalizedMemberPayment) {
+                            $norm[] = $r['ok'];
+                        }
+                    }
+                    if ($norm !== []) {
+                        $load = $this->loader->loadMemberPayments($batchRowId, $realIndividuTable, $norm);
+                        $summary['inserted_member_payments'] += $load['inserted'];
+                        foreach ($load['warnings'] as $w) {
+                            $warnings[] = $w;
+                        }
+                    }
+                }
+            }
+
             // Always recompute installment paid progress from payment allocations (idempotent).
-            if (! $skipPayments || ! $skipInstallments) {
+            if (! $skipPayments || ! $skipInstallments || ! $skipMemberPayments || ! $skipMemberInstallments) {
                 $summary['installments_progress_loans'] = $this->loader->applyPaymentProgressToInstallments();
             }
 
@@ -317,7 +493,7 @@ final class LendingMigrationPipeline
         }
     }
 
-    private function reserveSequences(string $suffix, bool $skipLoans, bool $skipPayments): void
+    private function reserveSequences(string $suffix, bool $skipLoans, bool $skipPayments, bool $skipMemberPayments = false): void
     {
         if (! $skipLoans && $this->legacy->tableExists($this->legacy->pinjamanKelompokTable($suffix))) {
             $max = (int) ($this->legacy->selectOne(
@@ -335,6 +511,14 @@ final class LendingMigrationPipeline
                 $this->sequences->initializeAtLeast('loan_payments', $max + 1);
             }
         }
+        if (! $skipMemberPayments && $this->legacy->tableExists($this->legacy->realAngsuranIndividuTable($suffix))) {
+            $max = (int) ($this->legacy->selectOne(
+                'SELECT MAX(id) AS m FROM `'.$this->legacy->realAngsuranIndividuTable($suffix).'`'
+            )->m ?? 0);
+            if ($max > 0) {
+                $this->sequences->initializeAtLeast('loan_payments', $max + 1);
+            }
+        }
     }
 
     private function bumpSequences(): void
@@ -347,6 +531,12 @@ final class LendingMigrationPipeline
             ->where('legacy_source', 'group_loan')
             ->max('id');
         $this->sequences->initializeAtLeast('loans:group_loan', $maxLoan + 1);
+
+        $maxMemberLoan = (int) DB::connection($conn)->table('loans')
+            ->where('tenant_id', $tenantId)
+            ->where('legacy_source', 'member_loan')
+            ->max('id');
+        $this->sequences->initializeAtLeast('loans:member_loan', $maxMemberLoan + 1);
 
         foreach ([
             'loan_borrowers',

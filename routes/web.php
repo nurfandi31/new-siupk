@@ -307,6 +307,9 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->name('admin.')->grou
     Route::get('/migrations', [AdminMigrationController::class, 'index'])->name('migrations.index');
     Route::get('/migration/discover', [AdminMigrationController::class, 'discover'])->name('migration.discover');
     Route::get('/migration/legacy-tenants', [AdminMigrationController::class, 'legacyTenants'])->name('migration.legacy-tenants');
+    Route::get('/migration/export/group-loans', [AdminMigrationController::class, 'exportGroupLoans'])->name('migration.export.group-loans');
+    Route::get('/migration/export/member-loans', [AdminMigrationController::class, 'exportMemberLoans'])->name('migration.export.member-loans');
+    Route::get('/migration/export/savings', [AdminMigrationController::class, 'exportSavings'])->name('migration.export.savings');
     Route::post('/migrations', [AdminMigrationController::class, 'store'])->name('migrations.store');
     Route::get('/migrations/{run}', [AdminMigrationController::class, 'show'])->name('migrations.show');
     Route::get('/migrations/{run}/stream', [AdminMigrationController::class, 'stream'])->name('migrations.stream');

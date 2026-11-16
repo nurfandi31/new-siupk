@@ -215,6 +215,18 @@ final class TenantCutoverRunnerService
             $accountingFlags['--skip-reconcile'] = true;
         }
 
+        $lendingFlags = $commonFlags;
+        if (! empty($options['skip_member_lending'])) {
+            $lendingFlags['--skip-member-loans'] = true;
+            $lendingFlags['--skip-member-installments'] = true;
+            $lendingFlags['--skip-member-payments'] = true;
+        }
+
+        $savingsFlags = $commonFlags;
+        if (! empty($options['skip_reconcile'])) {
+            $savingsFlags['--skip-reconcile'] = true;
+        }
+
         return [
             [
                 'name' => 'fiscal-periods',
@@ -252,8 +264,15 @@ final class TenantCutoverRunnerService
                 'name' => 'lending',
                 'label' => 'Migrasi Data Pinjaman & Spk',
                 'command' => 'legacy:migrate-lending',
-                'params' => array_merge(['tenant' => $tenantCode, 'suffix' => $suffix], $commonFlags),
+                'params' => array_merge(['tenant' => $tenantCode, 'suffix' => $suffix], $lendingFlags),
                 'skip' => ! empty($options['skip_lending']),
+            ],
+            [
+                'name' => 'savings',
+                'label' => 'Migrasi Rekening & Mutasi Simpanan',
+                'command' => 'legacy:migrate-savings',
+                'params' => array_merge(['tenant' => $tenantCode, 'suffix' => $suffix], $savingsFlags),
+                'skip' => ! empty($options['skip_savings']),
             ],
             [
                 'name' => 'loan-payment-progress',

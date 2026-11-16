@@ -51,7 +51,7 @@ final readonly class TenantRegistrationService
             $shard = DatabaseShard::query()->where('status', 'active')->orderBy('row_id')->firstOrFail();
             $tenant = Tenant::query()->create([
                 'public_id' => (string) Str::ulid(),
-                'code' => $this->tenantCode($data['name']),
+                'code' => $this->tenantCode($data['name'], $data['code'] ?? null),
                 'name' => $data['name'],
                 'district_code' => $data['district_code'],
                 'map_latitude' => $data['map_latitude'] ?? null,
@@ -161,9 +161,9 @@ final readonly class TenantRegistrationService
         });
     }
 
-    private function tenantCode(string $name): string
+    private function tenantCode(string $name, ?string $preferred = null): string
     {
-        $base = Str::slug($name) ?: 'tenant';
+        $base = Str::slug((string) $preferred) ?: (Str::slug($name) ?: 'tenant');
         $code = $base;
 
         for ($suffix = 2; Tenant::query()->where('code', $code)->exists(); $suffix++) {

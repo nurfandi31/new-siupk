@@ -11,6 +11,7 @@ import AppInput from '../../../Components/AppInput.vue';
 import AppDatePicker from '../../../Components/AppDatePicker.vue';
 import AppPageHeader from '../../../Components/AdminPageHeader.vue';
 import AppSwitch from '../../../Components/AppSwitch.vue';
+import SmartSelect from '../../../Components/SmartSelect.vue';
 
 import AppIcon from '../../../Components/AppIcon.vue';
 
@@ -156,12 +157,35 @@ const form = useForm({
     skip_accounting: false,
     skip_membership: false,
     skip_lending: false,
+    skip_member_lending: false,
+    skip_savings: false,
     skip_payment_progress: false,
     skip_reconcile: false,
     skip_sequences: false,
     continue_on_error: false,
     no_fail_fast: false,
 });
+
+const exportUrlForSuffix = (type, suffix) =>
+    `/admin/migration/export/${type}?suffix=${encodeURIComponent(String(suffix ?? ''))}`;
+
+const exportSuffix = computed(() => {
+    const value = isExpertMode.value ? form.suffix : form.legacy_id;
+
+    return String(value ?? '').trim();
+});
+
+const exportSuffixLabel = computed(() => {
+    if (!exportSuffix.value) return '';
+
+    if (!isExpertMode.value && selectedLegacyTenant.value) {
+        return `${selectedLegacyTenant.value.legacy_name} (${selectedLegacyTenant.value.legacy_code})`;
+    }
+
+    return `Suffix ${exportSuffix.value}`;
+});
+
+const exportUrl = (type) => exportUrlForSuffix(type, exportSuffix.value);
 
 const submitCutover = () => {
     if (!isExpertMode.value) {
@@ -272,6 +296,8 @@ const retryRun = (run) => {
     form.skip_accounting = Boolean(opts.skip_accounting);
     form.skip_membership = Boolean(opts.skip_membership);
     form.skip_lending = Boolean(opts.skip_lending);
+    form.skip_member_lending = Boolean(opts.skip_member_lending);
+    form.skip_savings = Boolean(opts.skip_savings);
     form.skip_payment_progress = Boolean(opts.skip_payment_progress);
     form.skip_reconcile = Boolean(opts.skip_reconcile);
     form.skip_sequences = Boolean(opts.skip_sequences);
@@ -559,6 +585,8 @@ const getStepStatusVariant = (status) => {
                                             <AppSwitch v-model="form.skip_accounting" :label="t('Lompati Jurnal Akuntansi')" :description="t('Skip Accounting Jurnal')" />
                                             <AppSwitch v-model="form.skip_membership" :label="t('Lompati Keanggotaan')" :description="t('Skip Keanggotaan')" />
                                             <AppSwitch v-model="form.skip_lending" :label="t('Lompati Data Pinjaman')" :description="t('Skip Pinjaman')" />
+                                            <AppSwitch v-model="form.skip_member_lending" :label="t('Lompati Pinjaman Individu')" :description="t('Skip Pinjaman Individu')" />
+                                            <AppSwitch v-model="form.skip_savings" :label="t('Lompati Data Simpanan')" :description="t('Skip Simpanan')" />
                                             <AppSwitch v-model="form.skip_payment_progress" :label="t('Lompati Progress Angsuran')" :description="t('Skip Progress Angsuran')" />
                                             <AppSwitch v-model="form.skip_reconcile" :label="t('Lompati Rekonsiliasi')" :description="t('Skip Rekonsiliasi')" />
                                             <AppSwitch v-model="form.skip_sequences" :label="t('Lompati Sequences')" :description="t('Skip Sequences')" />
@@ -623,6 +651,69 @@ const getStepStatusVariant = (status) => {
                     </AppCard>
                 </div>
             </div>
+
+            <!-- Download Data Legacy (Excel) -->
+            <AppCard>
+                <template #header>
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <h2 class="text-lg font-bold text-primary">{{ t('Unduh Data Legacy (Excel)') }}</h2>
+                            <p class="text-xs text-on-surface-variant">
+                                {{ t('Tiga file Excel berisi data sumber pinjaman kelompok, pinjaman individu, dan simpanan beserta rincian angsuran/mutasi.') }}
+                            </p>
+                        </div>
+                        <AppBadge v-if="exportSuffix" tone="neutral">{{ exportSuffixLabel }}</AppBadge>
+                    </div>
+                </template>
+
+                <div v-if="exportSuffix" class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <a
+                        :href="exportUrl('group-loans')"
+                        class="group flex items-center gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 transition hover:border-primary hover:bg-surface-container-low"
+                    >
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-container text-primary">
+                            <AppIcon name="groups" />
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-sm font-bold text-primary">{{ t('Pinjaman Kelompok') }}</span>
+                            <span class="block text-xs text-on-surface-variant">{{ t('Data pinjaman, rencana angsuran, dan realisasi angsuran.') }}</span>
+                        </span>
+                        <AppIcon name="download" class="shrink-0 text-secondary" />
+                    </a>
+
+                    <a
+                        :href="exportUrl('member-loans')"
+                        class="group flex items-center gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 transition hover:border-primary hover:bg-surface-container-low"
+                    >
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary-container text-secondary">
+                            <AppIcon name="person" />
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-sm font-bold text-primary">{{ t('Pinjaman Individu') }}</span>
+                            <span class="block text-xs text-on-surface-variant">{{ t('Data pinjaman individu, jadwal, dan realisasi angsuran.') }}</span>
+                        </span>
+                        <AppIcon name="download" class="shrink-0 text-secondary" />
+                    </a>
+
+                    <a
+                        :href="exportUrl('savings')"
+                        class="group flex items-center gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 transition hover:border-primary hover:bg-surface-container-low"
+                    >
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-tertiary-container text-tertiary">
+                            <AppIcon name="savings" />
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-sm font-bold text-primary">{{ t('Simpanan') }}</span>
+                            <span class="block text-xs text-on-surface-variant">{{ t('Rekening simpanan, saldo terakhir, dan mutasi simpanan.') }}</span>
+                        </span>
+                        <AppIcon name="download" class="shrink-0 text-secondary" />
+                    </a>
+                </div>
+
+                <p v-else class="rounded-xl border border-dashed border-outline-variant p-4 text-sm text-on-surface-variant">
+                    {{ t('Pilih tenant legacy (mode sederhana) atau isi suffix (mode expert) terlebih dahulu untuk mengaktifkan unduhan Excel.') }}
+                </p>
+            </AppCard>
 
             <!-- Tabel Riwayat Executions -->
             <AppCard>
@@ -724,6 +815,22 @@ const getStepStatusVariant = (status) => {
                                     <p class="truncate text-[11px] text-on-surface-variant">{{ step.label }}</p>
                                 </div>
                             </div>
+                        </div>
+
+                        <div v-if="selectedRun.suffix" class="flex flex-wrap items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-low p-3">
+                            <span class="mr-1 text-xs font-bold text-primary">{{ t('Unduh data legacy run ini:') }}</span>
+                            <a :href="exportUrlForSuffix('group-loans', selectedRun.suffix)" class="inline-flex items-center gap-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-2.5 py-1.5 text-xs font-semibold text-primary hover:border-primary">
+                                <AppIcon name="download" class="text-[16px]" />
+                                {{ t('Pinjaman Kelompok') }}
+                            </a>
+                            <a :href="exportUrlForSuffix('member-loans', selectedRun.suffix)" class="inline-flex items-center gap-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-2.5 py-1.5 text-xs font-semibold text-primary hover:border-primary">
+                                <AppIcon name="download" class="text-[16px]" />
+                                {{ t('Pinjaman Individu') }}
+                            </a>
+                            <a :href="exportUrlForSuffix('savings', selectedRun.suffix)" class="inline-flex items-center gap-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-2.5 py-1.5 text-xs font-semibold text-primary hover:border-primary">
+                                <AppIcon name="download" class="text-[16px]" />
+                                {{ t('Simpanan') }}
+                            </a>
                         </div>
 
                         <!-- Output Console Terminal Window -->

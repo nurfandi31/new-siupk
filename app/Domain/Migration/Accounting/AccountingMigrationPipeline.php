@@ -40,6 +40,8 @@ final class AccountingMigrationPipeline
      *   would_insert_openings: int,
      *   inserted_journals: int,
      *   inserted_openings: int,
+     *   repaired_accounts: int,
+     *   backdated_accounts: int,
      *   errors: list<string>,
      *   recon: list<array<string, mixed>>,
      *   years: list<int>,
@@ -152,6 +154,8 @@ final class AccountingMigrationPipeline
             'would_insert_openings' => $wouldOpenings,
             'inserted_journals' => 0,
             'inserted_openings' => 0,
+            'repaired_accounts' => 0,
+            'backdated_accounts' => 0,
             'errors' => array_slice($errors, 0, 50),
             'error_count' => count($errors),
             'recon' => [],
@@ -196,6 +200,9 @@ final class AccountingMigrationPipeline
                     }
                 }
             }
+
+            $summary['repaired_accounts'] = $this->normalizer->repairAccountHierarchy();
+            $summary['backdated_accounts'] = $this->normalizer->backdateAccountsToLegacyHistory();
 
             $this->bumpSequences();
 
