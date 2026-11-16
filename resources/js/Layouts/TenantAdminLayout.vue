@@ -10,6 +10,7 @@ import AppButton from '../Components/AppButton.vue';
 import ThemeMenu from '../Components/ThemeMenu.vue';
 import NotificationDropdown from '../Components/NotificationDropdown.vue';
 import AppLanguageSwitcher from '../Components/AppLanguageSwitcher.vue';
+import ImageUploadDialog from '../Components/ImageUploadDialog.vue';
 import { useI18n } from '../i18n';
 
 const { t, locale } = useI18n();
@@ -30,6 +31,10 @@ const logoutForm = useForm({});
 const logoutOpen = ref(false);
 const themeOpen = ref(false);
 const avatarError = ref(false);
+const profilePhotoOpen = ref(false);
+const logoEditorOpen = ref(false);
+const canManageLogo = computed(() => can('settings.manage') || can('sop.manage'));
+const logoUploadUrl = computed(() => (can('settings.manage') ? '/settings/logo' : '/settings/sop/logo'));
 
 const SIDEBAR_KEY = 'siupk-tenant-admin-sidebar';
 onMounted(() => {
@@ -247,10 +252,24 @@ function logout() {
             </button>
 
             <div class="flex items-center gap-3 px-4 py-6 lg:px-6" :class="sidebarCollapsed && 'lg:justify-center lg:px-2'">
-                <div class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-zinc-800 text-zinc-100 ring-1 ring-white/10">
+                <button
+                    type="button"
+                    class="group relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-zinc-800 text-zinc-100 ring-1 ring-white/10 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-container"
+                    :class="canManageLogo ? 'cursor-pointer hover:ring-primary-container/80' : 'cursor-default'"
+                    :disabled="!canManageLogo"
+                    :title="canManageLogo ? t('Sesuaikan logo') : t('Logo lembaga')"
+                    :aria-label="canManageLogo ? t('Sesuaikan logo') : t('Logo lembaga')"
+                    @click="logoEditorOpen = true"
+                >
                     <img v-if="logoPath" :src="logoPath" :alt="t('Logo lembaga')" class="size-full object-contain" />
                     <AppIcon v-else name="admin_panel_settings" />
-                </div>
+                    <span
+                        v-if="canManageLogo"
+                        class="pointer-events-none absolute inset-0 grid place-items-center rounded-lg bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+                    >
+                        <AppIcon name="tune" class="text-base" />
+                    </span>
+                </button>
                 <div class="min-w-0 transition-opacity duration-200 lg:opacity-100" :class="sidebarCollapsed && 'lg:hidden'">
                     <p class="truncate font-bold leading-none text-white">{{ t('Admin Tenant') }}</p>
                     <p class="mt-1 truncate text-[10px] font-semibold uppercase tracking-widest text-zinc-400">{{ appName }}</p>
@@ -328,20 +347,25 @@ function logout() {
                 </Link>
                 <NotificationDropdown />
 
-                <Link
-                    href="/profile"
-                    class="ml-1 flex shrink-0 items-center gap-2 rounded-full chip-shadow bg-surface-container-lowest py-1 pl-1 pr-3 ring-1 ring-outline-variant transition hover:bg-surface-container-low hover:ring-primary/40"
-                    :aria-label="t('Buka Profil')"
-                >
-                    <span class="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary">
+                <div class="ml-1 flex shrink-0 items-center gap-2 rounded-full chip-shadow bg-surface-container-lowest py-1 pl-1 pr-3 ring-1 ring-outline-variant transition hover:bg-surface-container-low hover:ring-primary/40">
+                    <button
+                        type="button"
+                        class="group relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-xs font-bold text-primary transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        :aria-label="t('Edit foto profil')"
+                        :title="t('Edit foto profil')"
+                        @click="profilePhotoOpen = true"
+                    >
                         <img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || t('Admin')" class="size-full object-cover" @error="avatarError = true" />
                         <span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'A' }}</span>
-                    </span>
-                    <span class="hidden min-w-0 flex-col leading-tight sm:flex">
+                        <span class="pointer-events-none absolute inset-0 grid place-items-center rounded-full bg-black/40 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                            <AppIcon name="photo_camera" class="text-sm" />
+                        </span>
+                    </button>
+                    <Link href="/profile" class="hidden min-w-0 flex-col leading-tight sm:flex" :aria-label="t('Buka Profil')">
                         <span class="truncate text-xs font-bold text-primary">{{ user?.name || t('Admin') }}</span>
                         <span class="truncate text-[10px] font-medium text-on-surface-variant">{{ t('Admin Tenant') }}</span>
-                    </span>
-                </Link>
+                    </Link>
+                </div>
 
                 <AppLanguageSwitcher />
                 <AppIconButton name="logout" tone="danger" size="md" rounded="full" :aria-label="t('Keluar')" class="shrink-0" @click="askLogout" />
@@ -372,6 +396,64 @@ function logout() {
                 <AppButton variant="danger" icon="logout" :loading="logoutForm.processing" @click="logout">{{ t('Keluar') }}</AppButton>
             </template>
         </AppModal>
+
+        <ImageUploadDialog
+            v-model="profilePhotoOpen"
+            :image-url="user?.photo_url"
+            :title="t('Foto Profil')"
+            :subtitle="t('Pilih foto, lalu geser dan atur ukurannya agar pas di lingkaran.')"
+            upload-url="/profile/photo"
+            delete-url="/profile/photo"
+            field="photo"
+            shape="circle"
+            :aspect="1"
+            :output-size="640"
+            output-type="image/jpeg"
+            output-name="photo.jpg"
+            empty-icon="account_circle"
+            :empty-label="t('Belum ada foto')"
+            :hint="t('PNG / JPG / WebP · Maks 2 MB')"
+            :adjust-label="t('Sesuaikan foto')"
+            :adjust-title="t('Sesuaikan Foto Profil')"
+            :adjust-subtitle="t('Geser foto untuk mengatur posisi, lalu perbesar atau perkecil agar wajah pas di lingkaran.')"
+            :adjust-confirm-label="t('Gunakan Foto')"
+            :upload-label="t('Unggah Foto')"
+            :delete-label="t('Hapus Foto')"
+            :delete-message="t('Hapus foto profil?')"
+            :save-label="t('Simpan Foto')"
+            manage-url="/profile"
+            :manage-label="t('Buka halaman profil')"
+        />
+
+        <ImageUploadDialog
+            v-if="canManageLogo"
+            v-model="logoEditorOpen"
+            :image-url="logoPath"
+            :title="t('Logo Lembaga')"
+            :subtitle="t('Logo tampil di sidebar, kop dokumen, dan seluruh pelaporan PDF.')"
+            :upload-url="logoUploadUrl"
+            :delete-url="logoUploadUrl"
+            field="logo"
+            shape="square"
+            :aspect="1"
+            fit="contain"
+            :output-size="512"
+            output-type="image/png"
+            output-name="logo.png"
+            checkerboard
+            empty-icon="image"
+            :empty-label="t('Belum ada logo')"
+            :preview-label="t('Pratinjau logo')"
+            :hint="t('PNG, JPG, WebP · Maks 2 MB · posisi & ukuran bisa diatur')"
+            :adjust-label="t('Sesuaikan logo')"
+            :adjust-title="t('Sesuaikan Logo Lembaga')"
+            :adjust-subtitle="t('Geser logo di dalam kotak untuk mengatur posisi, lalu perbesar atau perkecil agar pas.')"
+            :adjust-confirm-label="t('Gunakan Logo')"
+            :upload-label="t('Unggah Logo')"
+            :delete-label="t('Hapus Logo')"
+            :delete-message="t('Hapus logo organisasi?')"
+            :save-label="t('Simpan Logo')"
+        />
     </div>
 </template>
 

@@ -240,7 +240,7 @@ final class SettingsController
             ]
         );
 
-        return $this->flashRedirect('Logo berhasil diperbarui.', 'logo');
+        return $this->flashBack('Logo berhasil diperbarui.', 'logo');
     }
 
     public function destroyLogo(TenantContext $context): RedirectResponse
@@ -255,7 +255,7 @@ final class SettingsController
                 ->update(['logo_path' => null, 'updated_at' => now()]);
         }
 
-        return $this->flashRedirect('Logo berhasil dihapus.', 'logo');
+        return $this->flashBack('Logo berhasil dihapus.', 'logo');
     }
 
     public function updateWhatsapp(WhatsappRequest $request, TenantSettingService $settings, WhatsappGatewayService $gateway): RedirectResponse
@@ -397,5 +397,16 @@ final class SettingsController
         session()->flash('success', ['message' => $message, 'tab' => $tab]);
 
         return redirect()->route('settings.index', ['tab' => $tab]);
+    }
+
+    /**
+     * Kembali ke halaman asal agar dialog unggah logo tetap berada di halaman
+     * yang sedang dibuka. Fallback ke tab logo bila tidak ada referer.
+     */
+    private function flashBack(string $message, string $tab): RedirectResponse
+    {
+        session()->flash('success', ['message' => $message, 'tab' => $tab]);
+
+        return redirect()->back(fallback: route('settings.index', ['tab' => $tab]));
     }
 }

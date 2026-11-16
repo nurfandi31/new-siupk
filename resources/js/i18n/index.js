@@ -21,6 +21,7 @@ const en = {
     'Simpan & Alokasikan': 'Save & Allocate',
     'Tambah': 'Add',
     'Edit': 'Edit',
+    'Edit foto profil': 'Edit profile photo',
     'Detail': 'Details',
     'Hapus': 'Delete',
     'Cari': 'Search',
@@ -1722,8 +1723,8 @@ const en = {
     'Grace Pokok (bulan)': 'Principal Grace (months)',
     'Grand Total': 'Grand Total',
     'Gunakan akun superadmin/pusat. Akun tenant harus login melalui domain tenant masing-masing.': 'Use superadmin/central account. Tenant accounts must be logged in via their respective tenant domains.',
-    'Gunakan Foto': 'Use Photos',
-    'Gunakan Logo': 'Use Logos',
+    'Gunakan Foto': 'Use Photo',
+    'Gunakan Logo': 'Use Logo',
     'Gunakan password baru yang kuat dan belum pernah dipakai sebelumnya.': 'Use a new password that is strong and has never been used before.',
     'Gunakan persona default sistem': 'Use the system default persona',
     'Gunakan tombol Buka Rekening untuk menambahkan simpanan anggota ini.': 'Use the Open Account button to add this member\'s savings.',
@@ -2939,10 +2940,10 @@ const en = {
     'Sesi Belum Terautentikasi': 'Unauthenticated Session',
     'Sesi Formulir Kedaluwarsa': 'Session Form Expired',
     'Sesi ini': 'this session',
-    'Sesuaikan foto': 'Adjust photos',
-    'Sesuaikan Foto Profil': 'Customize Profile Photo',
-    'Sesuaikan logo': 'Customize logo',
-    'Sesuaikan Logo Lembaga': 'Customize Institution Logo',
+    'Sesuaikan foto': 'Adjust photo',
+    'Sesuaikan Foto Profil': 'Adjust Profile Photo',
+    'Sesuaikan logo': 'Adjust logo',
+    'Sesuaikan Logo Lembaga': 'Adjust Institution Logo',
     'Sesuaikan nominal pengajuan masing-masing pemanfaat. Total pengajuan tidak boleh melebihi plafon pinjaman.': 'Adjust the application amount for each beneficiary. The total application must not exceed the loan limit.',
     'Sesuaikan posisi dan ukuran foto profil': 'Adjust the position and size of the profile photo',
     'Sesuaikan posisi dan ukuran logo': 'Adjust the position and size of the logo',
@@ -4242,6 +4243,13 @@ const en = {
     'Role ini masih memakai semua menu. Nyalakan "Batasi menu untuk role ini" untuk memilih menu yang boleh diakses.':
         'This role still uses every menu. Turn on "Restrict menus for this role" to choose the allowed menus.',
     'Simpan Hak Akses Menu': 'Save Menu Access',
+    'Simpan Foto': 'Save Photo',
+    'Simpan Logo': 'Save Logo',
+    'Pilih foto, lalu geser dan atur ukurannya agar pas di lingkaran.':
+        'Choose a photo, then drag and resize it to fit the circle.',
+    'Logo tampil di sidebar, kop dokumen, dan seluruh pelaporan PDF.':
+        'The logo appears in the sidebar, document headers, and all PDF reports.',
+    'Buka halaman profil': 'Open profile page',
 };
 
 const state = reactive({

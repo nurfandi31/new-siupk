@@ -120,7 +120,7 @@ final class ProfileController
         $user->save();
 
         return redirect()
-            ->route('profile.edit', ['tab' => 'photo'])
+            ->back(fallback: route('profile.edit', ['tab' => 'photo']))
             ->with('success', ['message' => 'Foto profil berhasil diunggah.', 'tab' => 'photo']);
     }
 
@@ -136,7 +136,7 @@ final class ProfileController
         }
 
         return redirect()
-            ->route('profile.edit', ['tab' => 'photo'])
+            ->back(fallback: route('profile.edit', ['tab' => 'photo']))
             ->with('success', ['message' => 'Foto profil dihapus.', 'tab' => 'photo']);
     }
 }

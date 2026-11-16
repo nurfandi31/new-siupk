@@ -81,7 +81,7 @@ final class SopController
         );
 
         return redirect()
-            ->route('settings.sop.index', ['tab' => 'logo'])
+            ->back(fallback: route('settings.sop.index', ['tab' => 'logo']))
             ->with('success', ['message' => 'Logo lembaga berhasil diperbarui.', 'tab' => 'logo']);
     }
 
@@ -101,7 +101,7 @@ final class SopController
         }
 
         return redirect()
-            ->route('settings.sop.index', ['tab' => 'logo'])
+            ->back(fallback: route('settings.sop.index', ['tab' => 'logo']))
             ->with('success', ['message' => 'Logo lembaga berhasil dihapus.', 'tab' => 'logo']);
     }
 

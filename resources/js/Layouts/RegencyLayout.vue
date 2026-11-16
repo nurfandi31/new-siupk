@@ -6,6 +6,7 @@ import AppIconButton from '../Components/AppIconButton.vue';
 import AppConfirmDialog from '../Components/AppConfirmDialog.vue';
 import AppToast from '../Components/AppToast.vue';
 import AppLanguageSwitcher from '../Components/AppLanguageSwitcher.vue';
+import ImageUploadDialog from '../Components/ImageUploadDialog.vue';
 import { useI18n } from '../i18n';
 
 const { t, locale } = useI18n();
@@ -16,6 +17,7 @@ const currentPath = computed(() => page.url.split('?')[0]);
 const mobileMenuOpen = ref(false);
 const logoutForm = useForm({});
 const avatarError = ref(false);
+const profilePhotoOpen = ref(false);
 
 function navLabel(label) {
     if (label === 'Beranda') return locale.value === 'en' ? 'Dashboard' : t('Beranda');
@@ -87,7 +89,19 @@ function logout() {
 
             <div class="mt-4 border-t border-primary-container/40 px-4 pt-4">
                 <div class="flex min-w-0 items-center gap-3 rounded-xl bg-primary-container/50 p-3 shadow-inner shadow-black/20">
-                    <div class="relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-sm font-bold text-primary"><img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || t('Kabupaten')" class="size-full object-cover" @error="avatarError = true" /><span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'K' }}</span></div>
+                    <button
+                        type="button"
+                        class="group relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-sm font-bold text-primary transition focus:outline-none focus-visible:ring-2 focus-visible:ring-on-primary"
+                        :aria-label="t('Edit foto profil')"
+                        :title="t('Edit foto profil')"
+                        @click="profilePhotoOpen = true"
+                    >
+                        <img v-if="user?.photo_url && !avatarError" :src="user.photo_url" :alt="user?.name || t('Kabupaten')" class="size-full object-cover" @error="avatarError = true" />
+                        <span v-else>{{ user?.name?.charAt(0).toUpperCase() || 'K' }}</span>
+                        <span class="pointer-events-none absolute inset-0 grid place-items-center rounded-full bg-black/40 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                            <AppIcon name="photo_camera" class="text-sm" />
+                        </span>
+                    </button>
                     <div class="min-w-0 flex-1">
                         <p class="truncate font-bold text-on-primary">{{ user?.name || t('Supervisor') }}</p>
                         <p class="truncate text-xs text-primary-fixed-dim">{{ t('Level Kabupaten') }}</p>
@@ -132,5 +146,33 @@ function logout() {
 
         <AppConfirmDialog />
         <AppToast />
+
+        <ImageUploadDialog
+            v-model="profilePhotoOpen"
+            :image-url="user?.photo_url"
+            :title="t('Foto Profil')"
+            :subtitle="t('Pilih foto, lalu geser dan atur ukurannya agar pas di lingkaran.')"
+            upload-url="/profile/photo"
+            delete-url="/profile/photo"
+            field="photo"
+            shape="circle"
+            :aspect="1"
+            :output-size="640"
+            output-type="image/jpeg"
+            output-name="photo.jpg"
+            empty-icon="account_circle"
+            :empty-label="t('Belum ada foto')"
+            :hint="t('PNG / JPG / WebP · Maks 2 MB')"
+            :adjust-label="t('Sesuaikan foto')"
+            :adjust-title="t('Sesuaikan Foto Profil')"
+            :adjust-subtitle="t('Geser foto untuk mengatur posisi, lalu perbesar atau perkecil agar wajah pas di lingkaran.')"
+            :adjust-confirm-label="t('Gunakan Foto')"
+            :upload-label="t('Unggah Foto')"
+            :delete-label="t('Hapus Foto')"
+            :delete-message="t('Hapus foto profil?')"
+            :save-label="t('Simpan Foto')"
+            manage-url="/profile"
+            :manage-label="t('Buka halaman profil')"
+        />
     </div>
 </template>

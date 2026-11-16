@@ -79,6 +79,17 @@ final class SopLogoTest extends TestCase
             );
     }
 
+    public function test_sop_logo_upload_returns_to_referring_page(): void
+    {
+        $response = $this->actingAs($this->user)
+            ->from('/dashboard')
+            ->post('/settings/sop/logo', [
+                'logo' => UploadedFile::fake()->image('logo.png', 200, 200),
+            ]);
+
+        $response->assertRedirect('/dashboard');
+    }
+
     public function test_sop_logo_can_be_removed(): void
     {
         $this->actingAs($this->user)

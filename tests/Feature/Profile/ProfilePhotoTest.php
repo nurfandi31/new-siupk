@@ -67,6 +67,21 @@ final class ProfilePhotoTest extends TestCase
         Storage::disk('public')->assertExists($freshUser->photo_path);
     }
 
+    public function test_photo_upload_returns_to_referring_page(): void
+    {
+        Storage::fake('public');
+
+        $user = $this->createTenantMember();
+
+        $response = $this->actingAs($user)
+            ->from('/lending/due-today')
+            ->post('/profile/photo', [
+                'photo' => UploadedFile::fake()->image('profile_pic.jpg', 200, 200),
+            ]);
+
+        $response->assertRedirect('/lending/due-today');
+    }
+
     public function test_uploaded_photo_can_be_served_via_storage_route(): void
     {
         $testFileName = 'users/test_sample/photo.jpg';
