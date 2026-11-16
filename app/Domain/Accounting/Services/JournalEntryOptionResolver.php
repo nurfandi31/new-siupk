@@ -354,7 +354,9 @@ final class JournalEntryOptionResolver
      */
     public function getOptionsFor(string $type): array
     {
-        if (! isset(self::TYPES[$type])) {
+        // `angsuran` sengaja tidak ada di TYPES (tidak muncul di form jurnal umum),
+        // tetapi punya LABELS/RULES sendiri untuk kebutuhan form angsuran.
+        if (! isset(self::TYPES[$type]) && ! isset(self::LABELS[$type])) {
             return ['sumber_dana' => [], 'disimpan_ke' => []];
         }
 

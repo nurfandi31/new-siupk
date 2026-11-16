@@ -242,6 +242,9 @@ final class JournalEntryController
                 'group_name' => $loan->group_name ? (string) $loan->group_name : null,
                 'borrower_member_row_id' => $loan->member_row_id ? (int) $loan->member_row_id : null,
                 'subject_label' => $subjectLabel,
+                // Ditampilkan & ikut tercari di SmartSelect agar pengguna bisa
+                // memilih pinjaman berdasarkan nama anggota, bukan hanya nomor.
+                'subtitle' => $subjectLabel,
                 'is_individual' => $isIndividual,
                 'sisa_pokok' => $sisa,
                 'loan_number' => $loan->loan_number,
@@ -293,6 +296,11 @@ final class JournalEntryController
 
         $installmentOptions = [];
         foreach ($grouped as $g) {
+            // Baris #0 adalah header tanggal warisan pacuan, bukan angsuran yang
+            // bisa dibayar. Jangan tampilkan sebagai opsi jurnal angsuran.
+            if ((int) $g['installment_number'] <= 0) {
+                continue;
+            }
             $principalSisa = round($g['principal_due'] - $g['principal_paid'], 2);
             $interestSisa = round($g['interest_due'] - $g['interest_paid'], 2);
             $installmentOptions[] = [

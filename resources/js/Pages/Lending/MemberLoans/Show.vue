@@ -1066,7 +1066,7 @@ const visibleStageKeys = computed(() => STAGE_KEYS.filter((stage) => documentsBy
                         <label class="block">
                             <span class="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{{ t('Catatan Verifikasi') }} <span class="text-error">*</span></span>
                             <textarea v-model="verifyForm.verification_notes" rows="3" required minlength="3" maxlength="5000" class="mt-1 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3.5 py-2.5 text-sm transition focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 focus:outline-none"></textarea>
-                            <p v-if="verifyForm.errors.verification_notes" class="mt-1 text-xs text-error">{{ verifyForm.errors.verification_notes }}</p>
+                            <p v-if="verifyForm.errors?.verification_notes" class="mt-1 text-xs text-error">{{ verifyForm.errors.verification_notes }}</p>
                             <p class="mt-1 text-[10px] text-on-surface-variant">{{ t('Wajib diisi untuk audit trail.') }}</p>
                         </label>
                         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">

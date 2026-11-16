@@ -81,6 +81,19 @@ final class NearSettlementReportService
                 $j->on('p.tenant_id', '=', 'm.tenant_id')
                     ->on('p.row_id', '=', 'm.person_row_id');
             })
+            // Alamat anggota ada di member_addresses (people tidak punya kolom address).
+            ->leftJoinSub(
+                DB::connection('tenant')
+                    ->table('member_addresses')
+                    ->selectRaw('member_row_id, MAX(address) AS address')
+                    ->where('tenant_id', $tenantId)
+                    ->where('is_primary', 1)
+                    ->groupBy('member_row_id'),
+                'ma',
+                'ma.member_row_id',
+                '=',
+                'm.row_id',
+            )
             ->leftJoin('organization_units as gv', function ($j): void {
                 $j->on('gv.tenant_id', '=', 'g.tenant_id')
                     ->on('gv.row_id', '=', 'g.organization_unit_row_id');
@@ -108,7 +121,7 @@ final class NearSettlementReportService
         $loans = $loansQuery
             ->selectRaw('l.row_id, l.id, l.loan_number, l.principal_amount, l.disbursed_at, l.term_months, l.legacy_source, lp.code as product_code, lp.name as product_name')
             ->selectRaw('g.row_id as group_row_id, g.code as group_code, g.name as group_name, g.address as group_address, g.phone as group_phone, gv.name as group_village_name')
-            ->selectRaw('m.row_id as member_row_id, m.member_number, p.full_name as member_name, p.address as member_address, p.phone as member_phone, p.national_identity_number as nik, mv.name as member_village_name')
+            ->selectRaw('m.row_id as member_row_id, m.member_number, p.full_name as member_name, ma.address as member_address, p.phone as member_phone, p.national_identity_number as nik, mv.name as member_village_name')
             ->orderBy('l.id')
             ->get();
 

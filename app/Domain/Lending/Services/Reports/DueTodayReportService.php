@@ -92,7 +92,7 @@ final class DueTodayReportService
                 $q->where('l.legacy_source', 'member_loan');
             })
             ->orderBy('village_name')
-            ->orderBy('borrower_name')
+            ->orderByRaw('COALESCE(p.full_name, g.name)')
             ->orderBy('l.id')
             ->orderBy('i.installment_number')
             ->selectRaw('i.row_id as installment_row_id, i.installment_number, i.due_date, i.status as installment_status, i.principal_due, i.interest_due, i.penalty_due, i.principal_paid, i.interest_paid')

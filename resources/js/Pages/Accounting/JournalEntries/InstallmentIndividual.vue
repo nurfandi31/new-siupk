@@ -11,6 +11,7 @@ import AppIcon from '../../../Components/AppIcon.vue';
 import AppInput from '../../../Components/AppInput.vue';
 import AppModal from '../../../Components/AppModal.vue';
 import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
+import SmartSelect from '../../../Components/SmartSelect.vue';
 
 const props = defineProps({
     loanOptions: { type: Array, required: true },
@@ -60,7 +61,14 @@ const autoInstallment = computed(() => {
     return candidates[0] ?? null;
 });
 
-const selectedInstallment = computed(() => availableInstallments.value.find((i) => i.value === Number(form.installment_number)) ?? null);
+const selectedInstallment = computed(() => {
+    // Number('') === 0, sehingga tanpa guard ini baris header #0 ikut terpilih
+    // saat nominal diisi sebelum tanggal/angsuran ditentukan.
+    if (form.installment_number === '' || form.installment_number === null || form.installment_number === undefined) {
+        return null;
+    }
+    return availableInstallments.value.find((i) => i.value === Number(form.installment_number)) ?? null;
+});
 
 function applyInstallmentDefaults(target) {
     if (! target) return;

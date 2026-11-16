@@ -88,7 +88,7 @@ final class OverdueReportService
                 $q->where('l.legacy_source', 'member_loan');
             })
             ->orderBy('village_name')
-            ->orderBy('borrower_name')
+            ->orderByRaw('COALESCE(p.full_name, g.name)')
             ->orderBy('l.id')
             ->selectRaw('l.row_id, l.id as loan_local_id, l.loan_number, l.legacy_source, l.principal_amount, l.disbursed_at')
             ->selectRaw('g.name as group_name')
