@@ -7,7 +7,7 @@
     /** @var array<string, mixed> $payment */
     /** @var string|null $notes */
 
-    $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? config('app.name'));
+    $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? '');
     $shortName = strtoupper($identity['short_name'] ?? $legalName);
     $address = $identity['address'] ?? '';
     $phone = $identity['phone'] ?? '';
@@ -278,10 +278,10 @@
                 <div style="font-size: 10px; font-weight: bold; margin-top: 2px;">{{ $shortName }}</div>
                 <div style="height: 56px;"></div>
                 <div class="signature" style="display: inline-block; min-width: 220px; padding: 4px 12px 0;">
-                    <b><u>{{ $identity['treasurer_name'] ?? 'Bendahara' }}</u></b>
+                    <b><u>{{ ($identity['treasurer_name'] ?? '') ?: '........................' }}</u></b>
                 </div>
                 <div style="font-size: 9px; color: #555; margin-top: 2px;">
-                    {{ $identity['treasurer_title'] ?? 'Bendahara' }}
+                    {{ ($identity['treasurer_title'] ?? '') ?: 'Bendahara' }}
                 </div>
             </td>
         </tr>

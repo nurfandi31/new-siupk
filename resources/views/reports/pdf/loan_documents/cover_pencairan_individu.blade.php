@@ -1,5 +1,5 @@
 @php
-    $legalName = strtoupper($profile?->legal_name ?? $profile?->short_name ?? config('app.name'));
+    $legalName = strtoupper($profile?->legal_name ?? $profile?->short_name ?? '');
     $district = strtoupper($profile?->district_name ?? '');
     $regency = strtoupper($profile?->regency_name ?? '');
     $address = $profile?->address ?? '';
@@ -10,7 +10,7 @@
     $borrowerNik = $person?->national_identity_number ?? '-';
     $villageName = $borrower?->village?->name ?? '';
 
-    $spkNo = $loan_obj->spk_no ?? $loan_obj->loan_number ?? ('PINJ-' . $loan_obj->id);
+    $spkNo = $loan_obj->spk_no ?? $loan_obj->loan_number ?? '';
     $disbursedAt = $loan_obj->disbursed_at
         ? \Carbon\CarbonImmutable::parse($loan_obj->disbursed_at)->translatedFormat('d F Y')
         : '—';

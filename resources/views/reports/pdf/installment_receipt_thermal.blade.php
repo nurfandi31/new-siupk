@@ -7,7 +7,7 @@
     $schedule = $schedule ?? [];
     $paper = (string) ($paper ?? '80');
     $is58 = $paper === '58';
-    $legalName = strtoupper((string) ($identity['legal_name'] ?? config('app.name')));
+    $legalName = strtoupper((string) ($identity['legal_name'] ?? ''));
     $address = (string) ($identity['address'] ?? '');
     $phone = (string) ($identity['phone'] ?? '');
     $dateLabel = $entry['transaction_date']

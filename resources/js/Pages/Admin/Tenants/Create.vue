@@ -34,9 +34,9 @@ const districts = ref([]);
 const loading = ref(false);
 
 const regencyCenter = reactive({
-    lat: -7.5,
-    lng: 109.5,
-    zoom: 11,
+    lat: -2.5489,
+    lng: 118.0149,
+    zoom: 5,
 });
 
 async function load(url, target) {

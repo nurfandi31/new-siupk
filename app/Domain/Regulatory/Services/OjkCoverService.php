@@ -38,7 +38,7 @@ final class OJKCoverService
             'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
             'date_formatted' => $asOfDate->locale('id')->translatedFormat('d F Y'),
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
                 'district_name' => (string) ($profile?->district_name ?? ''),
                 'regency_name' => (string) ($profile?->regency_name ?? ''),

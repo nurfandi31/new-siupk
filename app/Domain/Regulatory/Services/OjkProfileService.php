@@ -6,6 +6,7 @@ namespace App\Domain\Regulatory\Services;
 
 use App\Domain\Membership\Models\OrganizationProfile;
 use App\Models\Tenant\OrganizationUnit;
+use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 
 /**
@@ -23,6 +24,10 @@ use Carbon\CarbonImmutable;
  */
 final class OJKProfileService
 {
+    public function __construct(
+        private readonly TenantContext $context,
+    ) {}
+
     public function buildProfile(int $year, ?int $month = null): array
     {
         $month = $month ?? (int) date('n');
@@ -43,6 +48,7 @@ final class OJKProfileService
         $operationalSinceYear = $operationalStart instanceof CarbonImmutable ? (int) $operationalStart->year : null;
 
         $pengurus = $this->buildPengurus();
+        $provinceName = $this->resolveProvinceName();
 
         return [
             'year' => $year,
@@ -50,12 +56,12 @@ final class OJKProfileService
             'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
             'date_formatted' => $asOfDate->locale('id')->translatedFormat('d F Y'),
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
                 'brand_short' => $profile?->brand_short,
                 'district_name' => (string) ($profile?->district_name ?? ''),
                 'regency_name' => (string) ($profile?->regency_name ?? ''),
-                'province_name' => (string) ($profile?->province_name ?? ''),
+                'province_name' => $provinceName,
                 'address' => (string) ($profile?->address ?? ''),
                 'phone' => (string) ($profile?->phone ?? ''),
                 'email' => (string) ($profile?->email ?? ''),
@@ -88,6 +94,19 @@ final class OJKProfileService
                 'pengurus_count' => count($pengurus),
             ],
         ];
+    }
+
+    /**
+     * Provinsi tidak disimpan di `organization_profiles`; ambil dari tenant
+     * atau shard aktif agar laporan memakai data wilayah yang sebenarnya.
+     */
+    private function resolveProvinceName(): string
+    {
+        try {
+            return (string) ($this->context->tenant()->province_name ?: $this->context->shard()->province_name ?: '');
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     /**

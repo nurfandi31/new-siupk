@@ -17,19 +17,15 @@ use Illuminate\Support\Facades\DB;
  * Mengambil data berdasarkan id (parameter):
  *   - source_type=loan_installment → tagihan angsuran
  *   - source_type=journal_entry   → tagihan dari jurnal entry
- *   - default (jika id tidak ditemukan) → invoice on-the-fly dengan payload minimal
  *
- * Catatan: tabel `invoices` belum ada di SIUPKNext, sehingga data invoice
- * disusun dari loan installment / journal entry. Pola ini memungkinkan unit
- * bisnis tetap bisa mencetak invoice tanpa menunggu migrasi tabel invoices.
+ * Jika sumber tidak ditemukan, service melempar DomainException agar tidak
+ * mencetak invoice fiktif.
  */
 final readonly class InvoiceService
 {
     public const SOURCE_INSTALLMENT = 'loan_installment';
 
     public const SOURCE_JOURNAL = 'journal_entry';
-
-    public const SOURCE_ADHOC = 'adhoc';
 
     /**
      * Build invoice payload.
@@ -51,7 +47,7 @@ final readonly class InvoiceService
         return match ($source) {
             self::SOURCE_INSTALLMENT => $this->fromInstallment($id),
             self::SOURCE_JOURNAL => $this->fromJournalEntry($id),
-            default => $this->adhoc($id),
+            default => throw new DomainException("Tipe invoice '{$source}' tidak dikenal."),
         };
     }
 
@@ -60,7 +56,6 @@ final readonly class InvoiceService
         return match ($source) {
             'installment', self::SOURCE_INSTALLMENT => self::SOURCE_INSTALLMENT,
             'journal', self::SOURCE_JOURNAL => self::SOURCE_JOURNAL,
-            self::SOURCE_ADHOC, '' => self::SOURCE_ADHOC,
             default => throw new DomainException("Tipe invoice '{$source}' tidak dikenal."),
         };
     }
@@ -130,7 +125,7 @@ final readonly class InvoiceService
         );
         $due = round($grand - $paid, 2);
 
-        $payerName = $memberName ?? $group?->name ?? 'Peminjam';
+        $payerName = $memberName ?? $group?->name ?? '';
         $payerAddress = $group?->address ?? null;
         $payerIdentity = $group?->code ?? null;
 
@@ -169,7 +164,7 @@ final readonly class InvoiceService
             ],
             'payment' => [
                 'method' => 'Tunai / Transfer Bank',
-                'bank_account' => 'BCA a/n '.$this->identityPayload()['short_name'].' — 123-456-7890',
+                'bank_account' => null,
                 'instructions' => 'Pembayaran dapat dilakukan di kantor layanan atau melalui transfer bank.',
             ],
             'notes' => 'Bukti tagihan ini bukan kuitansi pembayaran. Setelah pembayaran diterima, kuitansi akan diterbitkan oleh bendahara.',
@@ -283,7 +278,7 @@ final readonly class InvoiceService
             ],
             'identity' => $this->identityPayload(),
             'payer' => [
-                'name' => (string) ($entry->description ?? 'Pihak Ketiga'),
+                'name' => (string) ($entry->description ?? ''),
                 'identity_number' => null,
                 'address' => null,
                 'phone' => null,
@@ -298,63 +293,12 @@ final readonly class InvoiceService
             ],
             'payment' => [
                 'method' => 'Tunai / Transfer Bank',
-                'bank_account' => 'BCA a/n '.$this->identityPayload()['short_name'].' — 123-456-7890',
+                'bank_account' => null,
                 'instructions' => 'Pembayaran dapat dilakukan di kantor layanan atau melalui transfer bank.',
             ],
             'notes' => $entry->status !== 'posted'
                 ? 'Jurnal ini belum di-posting. Invoice dihasilkan dari jurnal rencana (preview).'
                 : null,
-        ];
-    }
-
-    /**
-     * @return array<string,mixed>
-     */
-    private function adhoc(int $id): array
-    {
-        // On-the-fly invoice: ketika id tidak cocok dengan loan installment / journal entry,
-        // bangun invoice placeholder dengan nomor urut agar template tidak crash.
-        $identity = $this->identityPayload();
-        $date = CarbonImmutable::now();
-
-        return [
-            'invoice' => [
-                'number' => sprintf('INV/ADHOC/%s/%05d', $date->format('Y'), $id),
-                'date' => $date->toDateString(),
-                'due_date' => $date->addDays(14)->toDateString(),
-                'source_type' => self::SOURCE_ADHOC,
-                'source_id' => $id,
-                'subject' => 'Invoice Ad-hoc',
-                'reference' => null,
-            ],
-            'identity' => $identity,
-            'payer' => [
-                'name' => '—',
-                'identity_number' => null,
-                'address' => null,
-                'phone' => null,
-            ],
-            'items' => [
-                [
-                    'qty' => 1.0,
-                    'description' => 'Item invoice',
-                    'unit_price' => 0.0,
-                    'amount' => 0.0,
-                ],
-            ],
-            'totals' => [
-                'subtotal' => 0.0,
-                'ppn' => 0.0,
-                'grand_total' => 0.0,
-                'paid' => 0.0,
-                'due' => 0.0,
-            ],
-            'payment' => [
-                'method' => 'Tunai / Transfer Bank',
-                'bank_account' => 'BCA a/n '.($identity['short_name'] ?? $identity['legal_name']).' — 123-456-7890',
-                'instructions' => 'Pembayaran dapat dilakukan di kantor layanan atau melalui transfer bank.',
-            ],
-            'notes' => 'Invoice dihasilkan secara otomatis karena data sumber (angsuran / jurnal) tidak ditemukan untuk ID ini.',
         ];
     }
 
@@ -370,7 +314,7 @@ final readonly class InvoiceService
         $profile = OrganizationProfile::query()->first();
 
         return [
-            'legal_name' => (string) ($profile?->legal_name ?: config('app.name')),
+            'legal_name' => (string) ($profile?->legal_name ?? ''),
             'short_name' => $profile?->short_name,
             'address' => $profile?->address,
             'registration_number' => $profile?->registration_number,

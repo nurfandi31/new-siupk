@@ -1,7 +1,7 @@
 @php
     use Carbon\CarbonImmutable;
 
-    $legalName = strtoupper($profile?->legal_name ?? $profile?->short_name ?? config('app.name'));
+    $legalName = strtoupper($profile?->legal_name ?? $profile?->short_name ?? '');
     $district = strtoupper($profile?->district_name ?? '');
     $address = $profile?->address ?? '';
     $phone = $profile?->phone ?? '';
@@ -17,7 +17,7 @@
     $guarantorName = $guarantor?->full_name ?? '';
     $guarantorNik = $guarantor?->national_identity_number ?? '';
 
-    $loanNumber = $loan_obj->loan_number ?? 'PINJ-' . $loan_obj->id;
+    $loanNumber = $loan_obj->loan_number ?? '';
     $spkNo = $loan_obj->spk_no ?? '';
     $proposedAt = $loan_obj->proposed_at ? CarbonImmutable::parse($loan_obj->proposed_at)->translatedFormat('d F Y') : '—';
     $disbursedAt = $loan_obj->disbursed_at ? CarbonImmutable::parse($loan_obj->disbursed_at)->translatedFormat('d F Y') : '—';

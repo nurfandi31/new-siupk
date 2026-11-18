@@ -2,7 +2,7 @@
     $identity = $identity ?? [];
     $variant = $variant ?? 'standard';
 
-    $legalName = strtoupper((string) ($identity['legal_name'] ?? $identity['short_name'] ?? config('app.name')));
+    $legalName = strtoupper((string) ($identity['legal_name'] ?? $identity['short_name'] ?? ''));
     $district = trim((string) ($identity['district_name'] ?? ''));
     $regency = trim((string) ($identity['regency_name'] ?? ''));
     $province = trim((string) ($identity['province_name'] ?? ''));

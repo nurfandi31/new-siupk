@@ -6,7 +6,7 @@
     $kind = $kind ?? DocumentKindClassifier::KIND_BM;
     $isCashOut = $kind === DocumentKindClassifier::KIND_BKK;
 
-    $legalName = strtoupper((string) ($identity['legal_name'] ?? config('app.name')));
+    $legalName = strtoupper((string) ($identity['legal_name'] ?? ''));
     $district = (string) ($identity['district_name'] ?? '');
     $regency = (string) ($identity['regency_name'] ?? '');
     $registration = (string) ($identity['registration_number'] ?? '');

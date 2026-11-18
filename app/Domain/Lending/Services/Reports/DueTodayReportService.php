@@ -186,7 +186,7 @@ final class DueTodayReportService
                 'as_of' => $asOfStr,
             ],
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?: config('app.name')),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'filters' => [

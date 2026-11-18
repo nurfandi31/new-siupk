@@ -49,6 +49,8 @@ final readonly class TenantLoginAccountProvisioner
             $roleCode = (string) $roleCode;
             $roleName = (string) ($definition['name'] ?? $roleCode);
             $username = mb_substr($tenant->code.'.'.$roleCode, 0, 100);
+            // Identitas login internal tenant. Bukan data contoh: akun ini nyata
+            // dan dipakai untuk masuk; domain .local tidak dikirimi email.
             $email = mb_substr($username.'@tenant.local', 0, 190);
 
             [$user, $created] = DB::connection('platform')->transaction(function () use ($tenant, $roleCode, $roleName, $username, $email, $password): array {
@@ -62,7 +64,7 @@ final readonly class TenantLoginAccountProvisioner
                         'email' => $email,
                         'username' => $username,
                         'password' => Hash::make($password),
-                        'phone' => $this->placeholderPhone($username),
+                        'phone' => $this->internalSentinelPhone($username),
                         'status' => 'active',
                         'is_village_user' => $roleCode === 'village_operator',
                     ]);
@@ -98,7 +100,12 @@ final readonly class TenantLoginAccountProvisioner
         return $accounts;
     }
 
-    private function placeholderPhone(string $username): string
+    /**
+     * Kolom `users.phone` wajib dan unik, tetapi akun hasil provisioning belum
+     * punya nomor WhatsApp. Sentinel internal ini menandai nomor belum diisi
+     * sampai pengguna melengkapinya; bukan nomor contoh yang ditampilkan.
+     */
+    private function internalSentinelPhone(string $username): string
     {
         return 'pending-wa-'.substr(md5($username), 0, 8);
     }

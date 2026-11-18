@@ -219,7 +219,7 @@ final class OJKBalanceSheetService
         return [
             'period' => $period,
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'sections' => $sections,

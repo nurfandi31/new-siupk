@@ -304,7 +304,7 @@ final class NearSettlementReportService
                 $horizonDays.' hari',
             ),
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'rows' => $rows,
@@ -356,7 +356,7 @@ final class NearSettlementReportService
                 $horizonDays.' hari',
             ),
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'rows' => [],

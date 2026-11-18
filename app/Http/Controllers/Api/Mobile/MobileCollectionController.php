@@ -114,7 +114,7 @@ final class MobileCollectionController
 
             return [
                 'id' => $loan->row_id,
-                'loan_number' => $loan->loan_number ?? "PINJ-{$loan->id}",
+                'loan_number' => (string) ($loan->loan_number ?? ''),
                 'borrower_name' => $borrowerName,
                 'borrower_type' => $borrowerType,
                 'village_name' => $villageName,
@@ -224,7 +224,7 @@ final class MobileCollectionController
 
         return ApiResponse::success([
             'id' => $loan->row_id,
-            'loan_number' => $loan->loan_number ?? "PINJ-{$loan->id}",
+            'loan_number' => (string) ($loan->loan_number ?? ''),
             'borrower_name' => $borrowerName,
             'borrower_type' => $borrowerType,
             'village_name' => $villageName,
@@ -362,7 +362,7 @@ final class MobileCollectionController
             'transaction_date' => CarbonImmutable::parse($transactionDate)->format('d/m/Y H:i'),
             'organization_name' => $orgName,
             'collector_name' => $user->name,
-            'loan_number' => $loan->loan_number ?? "PINJ-{$loan->id}",
+            'loan_number' => (string) ($loan->loan_number ?? ''),
             'borrower_name' => $loan->borrower?->group?->name ?? $payerName,
             'payer_name' => $payerName,
             'payer_phone' => $payerPhone,

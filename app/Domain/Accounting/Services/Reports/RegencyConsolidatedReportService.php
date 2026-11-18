@@ -165,12 +165,14 @@ final readonly class RegencyConsolidatedReportService
             $nplEval = self::evaluateNpl($kecNplRatio);
 
             $savedGeo = RegencyGeoService::resolveSavedCoordinate($kecamatan->map_latitude, $kecamatan->map_longitude, $kecamatan->map_zoom);
-            $geo = $savedGeo ?? RegencyGeoService::resolveDistrictCoordinate(
-                $kecamatan->district_code,
-                $kecamatan->regency_code ?: $regencyCode,
-                $index,
-                $totalKecCount,
-            );
+            $geo = $savedGeo
+                ?? RegencyGeoService::resolveDistrictCoordinate(
+                    $kecamatan->district_code,
+                    $kecamatan->regency_code ?: $regencyCode,
+                    $index,
+                    $totalKecCount,
+                )
+                ?? RegencyGeoService::resolveRegencyCenter($kecamatan->regency_code ?: $regencyCode);
 
             $kecGroups = DB::connection('tenant')
                 ->table('groups')
@@ -733,7 +735,7 @@ final readonly class RegencyConsolidatedReportService
 
             $entries[] = [
                 'tenant_id' => $tId,
-                'kecamatan_name' => $tenantObj?->name ?? 'Kecamatan #'.$tId,
+                'kecamatan_name' => (string) ($tenantObj?->name ?? ''),
                 'date' => (string) $line->transaction_date,
                 'voucher_number' => (string) ($line->journal_number ?? ''), 'journal_number' => (string) ($line->journal_number ?? ''),
                 'description' => (string) ($line->line_description ?: $line->entry_description),

@@ -7,6 +7,7 @@ namespace App\Domain\Accounting\Services\Reports\YearEnd;
 use App\Domain\Accounting\Services\AccountBalanceQuery;
 use App\Domain\Membership\Models\OrganizationProfile;
 use App\Services\TenantSettingService;
+use App\Tenancy\TenantContext;
 use Carbon\CarbonImmutable;
 
 /**
@@ -35,6 +36,7 @@ final readonly class YearEndCalkService
         private YearEndBalanceSheetService $yearEndBalanceSheet,
         private YearEndIncomeStatementService $yearEndIncomeStatement,
         private TenantSettingService $settings,
+        private TenantContext $context,
     ) {}
 
     /**
@@ -101,14 +103,14 @@ final readonly class YearEndCalkService
             'period' => $period,
             'year' => $year,
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? config('app.name')),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
                 'address' => $profile?->address,
                 'registration_number' => $profile?->registration_number,
                 'tax_number' => $profile?->tax_number,
                 'district_name' => $profile?->district_name,
                 'regency_name' => $profile?->regency_name,
-                'province_name' => $profile?->province_name,
+                'province_name' => $this->resolveProvinceName(),
             ],
             'is_preview' => true,
             'chapters' => $chapters,
@@ -202,6 +204,19 @@ final readonly class YearEndCalkService
         }
 
         return array_values($defaults);
+    }
+
+    /**
+     * Provinsi tidak tersedia di `organization_profiles`; gunakan wilayah
+     * tenant/shard aktif sebagai sumber data yang sebenarnya.
+     */
+    private function resolveProvinceName(): string
+    {
+        try {
+            return (string) ($this->context->tenant()->province_name ?: $this->context->shard()->province_name ?: '');
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     private function totalLiabilities(array $yearEndBalance): float

@@ -5,7 +5,7 @@
     $payer = $payer ?? null;
     $amounts = $amounts ?? [];
     $schedule = $schedule ?? [];
-    $legalName = strtoupper((string) ($identity['legal_name'] ?? config('app.name')));
+    $legalName = strtoupper((string) ($identity['legal_name'] ?? ''));
     $address = (string) ($identity['address'] ?? '');
     $phone = (string) ($identity['phone'] ?? '');
     $dateLabel = $entry['transaction_date']

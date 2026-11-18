@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import gsap from 'gsap';
 import { Head, Link } from '@inertiajs/vue3';
 import AppButton from '../Components/AppButton.vue';
@@ -9,7 +9,7 @@ import AppBadge from '../Components/AppBadge.vue';
 import AppLanguageSwitcher from '../Components/AppLanguageSwitcher.vue';
 import { useI18n } from '../i18n';
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 defineProps({
     name: { type: String, default: 'siupk Next' },
@@ -69,26 +69,14 @@ const features = [
 ];
 
 const stats = [
-    { label: t('Isolasi Basis Data per BUMDesma'), target: 100, suffix: '%', icon: 'shield' },
-    { label: t('Posting Jurnal Akuntansi Otomatis'), target: 100, suffix: '%', icon: 'receipt_long' },
-    { label: t('Jejak Audit Setiap Transaksi'), target: 100, suffix: '%', icon: 'fact_check' },
-    { label: t('Kepatuhan Standar SAK EP/ETAP'), target: 100, suffix: '%', icon: 'verified' },
+    { label: t('Isolasi Basis Data per BUMDesma'), value: t('Terisolasi'), icon: 'shield' },
+    { label: t('Posting Jurnal Akuntansi Otomatis'), value: t('Otomatis'), icon: 'receipt_long' },
+    { label: t('Jejak Audit Setiap Transaksi'), value: t('Terekam'), icon: 'fact_check' },
+    { label: t('Kepatuhan Standar SAK EP/ETAP'), value: t('Sesuai'), icon: 'verified' },
 ];
 
-const statCounters = ref(stats.map(() => 0));
-
-const accuracyProgress = computed(() => {
-    const max = 100;
-    const v = statCounters.value[3] ?? 0;
-    return Math.min(100, (v / max) * 100);
-});
-
 function formatStat(idx) {
-    const s = stats[idx];
-    const v = statCounters.value[idx];
-    if (s.isDecimal) return v.toFixed(1).replace('.', ',') + s.suffix;
-    if (s.formatNumber) return Math.floor(v).toLocaleString(locale.value === 'en' ? 'en-US' : 'id-ID') + s.suffix;
-    return Math.floor(v) + s.suffix;
+    return stats[idx]?.value ?? '';
 }
 
 const steps = [
@@ -315,26 +303,12 @@ onMounted(() => {
             gsap.set('.top-banner-bar, .nav-container, .hero-anim-badge, .hero-anim-title, .hero-anim-desc, .hero-anim-actions > *, .hero-preview-card', { opacity: 1, y: 0, clearProps: 'all' });
         }
 
-        // Scroll reveal + stats counter
-        let statsCounted = false;
+        // Scroll reveal
         observerInstance = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
                     if (!entry.isIntersecting) return;
                     const target = entry.target;
-
-                    if (target.classList.contains('stats-section') && !statsCounted) {
-                        statsCounted = true;
-                        stats.forEach((s, idx) => {
-                            const counterObj = { val: 0 };
-                            gsap.to(counterObj, {
-                                val: s.target,
-                                duration: 2.2,
-                                ease: 'power3.out',
-                                onUpdate: () => { statCounters.value[idx] = counterObj.val; },
-                            });
-                        });
-                    }
 
                     if (target.classList.contains('reveal-group')) {
                         const items = target.querySelectorAll('.reveal-item');
@@ -350,7 +324,7 @@ onMounted(() => {
             { threshold: 0.12 }
         );
 
-        document.querySelectorAll('.stats-section, .reveal-group').forEach((el) => observerInstance.observe(el));
+        document.querySelectorAll('.reveal-group').forEach((el) => observerInstance.observe(el));
 
         // Nav active section observer — track which section is in viewport
         navObserverInstance = new IntersectionObserver(
@@ -589,8 +563,8 @@ onUnmounted(() => {
                                             <span class="ml-2 text-[11px] font-black tracking-tight text-primary">{{ t('UPK · Compliance Console') }}</span>
                                         </div>
                                         <span class="inline-flex items-center gap-1.5 rounded-full bg-secondary/15 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-secondary">
-                                            <span class="size-1.5 rounded-full bg-secondary animate-pulse" />
-                                            {{ t('Live') }}
+                                            <AppIcon name="shield_lock" class="text-[11px] leading-none" />
+                                            {{ t('Terisolasi') }}
                                         </span>
                                     </div>
 
@@ -629,20 +603,20 @@ onUnmounted(() => {
                                             </div>
                                         </div>
 
-                                        <!-- Key metrics · 2 stats side-by-side -->
+                                        <!-- Key capabilities · 2 items side-by-side -->
                                         <div class="grid grid-cols-2 gap-3 pt-1">
                                             <div class="space-y-1">
                                                 <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-outline">{{ t('Kolektibilitas') }}</span>
-                                                <p class="text-[1.5rem] font-black leading-none tracking-tight text-on-surface">98,6%</p>
+                                                <p class="text-[1.25rem] font-black leading-tight tracking-tight text-on-surface">{{ t('Terhitung Otomatis') }}</p>
                                                 <span class="inline-flex items-center gap-1 text-[10px] font-bold text-primary">
-                                                    <AppIcon name="check_circle" class="text-[12px] leading-none" /> {{ t('Lancar') }}
+                                                    <AppIcon name="check_circle" class="text-[12px] leading-none" /> {{ t('Sesuai Parameter') }}
                                                 </span>
                                             </div>
                                             <div class="space-y-1">
                                                 <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-outline">{{ t('Wilayah') }}</span>
-                                                <p class="text-[1.5rem] font-black leading-none tracking-tight text-on-surface">38 <span class="text-sm font-bold">{{ t('Kabupaten') }}</span></p>
+                                                <p class="text-[1.25rem] font-black leading-tight tracking-tight text-on-surface">{{ t('Multi-Wilayah') }}</p>
                                                 <span class="inline-flex items-center gap-1 text-[10px] font-bold text-primary">
-                                                    <AppIcon name="location_on" class="text-[12px] leading-none" /> {{ t('se-Indonesia') }}
+                                                    <AppIcon name="location_on" class="text-[12px] leading-none" /> {{ t('Kode Wilayah Resmi') }}
                                                 </span>
                                             </div>
                                         </div>
@@ -688,11 +662,8 @@ onUnmounted(() => {
                             <!-- Glow accent -->
                             <div class="absolute -right-12 -bottom-12 size-56 rounded-full bg-secondary/30 blur-3xl transition-all duration-500 group-hover:bg-secondary/50 group-hover:scale-110" />
                             <div class="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-white/30 bg-white/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-on-primary backdrop-blur-sm">
-                                <span class="relative flex size-1.5">
-                                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
-                                    <span class="relative inline-flex size-1.5 rounded-full bg-emerald-300" />
-                                </span>
-                                {{ t('Live Data') }}
+                                <AppIcon name="shield_lock" class="text-[11px] leading-none" />
+                                {{ t('Data Terisolasi') }}
                             </div>
 
                             <div class="relative z-10 flex h-full flex-col justify-between gap-4">
@@ -786,7 +757,7 @@ onUnmounted(() => {
                             <div class="flex items-center gap-3">
                                 <div class="flex-1 sm:flex-none sm:w-44">
                                     <div class="h-1.5 w-full overflow-hidden rounded-full bg-white/15">
-                                        <div class="bento-progress h-full rounded-full bg-gradient-to-r from-amber-400 via-emerald-300 to-teal-300" :style="`width: ${accuracyProgress}%`" />
+                                        <div class="bento-progress h-full rounded-full bg-gradient-to-r from-amber-400 via-emerald-300 to-teal-300" style="width: 100%" />
                                     </div>
                                 </div>
                                 <p class="text-xl sm:text-2xl font-black tracking-tight tabular-nums leading-none">{{ formatStat(3) }}</p>

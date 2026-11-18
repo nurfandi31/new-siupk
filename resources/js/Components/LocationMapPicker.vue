@@ -26,7 +26,7 @@ const props = defineProps({
     latitude: { type: [Number, String], default: null },
     longitude: { type: [Number, String], default: null },
     zoom: { type: [Number, String], default: 13 },
-    regencyCenter: { type: Object, default: () => ({ lat: -7.5, lng: 109.5, zoom: 11 }) },
+    regencyCenter: { type: Object, default: () => ({ lat: -2.5489, lng: 118.0149, zoom: 5 }) },
     error: { type: String, default: '' },
     disabled: { type: Boolean, default: false },
 });
@@ -63,7 +63,7 @@ function initMap() {
     const savedLng = toNumber(props.longitude);
     const center = savedLat !== null && savedLng !== null
         ? [savedLat, savedLng]
-        : [toNumber(props.regencyCenter?.lat) ?? -7.5, toNumber(props.regencyCenter?.lng) ?? 109.5];
+        : [toNumber(props.regencyCenter?.lat) ?? -2.5489, toNumber(props.regencyCenter?.lng) ?? 118.0149];
 
     map = L.map(mapContainer.value, {
         center,
@@ -146,7 +146,7 @@ function resetToRegency() {
     emit('update:zoom', null);
     removeMarker();
     map.setView(
-        [toNumber(props.regencyCenter?.lat) ?? -7.5, toNumber(props.regencyCenter?.lng) ?? 109.5],
+        [toNumber(props.regencyCenter?.lat) ?? -2.5489, toNumber(props.regencyCenter?.lng) ?? 118.0149],
         toNumber(props.regencyCenter?.zoom) || 11,
     );
 }
@@ -202,9 +202,9 @@ watch(() => props.zoom, (value) => {
 
 watch(() => props.regencyCenter, (newCenter) => {
     if (!map || hasCoordinate()) return;
-    const lat = toNumber(newCenter?.lat) ?? -7.5;
-    const lng = toNumber(newCenter?.lng) ?? 109.5;
-    const zoom = toNumber(newCenter?.zoom) || 11;
+    const lat = toNumber(newCenter?.lat) ?? -2.5489;
+    const lng = toNumber(newCenter?.lng) ?? 118.0149;
+    const zoom = toNumber(newCenter?.zoom) || 5;
     map.setView([lat, lng], zoom);
     emit('update:zoom', zoom);
 }, { deep: true });
@@ -224,7 +224,7 @@ defineExpose({ invalidateSize });
                 type="number"
                 step="0.000001"
                 :label="t('Latitude')"
-                placeholder="-7.535000"
+                placeholder="-2.548900"
                 :disabled="disabled"
                 :error="error"
                 @update:model-value="emit('update:latitude', $event === '' ? null : Number($event))"
@@ -234,7 +234,7 @@ defineExpose({ invalidateSize });
                 type="number"
                 step="0.000001"
                 :label="t('Longitude')"
-                placeholder="108.985000"
+                placeholder="118.014900"
                 :disabled="disabled"
                 @update:model-value="emit('update:longitude', $event === '' ? null : Number($event))"
             />

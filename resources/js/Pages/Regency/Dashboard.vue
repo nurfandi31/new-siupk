@@ -19,7 +19,7 @@ const props = defineProps({
     month: { type: Number, required: true },
     regency_name: { type: String, default: 'Kabupaten' },
     regency_code: { type: String, default: '' },
-    regency_center: { type: Object, default: () => ({ lat: -7.5, lng: 109.5, zoom: 10 }) },
+    regency_center: { type: Object, default: () => ({ lat: -2.5489, lng: 118.0149, zoom: 5 }) },
 });
 
 const { money } = useMoney();

@@ -152,6 +152,14 @@ final class RegencyGeoService
     ];
 
     /**
+     * Titik peta netral saat kode kabupaten belum dikenal. Nilai ini bukan
+     * klaim lokasi kabupaten, melainkan pusat pandang awal peta Indonesia.
+     *
+     * @var array{lat: float, lng: float, zoom: int}
+     */
+    private const INDONESIA_CENTER = ['lat' => -2.5489, 'lng' => 118.0149, 'zoom' => 5];
+
+    /**
      * @return array{lat: float, lng: float, zoom: int}
      */
     public static function resolveRegencyCenter(?string $regencyCode): array
@@ -161,29 +169,31 @@ final class RegencyGeoService
             return self::$regencyCoordinates[$code];
         }
 
-        return ['lat' => -7.5000, 'lng' => 109.5000, 'zoom' => 10];
+        return self::INDONESIA_CENTER;
+    }
+
+    public static function hasRegencyCenter(?string $regencyCode): bool
+    {
+        $code = trim((string) $regencyCode);
+
+        return $code !== '' && isset(self::$regencyCoordinates[$code]);
     }
 
     /**
-     * @return array{lat: float, lng: float}
+     * Koordinat kecamatan hanya dikembalikan bila kodenya terverifikasi.
+     * Untuk kode yang belum dikenal, pemanggil dapat memakai pusat kabupaten
+     * atau pusat peta sebagai fallback tampilan.
+     *
+     * @return array{lat: float, lng: float}|null
      */
-    public static function resolveDistrictCoordinate(?string $districtCode, ?string $regencyCode = null, int $index = 0, int $total = 1): array
+    public static function resolveDistrictCoordinate(?string $districtCode, ?string $regencyCode = null, int $index = 0, int $total = 1): ?array
     {
         $districtCode = trim((string) $districtCode);
         if ($districtCode !== '' && isset(self::$districtCoordinates[$districtCode])) {
             return self::$districtCoordinates[$districtCode];
         }
 
-        $regencyCode = $regencyCode ?: (strlen($districtCode) >= 4 ? substr($districtCode, 0, 4) : '3301');
-        $center = self::resolveRegencyCenter($regencyCode);
-
-        $angle = ($index / max(1, $total)) * 2 * M_PI;
-        $radius = 0.05 + (($index % 3) * 0.035);
-
-        return [
-            'lat' => round($center['lat'] + (sin($angle) * $radius), 6),
-            'lng' => round($center['lng'] + (cos($angle) * ($radius * 1.15)), 6),
-        ];
+        return null;
     }
 
     /**
@@ -213,6 +223,12 @@ final class RegencyGeoService
     ): void {
         $saved = self::resolveSavedCoordinate($latitude, $longitude);
         if ($saved === null) {
+            return;
+        }
+
+        // Tanpa koordinat kabupaten terverifikasi, validasi geografis tidak
+        // dapat dilakukan. Jangan menolak koordinat berdasarkan pusat default.
+        if (! self::hasRegencyCenter($regencyCode)) {
             return;
         }
 

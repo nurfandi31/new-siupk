@@ -143,7 +143,7 @@ final class AssetReportService
             'month' => $month,
             'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
                 'district_name' => $profile?->district_name,
                 'regency_name' => $profile?->regency_name,

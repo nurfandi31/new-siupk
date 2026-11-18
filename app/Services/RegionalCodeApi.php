@@ -34,10 +34,9 @@ final class RegionalCodeApi
     {
         $this->assertCode($districtCode, 6);
 
-        return $this->get('/villages/'.rawurlencode($districtCode), 10, $districtCode, fn (): array => [
-            ['code' => $districtCode.'0001', 'name' => 'DESA/KELURAHAN 01'],
-            ['code' => $districtCode.'0002', 'name' => 'DESA/KELURAHAN 02'],
-        ]);
+        // Tidak ada fallback rekaan: bila API tidak tersedia, kembalikan daftar
+        // kosong agar proses provisioning tidak membuat desa fiktif.
+        return $this->get('/villages/'.rawurlencode($districtCode), 10, $districtCode);
     }
 
     private function get(string $path, int $codeLength, string $parentCode, ?callable $fallback = null): array

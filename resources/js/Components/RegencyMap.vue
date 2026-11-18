@@ -14,7 +14,7 @@ import { useMoney } from '../composables/useMoney';
 const props = defineProps({
     kecamatans: { type: Array, required: true, default: () => [] },
     regencyName: { type: String, default: 'Kabupaten' },
-    regencyCenter: { type: Object, default: () => ({ lat: -7.5, lng: 109.5, zoom: 10 }) },
+    regencyCenter: { type: Object, default: () => ({ lat: -2.5489, lng: 118.0149, zoom: 5 }) },
     year: { type: Number, required: true },
     month: { type: [Number, String], default: '' },
     selectedTenantId: { type: [Number, String], default: '' },
@@ -99,9 +99,9 @@ function getMetricValueFormatted(kec) {
 function initMap() {
     if (!mapContainer.value || mapInstance) return;
 
-    const centerLat = props.regencyCenter?.lat || -7.535;
-    const centerLng = props.regencyCenter?.lng || 108.985;
-    const initialZoom = props.regencyCenter?.zoom || 11;
+    const centerLat = props.regencyCenter?.lat || -2.5489;
+    const centerLng = props.regencyCenter?.lng || 118.0149;
+    const initialZoom = props.regencyCenter?.zoom || 5;
 
     mapInstance = L.map(mapContainer.value, {
         center: [centerLat, centerLng],
@@ -197,7 +197,7 @@ function resetView() {
         mapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
     } else {
         mapInstance.setView(
-            [props.regencyCenter?.lat || -7.535, props.regencyCenter?.lng || 108.985],
+            [props.regencyCenter?.lat || -2.5489, props.regencyCenter?.lng || 118.0149],
             props.regencyCenter?.zoom || 11,
         );
     }

@@ -2,7 +2,7 @@
     use Carbon\CarbonImmutable;
     use App\Support\IndonesianNumber;
 
-    $legalName = strtoupper($profile?->legal_name ?? $profile?->short_name ?? config('app.name'));
+    $legalName = strtoupper($profile?->legal_name ?? $profile?->short_name ?? '');
     $district = strtoupper($profile?->district_name ?? '');
     $regency = strtoupper($profile?->regency_name ?? '');
 

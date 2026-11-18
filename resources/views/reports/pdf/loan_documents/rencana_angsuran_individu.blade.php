@@ -2,7 +2,7 @@
     use Carbon\CarbonImmutable;
     use App\Support\IndonesianNumber;
 
-    $legalName = strtoupper($profile?->legal_name ?? $profile?->short_name ?? config('app.name'));
+    $legalName = strtoupper($profile?->legal_name ?? $profile?->short_name ?? '');
     $district = strtoupper($profile?->district_name ?? '');
     $address = $profile?->address ?? '';
 
@@ -11,7 +11,7 @@
     $borrowerName = strtoupper($person?->full_name ?? '-');
     $villageName = $borrower?->village?->name ?? '';
 
-    $loanNumber = $loan_obj->loan_number ?? ('PINJ-' . $loan_obj->id);
+    $loanNumber = $loan_obj->loan_number ?? '';
 
     $proposedAt = $loan_obj->proposed_at ? CarbonImmutable::parse($loan_obj->proposed_at)->translatedFormat('d F Y') : '—';
     $verifiedAt = $loan_obj->verified_at ? CarbonImmutable::parse($loan_obj->verified_at)->translatedFormat('d F Y') : null;

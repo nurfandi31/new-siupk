@@ -1,7 +1,7 @@
 @php
     $id = $identity;
     $periodLabel = strtoupper($period_label ?? '');
-    $legalName = strtoupper((string) ($id['legal_name'] ?? $id['short_name'] ?? config('app.name')));
+    $legalName = strtoupper((string) ($id['legal_name'] ?? $id['short_name'] ?? ''));
     $asOfLabel = $as_of ?? $periodLabel;
 @endphp
 <!DOCTYPE html>

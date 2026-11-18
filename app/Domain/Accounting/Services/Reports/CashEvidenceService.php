@@ -65,7 +65,7 @@ final class CashEvidenceService
 
         return [
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?: config('app.name')),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
                 'registration_number' => $profile?->registration_number,
                 'address' => $profile?->address,

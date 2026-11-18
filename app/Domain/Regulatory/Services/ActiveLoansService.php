@@ -290,7 +290,7 @@ final class ActiveLoansService
             'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
             'as_of' => $asOfStr,
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'borrower_scope' => $borrowerScope,

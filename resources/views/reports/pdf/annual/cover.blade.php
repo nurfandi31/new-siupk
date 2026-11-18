@@ -39,7 +39,7 @@
         @if (! empty($identity['logo_url']))
             <img src="{{ $identity['logo_url'] }}" width="290" alt="Logo">
         @else
-            <div style="font-size: 40px; font-weight: bold; color: #2b6cb0;">{{ $identity['short_name'] ?? 'BUMDESMA' }}</div>
+            <div style="font-size: 40px; font-weight: bold; color: #2b6cb0;">{{ $identity['short_name'] ?? $identity['legal_name'] ?? '' }}</div>
         @endif
     </main>
 

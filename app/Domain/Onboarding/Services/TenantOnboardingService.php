@@ -249,41 +249,28 @@ final class TenantOnboardingService
             default => $type,
         };
 
+        // Template CSV sengaja hanya berisi header. Baris contoh dihapus agar
+        // tidak ada data rekaan yang tidak berasal dari basis data tenant.
         return match ($type) {
             'saldo-awal' => Csv::download('template_saldo_awal.csv', [
                 'kode_akun', 'nama_akun', 'debit', 'kredit',
-            ], [
-                ['1.1.01.01', 'Kas Kantor', '10000000', '0'],
-                ['1.1.02.01', 'Bank BRI', '25000000', '0'],
-                ['3.1.01.01', 'Modal Diterima', '0', '35000000'],
-            ]),
+            ], []),
 
             'anggota' => Csv::download('template_anggota.csv', [
                 'nik', 'nama', 'jenis_kelamin', 'alamat', 'desa', 'no_hp', 'status',
-            ], [
-                ['3515011203900001', 'Siti Aminah', 'P', 'Jl. Mawar No. 12', 'Desa Maju', '081234567890', 'active'],
-                ['3515011203900002', 'Budi Santoso', 'L', 'RT 02 RW 01', 'Desa Maju', '081987654321', 'active'],
-            ]),
+            ], []),
 
             'kelompok' => Csv::download('template_kelompok.csv', [
                 'nama', 'desa', 'alamat', 'no_hp',
-            ], [
-                ['Kelompok Melati 01', 'Desa Maju', 'RT 01 RW 01', '081234567800'],
-                ['Kelompok Seroja 02', 'Desa Makmur', 'RT 03 RW 02', '081234567801'],
-            ]),
+            ], []),
 
             'pinjaman-aktif' => Csv::download('template_pinjaman_aktif.csv', [
                 'nomor_spk', 'nik_anggota', 'nama_kelompok', 'tanggal_pencairan', 'plafon_pinjaman', 'bunga_persen', 'jangka_bulan', 'akumulasi_pokok_dibayar', 'akumulasi_bunga_dibayar',
-            ], [
-                ['SPK-2025-001', '3515011203900001', 'Kelompok Melati 01', '2025-06-15', '5000000', '10', '10', '2000000', '200000'],
-            ]),
+            ], []),
 
             'aset-tetap' => Csv::download('template_aset_tetap.csv', [
                 'nama_barang', 'tanggal_perolehan', 'harga_perolehan', 'akumulasi_penyusutan_awal', 'umur_ekonomis_bulan',
-            ], [
-                ['Laptop HP ProBook', '2024-01-10', '8500000', '1700000', '48'],
-                ['Sepeda Motor Honda Beat', '2023-05-20', '18000000', '7200000', '60'],
-            ]),
+            ], []),
 
             default => throw new InvalidArgumentException("Tipe template '{$type}' tidak dikenal."),
         };

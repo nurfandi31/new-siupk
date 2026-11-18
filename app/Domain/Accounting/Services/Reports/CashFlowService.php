@@ -390,7 +390,7 @@ final class CashFlowService
         return [
             'period' => $period,
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?: config('app.name')),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'cash_accounts' => $cashAccounts->map(fn (Account $a) => [

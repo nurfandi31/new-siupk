@@ -1,5 +1,5 @@
 @php
-    $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? config('app.name'));
+    $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? '');
     $district = $identity['district_name'] ?? '';
     $phone = $identity['phone'] ?? '';
     $barisAngsuran = max(1, (int) ceil(count($rows) / 2));

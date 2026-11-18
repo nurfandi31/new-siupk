@@ -115,7 +115,7 @@ final class OjkHealthService
             : round(($economicAssets - $sumKolek) * 100);
 
         $identity = [
-            'legal_name' => (string) ($balance['identity']['legal_name'] ?? 'BUMDesma LKD'),
+            'legal_name' => (string) ($balance['identity']['legal_name'] ?? ''),
             'short_name' => $balance['identity']['short_name'] ?? null,
             'logo_url' => (string) ($balance['identity']['logo_url'] ?? ''),
             'registration_number' => (string) ($balance['identity']['registration_number'] ?? ''),

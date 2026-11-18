@@ -85,15 +85,15 @@
             <tr>
                 <td width="50%" align="center">
                     <div>Mengetahui,</div>
-                    <div><b>Badan Pengawas</b></div>
+                    <div><b>{{ ($identity['verifier_title'] ?? '') ?: 'Badan Pengawas' }}</b></div>
                     <div style="height: 45px;"></div>
-                    <div><u>( {{ $identity['supervisor_name'] ?? '........................' }} )</u></div>
+                    <div><u>( {{ ($identity['verifier_name'] ?? '') ?: '........................' }} )</u></div>
                 </td>
                 <td width="50%" align="center">
-                    <div>{{ $identity['district_name'] ?? '' }}, {{ date('d F Y') }}</div>
-                    <div><b>Direktur Utama</b></div>
+                    <div>{{ $identity['district_name'] ?? '' }}, {{ $date_formatted ?? '' }}</div>
+                    <div><b>{{ ($identity['manager_title'] ?? '') ?: 'Direktur Utama' }}</b></div>
                     <div style="height: 45px;"></div>
-                    <div><u>( {{ $identity['director_name'] ?? '........................' }} )</u></div>
+                    <div><u>( {{ ($identity['manager_name'] ?? '') ?: '........................' }} )</u></div>
                 </td>
             </tr>
         </table>

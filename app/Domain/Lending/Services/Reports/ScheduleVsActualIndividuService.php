@@ -289,7 +289,7 @@ final class ScheduleVsActualIndividuService
                 'as_of' => $until->subDay()->toDateString(),
             ],
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?: config('app.name')),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'filters' => [

@@ -86,7 +86,7 @@ final class ReportSignatureService
         $verifierTitle = (string) ($profile?->verifier_title ?? '');
 
         return [
-            '{nama_lembaga}' => (string) ($profile?->legal_name ?: config('app.name')),
+            '{nama_lembaga}' => (string) ($profile?->legal_name ?? ''),
             '{nama_singkat}' => (string) ($profile?->short_name ?? ''),
             '{brand_short}' => (string) ($profile?->brand_short ?: $profile?->short_name ?? ''),
             '{alamat_lembaga}' => (string) ($profile?->address ?? ''),

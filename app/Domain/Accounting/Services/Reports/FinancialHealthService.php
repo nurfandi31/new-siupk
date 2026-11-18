@@ -8,6 +8,7 @@ use App\Domain\Accounting\Services\AccountBalanceQuery;
 use App\Domain\Lending\Services\Reports\CollectibilityReportService;
 use App\Domain\Membership\Models\OrganizationProfile;
 use App\Tenancy\TenantContext;
+use Carbon\CarbonImmutable;
 
 /**
  * Penilaian Tingkat Kesehatan Keuangan BUMDesma / LKD (Permendesa / Kepmendesa No. 136/2022).
@@ -163,11 +164,19 @@ final class FinancialHealthService
             'year' => $year,
             'month' => $month,
             'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
+            'date_formatted' => CarbonImmutable::createFromDate($year, $month, 1)
+                ->endOfMonth()
+                ->locale('id')
+                ->translatedFormat('d F Y'),
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
                 'district_name' => $profile?->district_name,
                 'regency_name' => $profile?->regency_name,
+                'manager_name' => (string) ($profile?->manager_name ?? ''),
+                'manager_title' => (string) ($profile?->manager_title ?? ''),
+                'verifier_name' => (string) ($profile?->verifier_name ?? ''),
+                'verifier_title' => (string) ($profile?->verifier_title ?? ''),
             ],
             'financial_data' => [
                 'pendapatan' => $pendapatan,

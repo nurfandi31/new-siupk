@@ -1074,8 +1074,8 @@ final class LoanController
 
         $profile = OrganizationProfile::query()->first();
         $identity = [
-            'legal_name' => $profile?->legal_name ?? config('app.name'),
-            'short_name' => $profile?->short_name ?? config('app.name'),
+            'legal_name' => $profile?->legal_name ?? '',
+            'short_name' => $profile?->short_name ?? '',
             'district_name' => $profile?->district_name ?? '',
             'regency_name' => $profile?->regency_name ?? '',
             'address' => $profile?->address ?? '',

@@ -39,30 +39,51 @@ final class AnnualReportPackService
 
         $asOfDate = CarbonImmutable::createFromDate($year, $month, 1)->endOfMonth();
 
+        $tenant = null;
+        $shard = null;
+        try {
+            $tenant = $this->context->tenant();
+            $shard = $this->context->shard();
+        } catch (\Throwable) {
+            // Tenant context is optional for isolated report rendering.
+        }
+
+        $provinceName = (string) ($tenant?->province_name ?? $shard?->province_name ?? '');
+
         return [
             'year' => $year,
             'month' => $month,
             'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
             'date_formatted' => $asOfDate->locale('id')->translatedFormat('d F Y'),
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?: $tenant?->name ?: ''),
                 'short_name' => $profile?->short_name,
                 'district_name' => $profile?->district_name ?? '',
                 'regency_name' => $profile?->regency_name ?? '',
-                'province_name' => $profile?->province_name ?? '',
+                'province_name' => $provinceName,
                 'address' => $profile?->address ?? '',
                 'phone' => $profile?->phone ?? '',
                 'email' => $profile?->email ?? '',
                 'registration_number' => $profile?->registration_number ?? '',
-                'director_name' => $profile?->director_name ?? 'Direktur Utama',
-                'supervisor_name' => $profile?->supervisor_name ?? 'Ketua Badan Pengawas',
-                'advisor_name' => $profile?->advisor_name ?? 'Penasihat',
+                'manager_name' => (string) ($profile?->manager_name ?? ''),
+                'manager_title' => (string) ($profile?->manager_title ?? ''),
+                'secretary_name' => (string) ($profile?->secretary_name ?? ''),
+                'secretary_title' => (string) ($profile?->secretary_title ?? ''),
+                'treasurer_name' => (string) ($profile?->treasurer_name ?? ''),
+                'treasurer_title' => (string) ($profile?->treasurer_title ?? ''),
+                'verifier_name' => (string) ($profile?->verifier_name ?? ''),
+                'verifier_title' => (string) ($profile?->verifier_title ?? ''),
+                'kepala_desa_name' => (string) ($profile?->kepala_desa_name ?? ''),
+                // Backward-compatible keys used by the annual document templates.
+                'director_name' => (string) ($profile?->manager_name ?? ''),
+                'supervisor_name' => (string) ($profile?->verifier_name ?? ''),
+                'advisor_name' => (string) ($profile?->kepala_desa_name ?? ''),
                 'logo_url' => $profile?->logo_url ?? null,
             ],
             'villages' => $villages->map(fn ($v) => [
                 'name' => (string) $v->name,
                 'code' => (string) $v->code,
-                'head_name' => (string) ($v->head_name ?? 'Kepala Desa'),
+                'head_name' => (string) ($v->village_head_name ?? ''),
             ])->all(),
         ];
     }

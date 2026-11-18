@@ -327,7 +327,7 @@ final class LppReportService
             'month' => $month,
             'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'products' => $productBlocks,
@@ -638,7 +638,7 @@ final class LppReportService
             'month' => $month,
             'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'products' => $productBlocks,
@@ -942,7 +942,7 @@ final class LppReportService
             'month' => $month,
             'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'products' => $productBlocks,

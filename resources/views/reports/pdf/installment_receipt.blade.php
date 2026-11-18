@@ -1,5 +1,5 @@
 @php
-    $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? config('app.name'));
+    $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? '');
     $district = $identity['district_name'] ?? '';
     $regency = $identity['regency_name'] ?? '';
     $locationLine = trim(($district !== '' ? 'Kec. ' . $district : '') . ' ' . ($regency !== '' ? 'Kab. ' . $regency : ''));

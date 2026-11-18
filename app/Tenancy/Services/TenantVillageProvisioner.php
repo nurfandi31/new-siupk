@@ -38,14 +38,11 @@ final readonly class TenantVillageProvisioner
         }
 
         if ($villages === []) {
-            $villages = [
-                ['code' => '3201012001', 'name' => 'Desa Sukamaju'],
-                ['code' => '3201012002', 'name' => 'Desa Makmur'],
-                ['code' => '3201012003', 'name' => 'Desa Sejahtera'],
-                ['code' => '3201012004', 'name' => 'Desa Ceria'],
-                ['code' => '3201012005', 'name' => 'Desa Mandiri'],
-            ];
+            // Jangan membuat desa fiktif saat API kode wilayah gagal/kosong.
+            // Admin dapat menambahkan desa secara manual atau mengulang provisioning.
+            return 0;
         }
+
         $namingId = VillageNaming::query()->active()->orderBy('row_id')->value('row_id');
 
         if ($namingId === null) {

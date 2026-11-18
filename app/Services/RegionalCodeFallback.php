@@ -202,12 +202,9 @@ final class RegionalCodeFallback
             return $all[$provinceCode];
         }
 
-        // Generic fallback regencies for other provinces
-        return [
-            ['code' => $provinceCode.'01', 'name' => 'KABUPATEN PUSAT '.$provinceCode],
-            ['code' => $provinceCode.'02', 'name' => 'KABUPATEN UTARA '.$provinceCode],
-            ['code' => $provinceCode.'71', 'name' => 'KOTA PUSAT '.$provinceCode],
-        ];
+        // Provinsi di luar dataset offline tidak direkayasa; biarkan kosong
+        // sampai API kode wilayah pusat memberikan data resmi.
+        return [];
     }
 
     /**
@@ -215,7 +212,7 @@ final class RegionalCodeFallback
      */
     public static function districts(string $regencyCode): array
     {
-        // Sample districts for known regencies
+        // Dataset offline untuk kabupaten yang sudah terverifikasi.
         $districts = [
             '3301' => [ // Cilacap
                 ['code' => '330101', 'name' => 'KEDUNGREJA'],
@@ -289,13 +286,8 @@ final class RegionalCodeFallback
             return $districts[$regencyCode];
         }
 
-        // Generic fallback districts (01..05) for any regency code
-        $res = [];
-        for ($i = 1; $i <= 5; $i++) {
-            $code = $regencyCode.sprintf('%02d', $i);
-            $res[] = ['code' => $code, 'name' => 'KECAMATAN '.$i.' ('.$regencyCode.')'];
-        }
-
-        return $res;
+        // Jangan membangkitkan nama kecamatan rekaan untuk kode yang tidak
+        // dikenal; biarkan kosong hingga API memberikan data resmi.
+        return [];
     }
 }

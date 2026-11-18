@@ -1,5 +1,5 @@
 @php
-    $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? config('app.name'));
+    $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? '');
     $address = $identity['address'] ?? '';
     $phone = $identity['phone'] ?? '';
     $logoUrl = $identity['logo_url'] ?? null;

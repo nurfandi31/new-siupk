@@ -49,9 +49,9 @@ const statusOptions = computed(() => [
 ]);
 
 const regencyCenter = reactive({
-    lat: -7.5,
-    lng: 109.5,
-    zoom: 11,
+    lat: -2.5489,
+    lng: 118.0149,
+    zoom: 5,
 });
 
 async function loadRegencyCenter(regencyCode) {

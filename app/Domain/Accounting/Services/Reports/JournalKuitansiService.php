@@ -58,7 +58,7 @@ final class JournalKuitansiService
         }
 
         $profile = OrganizationProfile::query()->first();
-        $legalName = (string) ($profile?->legal_name ?: config('app.name'));
+        $legalName = (string) ($profile?->legal_name ?? '');
         $relation = trim((string) ($entry->legacy_relation ?? ''));
         $officer = trim((string) ($user?->name ?? ''));
 

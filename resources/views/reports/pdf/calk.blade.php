@@ -9,7 +9,7 @@
     <tr>
         <td colspan="3" align="center">
             <div style="font-size: 18px;"><b>CATATAN ATAS LAPORAN KEUANGAN</b></div>
-            <div style="font-size: 18px; text-transform: uppercase;"><b>{{ $identity['short_name'] ?? $identity['legal_name'] ?? config('app.name') }}</b></div>
+            <div style="font-size: 18px; text-transform: uppercase;"><b>{{ $identity['short_name'] ?? $identity['legal_name'] ?? '' }}</b></div>
             <div style="font-size: 16px;"><b>{{ strtoupper($period['period_label'] ?? '') }}</b></div>
         </td>
     </tr>
@@ -20,7 +20,7 @@
     <li>
         <div style="text-transform: uppercase;">Gambaran Umum</div>
         <div style="text-align: justify;">
-            {{ $identity['short_name'] ?? $identity['legal_name'] ?? config('app.name') }} adalah Badan Usaha Milik Desa
+            {{ $identity['short_name'] ?? $identity['legal_name'] ?? '' }} adalah Badan Usaha Milik Desa
             Bersama (Bumdesma Lkd) yang mengelola Dana Bergulir Masyarakat (DBM) melalui produk usahanya. Laporan
             Keuangan ini disusun dengan basis pencatatan akrual dan disajikan untuk periode
             {{ $period['period_label'] ?? '' }}.
@@ -78,7 +78,7 @@
                     <div style="text-transform: uppercase;">Penutup</div>
                     <div style="text-align: justify;">
                         Catatan atas Laporan Keuangan (CALK) ini merupakan bagian tidak terpisahkan dari Laporan Keuangan
-                        {{ $identity['short_name'] ?? $identity['legal_name'] ?? config('app.name') }} untuk periode
+                        {{ $identity['short_name'] ?? $identity['legal_name'] ?? '' }} untuk periode
                         {{ $period['period_label'] ?? '' }}. Selanjutnya CALK ini diharapkan dapat berguna bagi
                         pihak-pihak yang berkepentingan (stakeholders) serta memenuhi prinsip-prinsip transparansi,
                         akuntabilitas, pertanggungjawaban, independensi, dan fairness dalam pengelolaan keuangan.

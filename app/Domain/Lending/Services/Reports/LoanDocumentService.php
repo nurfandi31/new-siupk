@@ -297,7 +297,7 @@ final class LoanDocumentService
 
         $base = [
             // Lembaga
-            '{nama_lembaga}' => (string) ($profile?->legal_name ?: config('app.name')),
+            '{nama_lembaga}' => (string) ($profile?->legal_name ?? ''),
             '{nama_singkat}' => (string) ($profile?->short_name ?? ''),
             '{alamat_lembaga}' => (string) ($profile?->address ?? ''),
             '{telepon_lembaga}' => (string) ($profile?->phone ?? ''),
@@ -425,7 +425,7 @@ final class LoanDocumentService
         $profile = OrganizationProfile::query()->first();
 
         return [
-            'legal_name' => (string) ($profile?->legal_name ?: config('app.name')),
+            'legal_name' => (string) ($profile?->legal_name ?? ''),
             'short_name' => (string) ($profile?->short_name ?? ''),
             'registration_number' => (string) ($profile?->registration_number ?? ''),
             'address' => (string) ($profile?->address ?? ''),

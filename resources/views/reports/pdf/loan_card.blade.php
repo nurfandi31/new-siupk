@@ -1,5 +1,5 @@
 @php
-    $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? config('app.name'));
+    $legalName = strtoupper($identity['legal_name'] ?? $identity['short_name'] ?? '');
     $district = $identity['district_name'] ?? '';
     $regency = $identity['regency_name'] ?? '';
     $registration = $identity['registration_number'] ?? '';
@@ -56,7 +56,7 @@
                             <img src="{{ $logoUrl }}" height="40" alt="{{ $loan['loan_number'] ?? $loan['id'] }}">
                         @endif
                     </div>
-                    <div style="font-size: 14px;">{{ $loan['loan_number'] ?? ('PINJ-' . $loan['id']) }}</div>
+                    <div style="font-size: 14px;">{{ $loan['loan_number'] ?? '' }}</div>
                 </td>
                 <td width="150">Jenis Piutang</td>
                 <td width="5" align="center">:</td>

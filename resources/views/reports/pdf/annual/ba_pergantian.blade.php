@@ -6,7 +6,7 @@
             <td>
                 <div style="font-size: 13px; font-weight: bold;">BERITA ACARA PENGESAHAN & PERTANGGUNGJAWABAN LAPORAN KEUANGAN</div>
                 <div style="font-size: 12px; font-weight: bold; color: #2b6cb0;">{{ strtoupper($identity['legal_name']) }}</div>
-                <div style="font-size: 11px;">Nomor: BA/{{ $year }}/LPJ/{{ strtoupper($identity['short_name'] ?? 'LKD') }}</div>
+                <div style="font-size: 11px;">Nomor: BA/{{ $year }}/LPJ/{{ strtoupper($identity['short_name'] ?? $identity['legal_name'] ?? '') }}</div>
             </td>
         </tr>
     </table>
@@ -31,19 +31,19 @@
     <table border="0" width="100%" style="margin-top: 30px; font-size: 11px;">
         <tr>
             <td width="33%" align="center">
-                <div>Direktur Utama</div>
+                <div>{{ ($identity['manager_title'] ?? '') ?: 'Direktur Utama' }}</div>
                 <div style="height: 45px;"></div>
-                <div><u>( {{ $identity['director_name'] ?? '........................' }} )</u></div>
+                <div><u>( {{ ($identity['manager_name'] ?? '') ?: '........................' }} )</u></div>
             </td>
             <td width="33%" align="center">
-                <div>Badan Pengawas</div>
+                <div>{{ ($identity['verifier_title'] ?? '') ?: 'Badan Pengawas' }}</div>
                 <div style="height: 45px;"></div>
-                <div><u>( {{ $identity['supervisor_name'] ?? '........................' }} )</u></div>
+                <div><u>( {{ ($identity['verifier_name'] ?? '') ?: '........................' }} )</u></div>
             </td>
             <td width="33%" align="center">
                 <div>Wakil Kepala Desa / MAD</div>
                 <div style="height: 45px;"></div>
-                <div><u>( {{ $identity['advisor_name'] ?? '........................' }} )</u></div>
+                <div><u>( {{ ($identity['kepala_desa_name'] ?? '') ?: '........................' }} )</u></div>
             </td>
         </tr>
     </table>

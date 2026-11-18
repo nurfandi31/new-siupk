@@ -15,7 +15,7 @@
     <tr>
         <td colspan="3" align="center">
             <div style="font-size: 18px;"><b>CATATAN ATAS LAPORAN KEUANGAN</b></div>
-            <div style="font-size: 18px; text-transform: uppercase;"><b>{{ $identity['short_name'] ?? $identity['legal_name'] ?? config('app.name') }}</b></div>
+            <div style="font-size: 18px; text-transform: uppercase;"><b>{{ $identity['short_name'] ?? $identity['legal_name'] ?? '' }}</b></div>
             <div style="font-size: 14px;"><b>CALK TUTUP BUKU · TAHUN {{ $year }}</b></div>
         </td>
     </tr>

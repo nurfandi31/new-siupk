@@ -251,7 +251,7 @@ final class LegacyIndividualDocumentContext
             ? ucwords(strtolower($kabupatenName))
             : 'Kabupaten '.ucwords(strtolower($kabupatenName));
         $namaKecamatan = trim('Kecamatan '.trim((string) ($profile?->district_name ?? '')).' '.$kabupatenTitle);
-        $namaLembaga = (string) ($profile?->short_name ?: $profile?->legal_name ?: config('app.name'));
+        $namaLembaga = (string) ($profile?->short_name ?: $profile?->legal_name ?: '');
         $nomorUsaha = trim((string) ($profile?->registration_number ?? '')) !== ''
             ? 'SK Kemenkumham RI No.'.$profile->registration_number
             : '';
@@ -601,7 +601,7 @@ final class LegacyIndividualDocumentContext
                 : 'Kabupaten '.ucwords(strtolower($kabupatenName)));
         $districtName = trim((string) ($profile?->district_name ?: preg_replace('/^Kecamatan\s+/i', '', (string) ($district?->name ?? ''))));
         $namaKecamatan = trim('Kecamatan '.$districtName.' '.$kabupatenTitle);
-        $namaLembaga = (string) ($profile?->short_name ?: $profile?->legal_name ?: config('app.name'));
+        $namaLembaga = (string) ($profile?->short_name ?: $profile?->legal_name ?: '');
         $nomorUsaha = trim((string) ($profile?->registration_number ?? '')) !== ''
             ? 'SK Kemenkumham RI No.'.$profile->registration_number
             : '';

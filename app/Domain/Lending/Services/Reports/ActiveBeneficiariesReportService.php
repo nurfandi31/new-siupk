@@ -174,7 +174,7 @@ final class ActiveBeneficiariesReportService
             'month' => $month,
             'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'groups' => array_values($groups),
@@ -212,7 +212,7 @@ final class ActiveBeneficiariesReportService
             'month' => $month,
             'period_label' => ($monthNames[$month] ?? "Bulan {$month}")." {$year}",
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'groups' => [],

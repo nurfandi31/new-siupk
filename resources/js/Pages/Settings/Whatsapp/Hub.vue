@@ -484,18 +484,16 @@ function previewMessageFor(source) {
             : 'Yth. Bapak/Ibu {nama}, tagihan angsuran ke-{angsuran_ke} pinjaman {pinjaman} sebesar Rp {total} jatuh tempo {tanggal}. Mohon diselesaikan. Terima kasih.';
     }
     if (!item) return template;
-    const sample = source === 'group'
-        ? { ...item, borrower: item.borrower?.includes('Kelompok') || !item.borrower ? 'Mawar Jaya' : item.borrower }
-        : { ...item, borrower: item.borrower?.includes('Kelompok') ? 'Sumiati' : item.borrower };
+    const sample = { ...item, borrower: item.borrower || '—' };
     return template
-        .replaceAll('{nama}', sample.borrower || '—')
+        .replaceAll('{nama}', sample.borrower)
         .replaceAll('{angsuran_ke}', String(sample.installment_number ?? '—'))
         .replaceAll('{total}', formatMoney(sample.amount))
         .replaceAll('{pokok}', formatMoney(sample.principal))
         .replaceAll('{jasa}', formatMoney(sample.interest))
         .replaceAll('{denda}', formatMoney(sample.penalty))
         .replaceAll('{tanggal}', formatDate(sample.due_date || props.due_date))
-        .replaceAll('{pinjaman}', sample.loan_number || `#${sample.loan_row_id}`);
+        .replaceAll('{pinjaman}', sample.loan_number || '—');
 }
 
 function formatMoney(value) {

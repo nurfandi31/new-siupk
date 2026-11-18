@@ -121,6 +121,10 @@ const scopeOptions = [
 
 const hasData = computed<boolean>(() => props.buckets.length > 0);
 
+const totalSharePct = computed<number>(() =>
+    props.buckets.reduce((sum, bucket) => sum + Number(bucket.share_pct || 0), 0),
+);
+
 const toneForSelisih = (selisih: number): 'success' | 'error' | 'warning' => {
     if (selisih >= 0) return 'success';
     return 'error';
@@ -274,7 +278,7 @@ const pdfUrl = computed<string>(() => {
                                 <td colspan="3" class="px-3 py-2">TOTAL</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ Number(props.totals.loan_count) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ fmt(props.totals.outstanding) }}</td>
-                                <td class="px-3 py-2 text-right tabular-nums">100.00%</td>
+                                <td class="px-3 py-2 text-right tabular-nums">{{ hasData ? `${totalSharePct.toFixed(2)}%` : '—' }}</td>
                                 <td></td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ fmt(props.totals.allowance_required) }}</td>
                                 <td class="px-3 py-2 text-right tabular-nums">{{ fmt(props.totals.allowance_formed) }}</td>

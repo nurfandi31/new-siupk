@@ -439,7 +439,13 @@ final class HoldingReportController
         }
 
         try {
-            $pack = $this->consolidatedReportService->combinedPack($tenantIds, $year, $month, 'Holding BUMDesma');
+            $provinceName = (string) (
+                $request->query('province_name')
+                ?: $tenants->first()?->province_name
+                ?: $tenants->first()?->placement?->shard?->province_name
+                ?: 'Provinsi'
+            );
+            $pack = $this->consolidatedReportService->combinedPack($tenantIds, $year, $month, $provinceName);
 
             return response()->json([
                 'status' => 'success',

@@ -17,7 +17,7 @@
     $debitLabel = $debit_label ?? '';
     $creditLabel = $credit_label ?? '';
 
-    $legalName = strtoupper((string) ($identity['legal_name'] ?? config('app.name')));
+    $legalName = strtoupper((string) ($identity['legal_name'] ?? ''));
     $district = (string) ($identity['district_name'] ?? '');
     $regency = (string) ($identity['regency_name'] ?? '');
     $registration = (string) ($identity['registration_number'] ?? '');

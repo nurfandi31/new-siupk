@@ -77,7 +77,7 @@ function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-const orgName = computed(() => props.organization?.name || 'BUMDesma LKD');
+const orgName = computed(() => props.organization?.name || props.tenant?.name || '');
 const orgLegalName = computed(() => props.organization?.legal_name || orgName.value);
 const orgRegion = computed(() => {
     const d = props.organization?.district_name;

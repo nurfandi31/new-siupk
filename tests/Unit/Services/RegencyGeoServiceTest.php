@@ -28,14 +28,10 @@ final class RegencyGeoServiceTest extends TestCase
         $this->assertEqualsWithDelta(108.7980, $kedungreja['lng'], 0.001);
     }
 
-    public function test_fallback_district_offset_distribution(): void
+    public function test_unknown_district_does_not_fabricate_coordinate(): void
     {
-        $dist1 = RegencyGeoService::resolveDistrictCoordinate('999901', '9999', 0, 5);
-        $dist2 = RegencyGeoService::resolveDistrictCoordinate('999902', '9999', 1, 5);
-
-        $this->assertNotEquals($dist1, $dist2);
-        $this->assertIsFloat($dist1['lat']);
-        $this->assertIsFloat($dist1['lng']);
+        $this->assertNull(RegencyGeoService::resolveDistrictCoordinate('999901', '9999', 0, 5));
+        $this->assertNull(RegencyGeoService::resolveDistrictCoordinate('999902', '9999', 1, 5));
     }
 
     public function test_evaluates_npl_levels(): void

@@ -138,7 +138,7 @@ final readonly class CollectibilityOjkService
             'period_label' => (string) ($base['period_label'] ?? ''),
             'as_of' => CarbonImmutable::createFromDate($year, $month, 1)->endOfMonth()->toDateString(),
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
                 'logo_url' => $profile?->logo_url,
                 'registration_number' => (string) ($profile?->registration_number ?? ''),

@@ -2,7 +2,7 @@
     $identity = $identity ?? [];
     $entry = $entry ?? [];
     $paper = (string) ($paper ?? '80');
-    $legalName = strtoupper((string) ($identity['legal_name'] ?? config('app.name')));
+    $legalName = strtoupper((string) ($identity['legal_name'] ?? ''));
     $district = (string) ($identity['district_name'] ?? '');
     $address = (string) ($identity['address'] ?? '');
     $phone = (string) ($identity['phone'] ?? '');

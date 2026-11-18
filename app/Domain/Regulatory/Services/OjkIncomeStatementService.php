@@ -194,7 +194,7 @@ final class OJKIncomeStatementService
         return [
             'period' => $period,
             'identity' => [
-                'legal_name' => (string) ($profile?->legal_name ?? 'BUMDesma LKD'),
+                'legal_name' => (string) ($profile?->legal_name ?? ''),
                 'short_name' => $profile?->short_name,
             ],
             'header_lalu' => $period['is_monthly'] ? 'Bulan Lalu' : 'Tahun Lalu',

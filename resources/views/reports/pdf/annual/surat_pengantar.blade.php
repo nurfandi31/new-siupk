@@ -4,7 +4,7 @@
     <table border="0" width="100%" style="font-size: 11px; line-height: 1.6;">
         <tr>
             <td width="10%">Nomor</td>
-            <td width="50%">: 001/LPJ/{{ strtoupper($identity['short_name'] ?? 'BUMDESMA') }}/{{ $year }}</td>
+            <td width="50%">: ......../LPJ/{{ strtoupper($identity['short_name'] ?? $identity['legal_name'] ?? '') }}/{{ $year }}</td>
             <td width="40%" align="right">{{ $identity['district_name'] }}, {{ $date_formatted }}</td>
         </tr>
         <tr>
@@ -65,13 +65,13 @@
                     <div>Mengetahui,</div>
                     <div><b>Badan Pengawas</b></div>
                     <div style="height: 50px;"></div>
-                    <div><u>( {{ $identity['supervisor_name'] ?? '........................' }} )</u></div>
+                    <div><u>( {{ ($identity['verifier_name'] ?? '') ?: '........................' }} )</u></div>
                 </td>
                 <td width="50%" align="center">
                     <div>{{ $identity['district_name'] }}, {{ $date_formatted }}</div>
-                    <div><b>Direktur Utama</b></div>
+                    <div><b>{{ ($identity['manager_title'] ?? '') ?: 'Direktur Utama' }}</b></div>
                     <div style="height: 50px;"></div>
-                    <div><u>( {{ $identity['director_name'] ?? '........................' }} )</u></div>
+                    <div><u>( {{ ($identity['manager_name'] ?? '') ?: '........................' }} )</u></div>
                 </td>
             </tr>
         </table>
