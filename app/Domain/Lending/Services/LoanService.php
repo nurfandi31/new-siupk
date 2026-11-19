@@ -1091,18 +1091,18 @@ final class LoanService
 
         $entry->lines()->create([
             'line_number' => 1,
-            'account_row_id' => (int) $cashAccount->row_id,
+            'account_row_id' => (int) $receivableAccount->row_id,
             'organization_unit_row_id' => null,
-            'description' => 'Kas/Bank sumber dana',
+            'description' => 'Piutang pinjaman',
             'debit' => $totalAmount,
             'credit' => 0,
         ]);
 
         $entry->lines()->create([
             'line_number' => 2,
-            'account_row_id' => (int) $receivableAccount->row_id,
+            'account_row_id' => (int) $cashAccount->row_id,
             'organization_unit_row_id' => null,
-            'description' => 'Piutang pinjaman',
+            'description' => 'Kas/Bank sumber dana',
             'debit' => 0,
             'credit' => $totalAmount,
         ]);
@@ -1255,11 +1255,23 @@ final class LoanService
             );
 
             // 7) Catatan alokasi per-anggota (untuk pinjaman kelompok).
+            // Untuk pembayaran awal (belum ada angsuran yang jatuh tempo), nomor
+            // angsuran bisa kosong. Infer dari baris angsuran yang benar-benar
+            // menerima pembayaran agar tracking per-anggota tetap tercatat.
             $allocations = $data['member_allocations'] ?? [];
-            if ($installmentNumber > 0 && is_array($allocations) && $allocations !== []) {
+            $trackingInstallmentNumber = $installmentNumber;
+            if ($trackingInstallmentNumber <= 0) {
+                $targetRowId = $installmentTargets['principal'] ?? $installmentTargets['interest'] ?? null;
+                if ($targetRowId !== null) {
+                    $trackingInstallmentNumber = (int) LoanInstallment::query()
+                        ->where('row_id', (int) $targetRowId)
+                        ->value('installment_number');
+                }
+            }
+            if ($trackingInstallmentNumber > 0 && is_array($allocations) && $allocations !== []) {
                 $this->tracking->recordMemberAllocations(
                     (int) $loan->row_id,
-                    $installmentNumber,
+                    $trackingInstallmentNumber,
                     (int) $posted->row_id,
                     $allocations,
                     CarbonImmutable::parse($transactionDate),

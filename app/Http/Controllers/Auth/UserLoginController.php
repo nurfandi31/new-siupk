@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Domain\Access\Models\UserRole;
+use App\Domain\Billing\Services\SubscriptionGateService;
 use App\Models\Platform\Tenant;
 use App\Models\Platform\TenantMembership;
 use App\Models\User;
@@ -36,6 +37,7 @@ final class UserLoginController
         private readonly TenantContext $tenantContext,
         private readonly PlatformHostResolver $platformHosts,
         private readonly TenantResolver $tenants,
+        private readonly SubscriptionGateService $subscriptionGate,
     ) {}
 
     /**
@@ -150,6 +152,19 @@ final class UserLoginController
         abort_unless($hasActiveMembership, 403, 'Akun ini tidak terhubung aktif ke tenant ini.');
 
         $this->signIn($request, $user);
+
+        $gate = $this->subscriptionGate->check((int) $tenant->row_id);
+        if ($gate['blocked'] === true) {
+            $message = $gate['invoice_number'] !== null
+                ? "Login berhasil, tetapi akses operasional dikunci karena tagihan #{$gate['invoice_number']} belum dilunasi. Silakan selesaikan pembayaran untuk membuka kembali aplikasi."
+                : 'Login berhasil, tetapi akses operasional dikunci karena langganan tenant sedang ditangguhkan. Silakan selesaikan pembayaran tagihan.';
+
+            $target = $gate['invoice_id'] !== null
+                ? route('billing.invoices.show', ['invoice' => $gate['invoice_id'], 'locked' => 1])
+                : route('billing.invoices.index', ['locked' => 1]);
+
+            return redirect()->to($target)->with('warning', $message);
+        }
 
         return redirect()
             ->route('dashboard')

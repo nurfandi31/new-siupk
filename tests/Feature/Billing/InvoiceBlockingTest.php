@@ -129,7 +129,7 @@ final class InvoiceBlockingTest extends TestCase
         // Accessing dashboard -> redirected directly to invoice show page
         $this->actingAs($tenantUser)
             ->get('/dashboard')
-            ->assertRedirect(route('billing.invoices.show', $invoice->row_id));
+            ->assertRedirect(route('billing.invoices.show', ['invoice' => $invoice->row_id, 'locked' => 1]));
     }
 
     public function test_tenant_with_blocking_invoice_receives_402_on_json_operational_requests(): void
@@ -214,7 +214,7 @@ final class InvoiceBlockingTest extends TestCase
         // Initially blocked
         $this->actingAs($tenantUser)
             ->get('/dashboard')
-            ->assertRedirect(route('billing.invoices.show', $invoice->row_id));
+            ->assertRedirect(route('billing.invoices.show', ['invoice' => $invoice->row_id, 'locked' => 1]));
 
         // Pay the invoice
         $payments = app(InvoicePaymentService::class);

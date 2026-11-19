@@ -5,6 +5,7 @@ import AppButton from '../Components/AppButton.vue';
 import AppIcon from '../Components/AppIcon.vue';
 import AppIconButton from '../Components/AppIconButton.vue';
 import AppModal from '../Components/AppModal.vue';
+import BillingGateModal from '../Components/BillingGateModal.vue';
 import AppConfirmDialog from '../Components/AppConfirmDialog.vue';
 import AppToast from '../Components/AppToast.vue';
 import AssistantWidget from '../Components/AssistantWidget.vue';
@@ -31,6 +32,8 @@ const assistantEnabled = computed(() => {
     return can('assistant.use');
 });
 const currentPath = computed(() => page.url.split('?')[0]);
+const billingGate = computed(() => page.props.billing_gate ?? null);
+const billingGateOpen = ref(false);
 const sidebarNav = ref(null);
 const mobileMenuOpen = ref(false);
 const sidebarCollapsed = ref(false);
@@ -70,6 +73,29 @@ watch(sidebarCollapsed, (val) => {
         // ignore
     }
 });
+
+// Popup tagihan pemblokir: tampil saat login diarahkan ke halaman tagihan
+// (?locked=1) atau saat tenant masih membuka halaman lain yang diizinkan.
+watch(
+    () => [page.url, billingGate.value?.blocked, billingGate.value?.invoice_id],
+    () => {
+        if (billingGate.value?.blocked !== true) {
+            billingGateOpen.value = false;
+            return;
+        }
+
+        const lockedLanding = /(?:^|[?&])locked=1(?:&|$)/.test(page.url);
+        const onInvoiceShow = /^\/billing\/invoices\/[^/]+/.test(currentPath.value);
+
+        if (onInvoiceShow && !lockedLanding) {
+            billingGateOpen.value = false;
+            return;
+        }
+
+        billingGateOpen.value = true;
+    },
+    { immediate: true },
+);
 
 function leaveImpersonation() {
     leaveForm.post('/auth/impersonate/leave');
@@ -1001,6 +1027,7 @@ function onParentItemClick(item, event) {
         <AssistantWidget v-if="assistantEnabled" />
         <AppConfirmDialog />
         <AppToast />
+        <BillingGateModal v-model="billingGateOpen" :gate="billingGate" />
 
         <AppModal v-model="logoutOpen" :title="t('Keluar dari aplikasi?')" size="sm">
             <p class="text-sm text-on-surface-variant">

@@ -332,7 +332,7 @@ final class MemberLoanScheduleCalculator
             $sisa = $i % $sistemPokok;
             $ke = $i / $sistemPokok;
 
-            $wajibPokok = ($principal / 10) - ($rentalRows[$i]['jasa'] ?? 0);
+            $wajibPokok = $tempoPokok > 0 ? ($principal / $tempoPokok) : 0.0;
 
             if ($term === 24) {
                 $wajibPokok = $this->pembulatan((($principal / 10) - ($rentalRows[$i]['jasa'] ?? 0)) / 2, '-500');

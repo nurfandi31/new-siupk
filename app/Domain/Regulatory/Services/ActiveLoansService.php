@@ -170,6 +170,7 @@ final class ActiveLoansService
             $overduePrincipal = 0.0;
             $overdueInterest = 0.0;
             $overduePenalty = 0.0;
+            $installmentGroups = [];
 
             foreach ($insts as $inst) {
                 $pDue = (float) $inst->principal_due;
@@ -188,6 +189,17 @@ final class ActiveLoansService
 
                 $dueDate = (string) $inst->due_date;
                 $lineRem = round($pRem + $iRem + $penRem, 2);
+
+                // Ringkas per nomor angsuran. Jadwal tipe split menyimpan baris
+                // pokok & jasa terpisah, sehingga status lunas harus dinilai per
+                // kelompok angsuran, bukan per baris komponen.
+                $instNo = (int) $inst->installment_number;
+                if (! isset($installmentGroups[$instNo])) {
+                    $installmentGroups[$instNo] = ['due' => 0.0, 'remaining' => 0.0];
+                }
+                $installmentGroups[$instNo]['due'] = round($installmentGroups[$instNo]['due'] + $pDue + $iDue + $penDue, 2);
+                $installmentGroups[$instNo]['remaining'] = round($installmentGroups[$instNo]['remaining'] + $lineRem, 2);
+
                 if ($lineRem > 0.009 && $dueDate < $asOfStr) {
                     $overduePrincipal = round($overduePrincipal + $pRem, 2);
                     $overdueInterest = round($overdueInterest + $iRem, 2);
@@ -200,8 +212,13 @@ final class ActiveLoansService
                 if ($lineRem > 0.009 && ($nextDue === null || $dueDate < $nextDue)) {
                     $nextDue = $dueDate;
                 }
+            }
 
-                if ((string) $inst->status === 'paid' || $pRem <= 0.009) {
+            // Angsuran dianggap lunas hanya jika seluruh komponen pada nomor
+            // tersebut sudah habis. Baris jasa (principal_due=0) tidak boleh
+            // dihitung sebagai angsuran lunas.
+            foreach ($installmentGroups as $group) {
+                if ($group['due'] > 0.009 && $group['remaining'] <= 0.009) {
                     $paidCount++;
                 }
             }
@@ -237,6 +254,11 @@ final class ActiveLoansService
                 $maturityDate = CarbonImmutable::parse($disbursedAt)->addMonths($termMonths)->toDateString();
             }
 
+            $nextInstallment = $paidCount + 1;
+            if ($termMonths > 0) {
+                $nextInstallment = min($nextInstallment, $termMonths);
+            }
+
             $rows[] = [
                 'loan_id' => (int) $loan->id,
                 'loan_row_id' => (int) $loan->row_id,
@@ -258,7 +280,7 @@ final class ActiveLoansService
                 'disbursed_at' => $disbursedAt,
                 'maturity_date' => $maturityDate,
                 'next_due_date' => $nextDue,
-                'installment_paid' => $paidCount,
+                'installment_paid' => $nextInstallment,
                 'tenor_months' => $termMonths,
                 'interest_rate' => round((float) ($loan->interest_rate ?? 0), 4),
             ];

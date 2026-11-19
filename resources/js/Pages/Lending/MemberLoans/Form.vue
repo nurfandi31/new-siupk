@@ -206,8 +206,9 @@ const formatRate = (value) => rateFormatter.format(Number(value ?? 0));
 
 const periodPreview = computed(() => {
     const months = Number(form.term_months);
-    const total = Number(form.service_rate_total);
-    if (!months || !total) return null;
+    const principal = Number(form.principal_amount);
+    const totalRate = Number(form.service_rate_total);
+    if (!months || !totalRate || !principal) return null;
     const principalStep = Math.round(1 / (frequencyMultiplier[form.principal_frequency] || 1));
     const interestStep = Math.round(1 / (frequencyMultiplier[form.interest_frequency] || 1));
     const principalFirst = principalStep + Number(form.principal_grace_months || 0);
@@ -216,9 +217,11 @@ const periodPreview = computed(() => {
         ? 1
         : Math.max(1, Math.floor((months - principalFirst) / principalStep) + 1);
     const interestPeriods = Math.max(1, Math.floor((months - interestFirst) / interestStep) + 1);
+    const totalInterest = principal * (totalRate / 100);
+    const format = (value) => Math.round(value).toLocaleString('id-ID');
     return {
-        principal: { periods: principalPeriods, perPeriod: (total / principalPeriods).toFixed(3) },
-        interest: { periods: interestPeriods, perPeriod: (total / interestPeriods).toFixed(3) },
+        principal: { periods: principalPeriods, perPeriod: format(principal / principalPeriods) },
+        interest: { periods: interestPeriods, perPeriod: format(totalInterest / interestPeriods) },
     };
 });
 

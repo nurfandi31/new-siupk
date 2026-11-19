@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Billing;
 
 use App\Domain\Access\Services\PermissionChecker;
+use App\Domain\Billing\Services\SubscriptionGateService;
 use App\Models\Platform\Invoice;
 use App\Models\Platform\InvoicePayment;
 use App\Services\Billing\DuitkuClient;
@@ -31,7 +32,7 @@ final class InvoiceController
 
     public function index(Request $request, TenantContext $context): Response
     {
-        $this->permissions->denyUnless($request->user(), 'billing.view');
+        $this->authorizeBilling($request, $context, 'billing.view');
 
         $search = trim((string) $request->query('search', ''));
         $status = (string) $request->query('status', '');
@@ -74,7 +75,7 @@ final class InvoiceController
 
     public function show(Request $request, Invoice $invoice, TenantContext $context): Response
     {
-        $this->permissions->denyUnless($request->user(), 'billing.view');
+        $this->authorizeBilling($request, $context, 'billing.view');
         $this->assertTenantOwns($invoice, $context);
 
         $invoice->load([
@@ -165,7 +166,7 @@ final class InvoiceController
 
     public function pay(Request $request, Invoice $invoice, TenantContext $context, InvoicePaymentService $payments): RedirectResponse
     {
-        $this->permissions->denyUnless($request->user(), 'billing.pay');
+        $this->authorizeBilling($request, $context, 'billing.pay');
         $this->assertTenantOwns($invoice, $context);
 
         $gateway = (string) $request->input('gateway', '');
@@ -207,7 +208,7 @@ final class InvoiceController
 
     public function checkStatus(Request $request, Invoice $invoice, TenantContext $context, InvoicePaymentService $payments): RedirectResponse
     {
-        $this->permissions->denyUnless($request->user(), 'billing.pay');
+        $this->authorizeBilling($request, $context, 'billing.pay');
         $this->assertTenantOwns($invoice, $context);
 
         $activePayment = $invoice->payments()->whereIn('method', ['tripay', 'duitku', 'xendit'])->where('status', 'pending')->latest('row_id')->first();
@@ -219,6 +220,25 @@ final class InvoiceController
         }
 
         return back()->with('info', 'Status pembayaran belum berubah. Silakan lakukan pembayaran jika belum.');
+    }
+
+    /**
+     * Permission billing normal tetap berlaku, kecuali ketika tenant sedang
+     * diblokir: halaman pembayaran harus selalu dapat diakses agar tagihan bisa
+     * dilunasi dari role apa pun di lokasi tersebut.
+     */
+    private function authorizeBilling(Request $request, TenantContext $context, string $permission): void
+    {
+        if ($this->permissions->allows($request->user(), $permission)) {
+            return;
+        }
+
+        $gate = app(SubscriptionGateService::class)->check($context->id());
+        if ($gate['blocked'] === true) {
+            return;
+        }
+
+        abort(403, "Missing permission: {$permission}");
     }
 
     private function assertTenantOwns(Invoice $invoice, TenantContext $context): void

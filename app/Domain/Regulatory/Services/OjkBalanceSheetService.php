@@ -120,11 +120,12 @@ final class OJKBalanceSheetService
                     ];
                     $l1Sum += $sum;
 
-                    // OJK subtotals — heuristic berbasis kode
-                    if ((string) $l1->code === '1' && str_starts_with((string) $l3->code, '1.1.01')) {
+                    // OJK subtotals — heuristic berbasis kode akun lengkap
+                    // (mis. 1.0.00.00), bukan kode satu digit.
+                    if (str_starts_with((string) $l1->code, '1') && str_starts_with((string) $l3->code, '1.1.01')) {
                         $kasDanSetaraKas += $sum;
                     }
-                    if ((string) $l1->code === '2' && str_starts_with((string) $l3->code, '2.1')) {
+                    if (str_starts_with((string) $l1->code, '2') && str_starts_with((string) $l3->code, '2.1')) {
                         $liabilitasLancar += $sum;
                     }
                 }
@@ -146,10 +147,10 @@ final class OJKBalanceSheetService
             }
 
             // Label OJK per section
-            $ojkLabel = match ((string) $l1->code) {
-                '1' => 'Aset',
-                '2' => 'Liabilitas',
-                '3' => 'Ekuitas',
+            $ojkLabel = match ((string) $l1->account_type) {
+                'asset' => 'Aset',
+                'liability' => 'Liabilitas',
+                'equity' => 'Ekuitas',
                 default => (string) $l1->name,
             };
 
@@ -157,7 +158,11 @@ final class OJKBalanceSheetService
                 'code' => (string) $l1->code,
                 'name' => (string) $l1->name,
                 'ojk_label' => $ojkLabel,
-                'letter' => (string) $l1->code === '1' ? 'A' : ((string) $l1->code === '2' ? 'B' : 'C'),
+                'letter' => match ((string) $l1->account_type) {
+                    'asset' => 'A',
+                    'liability' => 'B',
+                    default => 'C',
+                },
                 'level' => 1,
                 'account_type' => (string) $l1->account_type,
                 'balance' => round($l1Sum, 2),

@@ -26,6 +26,12 @@ final class EnsureMenuAccess
             return $next($request);
         }
 
+        // Halaman tagihan adalah jalur pelunasan: jangan pernah dikunci oleh
+        // pembatasan menu role, terutama saat akses operasional sedang diblokir.
+        if ($request->is('billing') || $request->is('billing/*')) {
+            return $next($request);
+        }
+
         if (! $this->menus->allowsPath($request->user(), $request->path())) {
             abort(403, 'Menu ini tidak diizinkan untuk role Anda.');
         }

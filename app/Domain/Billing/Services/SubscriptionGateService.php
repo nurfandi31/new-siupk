@@ -14,7 +14,26 @@ final readonly class SubscriptionGateService
     private const BLOCKING_SUBSCRIPTION_STATUSES = ['suspended', 'past_due'];
 
     /**
-     * @return array{blocked: bool, reason: 'invoice_block'|'subscription_suspended'|null, invoice_id: int|null, invoice_number: string|null, message: string|null}
+     * @return array{
+     *     blocked: bool,
+     *     reason: 'invoice_block'|'subscription_suspended'|null,
+     *     invoice_id: int|null,
+     *     invoice_number: string|null,
+     *     message: string|null,
+     *     invoice: array{
+     *         row_id: int,
+     *         number: string,
+     *         status: string,
+     *         purpose: string|null,
+     *         description: string|null,
+     *         amount: float,
+     *         amount_paid: float,
+     *         remaining: float,
+     *         currency: string|null,
+     *         due_at: string|null
+     *     }|null,
+     *     subscription_status: string|null
+     * }
      */
     public function check(int $tenantRowId): array
     {
@@ -32,6 +51,8 @@ final readonly class SubscriptionGateService
                 'invoice_id' => (int) $blockingInvoice->row_id,
                 'invoice_number' => (string) $blockingInvoice->number,
                 'message' => "Akses fitur operasional ditangguhkan sementara karena tagihan #{$blockingInvoice->number} ({$blockingInvoice->description}) memblokir akses sampai diselesaikan.",
+                'invoice' => $this->invoicePayload($blockingInvoice),
+                'subscription_status' => null,
             ];
         }
 
@@ -47,6 +68,8 @@ final readonly class SubscriptionGateService
                 'invoice_id' => null,
                 'invoice_number' => null,
                 'message' => 'Langganan aplikasi Anda sedang ditangguhkan karena tagihan melewati jatuh tempo. Silakan lakukan pembayaran tagihan pada menu Tagihan/Billing.',
+                'invoice' => null,
+                'subscription_status' => (string) $subscription->status,
             ];
         }
 
@@ -56,6 +79,38 @@ final readonly class SubscriptionGateService
             'invoice_id' => null,
             'invoice_number' => null,
             'message' => null,
+            'invoice' => null,
+            'subscription_status' => $subscription?->status,
+        ];
+    }
+
+    /**
+     * @return array{
+     *     row_id: int,
+     *     number: string,
+     *     status: string,
+     *     purpose: string|null,
+     *     description: string|null,
+     *     amount: float,
+     *     amount_paid: float,
+     *     remaining: float,
+     *     currency: string|null,
+     *     due_at: string|null
+     * }
+     */
+    private function invoicePayload(Invoice $invoice): array
+    {
+        return [
+            'row_id' => (int) $invoice->row_id,
+            'number' => (string) $invoice->number,
+            'status' => (string) $invoice->status,
+            'purpose' => $invoice->purpose !== null ? (string) $invoice->purpose : null,
+            'description' => $invoice->description !== null ? (string) $invoice->description : null,
+            'amount' => (float) $invoice->amount,
+            'amount_paid' => (float) $invoice->amount_paid,
+            'remaining' => (float) $invoice->remainingAmount(),
+            'currency' => $invoice->currency !== null ? (string) $invoice->currency : null,
+            'due_at' => $invoice->due_at?->toDateString(),
         ];
     }
 }

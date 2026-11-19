@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
+use App\Models\Platform\Invoice;
 use App\Models\Platform\TenantMembership;
 use App\Models\User;
 use App\Tenancy\Services\DefaultChartOfAccountsProvisioner;
@@ -153,6 +154,54 @@ final class MobileAuthApiTest extends TestCase
                     'tenant',
                 ],
             ]);
+    }
+
+    public function test_blocking_invoice_blocks_mobile_api_access(): void
+    {
+        $invoice = Invoice::query()->create([
+            'public_id' => (string) Str::ulid(),
+            'number' => 'INV-MOBILE-BLOCK',
+            'tenant_id' => $this->testTenant->row_id,
+            'purpose' => 'support',
+            'status' => 'issued',
+            'amount' => 250000,
+            'amount_paid' => 0,
+            'currency' => 'IDR',
+            'due_at' => now()->addDays(3)->toDateString(),
+            'description' => 'Tagihan Mobile',
+            'blocks_access' => true,
+        ]);
+
+        $token = $this->user->createToken('Test Mobile')->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/v1/mobile/auth/me')
+            ->assertStatus(402)
+            ->assertJsonPath('status', 'blocked')
+            ->assertJsonPath('invoice_id', $invoice->row_id);
+    }
+
+    public function test_blocking_invoice_does_not_prevent_mobile_logout(): void
+    {
+        Invoice::query()->create([
+            'public_id' => (string) Str::ulid(),
+            'number' => 'INV-MOBILE-LOGOUT',
+            'tenant_id' => $this->testTenant->row_id,
+            'purpose' => 'support',
+            'status' => 'issued',
+            'amount' => 100000,
+            'amount_paid' => 0,
+            'currency' => 'IDR',
+            'description' => 'Tagihan Mobile',
+            'blocks_access' => true,
+        ]);
+
+        $token = $this->user->createToken('Test Mobile')->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/v1/mobile/auth/logout')
+            ->assertOk()
+            ->assertJsonPath('success', true);
     }
 
     public function test_unauthenticated_request_is_rejected(): void

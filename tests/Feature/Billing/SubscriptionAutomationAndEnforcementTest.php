@@ -132,7 +132,7 @@ final class SubscriptionAutomationAndEnforcementTest extends TestCase
         // Coba akses dashboard operasional -> diredirect ke billing
         $this->actingAs($user)
             ->get('/dashboard')
-            ->assertRedirect(route('billing.invoices.index'));
+            ->assertRedirect(route('billing.invoices.index', ['locked' => 1]));
 
         // Akses menu billing -> tetap diizinkan
         $this->actingAs($user)

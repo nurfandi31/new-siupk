@@ -39,7 +39,7 @@ final class DashboardController
         if ($tenant !== null) {
             $inv = Invoice::query()
                 ->where('tenant_id', $tenant->row_id)
-                ->whereIn('status', ['issued', 'pending_payment', 'overdue'])
+                ->whereIn('status', ['issued', 'partially_paid', 'pending_payment', 'overdue'])
                 ->orderByRaw("CASE WHEN status = 'overdue' THEN 0 ELSE 1 END")
                 ->oldest('due_at')
                 ->first();
@@ -57,6 +57,8 @@ final class DashboardController
                     'due_at_formatted' => $inv->due_at?->format('d M Y'),
                     'is_overdue' => $inv->status === 'overdue' || ($inv->due_at && $inv->due_at->isPast()),
                     'purpose' => $inv->purpose,
+                    'description' => $inv->description,
+                    'currency' => $inv->currency,
                     'target_url' => "/billing/invoices/{$inv->row_id}",
                 ];
             }

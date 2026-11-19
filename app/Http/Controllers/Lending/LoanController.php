@@ -30,6 +30,7 @@ use App\Http\Requests\Lending\LoanWriteOffRequest;
 use App\Http\Requests\Lending\MemberLoanApproveRequest;
 use App\Http\Requests\Lending\MemberLoanCompleteRequest;
 use App\Http\Requests\Lending\MemberLoanRequest;
+use App\Http\Requests\Lending\MemberLoanUpdateRequest;
 use App\Support\ReportPdf;
 use App\Tenancy\Services\TenantLoanProductProvisioner;
 use DomainException;
@@ -480,6 +481,21 @@ final class LoanController
         ]);
     }
 
+    public function edit(Request $request, Loan $loan): RedirectResponse
+    {
+        // Route proposal memakai parameter {proposal}, sedangkan route pinjaman
+        // memakai {loan}. Resolusi manual agar keduanya tidak menghasilkan 500.
+        $loanRowId = $loan->exists ? (int) $loan->row_id : (int) $request->route('proposal');
+        $target = $loanRowId > 0 ? Loan::query()->find($loanRowId) : null;
+        if ($target === null) {
+            abort(404);
+        }
+
+        return redirect()
+            ->route('lending.loans.show', ['loan' => $target->row_id])
+            ->with('info', 'Perubahan proposal dilakukan melalui tombol Edit Proposal pada halaman detail pinjaman.');
+    }
+
     public function cardReprint(Loan $loan, LoanCardService $cards, ReportPdf $pdf): HttpResponse|StreamedResponse
     {
         $loan->load(['installments']);
@@ -786,7 +802,11 @@ final class LoanController
         $principalPaid = 0.0;
         $nextDue = null;
         $paidInstallments = 0;
-        $totalInstallments = $loan->installments->pluck('installment_number')->unique()->count();
+        $totalInstallments = $loan->installments
+            ->where('installment_number', '>', 0)
+            ->pluck('installment_number')
+            ->unique()
+            ->count();
 
         $histories = $loan->statusHistories->keyBy('to_status');
         $snapshot = function (string $key) use ($histories, $loan): ?float {
@@ -1698,7 +1718,11 @@ final class LoanController
         $principalPaid = 0.0;
         $nextDue = null;
         $paidInstallments = 0;
-        $totalInstallments = $loan->installments->pluck('installment_number')->unique()->count();
+        $totalInstallments = $loan->installments
+            ->where('installment_number', '>', 0)
+            ->pluck('installment_number')
+            ->unique()
+            ->count();
 
         $histories = $loan->statusHistories->keyBy('to_status');
         $snapshot = function (string $key) use ($histories, $loan): ?float {
@@ -1789,18 +1813,21 @@ final class LoanController
                 'address' => $person?->address,
                 'village' => $member->village?->only(['row_id', 'name']),
             ] : null,
-            'installments' => $loan->installments->map(fn ($i): array => [
-                'row_id' => $i->row_id,
-                'installment_number' => (int) $i->installment_number,
-                'component' => $i->component,
-                'due_date' => $i->due_date?->format('Y-m-d'),
-                'principal_due' => (float) $i->principal_due,
-                'interest_due' => (float) $i->interest_due,
-                'principal_paid' => (float) $i->principal_paid,
-                'interest_paid' => (float) $i->interest_paid,
-                'status' => $i->status,
-                'paid_at' => $i->paid_at?->format('Y-m-d H:i'),
-            ])->values()->all(),
+            'installments' => $loan->installments
+                ->filter(fn ($i): bool => (int) $i->installment_number > 0)
+                ->values()
+                ->map(fn ($i): array => [
+                    'row_id' => $i->row_id,
+                    'installment_number' => (int) $i->installment_number,
+                    'component' => $i->component,
+                    'due_date' => $i->due_date?->format('Y-m-d'),
+                    'principal_due' => (float) $i->principal_due,
+                    'interest_due' => (float) $i->interest_due,
+                    'principal_paid' => (float) $i->principal_paid,
+                    'interest_paid' => (float) $i->interest_paid,
+                    'status' => $i->status,
+                    'paid_at' => $i->paid_at?->format('Y-m-d H:i'),
+                ])->values()->all(),
             'payments' => $loan->payments->map(fn ($p): array => [
                 'row_id' => $p->row_id,
                 'paid_at' => $p->paid_at?->format('Y-m-d'),

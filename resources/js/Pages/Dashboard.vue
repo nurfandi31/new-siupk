@@ -8,6 +8,7 @@ import AppButton from '../Components/AppButton.vue';
 import AppCard from '../Components/AppCard.vue';
 import AppIcon from '../Components/AppIcon.vue';
 import AppModal from '../Components/AppModal.vue';
+import BillingSupportContact from '../Components/BillingSupportContact.vue';
 import AuthenticatedLayout from '../Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
@@ -22,6 +23,7 @@ const props = defineProps({
     counts: { type: Object, required: true },
     pipeline_modal: { type: Object, default: null },
     pipeline_modal_key: { type: String, default: null },
+    unpaid_invoice: { type: Object, default: null },
 });
 
 const money = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
@@ -44,6 +46,33 @@ function formatDate(value) {
 }
 
 const pipelineTotal = computed(() => props.pipeline.reduce((sum, row) => sum + Number(row.count || 0), 0));
+
+const invoiceReminderOpen = ref(false);
+
+watch(() => props.unpaid_invoice, (invoice) => {
+    if (!invoice) return;
+    try {
+        if (sessionStorage.getItem(`siupk-billing-reminder-${invoice.row_id}`) === '1') return;
+    } catch (e) {
+        // ignore storage errors
+    }
+    invoiceReminderOpen.value = true;
+}, { immediate: true });
+
+function dismissInvoiceReminder() {
+    invoiceReminderOpen.value = false;
+    if (!props.unpaid_invoice) return;
+    try {
+        sessionStorage.setItem(`siupk-billing-reminder-${props.unpaid_invoice.row_id}`, '1');
+    } catch (e) {
+        // ignore storage errors
+    }
+}
+
+function openInvoiceReminder() {
+    invoiceReminderOpen.value = false;
+    if (props.unpaid_invoice?.target_url) router.visit(props.unpaid_invoice.target_url);
+}
 
 const trendSummary = computed(() => {
     if (!props.trend.length) return { cair: 0, terima: 0, delta: 0, months: 0 };
@@ -584,6 +613,51 @@ function cardKpiTextClass(card) {
                     <AppButton variant="secondary" icon="open_in_new">{{ t('Lihat semua di Tahapan Perguliran') }}</AppButton>
                 </Link>
                 <AppButton variant="primary" @click="closePipeline">{{ t('Tutup') }}</AppButton>
+            </template>
+        </AppModal>
+
+        <AppModal v-model="invoiceReminderOpen" :title="t('Tagihan Belum Dilunasi')" size="sm" centered>
+            <div v-if="unpaid_invoice" class="space-y-4">
+                <div class="flex items-start gap-3">
+                    <span class="grid size-11 shrink-0 place-items-center rounded-full bg-warning/15 text-warning">
+                        <AppIcon name="receipt_long" size="24" />
+                    </span>
+                    <div class="min-w-0 space-y-1">
+                        <p class="text-sm leading-relaxed text-on-surface-variant">
+                            {{ t('Lokasi Anda memiliki tagihan yang belum dilunasi. Mohon selesaikan pembayaran agar layanan tetap berjalan lancar.') }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-2 rounded-xl border border-warning/30 bg-warning/5 p-4 text-sm">
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-on-surface-variant">{{ t('Nomor Tagihan') }}</span>
+                        <span class="font-bold text-primary">{{ unpaid_invoice.number }}</span>
+                    </div>
+                    <div v-if="unpaid_invoice.description" class="flex items-start justify-between gap-3">
+                        <span class="shrink-0 text-on-surface-variant">{{ t('Keterangan') }}</span>
+                        <span class="text-right font-medium text-on-surface">{{ unpaid_invoice.description }}</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-on-surface-variant">{{ t('Sisa Tagihan') }}</span>
+                        <span class="font-bold text-error tabular-nums">{{ formatMoney(unpaid_invoice.remaining) }}</span>
+                    </div>
+                    <div v-if="unpaid_invoice.due_at" class="flex items-center justify-between gap-3">
+                        <span class="text-on-surface-variant">{{ t('Jatuh Tempo') }}</span>
+                        <span class="font-semibold" :class="unpaid_invoice.is_overdue ? 'text-error' : 'text-on-surface'">{{ unpaid_invoice.due_at }}</span>
+                    </div>
+                </div>
+
+                <p v-if="unpaid_invoice.is_blocking" class="rounded-lg bg-error/10 px-3 py-2 text-xs font-semibold text-error">
+                    {{ t('Tagihan ini memblokir akses operasional sampai dilunasi.') }}
+                </p>
+
+                <BillingSupportContact />
+            </div>
+
+            <template #footer>
+                <AppButton variant="secondary" @click="dismissInvoiceReminder">{{ t('Ingatkan Nanti') }}</AppButton>
+                <AppButton variant="primary" icon="receipt_long" @click="openInvoiceReminder">{{ t('Bayar / Lihat Tagihan') }}</AppButton>
             </template>
         </AppModal>
     </AuthenticatedLayout>

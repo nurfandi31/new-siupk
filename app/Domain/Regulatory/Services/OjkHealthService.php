@@ -92,8 +92,8 @@ final class OjkHealthService
         $nplNeto = $outstanding > 0 ? round((($problemLoans - $ckp) / $outstanding) * 100, 2) : 0.0;
         $coveragePpap = $ppapWajib > 0 ? round(($ckp / $ppapWajib) * 100, 2) : 0.0;
         $roa = $productiveAssets > 0 ? round(($surplus / $productiveAssets) * 100, 2) : 0.0;
-        $liquidityRatio = $currentLiabilities > 0 ? round(($cash / $currentLiabilities) * 100, 2) : 0.0;
-        $solvabilityRatio = $totalLiabilities > 0 ? round(($totalAssets / $totalLiabilities) * 100, 2) : 0.0;
+        $liquidityRatio = $currentLiabilities > 0 ? round(($cash / $currentLiabilities) * 100, 2) : null;
+        $solvabilityRatio = $totalLiabilities > 0 ? round(($totalAssets / $totalLiabilities) * 100, 2) : null;
         $equityRatio = $paidInCapital > 0 ? round(($totalAssets / $paidInCapital) * 100, 2) : 0.0;
 
         $riskReceivableRatio = $outstanding > 0 ? round(($arrears / $outstanding) * 100, 2) : 0.0;
@@ -205,31 +205,33 @@ final class OjkHealthService
     private function buildPojk41(array $payload): array
     {
         $v = $payload['values'];
-        $detail = $payload['detail_kolek'] ?? [];
 
-        // Legacy POJK 41 memakai tarif PPAP 5% / 15% / 50% / 100%
-        // untuk DPK / KL / Diragukan / Macet.
-        $ppapPojk41 = round(
-            ((float) ($detail[2] ?? 0) * 0.05)
-            + ((float) ($detail[3] ?? 0) * 0.15)
-            + ((float) ($detail[4] ?? 0) * 0.50)
-            + ((float) ($detail[5] ?? 0) * 1.00),
-            2,
-        );
+        // Samakan dasar PPAP dengan laporan Penyisihan Cadangan (CKPN):
+        // tarif OJK 0,5% / 3% / 10% / 50% / 100% per golongan kolektibilitas.
+        // Jangan memakai formula legacy 5%/15%/50%/100% yang mengabaikan
+        // golongan Lancar dan membuat laporan kesehatan tidak konsisten.
+        $ppapPojk41 = round((float) ($v['ppap_required'] ?? 0), 2);
         $coveragePpap = $ppapPojk41 > 0
             ? round(((float) $v['ckp'] / $ppapPojk41) * 100, 2)
-            : 0.0;
+            : 100.0;
 
         $v['ppap_required'] = $ppapPojk41;
         $v['coverage_ppap'] = $coveragePpap;
         $payload['values'] = $v;
 
-        $scoreSolvability = $v['solvability_ratio'] >= 110 ? 100.0 : ($v['solvability_ratio'] >= 100 ? 75.0 : 0.0);
+        // Tanpa liabilitas, rasio solvabilitas/likuiditas tidak terdefinisi.
+        // Perlakukan sebagai kondisi terbaik (bukan 0%) agar laporan tidak
+        // menghukum lembaga yang sepenuhnya dibiayai ekuitas.
+        $scoreSolvability = $v['total_liabilities'] <= 0
+            ? 100.0
+            : ($v['solvability_ratio'] >= 110 ? 100.0 : ($v['solvability_ratio'] >= 100 ? 75.0 : 0.0));
         $scoreEquity = $v['equity_ratio'] >= 75 ? 100.0 : ($v['equity_ratio'] >= 50 ? 50.0 : 0.0);
         $scoreNpl = $v['npl_neto'] <= 5 ? 100.0 : ($v['npl_neto'] < 25 ? 50.0 : 0.0);
         $scoreCoverage = $coveragePpap >= 100 ? 100.0 : ($coveragePpap >= 50 ? 50.0 : 0.0);
         $scoreRoa = $v['roa'] > 0 ? 100.0 : 0.0;
-        $scoreLiquidity = $v['liquidity_ratio'] >= 4 ? 100.0 : ($v['liquidity_ratio'] >= 3 ? 75.0 : 0.0);
+        $scoreLiquidity = $v['current_liabilities'] <= 0
+            ? 100.0
+            : ($v['liquidity_ratio'] >= 4 ? 100.0 : ($v['liquidity_ratio'] >= 3 ? 75.0 : 0.0));
         $scoreManagement = 75.0;
 
         $scoreCapital = ($scoreSolvability * 0.5) + ($scoreEquity * 0.5);

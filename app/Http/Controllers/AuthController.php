@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Domain\Billing\Services\SubscriptionGateService;
 use App\Http\Requests\LoginRequest;
 use App\Models\Platform\Tenant;
 use App\Models\User;
@@ -20,6 +21,7 @@ final class AuthController
 {
     public function __construct(
         private readonly PlatformHostResolver $platformHosts,
+        private readonly SubscriptionGateService $subscriptionGate,
     ) {}
 
     public function showLogin(Request $request): Response|RedirectResponse
@@ -108,6 +110,13 @@ final class AuthController
             return redirect()->route('regency.dashboard');
         }
 
+        $billingRedirect = $this->blockedBillingRedirect($user);
+        if ($billingRedirect !== null) {
+            $request->session()->forget('url.intended');
+
+            return $billingRedirect;
+        }
+
         $intended = $request->session()->pull('url.intended');
         if (is_string($intended)) {
             if (
@@ -132,6 +141,29 @@ final class AuthController
         $request->session()->flash('success', 'Anda telah berhasil keluar.');
 
         return redirect()->route('login');
+    }
+
+    private function blockedBillingRedirect(User $user): ?RedirectResponse
+    {
+        $tenant = $this->tenantForUser($user);
+        if ($tenant === null) {
+            return null;
+        }
+
+        $gate = $this->subscriptionGate->check((int) $tenant->row_id);
+        if ($gate['blocked'] !== true) {
+            return null;
+        }
+
+        $message = $gate['invoice_number'] !== null
+            ? "Login berhasil, tetapi akses operasional dikunci karena tagihan #{$gate['invoice_number']} belum dilunasi. Silakan selesaikan pembayaran untuk membuka kembali aplikasi."
+            : 'Login berhasil, tetapi akses operasional dikunci karena langganan tenant sedang ditangguhkan. Silakan selesaikan pembayaran tagihan.';
+
+        $target = $gate['invoice_id'] !== null
+            ? route('billing.invoices.show', ['invoice' => $gate['invoice_id'], 'locked' => 1])
+            : route('billing.invoices.index', ['locked' => 1]);
+
+        return redirect()->to($target)->with('warning', $message);
     }
 
     private function isTenantScopedUser(User $user): bool

@@ -2,9 +2,11 @@
 import { useI18n } from '../../../i18n';
 const { t } = useI18n();
 import { Head, Link, router } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import AppBadge from '../../../Components/AppBadge.vue';
 import AppButton from '../../../Components/AppButton.vue';
 import AppCard from '../../../Components/AppCard.vue';
+import BillingSupportContact from '../../../Components/BillingSupportContact.vue';
 import SmartDataTable from '../../../Components/SmartDataTable.vue';
 import SmartSelect from '../../../Components/SmartSelect.vue';
 import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
@@ -76,6 +78,8 @@ function statusLabel(status) {
         draft: t('Draft'),
     })[status] || status;
 }
+
+const blockingInvoice = computed(() => (props.invoices?.data ?? []).find((invoice) => invoice.is_blocking === true) ?? null);
 </script>
 
 <template>
@@ -86,6 +90,22 @@ function statusLabel(status) {
                 <h1 class="text-2xl font-bold text-primary">{{ t('Tagihan') }}</h1>
                 <p class="mt-1 text-on-surface-variant">{{ t('Daftar tagihan lembaga: langganan, setup, support, dan lainnya.') }}</p>
             </header>
+
+            <div v-if="blockingInvoice" class="flex flex-col gap-3 rounded-xl border border-error/30 bg-error/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="min-w-0">
+                    <p class="text-sm font-bold text-error">{{ t('Akses operasional terkunci') }}</p>
+                    <p class="mt-0.5 text-sm text-on-surface-variant">
+                        {{ t('Tagihan') }} <strong>{{ blockingInvoice.number }}</strong>
+                        {{ t('wajib dilunasi terlebih dahulu.') }}
+                        {{ t('Sisa tagihan:') }}
+                        <strong class="text-error">{{ money(blockingInvoice.remaining, blockingInvoice.currency) }}</strong>.
+                    </p>
+                    <BillingSupportContact class="mt-2" />
+                </div>
+                <Link :href="`/billing/invoices/${blockingInvoice.row_id}`">
+                    <AppButton variant="danger" size="compact" icon="receipt_long">{{ t('Bayar Sekarang') }}</AppButton>
+                </Link>
+            </div>
 
             <AppCard :padded="false">
                 <SmartDataTable

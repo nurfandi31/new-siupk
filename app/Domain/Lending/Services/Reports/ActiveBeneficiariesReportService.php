@@ -81,7 +81,6 @@ final class ActiveBeneficiariesReportService
             })
             ->where('lb.tenant_id', $tenantId)
             ->whereIn('lb.loan_row_id', $activeLoanIds)
-            ->whereNull('lb.deleted_at')
             ->where('gm.status', 'active')
             ->whereNull('gm.left_at')
             ->orderBy('v.name')

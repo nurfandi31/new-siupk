@@ -9,6 +9,7 @@ import AppCard from '../../../Components/AppCard.vue';
 import AppIcon from '../../../Components/AppIcon.vue';
 import AuthenticatedLayout from '../../../Layouts/AuthenticatedLayout.vue';
 import AppRadioGroup from '../../../Components/AppRadioGroup.vue';
+import BillingSupportContact from '../../../Components/BillingSupportContact.vue';
 import { useCan } from '../../../composables/useCan';
 import { useMoney } from '../../../composables/useMoney';
 
@@ -150,6 +151,24 @@ function methodLabel(payment) {
                     </AppButton>
                 </div>
             </header>
+
+            <!-- Blokir akses: tagihan ini menahan fitur operasional sampai lunas -->
+            <div v-if="invoice.is_blocking" class="flex items-start gap-3 rounded-xl border border-error/30 bg-error/10 p-4">
+                <span class="grid size-10 shrink-0 place-items-center rounded-full bg-error/15 text-error">
+                    <AppIcon name="lock" size="22" />
+                </span>
+                <div class="min-w-0 space-y-1">
+                    <p class="text-sm font-bold text-error">{{ t('Akses Operasional Terkunci') }}</p>
+                    <p class="text-sm leading-relaxed text-on-surface-variant">
+                        {{ t('Tagihan ini wajib dilunasi terlebih dahulu. Setelah pembayaran terkonfirmasi, akses fitur operasional lokasi Anda akan terbuka otomatis.') }}
+                    </p>
+                    <p class="text-xs text-on-surface-variant">
+                        {{ t('Sisa tagihan:') }} <strong class="text-error">{{ money(invoice.remaining, invoice.currency) }}</strong>
+                        <span v-if="invoice.due_at"> · {{ t('Jatuh tempo:') }} <strong>{{ invoice.due_at }}</strong></span>
+                    </p>
+                    <BillingSupportContact class="mt-2" />
+                </div>
+            </div>
 
             <!-- Active In-App Payment Card (If pending Tripay payment exists) -->
             <div v-if="invoice.is_open && active_payment" class="space-y-4">

@@ -430,7 +430,6 @@ Route::middleware(['auth', 'tenant', 'menu.access', 'subscription.active'])->gro
     Route::prefix('billing')->name('billing.')->group(function (): void {
         Route::get('/invoices', [TenantInvoiceController::class, 'index'])->name('invoices.index');
         Route::get('/invoices/{invoice}', [TenantInvoiceController::class, 'show'])->name('invoices.show');
-        Route::post('/invoices/{invoice}/checkout/tripay', [TenantInvoiceController::class, 'checkoutTripay'])->name('invoices.checkout.tripay');
         Route::post('/invoices/{invoice}/pay', [TenantInvoiceController::class, 'pay'])->name('invoices.pay');
         Route::post('/invoices/{invoice}/check-status', [TenantInvoiceController::class, 'checkStatus'])->name('invoices.check-status');
     });

@@ -122,7 +122,7 @@ Route::prefix('v1/mobile')->name('api.v1.mobile.')->group(function (): void {
     Route::post('/auth/login', [MobileAuthController::class, 'login'])->name('auth.login');
 
     // Authenticated Mobile
-    Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {
+    Route::middleware(['auth:sanctum', 'tenant', 'subscription.active'])->group(function (): void {
         Route::get('/auth/me', [MobileAuthController::class, 'me'])->name('auth.me');
         Route::post('/auth/logout', [MobileAuthController::class, 'logout'])->name('auth.logout');
 

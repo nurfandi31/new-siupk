@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use App\Domain\Access\Services\MenuAccess;
 use App\Domain\Access\Services\PermissionChecker;
+use App\Domain\Billing\Services\SubscriptionGateService;
 use App\Domain\Membership\Models\OrganizationProfile;
 use App\Domain\Savings\Services\SavingsModuleManager;
 use App\Models\User;
@@ -94,6 +95,7 @@ final class HandleInertiaRequests extends Middleware
                 'impersonator_name' => $request->session()?->get('impersonator_name'),
             ],
             'flash' => $this->resolveFlash($request),
+            'billing_gate' => $this->resolveBillingGate($request, $user),
             'logoPath' => $this->resolveLogoPath(),
             'assistant' => $this->resolveAssistant($request),
             'tenant' => $this->resolveTenantInfo(),
@@ -177,6 +179,52 @@ final class HandleInertiaRequests extends Middleware
             'enabled' => $enabled,
             'public_url' => $enabled ? url('/') : null,
         ];
+    }
+
+    /**
+     * Shared billing gate so the tenant layout can show a blocking popup on the
+     * pages that are still reachable while an invoice blocks operational access.
+     *
+     * @return array{
+     *     blocked: bool,
+     *     reason: 'invoice_block'|'subscription_suspended'|null,
+     *     invoice_id: int|null,
+     *     invoice_number: string|null,
+     *     message: string|null,
+     *     invoice: array<string, mixed>|null,
+     *     subscription_status: string|null
+     * }
+     */
+    private function resolveBillingGate(Request $request, ?User $user): array
+    {
+        $default = [
+            'blocked' => false,
+            'reason' => null,
+            'invoice_id' => null,
+            'invoice_number' => null,
+            'message' => null,
+            'invoice' => null,
+            'subscription_status' => null,
+        ];
+
+        if ($user === null || $user->is_superadmin === true || $user->is_regency_user === true || $user->is_province_user === true) {
+            return $default;
+        }
+
+        try {
+            $context = app(TenantContext::class);
+            $tenantId = $context->isInitialized()
+                ? $context->id()
+                : ($user->tenant_id !== null ? (int) $user->tenant_id : null);
+
+            if ($tenantId === null) {
+                return $default;
+            }
+
+            return app(SubscriptionGateService::class)->check($tenantId);
+        } catch (Throwable) {
+            return $default;
+        }
     }
 
     private function resolveFlash(Request $request): array

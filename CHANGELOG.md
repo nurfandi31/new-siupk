@@ -3,6 +3,29 @@
 Semua perubahan penting pada proyek **siupk Next** didokumentasikan dalam berkas ini.
 Format penulisan mengikuti panduan [Keep a Changelog](https://keepachangelog.com/id/1.0.0/).
 
+## [Unreleased] — Penguncian Akses Tenant Bertagihan & Popup Pelunasan
+
+### Added
+- **Redirect login ke halaman tagihan** — user tenant yang lokasinya memiliki invoice dengan `blocks_access = true` diarahkan langsung ke halaman invoice (`?locked=1`) setelah login, baik lewat form login maupun quick-login tenant. Login teknis tetap berhasil agar user dapat membayar dan logout.
+- **Popup `BillingGateModal`** di `AuthenticatedLayout.vue` — menampilkan nomor tagihan, keterangan, sisa tagihan, dan jatuh tempo saat akses operasional terkunci. Tombol mengarahkan ke halaman pembayaran.
+- **Popup pengingat tagihan di Dashboard** — memanfaatkan prop `unpaid_invoice` yang sebelumnya belum dipakai, tampil sekali per sesi dan dapat ditunda.
+- **Kontak Technical Support** (`BillingSupportContact`) di popup pemblokiran, popup pengingat dashboard, serta banner tagihan: WhatsApp **+62 882-0066-44656** dan email **astabratamgl@gmail.com**.
+- **Banner peringatan** di halaman daftar dan detail tagihan tenant saat ada invoice pemblokir, termasuk sisa tagihan dan CTA pembayaran.
+- **`billing_gate` shared prop** (Inertia) berisi status blokir, alasan, dan detail invoice, sehingga popup konsisten di seluruh halaman tenant.
+- **Gate API mobile** — endpoint mobile yang terautentikasi (`/api/v1/mobile/*`) kini memakai middleware `subscription.active` dan menerima HTTP 402 saat tenant diblokir; endpoint logout tetap diizinkan.
+- **Test** `tests/Feature/Billing/BillingLoginGateTest.php` dan pengujian gate mobile di `tests/Feature/Api/MobileAuthApiTest.php`.
+
+### Changed
+- `SubscriptionGateService::check()` kini juga mengembalikan detail invoice (`invoice`) dan `subscription_status` untuk kebutuhan popup.
+- Redirect middleware `EnsureSubscriptionActive` menyertakan `?locked=1` agar popup langsung tampil di halaman tagihan.
+- `DashboardController` menyertakan invoice `partially_paid` serta `description`/`currency` pada data pengingat.
+
+### Catatan
+- Kontrol pemblokiran tetap berasal dari panel pusat: superadmin mengaktifkan opsi **Blokir Akses** pada invoice (`/admin/invoices/{id}` atau saat membuat invoice). Tanpa opsi tersebut, invoice hanya menjadi pengingat dan tidak mengunci akses.
+- Tenant tidak memiliki route atau form untuk membuat invoice maupun mengubah flag `blocks_access`; seluruh perubahan dilakukan dari panel pusat dan langsung berlaku pada login web, halaman operasional, desktop, dan mobile.
+- Route `billing.*`, `profile.*`, `logout`, dan `admin.*` tetap dikecualikan agar pembayaran, profil, dan administrasi pusat tidak ikut terkunci. Endpoint desktop memiliki gate 402 sendiri, sedangkan endpoint mobile terautentikasi memakai middleware yang sama dengan web.
+- Halaman `billing/*` juga dikecualikan dari pembatasan menu role dan pemeriksaan izin baca/bayar saat gate aktif, sehingga role apa pun di lokasi tersebut tetap bisa membuka dan melunasi tagihan.
+
 ## [Unreleased] — Hak Akses Menu Tenant dari Panel Pusat
 
 ### Added
