@@ -99,6 +99,17 @@ final class SettingsController
                 'website' => $profile->website,
                 'timezone' => (string) ($profile->timezone ?: 'Asia/Jakarta'),
                 'operational_start_date' => $profile->operational_start_date?->toDateString(),
+                'manager_name' => (string) ($profile->manager_name ?? ''),
+                'manager_nik' => (string) ($profile->manager_nik ?? ''),
+                'manager_title' => (string) ($profile->manager_title ?? ''),
+                'secretary_name' => (string) ($profile->secretary_name ?? ''),
+                'secretary_nik' => (string) ($profile->secretary_nik ?? ''),
+                'secretary_title' => (string) ($profile->secretary_title ?? ''),
+                'treasurer_name' => (string) ($profile->treasurer_name ?? ''),
+                'treasurer_nik' => (string) ($profile->treasurer_nik ?? ''),
+                'treasurer_title' => (string) ($profile->treasurer_title ?? ''),
+                'verifier_name' => (string) ($profile->verifier_name ?? ''),
+                'verifier_title' => (string) ($profile->verifier_title ?? ''),
             ],
             'products' => $products,
             'logoUrl' => $logoUrl,
@@ -177,6 +188,17 @@ final class SettingsController
                 'operational_start_date' => isset($data['operational_start_date'])
                     ? CarbonImmutable::parse($data['operational_start_date'])->toDateString()
                     : null,
+                'manager_name' => $data['manager_name'] ?? null,
+                'manager_nik' => $data['manager_nik'] ?? null,
+                'manager_title' => $data['manager_title'] ?? null,
+                'secretary_name' => $data['secretary_name'] ?? null,
+                'secretary_nik' => $data['secretary_nik'] ?? null,
+                'secretary_title' => $data['secretary_title'] ?? null,
+                'treasurer_name' => $data['treasurer_name'] ?? null,
+                'treasurer_nik' => $data['treasurer_nik'] ?? null,
+                'treasurer_title' => $data['treasurer_title'] ?? null,
+                'verifier_name' => $data['verifier_name'] ?? null,
+                'verifier_title' => $data['verifier_title'] ?? null,
             ]
         );
 

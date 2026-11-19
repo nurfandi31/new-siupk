@@ -98,6 +98,17 @@ const identityForm = useForm({
     website: props.identity.website ?? '',
     timezone: props.identity.timezone ?? 'Asia/Jakarta',
     operational_start_date: props.identity.operational_start_date ?? '',
+    manager_name: props.identity.manager_name ?? '',
+    manager_nik: props.identity.manager_nik ?? '',
+    manager_title: props.identity.manager_title || 'Ketua',
+    secretary_name: props.identity.secretary_name ?? '',
+    secretary_nik: props.identity.secretary_nik ?? '',
+    secretary_title: props.identity.secretary_title || 'Sekretaris',
+    treasurer_name: props.identity.treasurer_name ?? '',
+    treasurer_nik: props.identity.treasurer_nik ?? '',
+    treasurer_title: props.identity.treasurer_title || 'Bendahara',
+    verifier_name: props.identity.verifier_name ?? '',
+    verifier_title: props.identity.verifier_title || 'Verifikator',
 });
 function submitIdentity() {
     identityForm.put('/settings/identity', { preserveScroll: true });
@@ -415,6 +426,27 @@ function applySignatureStarter() {
                                 <AppDatePicker v-model="identityForm.operational_start_date" :label="t('Tanggal Operasional Mulai')" :error="identityForm.errors.operational_start_date" class="sm:col-span-2" />
                             </div>
                             <AppTextarea v-model="identityForm.address" :label="t('Alamat')" :rows="3" :error="identityForm.errors.address" />
+
+                            <div class="space-y-4 border-t border-outline-variant pt-4">
+                                <div>
+                                    <h3 class="text-sm font-bold uppercase tracking-wider text-primary">{{ t('Susunan Pengurus') }}</h3>
+                                    <p class="mt-1 text-xs text-on-surface-variant">{{ t('Nama dan jabatan pengurus yang tampil pada laporan profil kelembagaan OJK.') }}</p>
+                                </div>
+                                <div class="grid gap-4 sm:grid-cols-2">
+                                    <AppInput v-model="identityForm.manager_name" :label="t('Nama Ketua')" :error="identityForm.errors.manager_name" />
+                                    <AppInput v-model="identityForm.manager_nik" :label="t('NIK Ketua')" :error="identityForm.errors.manager_nik" />
+                                    <AppInput v-model="identityForm.manager_title" :label="t('Jabatan Ketua')" :error="identityForm.errors.manager_title" />
+                                    <AppInput v-model="identityForm.secretary_name" :label="t('Nama Sekretaris')" :error="identityForm.errors.secretary_name" />
+                                    <AppInput v-model="identityForm.secretary_nik" :label="t('NIK Sekretaris')" :error="identityForm.errors.secretary_nik" />
+                                    <AppInput v-model="identityForm.secretary_title" :label="t('Jabatan Sekretaris')" :error="identityForm.errors.secretary_title" />
+                                    <AppInput v-model="identityForm.treasurer_name" :label="t('Nama Bendahara')" :error="identityForm.errors.treasurer_name" />
+                                    <AppInput v-model="identityForm.treasurer_nik" :label="t('NIK Bendahara')" :error="identityForm.errors.treasurer_nik" />
+                                    <AppInput v-model="identityForm.treasurer_title" :label="t('Jabatan Bendahara')" :error="identityForm.errors.treasurer_title" />
+                                    <AppInput v-model="identityForm.verifier_name" :label="t('Nama Verifikator')" :error="identityForm.errors.verifier_name" />
+                                    <AppInput v-model="identityForm.verifier_title" :label="t('Jabatan Verifikator')" :error="identityForm.errors.verifier_title" />
+                                </div>
+                            </div>
+
                             <div class="flex flex-wrap items-center justify-end gap-2 border-t border-outline-variant pt-4">
                                 <AppButton type="submit" :loading="identityForm.processing" :disabled="identityForm.processing" icon="save">{{ t('Simpan Identitas') }}</AppButton>
                             </div>

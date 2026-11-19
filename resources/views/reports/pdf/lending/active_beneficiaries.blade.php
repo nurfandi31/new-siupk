@@ -34,14 +34,14 @@
             <thead>
                 <tr style="background: rgb(230, 230, 230); font-weight: bold; text-align: center;">
                     <th class="t l b" width="3%">No</th>
-                    <th class="t l b" width="13%">NIK</th>
-                    <th class="t l b" width="6%">No. Anggota</th>
-                    <th class="t l b" width="20%">Nama</th>
-                    <th class="t l b" width="10%">Tgl Cair</th>
-                    <th class="t l b" width="13%">No. Pinjaman</th>
-                    <th class="t l b" width="11%">Alokasi</th>
-                    <th class="t l b" width="12%">Tunggakan Pokok</th>
-                    <th class="t l b r" width="12%">Tunggakan Jasa</th>
+                    <th class="t l b" width="11%">NIK</th>
+                    <th class="t l b" width="10%">No. Anggota</th>
+                    <th class="t l b" width="17%">Nama</th>
+                    <th class="t l b" width="9%">Tgl Cair</th>
+                    <th class="t l b" width="12%">No. Pinjaman</th>
+                    <th class="t l b" width="10%">Alokasi</th>
+                    <th class="t l b" width="13%">Tunggakan Pokok</th>
+                    <th class="t l b r" width="15%">Tunggakan Jasa</th>
                 </tr>
             </thead>
             <tbody>

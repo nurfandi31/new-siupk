@@ -21,7 +21,7 @@
             <td width="50">Nomor</td>
             <td width="10" align="center">:</td>
             <td colspan="2">
-                ______ /UPK/{{ Tanggal::tglRomawi($pinkel->tgl_tunggu) }} </td>
+                {{ $pinkel->spk_no ?: 'SK/'.$pinkel->id }}/UPK/{{ Tanggal::tglRomawi($pinkel->tgl_tunggu) }} </td>
         </tr>
         <tr>
             <td>Tanggal</td>
@@ -104,7 +104,7 @@
                 </table>
 
                 <div style="text-align: justify;">
-                    Dinyatakan Layak/Tidak Layak didanai sebesar Rp. {{ number_format($pinkel->alokasi) }}
+                    Dinyatakan Layak didanai sebesar Rp. {{ number_format($pinkel->alokasi) }}
                     ({{ $keuangan->terbilang($pinkel->alokasi) }}) dan dengan
                     jadwal pencairan besok pada tanggal {{ Tanggal::tglLatin($pinkel->tgl_cair) }} bertempat di
                     {{ $tempat }}.

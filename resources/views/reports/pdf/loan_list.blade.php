@@ -18,20 +18,20 @@
     <tr><td colspan="11" height="12"></td></tr>
 </table>
 
-<table border="0" width="100%" cellspacing="0" cellpadding="4" style="font-size: 10px;">
+<table border="0" width="100%" cellspacing="0" cellpadding="3" style="font-size: 9px;">
     <thead>
         <tr style="background: #e5e7eb; font-weight: bold; text-align: center;">
-            <th class="t b l" width="24" height="22">No</th>
-            <th class="t b l" width="85">No. Kode</th>
+            <th class="t b l" width="20" height="22">No</th>
+            <th class="t b l" width="68">No. Kode</th>
             <th class="t b l" align="left">Kelompok / Peminjam</th>
-            <th class="t b l" align="left" width="90">Desa / Alamat</th>
-            <th class="t b l" width="70">Pengajuan</th>
-            <th class="t b l" align="right" width="90">Plafond Pokok</th>
-            <th class="t b l" width="60">Jasa & Metode</th>
-            <th class="t b l" width="40">Jangka</th>
-            <th class="t b l" align="right" width="85">Pokok Dibayar</th>
-            <th class="t b l" align="right" width="85">Sisa Pokok</th>
-            <th class="t b l r" width="70">Status</th>
+            <th class="t b l" align="left" width="72">Desa / Alamat</th>
+            <th class="t b l" width="58">Pengajuan</th>
+            <th class="t b l" align="right" width="78">Plafond Pokok</th>
+            <th class="t b l" width="54">Jasa & Metode</th>
+            <th class="t b l" width="34">Jangka</th>
+            <th class="t b l" align="right" width="74">Pokok Dibayar</th>
+            <th class="t b l" align="right" width="74">Sisa Pokok</th>
+            <th class="t b l r" width="54">Status</th>
         </tr>
     </thead>
     <tbody>

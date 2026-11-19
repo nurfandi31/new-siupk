@@ -18,7 +18,11 @@
     $guarantorNik = $guarantor?->national_identity_number ?? '';
 
     $loanNumber = $loan_obj->loan_number ?? '';
-    $spkNo = $loan_obj->spk_no ?? '';
+    $spkNo = $loan_obj->spk_no ?: ($loanNumber ?: sprintf(
+        'SPK/%s/%03d',
+        $loan_obj->disbursed_at?->format('Y') ?: date('Y'),
+        (int) $loan_obj->id,
+    ));
     $proposedAt = $loan_obj->proposed_at ? CarbonImmutable::parse($loan_obj->proposed_at)->translatedFormat('d F Y') : '—';
     $disbursedAt = $loan_obj->disbursed_at ? CarbonImmutable::parse($loan_obj->disbursed_at)->translatedFormat('d F Y') : '—';
     $principal = (float) $loan_obj->principal_amount;

@@ -16,10 +16,6 @@
             ? '('.number_format(abs($v), 2).')'
             : number_format($v, 2);
     };
-    $pct = static function (float|int|null $v): string {
-        return number_format((float) ($v ?? 0), 2).'%';
-    };
-
     $bucketCount = max(1, count($buckets_meta));
 @endphp
 @extends('reports.pdf.layout', [
@@ -73,7 +69,7 @@
                 <th class="t l b" rowspan="2" width="20%">Golongan (Hari)</th>
                 @foreach($buckets_meta as $bm)
                     <th class="t l b" colspan="2" width="{{ 80 / $bucketCount }}%">
-                        {{ $bm['label'] ?? '' }}
+                        {{ $bm['label'] ?? '' }} ({{ number_format((float) ($bm['rate_pct'] ?? 0), 2, ',', '.') }}%)
                     </th>
                 @endforeach
             </tr>
@@ -93,7 +89,7 @@
                 @endforeach
             </tr>
             <tr style="background: rgb(245, 245, 245);">
-                <td class="l b" height="20"><b>Cadangan Wajib ({{ $pct(0) }})</b></td>
+                <td class="l b" height="20"><b>Cadangan Wajib</b></td>
                 @foreach($prod['buckets'] ?? [] as $bk)
                     <td class="l b" colspan="2" align="right">{{ $fmt((float) ($bk['allowance_required'] ?? 0)) }}</td>
                 @endforeach

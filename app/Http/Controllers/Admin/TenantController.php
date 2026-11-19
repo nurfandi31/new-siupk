@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\Admin\AuditLogger;
 use App\Services\Admin\TenantUserService;
 use App\Services\Billing\SubscriptionService;
+use App\Services\RegionalCodeApi;
 use App\Services\TenantRegistrationService;
 use App\Tenancy\Services\PublicSiteResolver;
 use App\Tenancy\Services\TenantRegistrySynchronizer;
@@ -221,6 +222,36 @@ final class TenantController
         $newLng = isset($data['map_longitude']) && $data['map_longitude'] !== '' && $data['map_longitude'] !== null ? (float) $data['map_longitude'] : null;
         $newZoom = isset($data['map_zoom']) && $data['map_zoom'] !== '' && $data['map_zoom'] !== null ? (int) $data['map_zoom'] : null;
 
+        // Simpan nama provinsi/kabupaten agar laporan (mis. Profil OJK) tidak
+        // bergantung pada kolom yang belum terisi. Kode wilayah tetap menjadi
+        // sumber utama; nama hanya disimpan sebagai cache tampilan.
+        $newProvinceCode = isset($data['province_code']) && is_string($data['province_code']) && $data['province_code'] !== ''
+            ? $data['province_code']
+            : ($newDistrict !== null ? substr($newDistrict, 0, 2) : $tenant->province_code);
+        $newRegencyCode = isset($data['regency_code']) && is_string($data['regency_code']) && $data['regency_code'] !== ''
+            ? $data['regency_code']
+            : ($newDistrict !== null ? substr($newDistrict, 0, 4) : $tenant->regency_code);
+        $newProvinceName = $tenant->province_name;
+        $newRegencyName = $tenant->regency_name;
+
+        try {
+            $regional = app(RegionalCodeApi::class);
+            if (is_string($newProvinceCode) && $newProvinceCode !== '') {
+                $province = collect($regional->provinces())->firstWhere('code', $newProvinceCode);
+                if (is_array($province) && isset($province['name'])) {
+                    $newProvinceName = (string) $province['name'];
+                }
+            }
+            if (is_string($newRegencyCode) && $newRegencyCode !== '' && is_string($newProvinceCode) && $newProvinceCode !== '') {
+                $regency = collect($regional->regencies($newProvinceCode))->firstWhere('code', $newRegencyCode);
+                if (is_array($regency) && isset($regency['name'])) {
+                    $newRegencyName = (string) $regency['name'];
+                }
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         $rawDomains = (array) ($data['custom_domains'] ?? []);
         $cleanDomains = [];
         foreach ($rawDomains as $d) {
@@ -241,8 +272,8 @@ final class TenantController
         unset($metadata['domain']);
 
         $changes = AuditLogger::diff(
-            ['name' => $tenant->name, 'district_code' => $tenant->district_code, 'map_latitude' => $tenant->map_latitude, 'map_longitude' => $tenant->map_longitude, 'map_zoom' => $tenant->map_zoom, 'status' => $tenant->status, 'timezone' => $tenant->timezone],
-            ['name' => $data['name'], 'district_code' => $newDistrict, 'map_latitude' => $newLat, 'map_longitude' => $newLng, 'map_zoom' => $newZoom, 'status' => $data['status'], 'timezone' => $data['timezone'] ?? $tenant->timezone],
+            ['name' => $tenant->name, 'province_code' => $tenant->province_code, 'province_name' => $tenant->province_name, 'regency_code' => $tenant->regency_code, 'regency_name' => $tenant->regency_name, 'district_code' => $tenant->district_code, 'map_latitude' => $tenant->map_latitude, 'map_longitude' => $tenant->map_longitude, 'map_zoom' => $tenant->map_zoom, 'status' => $tenant->status, 'timezone' => $tenant->timezone],
+            ['name' => $data['name'], 'province_code' => $newProvinceCode, 'province_name' => $newProvinceName, 'regency_code' => $newRegencyCode, 'regency_name' => $newRegencyName, 'district_code' => $newDistrict, 'map_latitude' => $newLat, 'map_longitude' => $newLng, 'map_zoom' => $newZoom, 'status' => $data['status'], 'timezone' => $data['timezone'] ?? $tenant->timezone],
         );
 
         $domainsChanged = $metadata['domains'] !== (is_array($tenant->metadata) ? ($tenant->metadata['domains'] ?? []) : []);
@@ -250,6 +281,10 @@ final class TenantController
 
         $tenant->forceFill([
             'name' => $data['name'],
+            'province_code' => $newProvinceCode,
+            'province_name' => $newProvinceName,
+            'regency_code' => $newRegencyCode,
+            'regency_name' => $newRegencyName,
             'district_code' => $newDistrict,
             'map_latitude' => $newLat,
             'map_longitude' => $newLng,

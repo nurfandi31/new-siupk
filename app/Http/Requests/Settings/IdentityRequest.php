@@ -26,6 +26,17 @@ final class IdentityRequest extends FormRequest
             'website' => ['nullable', 'url', 'max:255'],
             'timezone' => ['required', 'string', 'max:50'],
             'operational_start_date' => ['nullable', 'date'],
+            'manager_name' => ['nullable', 'string', 'max:150'],
+            'manager_nik' => ['nullable', 'string', 'max:32'],
+            'manager_title' => ['nullable', 'string', 'max:100'],
+            'secretary_name' => ['nullable', 'string', 'max:150'],
+            'secretary_nik' => ['nullable', 'string', 'max:32'],
+            'secretary_title' => ['nullable', 'string', 'max:100'],
+            'treasurer_name' => ['nullable', 'string', 'max:150'],
+            'treasurer_nik' => ['nullable', 'string', 'max:32'],
+            'treasurer_title' => ['nullable', 'string', 'max:100'],
+            'verifier_name' => ['nullable', 'string', 'max:150'],
+            'verifier_title' => ['nullable', 'string', 'max:100'],
         ];
     }
 
@@ -44,6 +55,17 @@ final class IdentityRequest extends FormRequest
             'website' => 'website',
             'timezone' => 'zona waktu',
             'operational_start_date' => 'tanggal operasional',
+            'manager_name' => 'nama ketua',
+            'manager_nik' => 'NIK ketua',
+            'manager_title' => 'jabatan ketua',
+            'secretary_name' => 'nama sekretaris',
+            'secretary_nik' => 'NIK sekretaris',
+            'secretary_title' => 'jabatan sekretaris',
+            'treasurer_name' => 'nama bendahara',
+            'treasurer_nik' => 'NIK bendahara',
+            'treasurer_title' => 'jabatan bendahara',
+            'verifier_name' => 'nama verifikator',
+            'verifier_title' => 'jabatan verifikator',
         ];
     }
 }

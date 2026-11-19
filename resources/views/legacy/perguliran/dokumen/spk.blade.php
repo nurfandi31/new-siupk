@@ -231,7 +231,7 @@
                     <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 11px;"
                         class="p">
                         <tr>
-                            <td>
+                            <td data-report-signature="1" style="padding-top: 60px;">
                                 {!! $ttd !!}
                             </td>
                         </tr>

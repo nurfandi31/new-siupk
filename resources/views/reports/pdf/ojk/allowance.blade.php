@@ -72,15 +72,15 @@
 <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 9.5px; table-layout: fixed;">
     <thead>
         <tr style="background: rgb(230, 230, 230); font-weight: bold; text-align: center;">
-            <th class="t l b" rowspan="2" width="4%">No</th>
-            <th class="t l b" rowspan="2" width="20%">Golongan</th>
-            <th class="t l b" rowspan="2" width="12%">Hari Keterlambatan</th>
-            <th class="t l b" rowspan="2" width="8%">Jumlah Pinjaman</th>
-            <th class="t l b" rowspan="2" width="13%">Outstanding</th>
-            <th class="t l b" rowspan="2" width="7%">% Penyisihan</th>
-            <th class="t l b" rowspan="2" width="12%">Cadangan Wajib</th>
-            <th class="t l b" rowspan="2" width="12%">Cadangan Dibentuk</th>
-            <th class="t l b r" rowspan="2" width="12%">Selisih</th>
+            <th class="t l b" width="4%">No</th>
+            <th class="t l b" width="20%">Golongan</th>
+            <th class="t l b" width="12%">Hari Keterlambatan</th>
+            <th class="t l b" width="8%">Jumlah Pinjaman</th>
+            <th class="t l b" width="13%">Outstanding</th>
+            <th class="t l b" width="7%">% Penyisihan</th>
+            <th class="t l b" width="12%">Cadangan Wajib</th>
+            <th class="t l b" width="12%">Cadangan Dibentuk</th>
+            <th class="t l b r" width="12%">Selisih</th>
         </tr>
     </thead>
     <tbody>

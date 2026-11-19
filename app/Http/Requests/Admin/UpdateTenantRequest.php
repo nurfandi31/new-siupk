@@ -21,6 +21,8 @@ final class UpdateTenantRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:150'],
+            'province_code' => ['nullable', 'string', 'regex:/^\d{2}$/'],
+            'regency_code' => ['nullable', 'string', 'regex:/^\d{4}$/'],
             'district_code' => ['nullable', 'string', 'regex:/^\d{6}$/'],
             'map_latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'map_longitude' => ['nullable', 'numeric', 'between:-180,180'],

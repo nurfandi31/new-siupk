@@ -283,7 +283,7 @@
                     <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 10px; font-family: Arial, Helvetica, sans-serif;"
                         class="p">
                         <tr>
-                            <td style="font-size: 10px; font-family: Arial, Helvetica, sans-serif;">
+                            <td data-report-signature="1" style="font-size: 10px; font-family: Arial, Helvetica, sans-serif; padding-top: 60px;">
                                 {!! $ttd !!}
                             </td>
                         </tr>

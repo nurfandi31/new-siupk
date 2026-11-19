@@ -217,7 +217,7 @@ final class LegacyIndividualDocumentContext
             'jasa' => (object) [
                 'nama_jj' => $this->interestKindLabel((string) ($loan->installment_method ?? 'flat')),
             ],
-            'spk_no' => (string) ($loan->spk_no ?? ''),
+            'spk_no' => $this->documentNumber($loan),
             'wt_cair' => $this->disbursementSlot($loan),
             'jaminan' => $collateralJson,
             'nama_barang' => (string) ($loan->product?->name ?? ''),
@@ -331,7 +331,7 @@ final class LegacyIndividualDocumentContext
             'nomor_usaha' => $nomorUsaha,
             'info' => $infoLembaga,
             'email' => $emailLembaga,
-            'spk_no' => (string) ($loan->spk_no ?? ''),
+            'spk_no' => $this->documentNumber($loan),
             'tgl_kondisi' => now()->toDateString(),
             'barcode' => Code128Barcode::pngDataUri((string) $loan->id),
             'laporan' => 'Kartu Angsuran '.$memberName.' Loan ID. '.$loan->id,
@@ -473,7 +473,7 @@ final class LegacyIndividualDocumentContext
             'jasa' => (object) [
                 'nama_jj' => $this->interestKindLabel((string) ($loan->installment_method ?? 'flat')),
             ],
-            'spk_no' => (string) ($loan->spk_no ?? ''),
+            'spk_no' => $this->documentNumber($loan),
             'wt_cair' => $this->disbursementSlot($loan),
             'jaminan' => $collateralJson,
             'nama_barang' => (string) ($loan->product?->name ?? ''),
@@ -714,7 +714,7 @@ final class LegacyIndividualDocumentContext
             'nomor_usaha' => $nomorUsaha,
             'info' => $infoLembaga,
             'email' => $emailLembaga,
-            'spk_no' => (string) ($loan->spk_no ?? ''),
+            'spk_no' => $this->documentNumber($loan),
             'tgl_kondisi' => now()->toDateString(),
             'barcode' => $barcode,
             'laporan' => 'Kartu Angsuran '.(string) ($group?->name ?? '').' Loan ID. '.$loan->id,
@@ -1745,5 +1745,25 @@ final class LegacyIndividualDocumentContext
         } catch (\Throwable) {
             return '';
         }
+    }
+
+    /**
+     * Nomor dokumen yang ditampilkan pada SPK/kuitansi. Prioritaskan nomor
+     * resmi yang tersimpan; jika belum diisi, gunakan nomor pinjaman; jika
+     * keduanya kosong (pinjaman baru), tampilkan nomor dokumen yang stabil
+     * berbasis id agar dokumen tidak mencetak "Nomor:" kosong.
+     */
+    private function documentNumber(Loan $loan): string
+    {
+        foreach ([$loan->spk_no, $loan->loan_number] as $candidate) {
+            $value = trim((string) ($candidate ?? ''));
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        $year = $loan->disbursed_at?->format('Y') ?: now()->format('Y');
+
+        return sprintf('SPK/%s/%03d', $year, (int) $loan->id);
     }
 }

@@ -24,16 +24,16 @@
             <tr style="background: rgb(230, 230, 230); font-weight: bold; text-align: center;">
                 <th class="t l b" width="3%">No</th>
                 <th class="t l b" width="11%">NIK</th>
-                <th class="t l b" width="6%">No. Anggota</th>
-                <th class="t l b" width="17%">Nama Anggota</th>
-                <th class="t l b" width="11%">Desa</th>
-                <th class="t l b" width="14%">Kelompok</th>
-                <th class="t l b" width="7%">Status</th>
-                <th class="t l b" width="6%">Pinj. Aktif</th>
-                <th class="t l b" width="7%">Simpanan</th>
-                <th class="t l b" width="10%">Outstanding</th>
-                <th class="t l b" width="9%">Tunggakan Pokok</th>
-                <th class="t l b r" width="9%">Tunggakan Jasa</th>
+                <th class="t l b" width="9%">No. Anggota</th>
+                <th class="t l b" width="15%">Nama Anggota</th>
+                <th class="t l b" width="10%">Desa</th>
+                <th class="t l b" width="12%">Kelompok</th>
+                <th class="t l b" width="6%">Status</th>
+                <th class="t l b" width="5%">Pinj. Aktif</th>
+                <th class="t l b" width="6%">Simpanan</th>
+                <th class="t l b" width="8%">Outstanding</th>
+                <th class="t l b" width="8%">Tunggakan Pokok</th>
+                <th class="t l b r" width="7%">Tunggakan Jasa</th>
             </tr>
         </thead>
         <tbody>

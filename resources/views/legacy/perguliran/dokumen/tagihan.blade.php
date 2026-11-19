@@ -41,7 +41,7 @@
             <td width="50">Nomor</td>
             <td width="10" align="center">:</td>
             <td colspan="2">
-                <b>__________/{{ Tanggal::tglRomawi(date('Y-m-d')) }}</b>
+                <b>{{ $pinkel->spk_no ?: 'ST/'.$pinkel->id }}/{{ Tanggal::tglRomawi(date('Y-m-d')) }}</b>
             </td>
         </tr>
         <tr>
@@ -66,7 +66,7 @@
                     {{ $pinkel->kelompok->ketua }}
                 </div>
                 <div style="font-weight: bold;">
-                    a.n. Ketua Kelompok {{ $pinkel->kelompok->nama_kelompok }}
+                    a.n. Ketua {{ $pinkel->kelompok->nama_kelompok }}
                 </div>
                 <div style="font-weight: bold;">Di</div>
                 <div style="font-weight: bold; text-align: center;">

@@ -95,7 +95,7 @@
         <main style="position: relative; font-size: 12px;">
             <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 10px;">
                 <tr>
-                    <td rowspan="7" align="center" width="400">
+                    <td rowspan="7" align="center" width="150">
                         <div style="font-size: 14px; font-weight: bold;">
                             {{ $kec->nama_lembaga_sort }}
                         </div>
@@ -111,12 +111,12 @@
                         </div>
                         <div style="font-size: 14px;">{{ $pinkel->kelompok->kd_kelompok }}</div>
                     </td>
-                    <td width="150">Jenis Pinjaman</td>
+                    <td width="80">Jenis Pinjaman</td>
                     <td width="5" align="center">:</td>
-                    <td width="200">{{ $pinkel->jpp->nama_jpp }}</td>
-                    <td width="150">Loan Id.</td>
+                    <td width="100">{{ $pinkel->jpp->nama_jpp }}</td>
+                    <td width="80">Loan Id.</td>
                     <td width="5" align="center">:</td>
-                    <td width="200">{{ $pinkel->id }}</td>
+                    <td width="100">{{ $pinkel->id }}</td>
                 </tr>
                 <tr>
                     <td>Nama Kelompok</td>
@@ -337,17 +337,17 @@
 
             <table border="0" width="100%" cellspacing="0" cellpadding="0" style="font-size: 11px;">
                 <tr>
-                    <td width="40" rowspan="5">&nbsp;</td>
+                    <td width="5%" rowspan="5">&nbsp;</td>
                     <td colspan="3" style="font-weight: bold;" height="30">&nbsp;</td>
-                    <td width="40" rowspan="5">&nbsp;</td>
+                    <td width="5%" rowspan="5">&nbsp;</td>
                 </tr>
                 <tr>
-                    <td width="350" rowspan="3">
+                    <td width="30%" rowspan="3">
                         <div>Lembar 1 : Untuk Kelompok</div>
                         <div>Lembar 2 : Arsip Lembaga</div>
                     </td>
-                    <td style="font-weight: bold; font-size: 12px;" width="350" align="center">Ketua Kelompok</td>
-                    <td style="font-weight: bold; font-size: 12px;" width="350" align="center">
+                    <td style="font-weight: bold; font-size: 12px;" width="30%" align="center">Ketua Kelompok</td>
+                    <td style="font-weight: bold; font-size: 12px;" width="30%" align="center">
                         <div>Anggota Pemanfaat</div>
                     </td>
                 </tr>
@@ -355,10 +355,10 @@
                     <td colspan="2" height="50"></td>
                 </tr>
                 <tr style="font-weight: bold; font-size: 12px; text-transform: uppercase;">
-                    <td width="350" align="center">
+                    <td width="30%" align="center">
                         {{ $pinkel->kelompok->ketua }}
                     </td>
-                    <td width="350" align="center">
+                    <td width="30%" align="center">
                         <div>{{ $pinj->anggota->namadepan }}</div>
                     </td>
                 </tr>

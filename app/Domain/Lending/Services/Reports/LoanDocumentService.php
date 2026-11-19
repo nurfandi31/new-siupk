@@ -446,6 +446,7 @@ final class LoanDocumentService
             'row_id' => (int) $loan->row_id,
             'id' => (int) $loan->id,
             'loan_number' => $loan->loan_number,
+            'spk_no' => $loan->spk_no,
             'status' => (string) $loan->status,
             'product_code' => $loan->product?->code,
             'product_name' => $loan->product?->name,

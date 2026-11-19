@@ -304,7 +304,10 @@ final readonly class CollectibilityOjkV2Service
 
             $principalPaid = (float) $loanAllocs->where('component', 'principal')->sum('amount');
             $principalDue = (float) $loanInsts->where('due_date', '<=', $endOfMonth)->sum('principal_due');
-            $outstanding = round(max(0.0, $principalDue - $principalPaid), 2);
+            // Outstanding OJK = sisa pokok pinjaman, bukan hanya pokok yang
+            // sudah jatuh tempo. Selaras dengan KBP v1 agar laporan v2 tidak
+            // menampilkan nol saat pinjaman aktif belum memiliki angsuran jatuh tempo.
+            $outstanding = round(max(0.0, (float) ($loan->principal_amount ?? 0) - $principalPaid), 2);
 
             $overdueMonths = 0;
             if ($loanInsts->count() > 0 && $loanInsts->where('due_date', '<=', $endOfMonth)->count() > 0) {

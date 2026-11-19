@@ -382,6 +382,12 @@ final class LppReportService
             })
             ->where('l.tenant_id', $tenantId)
             ->whereIn('l.status', self::ACTIVE)
+            // Rincian kelompok hanya untuk pinjaman kelompok. Pinjaman
+            // perorangan memiliki laporan rincian tersendiri.
+            ->where(function ($q): void {
+                $q->whereNull('l.legacy_source')
+                    ->orWhere('l.legacy_source', 'group_loan');
+            })
             ->orderBy('v.name')
             ->orderBy('g.name')
             ->orderBy('l.id');

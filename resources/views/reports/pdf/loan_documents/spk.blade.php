@@ -12,6 +12,11 @@
     $alokasi = number_format((float) $loan['principal_amount'], 0, ',', '.');
     $jangka = (int) $loan['term_months'];
 
+    $documentNumber = trim((string) ($loan['spk_no'] ?? $loan['loan_number'] ?? ''));
+    if ($documentNumber === '') {
+        $documentNumber = sprintf('SPK/%s/%03d', date('Y'), (int) $loan['id']);
+    }
+
     // PIHAK PERTAMA (direktur/manager Lembaga)
     $pihakPertamaNama = $tokens['{kepala_lembaga}'] ?? '';
     $pihakPertamaJabatan = $tokens['{jabatan_kepala}'] ?? 'Direktur';
@@ -104,7 +109,7 @@
                 <b>SURAT PERJANJIAN KREDIT (SPK)</b>
             </div>
             <div style="font-size: 14px;">
-                Nomor: {{ $loan['loan_number'] }}
+                Nomor: {{ $documentNumber }}
             </div>
             <div style="font-size: 14px;">
                 Tanggal: {{ $disbursementDate }}

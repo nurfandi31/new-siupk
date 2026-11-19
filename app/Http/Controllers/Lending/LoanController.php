@@ -56,6 +56,12 @@ final class LoanController
         $loan = Loan::class;
 
         $query = $loan::query()
+            // Daftar pinjaman kelompok tidak boleh menampilkan pinjaman
+            // perorangan; halaman tersebut punya daftar sendiri.
+            ->where(function ($q): void {
+                $q->whereNull('legacy_source')
+                    ->orWhere('legacy_source', 'group_loan');
+            })
             ->with([
                 'product:row_id,code,name',
                 'borrower.group:row_id,name,address,organization_unit_row_id',
@@ -114,6 +120,10 @@ final class LoanController
 
         if ($view === 'kanban') {
             $grouped = $loan::query()
+                ->where(function ($q): void {
+                    $q->whereNull('legacy_source')
+                        ->orWhere('legacy_source', 'group_loan');
+                })
                 ->with([
                     'beneficiaries.member.person',
                     'installments',
@@ -997,10 +1007,15 @@ final class LoanController
         $search = trim((string) $request->query('search', ''));
 
         $query = Loan::query()
+            ->where(function ($q): void {
+                $q->whereNull('legacy_source')
+                    ->orWhere('legacy_source', 'group_loan');
+            })
             ->with([
                 'product:row_id,code,name',
-                'borrower.group:row_id,name,address,organization_unit_row_id,leader_name',
+                'borrower.group:row_id,name,address,organization_unit_row_id',
                 'borrower.group.village:row_id,name',
+                'borrower.group.activeOfficers.member.person',
                 'installments',
             ]);
 
@@ -1074,11 +1089,14 @@ final class LoanController
             $totals['principal_remaining'] += $remaining;
 
             $group = $loan->borrower?->group;
+            $leader = $group?->activeOfficers
+                ?->firstWhere('position', 'chair')
+                ?->member?->person?->full_name;
             $items[] = [
                 'row_id' => $loan->row_id,
                 'loan_number' => $loan->loan_number,
                 'group_name' => $group?->name ?? 'Pinjaman Perorangan/Lain',
-                'leader_name' => $group?->leader_name ?? '',
+                'leader_name' => $leader ?? '',
                 'village_name' => $group?->village?->name ?? '',
                 'address' => $group?->address ?? '',
                 'proposed_at' => $loan->proposed_at?->toDateString(),

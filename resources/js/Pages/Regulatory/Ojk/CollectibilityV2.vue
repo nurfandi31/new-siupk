@@ -291,7 +291,7 @@ const pdfUrl = computed<string>(() => {
                                     <td class="p-3" colspan="3">TOTAL {{ prod.product_code }}</td>
                                     <td class="p-3 text-right tabular-nums">{{ fmt(prod.outstanding) }}</td>
                                     <td class="p-3 text-right tabular-nums border-l border-outline-variant/20">
-                                        {{ Number(prod.allowance_required).toFixed(2) }}
+                                        —
                                     </td>
                                     <td class="p-3 text-right tabular-nums">{{ fmt(prod.allowance_required) }}</td>
                                     <td class="p-3 text-right tabular-nums">{{ fmt(prod.allowance_formed) }}</td>

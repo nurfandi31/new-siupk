@@ -117,10 +117,18 @@ final class ReportPdf
 
     private function signatureKeyForView(string $view): ?string
     {
+        // Dokumen pinjaman legacy sudah membawa blok tanda tangan sendiri
+        // (hardcoded atau melalui token $ttd). Jangan tambahkan blok default lagi.
+        if (str_starts_with($view, 'legacy.perguliran')) {
+            return null;
+        }
+
         $documentViews = [
             'reports.pdf.annual.cover',
             'reports.pdf.invoice',
             'reports.pdf.installment_receipt',
+            'reports.pdf.installment_receipt_matrix',
+            'reports.pdf.installment_receipt_thermal',
             'reports.pdf.loan_card',
             'reports.pdf.loan_card_member',
             'reports.pdf.loan_card_reprint',
