@@ -60,19 +60,30 @@ final class LegacyLendingInstallmentSystemTest extends TestCase
         self::assertSame(0, $loan->interestGraceMonths);
     }
 
-    public function test_legacy_m1_maps_grace_to_both_components(): void
+    public function test_legacy_dua_mingguan_maps_to_two_month_interval(): void
     {
-        $loan = $this->normalize(['sistem_angsuran' => '25']);
+        // Tabel legacy `sistem_angsuran` id 25 = "Dua Mingguan" dengan
+        // kolom sistem = 2. Pacuan hanya memakai +7 hari untuk id 12,
+        // sehingga id 25 berperilaku interval 2 bulan.
+        $loan = $this->normalize([
+            'sistem_angsuran' => '25',
+            'sa_jasa' => '25',
+        ]);
 
-        self::assertSame(1, $loan->principalGraceMonths);
-        self::assertSame(1, $loan->interestGraceMonths);
+        self::assertSame('bimonthly', $loan->principalFrequency);
+        self::assertSame('bimonthly', $loan->interestFrequency);
+        self::assertSame(0, $loan->principalGraceMonths);
+        self::assertSame(0, $loan->interestGraceMonths);
     }
 
-    public function test_legacy_seasonal_maps_principal_grace_to_two_months(): void
+    public function test_legacy_seasonal_uses_monthly_interval(): void
     {
+        // Id 5 "Musiman" memiliki kolom sistem = 1 dan tidak punya cabang
+        // khusus di pacuan, jadi setara bulanan tanpa grace.
         $loan = $this->normalize(['sistem_angsuran' => '5']);
 
-        self::assertSame(2, $loan->principalGraceMonths);
+        self::assertSame('monthly', $loan->principalFrequency);
+        self::assertSame(0, $loan->principalGraceMonths);
         self::assertSame(0, $loan->interestGraceMonths);
     }
 
@@ -82,6 +93,41 @@ final class LegacyLendingInstallmentSystemTest extends TestCase
 
         self::assertSame('every_24_months', $loan->principalFrequency);
         self::assertSame('monthly', $loan->interestFrequency);
+    }
+
+    public function test_legacy_four_month_system_maps_both_components_from_their_own_ids(): void
+    {
+        $loan = $this->normalize([
+            'sistem_angsuran' => '3',
+            'sa_jasa' => '3',
+        ]);
+
+        self::assertSame('every_4_months', $loan->principalFrequency);
+        self::assertSame('every_4_months', $loan->interestFrequency);
+        self::assertSame(0, $loan->principalGraceMonths);
+        self::assertSame(0, $loan->interestGraceMonths);
+    }
+
+    public function test_legacy_mixed_systems_map_principal_and_interest_separately(): void
+    {
+        $loan = $this->normalize([
+            'sistem_angsuran' => '2',
+            'sa_jasa' => '1',
+        ]);
+
+        self::assertSame('quarterly', $loan->principalFrequency);
+        self::assertSame('monthly', $loan->interestFrequency);
+    }
+
+    public function test_legacy_effective_interest_maps_to_effective_method(): void
+    {
+        $loan = $this->normalize([
+            'sistem_angsuran' => '1',
+            'sa_jasa' => '1',
+            'jenis_jasa' => '2',
+        ]);
+
+        self::assertEquals('effective', $loan->installmentMethod);
     }
 
     public function test_unknown_legacy_system_keeps_monthly_default(): void

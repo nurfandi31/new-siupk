@@ -250,7 +250,104 @@ final class LoanScheduleLegacyParityTest extends TestCase
         self::assertSame(81_200_000.0, (float) $result['summary']['total_payment']);
     }
 
-    private function createParityLoan(): Loan
+    public function test_four_month_principal_and_interest_interval_matches_legacy_frequency_rows(): void
+    {
+        // Pacuan individu #140703 (sistem_angsuran=3, sa_jasa=3): pokok dan
+        // jasa hanya dibayar tiap 4 bulan, baris lain nol.
+        $loan = $this->createParityLoan([
+            'principal_amount' => 1_000_000,
+            'service_rate_total' => 18.0,
+            'term_months' => 12,
+            'principal_frequency' => 'every_4_months',
+            'interest_frequency' => 'every_4_months',
+            'rounding_step' => 500,
+        ]);
+
+        $rows = LoanInstallment::query()
+            ->where('loan_row_id', $loan->row_id)
+            ->where('installment_number', '>', 0)
+            ->orderBy('installment_number')
+            ->get()
+            ->values();
+
+        self::assertCount(12, $rows);
+
+        $expected = [
+            4 => [333_500.0, 60_000.0],
+            8 => [333_500.0, 60_000.0],
+            12 => [333_000.0, 60_000.0],
+        ];
+
+        foreach ($rows as $index => $row) {
+            $number = $index + 1;
+            [$principal, $interest] = $expected[$number] ?? [0.0, 0.0];
+
+            self::assertSame($principal, (float) $row->principal_due, 'pokok baris ke-'.$number);
+            self::assertSame($interest, (float) $row->interest_due, 'jasa baris ke-'.$number);
+        }
+
+        self::assertEqualsWithDelta(1_000_000.0, $rows->sum(fn ($r) => (float) $r->principal_due), 0.01);
+        self::assertEqualsWithDelta(180_000.0, $rows->sum(fn ($r) => (float) $r->interest_due), 0.01);
+    }
+
+    public function test_last_row_residual_is_rounded_to_whole_rupiah_like_legacy_int_columns(): void
+    {
+        // Kolom legacy wajib_pokok/wajib_jasa bertipe int. Plafon 5.444.444
+        // menghasilkan jasa 979.999,92; sisa baris terakhir dibulatkan MySQL
+        // menjadi 83.500 (bukan 83.499,92).
+        $loan = $this->createParityLoan([
+            'principal_amount' => 5_444_444,
+            'service_rate_total' => 18.0,
+            'term_months' => 12,
+            'rounding_step' => 500,
+        ]);
+
+        $rows = LoanInstallment::query()
+            ->where('loan_row_id', $loan->row_id)
+            ->where('installment_number', '>', 0)
+            ->orderBy('installment_number')
+            ->get()
+            ->values();
+
+        self::assertCount(12, $rows);
+        self::assertSame(81_500.0, (float) $rows[0]->interest_due);
+        self::assertSame(83_500.0, (float) $rows[11]->interest_due);
+        self::assertSame(453_500.0, (float) $rows[0]->principal_due);
+        self::assertSame(455_944.0, (float) $rows[11]->principal_due);
+    }
+
+    public function test_effective_interest_pays_every_month_even_when_interval_is_four_months(): void
+    {
+        // Pacuan jenis_jasa=2 (efektif) mengisi jasa setiap bulan sebesar
+        // wajib jasa, bukan hanya pada kelipatan interval.
+        $loan = $this->createParityLoan([
+            'principal_amount' => 1_000_000,
+            'service_rate_total' => 18.0,
+            'term_months' => 12,
+            'installment_method' => 'effective',
+            'principal_frequency' => 'every_4_months',
+            'interest_frequency' => 'every_4_months',
+            'rounding_step' => 500,
+        ]);
+
+        $rows = LoanInstallment::query()
+            ->where('loan_row_id', $loan->row_id)
+            ->where('installment_number', '>', 0)
+            ->orderBy('installment_number')
+            ->get()
+            ->values();
+
+        self::assertCount(12, $rows);
+
+        foreach ($rows as $index => $row) {
+            self::assertSame(60_000.0, (float) $row->interest_due, 'jasa baris ke-'.($index + 1));
+        }
+
+        self::assertSame(333_500.0, (float) $rows[3]->principal_due);
+        self::assertSame(333_000.0, (float) $rows[11]->principal_due);
+    }
+
+    private function createParityLoan(array $overrides = []): Loan
     {
         return app(LoanService::class)->createMemberProposal([
             'loan_product_id' => $this->productId,
@@ -267,6 +364,7 @@ final class LoanScheduleLegacyParityTest extends TestCase
             'rounding_step' => 500,
             'collateral' => null,
             'verification_remarks' => null,
+            ...$overrides,
         ], (int) $this->user->row_id);
     }
 

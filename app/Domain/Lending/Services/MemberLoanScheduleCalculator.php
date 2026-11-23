@@ -391,7 +391,10 @@ final class MemberLoanScheduleCalculator
             if ($sisa == 0 && $ke != $tempoJasa) {
                 $angsuranJasa = $wajibJasa;
             } elseif ($sisa == 0 && $ke == $tempoJasa) {
-                $angsuranJasa = $alokasiJasa - $sumJasa;
+                // Kolom legacy `wajib_jasa` bertipe int: sisa pembulatan
+                // disimpan sebagai rupiah bulat (MySQL membulatkan, bukan
+                // memotong). Samakan agar selisih sen tidak muncul.
+                $angsuranJasa = round($alokasiJasa - $sumJasa);
             } else {
                 $angsuranJasa = 0;
             }
@@ -446,7 +449,8 @@ final class MemberLoanScheduleCalculator
             if ($sisa == 0 && $ke != $tempoPokok) {
                 $angsuranPokok = $wajibPokok;
             } elseif ($sisa == 0 && $ke == $tempoPokok) {
-                $angsuranPokok = $principal - $sumPokok;
+                // Legacy menyimpan pokok pada kolom int (rupiah bulat).
+                $angsuranPokok = round($principal - $sumPokok);
             } else {
                 $angsuranPokok = 0;
             }
