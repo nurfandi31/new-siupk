@@ -104,6 +104,29 @@ final class MigrateLegacyMembershipTest extends TestCase
         self::assertSame(1, (int) DB::connection('tenant')->table('groups')->count());
     }
 
+    public function test_village_provisioning_imports_legacy_installment_schedule(): void
+    {
+        app(MembershipMigrationPipeline::class)->run(
+            suffix: '99',
+            dryRun: false,
+            chunk: 100,
+            failFast: true,
+            skipMembers: false,
+            skipGroups: false,
+            skipReconcile: true,
+        );
+
+        $village = DB::connection('tenant')
+            ->table('organization_units')
+            ->where('type', 'village')
+            ->where('code', '3201010001')
+            ->first();
+
+        self::assertNotNull($village, 'Desa legacy harus dibuat sebagai organization_units.');
+        self::assertSame('Desa Melati', $village->name);
+        self::assertSame('15', (string) $village->installment_schedule);
+    }
+
     private function pointLegacyAtTenant(): void
     {
         $tenant = config('database.connections.tenant');
@@ -120,6 +143,17 @@ final class MigrateLegacyMembershipTest extends TestCase
         $schema = Schema::connection('tenant');
         $schema->dropIfExists('anggota_99');
         $schema->dropIfExists('kelompok_99');
+        $schema->dropIfExists('desa');
+
+        $schema->create('desa', function ($table): void {
+            $table->unsignedBigInteger('id')->primary();
+            $table->string('kd_desa', 32)->nullable();
+            $table->string('kode_desa', 32)->nullable();
+            $table->string('nama_desa', 180)->nullable();
+            $table->text('alamat_desa')->nullable();
+            $table->string('telp_desa', 30)->nullable();
+            $table->string('jadwal_angsuran_desa', 10)->nullable();
+        });
 
         $schema->create('anggota_99', function ($table): void {
             $table->unsignedBigInteger('id')->primary();
@@ -162,10 +196,21 @@ final class MigrateLegacyMembershipTest extends TestCase
         $schema = Schema::connection('tenant');
         $schema->dropIfExists('anggota_99');
         $schema->dropIfExists('kelompok_99');
+        $schema->dropIfExists('desa');
     }
 
     private function seedLegacyRows(): void
     {
+        DB::connection('tenant')->table('desa')->insert([
+            'id' => 1,
+            'kd_desa' => '3201010001',
+            'kode_desa' => '32.01.01.0001',
+            'nama_desa' => 'Desa Melati',
+            'alamat_desa' => 'Kantor Desa Melati',
+            'telp_desa' => '0274000001',
+            'jadwal_angsuran_desa' => '15',
+        ]);
+
         DB::connection('tenant')->table('anggota_99')->insert([
             'id' => 501,
             'nik' => '3201010101010001',
@@ -190,7 +235,7 @@ final class MigrateLegacyMembershipTest extends TestCase
         DB::connection('tenant')->table('kelompok_99')->insert([
             'id' => 10,
             'lokasi' => 1,
-            'desa' => null,
+            'desa' => '3201010001',
             'kd_kelompok' => 'K-10',
             'nama_kelompok' => 'Kelompok Mawar',
             'alamat_kelompok' => 'Dusun 1',

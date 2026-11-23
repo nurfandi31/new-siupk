@@ -53,11 +53,20 @@ final class LoanService
         'pi' => '4.1.01.07',
     ];
 
-    /** Default penalty accounts per loan product code. */
+    /**
+     * Default penalty accounts per loan product code.
+     *
+     * Pacuan membentuk kode denda dari kode produk: `4.1.02.{kode}`.
+     * Chart bawaan Next lama menaruh denda di `4.1.01.04-06`, jadi daftar
+     * kandidat mencoba kode pacuan lebih dulu lalu fallback ke chart Next.
+     *
+     * @var array<string, list<string>>
+     */
     private const DEFAULT_PENALTY_CODES = [
-        'spp' => '4.1.01.04',
-        'uep' => '4.1.01.05',
-        'pl' => '4.1.01.06',
+        'spp' => ['4.1.02.01', '4.1.01.04'],
+        'uep' => ['4.1.02.02', '4.1.01.05'],
+        'pl' => ['4.1.02.03', '4.1.01.06'],
+        'pi' => ['4.1.02.05', '4.1.02.07'],
     ];
 
     private const FREQUENCY_PER_MONTH = [
@@ -186,8 +195,7 @@ final class LoanService
                 ]);
             }
 
-            $this->generatePrincipalSchedule($loan, $principal, $principalPeriods, $principalRatePerPeriod, $principalFreq, $data['proposed_at'], $principalGraceMonths);
-            $this->generateInterestSchedule($loan, $principal, $interestPeriods, $interestRatePerPeriod, $method, $interestFreq, $data['proposed_at'], $interestGraceMonths);
+            $this->regenerateInstallmentSchedule($loan, $principal);
 
             $loan->statusHistories()->create([
                 'from_status' => null,
@@ -780,6 +788,14 @@ final class LoanService
                     interestGraceMonths: (int) ($loan->interest_grace_months ?? 0),
                     disbursementDate: CarbonImmutable::parse($disbursedAt),
                 );
+            } else {
+                // Legacy juga memanggil generate(save) saat pencairan kelompok,
+                // sehingga jatuh tempo mengikuti tgl_cair aktual.
+                $this->regenerateInstallmentSchedule(
+                    loan: $loan,
+                    principal: $totalAllocated,
+                    scheduleDate: CarbonImmutable::parse($disbursedAt),
+                );
             }
 
             $loan->statusHistories()->create([
@@ -1011,12 +1027,49 @@ final class LoanService
 
     private function resolvePenaltyAccount(string $productCode): Account
     {
-        return $this->resolveAccountByKey(
-            productCode: $productCode,
-            settingKey: 'account.penerimaan_denda_',
-            defaultCodes: self::DEFAULT_PENALTY_CODES,
-            label: 'penalty',
-        );
+        $normalized = strtolower(trim($productCode));
+        $candidates = [];
+
+        $configured = $this->settings->get('account.penerimaan_denda_'.$normalized);
+        if (is_string($configured) && $configured !== '') {
+            $account = Account::on('tenant')
+                ->where('code', $configured)
+                ->where('is_active', true)
+                ->first();
+
+            if ($account !== null) {
+                return $account;
+            }
+        }
+
+        foreach (self::DEFAULT_PENALTY_CODES[$normalized] ?? [] as $code) {
+            $candidates[] = $code;
+        }
+
+        $accounts = Account::on('tenant')
+            ->whereIn('code', array_values(array_unique($candidates)))
+            ->where('is_active', true)
+            ->get()
+            ->keyBy('code');
+
+        // Prioritaskan akun yang memang bernama "denda" agar chart lama Next
+        // (denda di 4.1.01.04-06) maupun chart pacuan (denda di 4.1.02.xx)
+        // sama-sama mengarah ke akun yang benar.
+        foreach (array_unique($candidates) as $code) {
+            $account = $accounts->get($code);
+            if ($account !== null && str_contains(mb_strtolower((string) $account->name), 'denda')) {
+                return $account;
+            }
+        }
+
+        foreach (array_unique($candidates) as $code) {
+            $account = $accounts->get($code);
+            if ($account !== null) {
+                return $account;
+            }
+        }
+
+        throw new RuntimeException("No penalty account configured for loan product [{$productCode}].");
     }
 
     /**
@@ -2215,8 +2268,7 @@ final class LoanService
                     interestGraceMonths: $interestGraceMonths,
                 );
             } else {
-                $this->generatePrincipalSchedule($newLoan, $principalRemaining, $principalPeriods, $principalRatePerPeriod, $principalFreq, $rescheduledAt->toDateString(), $principalGraceMonths);
-                $this->generateInterestSchedule($newLoan, $principalRemaining, $interestPeriods, $interestRatePerPeriod, $method, $interestFreq, $rescheduledAt->toDateString(), $interestGraceMonths);
+                $this->regenerateInstallmentSchedule($newLoan, $principalRemaining, $rescheduledAt);
             }
 
             foreach (['draft', 'verified', 'waiting', 'active'] as $to) {
@@ -2602,33 +2654,67 @@ final class LoanService
         });
     }
 
-    private function regenerateInstallmentSchedule(Loan $loan, float $principal): void
+    private function regenerateInstallmentSchedule(Loan $loan, float $principal, ?CarbonImmutable $scheduleDate = null): void
     {
         $principalFreq = (string) ($loan->principal_frequency ?: 'monthly');
         $interestFreq = (string) ($loan->interest_frequency ?: $principalFreq);
-        $method = (string) ($loan->installment_method ?: 'flat');
         $term = (int) $loan->term_months;
         $serviceRateTotal = (float) ($loan->service_rate_total ?? $loan->interest_rate ?? 0);
 
         $principalGraceMonths = (int) ($loan->principal_grace_months ?? 0);
         $interestGraceMonths = (int) ($loan->interest_grace_months ?? 0);
+
+        $startDate = $scheduleDate ?? CarbonImmutable::parse(
+            (string) ($loan->approved_at?->toDateString()
+                ?? $loan->verified_at?->toDateString()
+                ?? $loan->proposed_at?->toDateString()
+                ?? now()->toDateString())
+        );
+
+        $loan->installments()->delete();
+        $loan->refresh();
+
+        if ($principal <= 0) {
+            return;
+        }
+
+        // Rumus kelompok legacy identik dengan individu (PinjamanKelompokController::generate).
+        // Simpan sebagai dua baris komponen per angsuran agar konsisten dengan
+        // hasil migrasi rencana_angsuran dan seluruh laporan/dokumen.
+        //
+        // Catatan: kombinasi frekuensi non-bulanan + grace tidak ada di pacuan
+        // (kode `sa_*` legacy hanya mengenal grace untuk bulanan). Untuk kombinasi
+        // itu kita pertahankan perilaku Next sebelumnya agar fitur tidak hilang.
+        $legacyCompatible = ($principalFreq === 'monthly' || $principalGraceMonths === 0)
+            && ($interestFreq === 'monthly' || $interestGraceMonths === 0);
+
+        if ($legacyCompatible) {
+            app(MemberLoanScheduleCalculator::class)->recalculate(
+                loan: $loan,
+                term: $term,
+                principal: $principal,
+                principalSystem: $this->mapFrequencyToSystemId($principalFreq, $principalGraceMonths),
+                interestSystem: $this->mapFrequencyToSystemId($interestFreq, $interestGraceMonths),
+                serviceRateTotal: $serviceRateTotal,
+                interestMethod: (string) ($loan->installment_method ?: 'flat'),
+                disbursementDate: $startDate,
+                principalGraceMonths: $principalGraceMonths,
+                interestGraceMonths: $interestGraceMonths,
+                splitComponents: true,
+                includeHeaderRow: false,
+            );
+
+            return;
+        }
+
+        $method = (string) ($loan->installment_method ?: 'flat');
         $principalPeriods = $this->periods($principalFreq, $term, $principalGraceMonths);
         $interestPeriods = $this->periods($interestFreq, $term, $interestGraceMonths);
         $principalRatePerPeriod = $principalPeriods > 0 ? round($serviceRateTotal / $principalPeriods, 4) : 0.0;
         $interestRatePerPeriod = $interestPeriods > 0 ? round($serviceRateTotal / $interestPeriods, 4) : 0.0;
 
-        $startDate = $loan->approved_at?->format('Y-m-d')
-            ?? $loan->verified_at?->format('Y-m-d')
-            ?? $loan->proposed_at?->format('Y-m-d')
-            ?? now()->toDateString();
-
-        $loan->installments()->delete();
-        $loan->refresh();
-
-        if ($principal > 0) {
-            $this->generatePrincipalSchedule($loan, $principal, $principalPeriods, $principalRatePerPeriod, $principalFreq, $startDate, $principalGraceMonths);
-            $this->generateInterestSchedule($loan, $principal, $interestPeriods, $interestRatePerPeriod, $method, $interestFreq, $startDate, $interestGraceMonths);
-        }
+        $this->generatePrincipalSchedule($loan, $principal, $principalPeriods, $principalRatePerPeriod, $principalFreq, $startDate->toDateString(), $principalGraceMonths);
+        $this->generateInterestSchedule($loan, $principal, $interestPeriods, $interestRatePerPeriod, $method, $interestFreq, $startDate->toDateString(), $interestGraceMonths);
     }
 
     /**

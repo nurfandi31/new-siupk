@@ -248,14 +248,16 @@ final class LoanProposalRegistrationTest extends TestCase
         $principalRows = $loan->installments->where('component', 'principal');
         $interestRows = $loan->installments->where('component', 'interest');
         self::assertCount(6, $principalRows);
-        self::assertCount(2, $interestRows);
+
+        // Pacuan menyimpan satu baris rencana per bulan; bulan yang bukan
+        // jadwal jasa (kuartalan) tetap ada dengan nominal 0.
+        self::assertCount(6, $interestRows);
 
         $principalAmounts = $principalRows->pluck('principal_due')->map(fn ($v) => (float) $v)->all();
         self::assertSame(1000000.00, $principalAmounts[0]);
 
-        $interestAmounts = $interestRows->pluck('interest_due')->map(fn ($v) => (float) $v)->all();
-        self::assertSame(180000.00, $interestAmounts[0]);
-        self::assertSame(180000.00, $interestAmounts[1]);
+        $interestAmounts = $interestRows->pluck('interest_due')->map(fn ($v) => (float) $v)->values()->all();
+        self::assertSame([0.0, 0.0, 180000.00, 0.0, 0.0, 180000.00], $interestAmounts);
     }
 
     public function test_annuity_method_produces_decreasing_interest_in_interest_schedule(): void

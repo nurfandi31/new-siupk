@@ -7,7 +7,6 @@ namespace App\Domain\Lending\Services;
 use App\Domain\Lending\Models\InstallmentSystem;
 use App\Domain\Lending\Models\Loan;
 use App\Domain\Lending\Models\LoanInstallment;
-use App\Domain\Membership\Models\Member;
 use App\Domain\Membership\Models\OrganizationProfile;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -53,23 +52,23 @@ final class MemberLoanScheduleCalculator
         CarbonImmutable $disbursementDate,
         int $principalGraceMonths = 0,
         int $interestGraceMonths = 0,
+        bool $splitComponents = false,
+        bool $includeHeaderRow = true,
     ): int {
         if ($principal <= 0 || $term <= 0) {
             return 0;
         }
 
-        $loan->loadMissing(['borrower.member.village']);
+        $loan->loadMissing(['borrower.member.village', 'borrower.group.village']);
 
         $profile = OrganizationProfile::query()->first();
         $roundingMode = (string) ($profile?->installment_rounding ?? '5000');
+        $customRoundingStep = $loan->rounding_step !== null ? max(0, (int) $loan->rounding_step) : null;
         $cutoffDay = (int) ($profile?->disbursement_cutoff_day ?? 0);
 
         // Override tgl jadwal desa — pacuan lihat di anggota->d->jadwal_angsuran_desa
-        $villageDay = 0;
-        $member = $loan->borrower?->member;
-        if ($member !== null) {
-            $villageDay = (int) ($this->resolveVillageInstallmentDay($member));
-        }
+        // (individu) atau kelompok->d->jadwal_angsuran_desa (kelompok).
+        $villageDay = $this->resolveVillageInstallmentDay($loan);
 
         $tgl = $disbursementDate->toDateString();
         $tanggalCair = (int) $disbursementDate->format('d');
@@ -92,6 +91,7 @@ final class MemberLoanScheduleCalculator
             principalGraceMonths: $principalGraceMonths,
             interestGraceMonths: $interestGraceMonths,
             roundingMode: $roundingMode,
+            customRoundingStep: $customRoundingStep,
         );
 
         // Tahap 3: Tanggal jatuh tempo per angsuran (baris 2511-2547)
@@ -143,21 +143,67 @@ final class MemberLoanScheduleCalculator
         }
 
         // Hapus jadwal lama dan ganti dengan yang baru (REPLACE — sama dengan pacuan RencanaAngsuranI::where(...)->delete())
-        DB::connection('tenant')->transaction(function () use ($loan, $headerRow, $persisted): void {
+        DB::connection('tenant')->transaction(function () use ($loan, $headerRow, $persisted, $splitComponents, $includeHeaderRow): void {
             LoanInstallment::query()->where('loan_row_id', $loan->row_id)->delete();
 
-            LoanInstallment::query()->create([
-                'loan_row_id' => $loan->row_id,
-                ...$headerRow,
-                'principal_paid' => 0,
-                'interest_paid' => 0,
-                'penalty_due' => 0,
-                'penalty_paid' => 0,
-                'status' => 'pending',
-                'paid_at' => null,
-            ]);
+            if ($includeHeaderRow) {
+                LoanInstallment::query()->create([
+                    'loan_row_id' => $loan->row_id,
+                    ...$headerRow,
+                    'principal_paid' => 0,
+                    'interest_paid' => 0,
+                    'penalty_due' => 0,
+                    'penalty_paid' => 0,
+                    'status' => 'pending',
+                    'paid_at' => null,
+                ]);
+            }
 
             foreach ($persisted as $row) {
+                if ($splitComponents) {
+                    // Skema Next menyimpan dua baris per angsuran (pokok & jasa),
+                    // sama seperti hasil migrasi rencana_angsuran legacy.
+                    LoanInstallment::query()->create([
+                        'loan_row_id' => $loan->row_id,
+                        'component' => 'principal',
+                        'installment_number' => $row['installment_number'],
+                        'due_date' => $row['due_date'],
+                        'principal_due' => $row['principal_due'],
+                        'interest_due' => 0,
+                        'running_principal' => $row['running_principal'],
+                        'running_interest' => 0,
+                        'principal_paid' => 0,
+                        'interest_paid' => 0,
+                        'penalty_due' => 0,
+                        'penalty_paid' => 0,
+                        'status' => 'pending',
+                        'paid_at' => null,
+                        'created_at' => $row['created_at'],
+                        'updated_at' => $row['updated_at'],
+                    ]);
+
+                    LoanInstallment::query()->create([
+                        'loan_row_id' => $loan->row_id,
+                        'component' => 'interest',
+                        'installment_number' => $row['installment_number'],
+                        'due_date' => $row['due_date'],
+                        'principal_due' => 0,
+                        'interest_due' => $row['interest_due'],
+                        'running_principal' => 0,
+                        'running_interest' => $row['running_interest'],
+                        'principal_paid' => 0,
+                        'interest_paid' => 0,
+                        'penalty_due' => 0,
+                        'penalty_paid' => 0,
+                        'status' => 'pending',
+                        'paid_at' => null,
+                        'created_at' => $row['created_at'],
+                        'updated_at' => $row['updated_at'],
+                    ]);
+
+                    continue;
+                }
+
                 LoanInstallment::query()->create([
                     'loan_row_id' => $loan->row_id,
                     ...$row,
@@ -200,17 +246,14 @@ final class MemberLoanScheduleCalculator
             return [];
         }
 
-        $loan->loadMissing(['borrower.member.village']);
+        $loan->loadMissing(['borrower.member.village', 'borrower.group.village']);
 
         $profile = OrganizationProfile::query()->first();
         $roundingMode = (string) ($profile?->installment_rounding ?? '5000');
+        $customRoundingStep = $loan->rounding_step !== null ? max(0, (int) $loan->rounding_step) : null;
         $cutoffDay = (int) ($profile?->disbursement_cutoff_day ?? 0);
 
-        $villageDay = 0;
-        $member = $loan->borrower?->member;
-        if ($member !== null) {
-            $villageDay = (int) $this->resolveVillageInstallmentDay($member);
-        }
+        $villageDay = $this->resolveVillageInstallmentDay($loan);
 
         $tgl = $disbursementDate->toDateString();
         $tanggalCair = (int) $disbursementDate->format('d');
@@ -233,6 +276,7 @@ final class MemberLoanScheduleCalculator
             principalGraceMonths: $principalGraceMonths,
             interestGraceMonths: $interestGraceMonths,
             roundingMode: $roundingMode,
+            customRoundingStep: $customRoundingStep,
         );
 
         $base = CarbonImmutable::parse($tgl);
@@ -279,6 +323,7 @@ final class MemberLoanScheduleCalculator
         int $principalGraceMonths,
         int $interestGraceMonths,
         string $roundingMode,
+        ?int $customRoundingStep = null,
     ): array {
         // Pacuan: kalau sa_pokok/sa_jasa == 11 -> jangka += 24 (mingguan berbatas tertentu)
         $saPokok = $this->normalizeSystemId($principalSystem, $principalGraceMonths, true);
@@ -294,6 +339,38 @@ final class MemberLoanScheduleCalculator
         $tempoPokok = $this->resolveTempo($adjustedTerm, $saPokok, $sistemPokok);
         $tempoJasa = $this->resolveTempo($adjustedTerm, $saJasa, $sistemJasa);
 
+        // Legacy memakai `kecamatan.pembulatan` (mode string, '5000' = tanpa
+        // pembulatan). Next juga menyimpan override per pinjaman berupa nominal
+        // langkah; bila ada, pakai itu supaya input UI tetap dihormati.
+        $roundAmount = function (float $value) use ($roundingMode, $customRoundingStep): float {
+            if ($customRoundingStep !== null && $customRoundingStep > 0) {
+                return (float) (round($value / $customRoundingStep) * $customRoundingStep);
+            }
+
+            if ($roundingMode === '' || $roundingMode === '5000') {
+                return (float) round($value);
+            }
+
+            return $this->pembulatan($value, $roundingMode);
+        };
+        $hasRounding = ($customRoundingStep !== null && $customRoundingStep > 0)
+            || ! in_array($roundingMode, ['', '5000'], true);
+
+        // Annuitas bukan bagian dari pacuan SIUPK (pacuan hanya flat/sliding),
+        // tetapi tetap didukung untuk produk Next yang memilih metode ini.
+        if ($interestMethod === 'annuity') {
+            return [$adjustedTerm, $saPokok, $this->annuityAmounts(
+                months: $adjustedTerm,
+                principal: $principal,
+                principalSystem: $sistemPokok,
+                tempoPokok: $tempoPokok,
+                tempoJasa: $tempoJasa,
+                serviceRateTotal: $serviceRateTotal,
+                roundAmount: $roundAmount,
+                hasRounding: $hasRounding,
+            )];
+        }
+
         // Tahap 1: Hitung jasa (mengikuti logika pacuan baris 2417-2445)
         $rentalRows = [];
         $alokasiPokok = $principal;
@@ -305,8 +382,8 @@ final class MemberLoanScheduleCalculator
             $wajibJasa = $tempoJasa > 0 ? ($alokasiJasa / $tempoJasa) : 0.0;
 
             // Pembulatan jasa hanya kalau mode kecamatan != '5000' (pacuan baris 2425)
-            if ($roundingMode !== '5000') {
-                $wajibJasa = $this->pembulatan($wajibJasa, $roundingMode);
+            if ($hasRounding) {
+                $wajibJasa = $roundAmount($wajibJasa);
             }
 
             $sumJasa = $wajibJasa * max(0, $tempoJasa - 1);
@@ -332,6 +409,11 @@ final class MemberLoanScheduleCalculator
             $sisa = $i % $sistemPokok;
             $ke = $i / $sistemPokok;
 
+            // Catatan: pacuan baris 2449 memakai `($alokasi / 10) - jasa` saat
+            // pembulatan == '5000'. Audit DB legacy membuktikan tidak ada tenant
+            // yang memakai mode '5000' (semua 500/1000/±500/±1000/+1000), jadi
+            // jalur itu dead code. Kita pakai rumus normal `alokasi / tempo`
+            // agar tidak menggelembungkan pokok pada tenant baru.
             $wajibPokok = $tempoPokok > 0 ? ($principal / $tempoPokok) : 0.0;
 
             if ($term === 24) {
@@ -355,8 +437,8 @@ final class MemberLoanScheduleCalculator
             }
 
             // Pacuan baris 2474: jika pembulatan != '5000' -> pakai pembulatan kecamatan, ABAIKAN magic di atas
-            if ($roundingMode !== '5000') {
-                $wajibPokok = $this->pembulatan($principal / $tempoPokok, $roundingMode);
+            if ($hasRounding) {
+                $wajibPokok = $roundAmount($principal / $tempoPokok);
             }
 
             $sumPokok = $wajibPokok * max(0, $tempoPokok - 1);
@@ -373,6 +455,51 @@ final class MemberLoanScheduleCalculator
         }
 
         return [$adjustedTerm, $saPokok, $rentalRows];
+    }
+
+    /**
+     * Jadwal annuitas (metode tambahan Next; bukan bagian dari pacuan).
+     *
+     * @return array<int, array{pokok: float, jasa: float}>
+     */
+    private function annuityAmounts(
+        int $months,
+        float $principal,
+        int $principalSystem,
+        int $tempoPokok,
+        int $tempoJasa,
+        float $serviceRateTotal,
+        \Closure $roundAmount,
+        bool $hasRounding,
+    ): array {
+        $n = max(1, $tempoPokok);
+        $system = max(1, $principalSystem);
+        $r = $tempoJasa > 0 ? ($serviceRateTotal / $tempoJasa) / 100 : 0.0;
+
+        $rawInstallment = $r > 0
+            ? $principal * ($r * (1 + $r) ** $n) / ((1 + $r) ** $n - 1)
+            : $principal / $n;
+        $installment = $hasRounding ? $roundAmount($rawInstallment) : round($rawInstallment, 2);
+
+        $rows = [];
+        for ($i = 1; $i <= $months; $i++) {
+            $rows[$i] = ['pokok' => 0.0, 'jasa' => 0.0];
+        }
+
+        $balance = $principal;
+        for ($k = 1; $k <= $n; $k++) {
+            $month = $k * $system;
+            $jasa = $hasRounding ? $roundAmount($balance * $r) : round($balance * $r, 2);
+            $pokok = $k === $n ? round($balance, 2) : round($installment - $jasa, 2);
+
+            if ($month <= $months) {
+                $rows[$month] = ['pokok' => $pokok, 'jasa' => $jasa];
+            }
+
+            $balance = $k === $n ? 0.0 : round($balance - $pokok, 2);
+        }
+
+        return $rows;
     }
 
     /**
@@ -480,17 +607,21 @@ final class MemberLoanScheduleCalculator
     }
 
     /**
-     * Cari jadwal angsuran desa dari anggota (pacuan: $pinj_i->anggota->d->jadwal_angsuran_desa).
-     * Karena struktur Next belum punya relasi tsb, fallback ke profile tenant.
+     * Cari jadwal angsuran desa dari anggota (pacuan: $pinj_i->anggota->d->jadwal_angsuran_desa)
+     * atau dari desa kelompok (pacuan: $pinkel->kelompok->d->jadwal_angsuran_desa).
      */
-    private function resolveVillageInstallmentDay(Member $member): int
+    private function resolveVillageInstallmentDay(Loan $loan): int
     {
-        // Pacuan memakai `anggota->d->jadwal_angsuran_desa` (per desa).
-        $schedule = trim((string) ($member->village?->installment_schedule ?? ''));
-        if (ctype_digit($schedule)) {
-            $day = (int) $schedule;
-            if ($day >= 1 && $day <= 31) {
-                return $day;
+        $memberVillage = $loan->borrower?->member?->village;
+        $groupVillage = $loan->borrower?->group?->village;
+
+        foreach ([$memberVillage, $groupVillage] as $village) {
+            $schedule = trim((string) ($village?->installment_schedule ?? ''));
+            if (ctype_digit($schedule)) {
+                $day = (int) $schedule;
+                if ($day >= 1 && $day <= 31) {
+                    return $day;
+                }
             }
         }
 

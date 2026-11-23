@@ -56,7 +56,9 @@ final class LoanSimulationController extends Controller
             'interest_frequency' => (string) ($request->query('interest_freq') ?: 'monthly'),
             'principal_grace_months' => (int) ($request->query('principal_grace') ?: 0),
             'interest_grace_months' => (int) ($request->query('interest_grace') ?: 0),
-            'rounding_step' => $request->has('rounding') ? max(0, (int) $request->query('rounding')) : 500,
+            'rounding_step' => $request->has('rounding')
+                ? max(0, (int) $request->query('rounding'))
+                : $this->defaultRoundingStep(),
             'start_date' => (string) ($request->query('start_date') ?: date('Y-m-d')),
         ];
 
@@ -147,7 +149,9 @@ final class LoanSimulationController extends Controller
             'interest_frequency' => (string) ($request->query('interest_frequency') ?: 'monthly'),
             'principal_grace_months' => (int) ($request->query('principal_grace_months') ?: 0),
             'interest_grace_months' => (int) ($request->query('interest_grace_months') ?: 0),
-            'rounding_step' => $request->has('rounding_step') ? max(0, (int) $request->query('rounding_step')) : 500,
+            'rounding_step' => $request->has('rounding_step')
+                ? max(0, (int) $request->query('rounding_step'))
+                : $this->defaultRoundingStep(),
             'start_date' => (string) ($request->query('start_date') ?: date('Y-m-d')),
         ];
 
@@ -184,7 +188,7 @@ final class LoanSimulationController extends Controller
     private function parseRoundingStep(?string $method): int
     {
         if ($method === null || $method === '') {
-            return 500;
+            return $this->defaultRoundingStep();
         }
 
         if (is_numeric($method)) {
@@ -199,7 +203,28 @@ final class LoanSimulationController extends Controller
             '5000' => 5000,
             '10000' => 10000,
             '50000' => 50000,
-            default => 500,
+            default => $this->defaultRoundingStep(),
         };
+    }
+
+    /**
+     * Default pembulatan mengikuti pengaturan legacy tenant bila tersedia,
+     * supaya simulasi memakai basis angka yang sama dengan jadwal pinjaman baru.
+     * Mode legacy bersign ('-500'/'+1000') dipetakan ke langkah absolut.
+     */
+    private function defaultRoundingStep(): int
+    {
+        $profile = OrganizationProfile::query()->first();
+        $mode = trim((string) ($profile?->installment_rounding ?? ''));
+
+        if ($mode === '' || $mode === '5000') {
+            return 500;
+        }
+
+        if (preg_match('/^([+-]?)(\d+)$/', $mode, $matches) === 1) {
+            return max(0, (int) $matches[2]);
+        }
+
+        return 500;
     }
 }

@@ -11,6 +11,7 @@ use App\Domain\Migration\Lending\DTO\NormalizedMemberInstallment;
 use App\Domain\Migration\Lending\DTO\NormalizedMemberLoan;
 use App\Domain\Migration\Lending\DTO\NormalizedMemberPayment;
 use App\Domain\Migration\Lending\DTO\NormalizedPayment;
+use App\Domain\Migration\Settings\LegacyTenantSettingsImporter;
 use App\Domain\Migration\Support\LegacyConnection;
 use App\Tenancy\Services\TenantLoanProductProvisioner;
 use App\Tenancy\Services\TenantSequenceService;
@@ -30,6 +31,7 @@ final class LendingMigrationPipeline
         private LendingMigrationReconciler $reconciler,
         private TenantSequenceService $sequences,
         private TenantLoanProductProvisioner $products,
+        private LegacyTenantSettingsImporter $settings,
     ) {}
 
     /**
@@ -83,6 +85,17 @@ final class LendingMigrationPipeline
 
         $this->products->ensureDefaults();
         $this->normalizer->warmCaches();
+
+        // Pengaturan pembulatan/batas cair harus masuk SEBELUM jadwal dihitung
+        // ulang oleh laporan/dokumen; jadwal legacy sendiri tetap diimpor apa adanya.
+        try {
+            $this->settings->import($suffix, $dryRun, true);
+        } catch (\Throwable $exception) {
+            logger()->warning('Legacy settings import skipped: '.$exception->getMessage(), [
+                'suffix' => $suffix,
+                'tenant_id' => $this->context->id(),
+            ]);
+        }
 
         $isMapped = function (string $sourceTable, string $sourceId, string $secondary = ''): bool {
             return DB::connection((string) config('tenancy.tenant_connection', 'tenant'))

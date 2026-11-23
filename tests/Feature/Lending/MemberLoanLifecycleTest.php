@@ -264,13 +264,17 @@ final class MemberLoanLifecycleTest extends TestCase
         $rows = $installments->where('installment_number', '>', 0)->values();
         self::assertCount(36, $rows);
 
-        self::assertSame(570_000.0, (float) $rows[0]->principal_due);
-        self::assertSame(570_000.0, (float) $rows[10]->principal_due);
-        self::assertSame(-270_000.0, (float) $rows[11]->principal_due); // baris ke-12 = alokasi - sum
-        self::assertSame(570_000.0, (float) $rows[12]->principal_due); // baris ekstra pertama
-        self::assertSame(570_000.0, (float) $rows[35]->principal_due);
+        // Pacuan memiliki cabang dead-code `(alokasi/10) - jasa` untuk
+        // pembulatan '5000'; audit DB membuktikan tidak ada tenant memakainya.
+        // Maka pokok memakai rumus normal `alokasi / tempo_pokok` = 6jt/12.
+        self::assertSame(500_000.0, (float) $rows[0]->principal_due);
+        self::assertSame(500_000.0, (float) $rows[10]->principal_due);
+        self::assertSame(500_000.0, (float) $rows[11]->principal_due); // baris ke-12 menutup sisa
+        self::assertSame(500_000.0, (float) $rows[12]->principal_due); // baris ekstra pertama
+        self::assertSame(500_000.0, (float) $rows[35]->principal_due);
 
-        self::assertEqualsWithDelta(19_680_000.0, $rows->sum(fn (LoanInstallment $i) => (float) $i->principal_due), 1.0);
+        // 36 baris × 500rb = 18jt (kuirk pacuan: 24 baris ekstra tetap menambah pokok).
+        self::assertEqualsWithDelta(18_000_000.0, $rows->sum(fn (LoanInstallment $i) => (float) $i->principal_due), 1.0);
         self::assertEqualsWithDelta(1_080_000.0, $rows->sum(fn (LoanInstallment $i) => (float) $i->interest_due), 1.0);
     }
 

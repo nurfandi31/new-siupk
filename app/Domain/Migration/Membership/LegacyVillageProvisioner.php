@@ -67,6 +67,7 @@ final class LegacyVillageProvisioner
                 $name = $info['name'] ?? ('Desa '.$code);
                 $address = $info['address'] ?? null;
                 $phone = $info['phone'] ?? null;
+                $schedule = $info['installment_schedule'] ?? null;
 
                 $existing = OrganizationUnit::query()
                     ->villages()
@@ -84,6 +85,7 @@ final class LegacyVillageProvisioner
                         'village_naming_id' => $namingId,
                         'parent_row_id' => null,
                         'is_active' => true,
+                        'installment_schedule' => $schedule,
                     ]);
                     $codeToRowId[$code] = (int) $unit->row_id;
                     $created++;
@@ -103,6 +105,9 @@ final class LegacyVillageProvisioner
                     }
                     if ($existing->village_naming_id === null && $namingId !== null) {
                         $patch['village_naming_id'] = $namingId;
+                    }
+                    if ($existing->installment_schedule === null && $schedule !== null) {
+                        $patch['installment_schedule'] = $schedule;
                     }
                     if ($patch !== []) {
                         $existing->update($patch);
@@ -183,7 +188,7 @@ final class LegacyVillageProvisioner
 
     /**
      * @param  list<string>  $codes
-     * @return array<string, array{name: string, address: ?string, phone: ?string}>
+     * @return array<string, array{name: string, address: ?string, phone: ?string, installment_schedule: ?string}>
      */
     private function loadDesaMeta(array $codes): array
     {
@@ -206,7 +211,7 @@ final class LegacyVillageProvisioner
             }, $chunk);
 
             $rows = $this->legacy->select(
-                "SELECT kd_desa, kode_desa, nama_desa, alamat_desa, telp_desa
+                "SELECT kd_desa, kode_desa, nama_desa, alamat_desa, telp_desa, jadwal_angsuran_desa
                  FROM desa
                  WHERE kd_desa IN ({$placeholders})
                     OR REPLACE(kode_desa, '.', '') IN ({$placeholders})
@@ -225,6 +230,7 @@ final class LegacyVillageProvisioner
                     'name' => $name,
                     'address' => $this->nullIfEmpty($row->alamat_desa ?? null),
                     'phone' => $this->nullIfEmpty($row->telp_desa ?? null),
+                    'installment_schedule' => $this->villageSchedule($row->jadwal_angsuran_desa ?? null),
                 ];
                 if ($kd !== '') {
                     $meta[$kd] = $payload;
@@ -369,5 +375,17 @@ final class LegacyVillageProvisioner
         }
 
         return $s;
+    }
+
+    private function villageSchedule(mixed $v): ?string
+    {
+        $s = trim((string) ($v ?? ''));
+        if (! ctype_digit($s)) {
+            return null;
+        }
+
+        $day = (int) $s;
+
+        return $day >= 1 && $day <= 31 ? (string) $day : null;
     }
 }

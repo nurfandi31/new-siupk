@@ -26,6 +26,7 @@ final class CutoverTenant extends Command
         {--no-fail-fast : Pass --no-fail-fast to migrate commands}
         {--skip-fiscal : Skip legacy:ensure-fiscal-periods}
         {--skip-coa : Skip tenancy:import-legacy-chart-of-accounts}
+        {--skip-settings : Skip legacy:import-settings}
         {--skip-accounting : Skip legacy:migrate-accounting}
         {--skip-membership : Skip legacy:migrate-membership}
         {--skip-lending : Skip legacy:migrate-lending}
@@ -209,6 +210,15 @@ final class CutoverTenant extends Command
                 'command' => 'tenancy:import-legacy-chart-of-accounts',
                 'params' => ['tenant' => $tenant],
                 'skip' => (bool) $this->option('skip-coa') || $dryRun,
+            ],
+            [
+                'name' => 'tenant-settings',
+                'command' => 'legacy:import-settings',
+                'params' => array_merge([
+                    'tenant' => $tenant,
+                    'suffix' => $suffix,
+                ], $dryRun ? ['--dry-run' => true] : []),
+                'skip' => (bool) $this->option('skip-settings'),
             ],
             [
                 'name' => 'accounting',
