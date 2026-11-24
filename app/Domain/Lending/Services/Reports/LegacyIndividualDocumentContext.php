@@ -1509,7 +1509,16 @@ final class LegacyIndividualDocumentContext
     {
         // Pacuan hanya memakai baris tersimpan saat status A. Status P/V/W/L/R/H
         // memanggil generate() live (non-save) sehingga tanggal di-clamp.
-        if ($this->legacyStatus((string) $loan->status) === 'A') {
+        // Khusus pinjaman hasil migrasi, baris tersimpan selalu otoritatif:
+        // angka dan tanggalnya harus persis jadwal legacy, termasuk untuk
+        // pinjaman lunas/bermasalah yang status Next-nya bukan A.
+        $hasSavedRows = $loan->installments->contains(
+            static fn (LoanInstallment $inst): bool => (int) $inst->installment_number > 0,
+        );
+        $isMigrated = $loan->legacy_product_kode !== null
+            || (is_array($loan->legacy_account_codes) && $loan->legacy_account_codes !== []);
+
+        if ($hasSavedRows && ($isMigrated || $this->legacyStatus((string) $loan->status) === 'A')) {
             return $this->savedScheduleRows($loan);
         }
 

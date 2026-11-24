@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Migration\Lending;
 
+use App\Domain\Lending\Support\LegacyProductKode;
 use App\Domain\Migration\Lending\DTO\NormalizedBeneficiary;
 use App\Domain\Migration\Lending\DTO\NormalizedGroupLoan;
 use App\Domain\Migration\Lending\DTO\NormalizedInstallment;
@@ -101,6 +102,8 @@ final class LegacyLendingNormalizer
             (int) (LegacyRow::str($row, ['sistem_angsuran']) ?? '0'),
             (int) (LegacyRow::str($row, ['sa_jasa']) ?? '0'),
         );
+        $legacyProductCode = $this->legacyProductCode($row);
+        $legacyAccountCodes = $this->legacyAccountCodes($row);
 
         $spk = LegacyRow::str($row, ['spk_no']);
         $loanNumber = $spk !== null && $spk !== '' ? $spk : ('PK-'.$legacyId);
@@ -133,6 +136,8 @@ final class LegacyLendingNormalizer
                 verificationTime: $this->normalizeTime(LegacyRow::str($row, ['waktu_verifikasi'])),
                 disbursementScheduleText: LegacyRow::str($row, ['wt_cair']),
                 snapshot: LegacyRow::snapshot($row),
+                legacyProductCode: $legacyProductCode,
+                legacyAccountCodes: $legacyAccountCodes,
             ),
             'error' => null,
             'skip' => false,
@@ -191,6 +196,8 @@ final class LegacyLendingNormalizer
             (int) (LegacyRow::str($row, ['sistem_angsuran']) ?? '0'),
             (int) (LegacyRow::str($row, ['sa_jasa']) ?? '0'),
         );
+        $legacyProductCode = $this->legacyProductCode($row);
+        $legacyAccountCodes = $this->legacyAccountCodes($row);
 
         $spk = LegacyRow::str($row, ['spk_no']);
         $loanNumber = $spk !== null && $spk !== '' && $spk !== '0' ? $spk : ('PI-'.$legacyId);
@@ -223,6 +230,8 @@ final class LegacyLendingNormalizer
                 verificationTime: $this->normalizeTime(LegacyRow::str($row, ['waktu_verifikasi'])),
                 disbursementScheduleText: LegacyRow::str($row, ['wt_cair']),
                 snapshot: LegacyRow::snapshot($row),
+                legacyProductCode: $legacyProductCode,
+                legacyAccountCodes: $legacyAccountCodes,
             ),
             'error' => null,
             'skip' => false,
@@ -502,6 +511,41 @@ final class LegacyLendingNormalizer
         }
 
         return $v;
+    }
+
+    /**
+     * Kode produk legacy (`jenis_produk_pinjaman.kode`) yang dilampirkan
+     * extractor sebagai `jpp_kode`. Kode ini menentukan akun pacuan
+     * 1.1.03.xx (pokok), 4.1.01.xx (jasa), dan 4.1.02.xx (denda).
+     */
+    private function legacyProductCode(object $row): ?string
+    {
+        return LegacyProductKode::normalize(LegacyRow::str($row, ['jpp_kode']));
+    }
+
+    /**
+     * Kode akun pacuan yang benar-benar ada di chart legacy. Null jika tidak
+     * ada satu pun, sehingga pemanggil memakai fallback produk Next.
+     *
+     * @return array{principal?: string, revenue?: string, penalty?: string}|null
+     */
+    private function legacyAccountCodes(object $row): ?array
+    {
+        $codes = [];
+        $map = [
+            'principal' => 'jpp_principal_account',
+            'revenue' => 'jpp_revenue_account',
+            'penalty' => 'jpp_penalty_account',
+        ];
+
+        foreach ($map as $key => $property) {
+            $code = LegacyRow::str($row, [$property]);
+            if ($code !== null && $code !== '') {
+                $codes[$key] = $code;
+            }
+        }
+
+        return $codes === [] ? null : $codes;
     }
 
     private function mapStatus(?string $raw): string

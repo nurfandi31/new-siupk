@@ -95,6 +95,10 @@ final class LegacyLoanLoader
                         ->update([
                             'loan_number' => $loanNumber,
                             'loan_product_row_id' => $loan->productRowId,
+                            'legacy_product_kode' => $loan->legacyProductCode,
+                            'legacy_account_codes' => $loan->legacyAccountCodes !== null
+                                ? json_encode($loan->legacyAccountCodes, JSON_THROW_ON_ERROR)
+                                : null,
                             'sequence_number' => $loan->sequenceNumber,
                             'proposed_at' => $loan->proposedAt,
                             'verified_at' => $loan->verifiedAt,
@@ -121,6 +125,10 @@ final class LegacyLoanLoader
                         'public_id' => (string) Str::ulid(),
                         'loan_number' => $loanNumber,
                         'loan_product_row_id' => $loan->productRowId,
+                        'legacy_product_kode' => $loan->legacyProductCode,
+                        'legacy_account_codes' => $loan->legacyAccountCodes !== null
+                            ? json_encode($loan->legacyAccountCodes, JSON_THROW_ON_ERROR)
+                            : null,
                         'sequence_number' => $loan->sequenceNumber,
                         'proposed_at' => $loan->proposedAt,
                         'verified_at' => $loan->verifiedAt,
@@ -318,6 +326,10 @@ final class LegacyLoanLoader
                 $payload = [
                     'loan_number' => $loanNumber,
                     'loan_product_row_id' => $loan->productRowId,
+                    'legacy_product_kode' => $loan->legacyProductCode,
+                    'legacy_account_codes' => $loan->legacyAccountCodes !== null
+                        ? json_encode($loan->legacyAccountCodes, JSON_THROW_ON_ERROR)
+                        : null,
                     'sequence_number' => $loan->sequenceNumber,
                     'proposed_at' => $loan->proposedAt,
                     'verified_at' => $loan->verifiedAt,

@@ -36,5 +36,7 @@ final readonly class NormalizedMemberLoan
         public ?string $verificationTime,
         public ?string $disbursementScheduleText,
         public array $snapshot,
+        public ?string $legacyProductCode = null,
+        public ?array $legacyAccountCodes = null,
     ) {}
 }

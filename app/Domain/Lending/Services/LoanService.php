@@ -16,6 +16,7 @@ use App\Domain\Lending\Models\LoanInstallment;
 use App\Domain\Lending\Models\LoanPayment;
 use App\Domain\Lending\Models\LoanProduct;
 use App\Domain\Lending\Models\LoanWriteOff;
+use App\Domain\Lending\Support\LegacyProductKode;
 use App\Domain\Membership\Models\Group;
 use App\Domain\Membership\Models\Member;
 use App\Domain\Membership\Models\OrganizationProfile;
@@ -107,6 +108,31 @@ final class LoanService
         'every_24_months' => ['months' => 24],
         'every_36_months' => ['months' => 36],
     ];
+
+    /**
+     * Awalan akun per jenis. Kode akun eksplisit di luar awalan ini diabaikan
+     * agar snapshot yang salah tidak memposting pokok ke akun pendapatan.
+     *
+     * @var array<string, string>
+     */
+    private const LEGACY_ACCOUNT_PREFIXES = [
+        'principal' => '1.1.03.',
+        'revenue' => '4.1.01.',
+        'penalty' => '4.1.02.',
+    ];
+
+    /** @var array<string, array{principal: ?string, revenue: ?string, penalty: ?string}> */
+    private array $legacyAccountCodeCache = [];
+
+    /**
+     * Kode pokok yang aman diturunkan tanpa kode akun eksplisit. Di chart legacy
+     * yang diaudit, 1.1.03 hanya punya .01/.02/.03/.05/.07/.09; kode .04/.06/.08
+     * di Next adalah akun piutang jasa, bukan pokok. Kode lain harus memakai
+     * `legacy_account_codes` hasil migrasi/backfill agar tidak salah akun.
+     *
+     * @var list<string>
+     */
+    private const DERIVABLE_PRINCIPAL_KODES = ['01', '02', '03', '05', '07', '09'];
 
     public function __construct(
         private readonly TenantSettingService $settings,
@@ -819,7 +845,7 @@ final class LoanService
                     ->where('row_id', (int) $data['disbursement_account_row_id'])
                     ->firstOrFail();
                 $productCode = (string) ($loan->product?->code ?? '');
-                $receivableAccount = $this->resolveReceivableAccount($productCode);
+                $receivableAccount = $this->resolveReceivableAccount($productCode, $loan);
                 $disbursedAt = CarbonImmutable::parse((string) $data['disbursed_at'])->toDateString();
 
                 $this->ensureFiscalPeriod($disbursedAt);
@@ -837,8 +863,13 @@ final class LoanService
         });
     }
 
-    private function resolveReceivableAccount(string $productCode): Account
+    private function resolveReceivableAccount(string $productCode, ?Loan $loan = null): Account
     {
+        $legacy = $this->legacyAccount($loan, 'principal');
+        if ($legacy !== null) {
+            return $legacy;
+        }
+
         return $this->resolveAccountByKey(
             productCode: $productCode,
             settingKey: 'account.pencairan_',
@@ -1015,8 +1046,13 @@ final class LoanService
         ];
     }
 
-    private function resolveRevenueAccount(string $productCode): Account
+    private function resolveRevenueAccount(string $productCode, ?Loan $loan = null): Account
     {
+        $legacy = $this->legacyAccount($loan, 'revenue');
+        if ($legacy !== null) {
+            return $legacy;
+        }
+
         return $this->resolveAccountByKey(
             productCode: $productCode,
             settingKey: 'account.penerimaan_jasa_',
@@ -1025,10 +1061,17 @@ final class LoanService
         );
     }
 
-    private function resolvePenaltyAccount(string $productCode): Account
+    private function resolvePenaltyAccount(string $productCode, ?Loan $loan = null): Account
     {
         $normalized = strtolower(trim($productCode));
         $candidates = [];
+
+        // Pinjaman hasil migrasi: kode denda pacuan adalah 4.1.02.{kode produk},
+        // bukan akun yang kebetulan bernama "denda" pada chart lama Next.
+        $legacy = $this->legacyAccount($loan, 'penalty');
+        if ($legacy !== null) {
+            return $legacy;
+        }
 
         $configured = $this->settings->get('account.penerimaan_denda_'.$normalized);
         if (is_string($configured) && $configured !== '') {
@@ -1070,6 +1113,113 @@ final class LoanService
         }
 
         throw new RuntimeException("No penalty account configured for loan product [{$productCode}].");
+    }
+
+    /**
+     * Akun pacuan untuk pinjaman hasil migrasi. Kode diambil dari kolom
+     * `loans.legacy_account_codes` (paling akurat), lalu snapshot migrasi,
+     * lalu fallback pola `{prefix}{kode produk legacy}` untuk data lama.
+     */
+    private function legacyAccount(?Loan $loan, string $kind): ?Account
+    {
+        if ($loan === null) {
+            return null;
+        }
+
+        $codes = $this->resolveLegacyAccountCodes($loan);
+        $code = $codes[$kind] ?? null;
+        if ($code === null) {
+            return null;
+        }
+
+        return Account::on('tenant')
+            ->where('code', $code)
+            ->where('is_active', true)
+            ->first();
+    }
+
+    /**
+     * @return array{principal: ?string, revenue: ?string, penalty: ?string}
+     */
+    private function resolveLegacyAccountCodes(Loan $loan): array
+    {
+        $rowId = (int) $loan->row_id;
+        $cacheKey = (int) $loan->tenant_id.':'.$rowId;
+        if (array_key_exists($cacheKey, $this->legacyAccountCodeCache)) {
+            return $this->legacyAccountCodeCache[$cacheKey];
+        }
+
+        $codes = [
+            'principal' => null,
+            'revenue' => null,
+            'penalty' => null,
+        ];
+
+        $snapshot = DB::connection('tenant')->table('legacy_record_mappings')
+            ->where('tenant_id', $loan->tenant_id)
+            ->where('target_table', 'loans')
+            ->where('target_row_id', $rowId)
+            ->value('source_snapshot');
+
+        $decoded = is_string($snapshot) && $snapshot !== ''
+            ? json_decode($snapshot, true)
+            : null;
+
+        // 1) Fallback pola pacuan untuk data lama yang belum punya kode eksplisit.
+        $kode = LegacyProductKode::normalize($loan->legacy_product_kode ?? null);
+        if ($kode === null && is_array($decoded)) {
+            $kode = LegacyProductKode::normalize($decoded['jpp_kode'] ?? null)
+                ?? LegacyProductKode::fromJenisPp($decoded['jenis_pp'] ?? null);
+        }
+        if ($kode !== null) {
+            if (in_array($kode, self::DERIVABLE_PRINCIPAL_KODES, true)) {
+                $codes['principal'] = '1.1.03.'.$kode;
+            }
+
+            $number = (int) $kode;
+            if ($number >= 1 && $number <= 9) {
+                $codes['revenue'] = '4.1.01.'.$kode;
+                $codes['penalty'] = '4.1.02.'.$kode;
+            }
+        }
+
+        // 2) Kode eksplisit dari snapshot migrasi. Kehadiran key (walau null)
+        // berarti snapshot baru sudah memeriksa chart legacy; null = akun itu
+        // memang tidak ada dan harus fallback, bukan diturunkan dari pola.
+        if (is_array($decoded)) {
+            foreach (['principal', 'revenue', 'penalty'] as $kind) {
+                $key = 'jpp_'.$kind.'_account';
+                if (array_key_exists($key, $decoded)) {
+                    $codes[$kind] = $this->normalizeAccountCode($decoded[$key], $kind);
+                }
+            }
+        }
+
+        // 3) Kolom loan adalah sumber utama (diisi loader/backfill). Array yang
+        // ada bersifat otoritatif untuk ketiga jenis: key yang tidak ada berarti
+        // akun legacy-nya tidak ada, jadi jangan diisi ulang dari pola kode.
+        $stored = $loan->legacy_account_codes;
+        if (is_string($stored)) {
+            $stored = json_decode($stored, true);
+        }
+        if (is_array($stored) && $stored !== []) {
+            foreach (['principal', 'revenue', 'penalty'] as $kind) {
+                $codes[$kind] = $this->normalizeAccountCode($stored[$kind] ?? null, $kind);
+            }
+        }
+
+        return $this->legacyAccountCodeCache[$cacheKey] = $codes;
+    }
+
+    private function normalizeAccountCode(mixed $code, string $kind): ?string
+    {
+        $prefix = self::LEGACY_ACCOUNT_PREFIXES[$kind] ?? null;
+        $value = trim((string) $code);
+        if ($prefix === null || $value === '' || ! str_starts_with($value, $prefix)) {
+            return null;
+        }
+
+        return $value;
     }
 
     /**
@@ -1219,8 +1369,8 @@ final class LoanService
                 ->firstOrFail();
 
             $productCode = (string) ($loan->product?->code ?? '');
-            $receivableAccount = $this->resolveReceivableAccount($productCode);
-            $revenueAccount = $this->resolveRevenueAccount($productCode);
+            $receivableAccount = $this->resolveReceivableAccount($productCode, $loan);
+            $revenueAccount = $this->resolveRevenueAccount($productCode, $loan);
 
             // 5) Buat jurnal entry (mirror siupk: 1 baris per komponen yang > 0).
             $entry = JournalEntry::query()->create([
@@ -1266,7 +1416,7 @@ final class LoanService
                 ]);
             }
             if ($penaltyAmount > 0) {
-                $penaltyAccount = $this->resolvePenaltyAccount($productCode);
+                $penaltyAccount = $this->resolvePenaltyAccount($productCode, $loan);
                 $entry->lines()->create([
                     'line_number' => $lineNumber++,
                     'account_row_id' => (int) $penaltyAccount->row_id,
@@ -1829,7 +1979,7 @@ final class LoanService
             $reason = isset($data['reason']) ? trim((string) $data['reason']) : '';
             $productCode = (string) ($loan->product?->code ?? '');
 
-            $receivable = $this->resolveReceivableAccount($productCode);
+            $receivable = $this->resolveReceivableAccount($productCode, $loan);
             $allowance = $this->resolveAllowanceAccount($productCode);
             $this->ensureFiscalPeriod($writtenOffAt->toDateString());
 
@@ -1964,7 +2114,7 @@ final class LoanService
             }
 
             $productCode = (string) ($loan->product?->code ?? '');
-            $receivable = $this->resolveReceivableAccount($productCode);
+            $receivable = $this->resolveReceivableAccount($productCode, $loan);
             $allowance = $this->resolveAllowanceAccount($productCode);
             $this->ensureFiscalPeriod($writtenOffAt->toDateString());
 
@@ -2125,7 +2275,7 @@ final class LoanService
             $interestRatePerPeriod = $interestPeriods > 0 ? round($serviceRateTotal / $interestPeriods, 4) : 0.0;
 
             $productCode = (string) ($loan->product?->code ?? '');
-            $receivable = $this->resolveReceivableAccount($productCode);
+            $receivable = $this->resolveReceivableAccount($productCode, $loan);
             $cashAccountRowId = (int) ($loan->disbursement_account_row_id ?? 0);
             if ($cashAccountRowId <= 0) {
                 throw new RuntimeException('Akun sumber dana pinjaman tidak ditemukan. Tidak dapat reschedule.');
@@ -2183,6 +2333,11 @@ final class LoanService
             $newLoan = Loan::query()->create([
                 'legacy_source' => $loan->legacy_source ?: 'group_loan',
                 'loan_product_row_id' => $loan->loan_product_row_id,
+                // Pinjaman reschedule turunan pinjaman migrasi tetap memakai
+                // kode produk & akun legacy yang sama, jangan kembali ke
+                // pemetaan produk Next yang bisa berbeda.
+                'legacy_product_kode' => $loan->legacy_product_kode,
+                'legacy_account_codes' => $loan->legacy_account_codes,
                 'sequence_number' => ((int) $loan->sequence_number) + 1,
                 'proposed_at' => $rescheduledAt->toDateString(),
                 'verified_at' => $rescheduledAt->toDateString(),

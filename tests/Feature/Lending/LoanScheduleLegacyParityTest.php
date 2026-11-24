@@ -156,6 +156,39 @@ final class LoanScheduleLegacyParityTest extends TestCase
         self::assertStringContainsString('72,500,000', $html);
     }
 
+    public function test_migrated_loan_documents_always_use_saved_schedule_rows(): void
+    {
+        $loan = $this->createParityLoan();
+
+        // Simulasikan pinjaman migrasi yang sudah lunas (status Next completed
+        // = L di pacuan) dan baris jadwal tersimpan berbeda dari hitung ulang.
+        $loan->forceFill([
+            'status' => 'completed',
+            'completed_at' => '2026-08-20',
+            'legacy_product_kode' => '01',
+            'legacy_account_codes' => [
+                'principal' => '1.1.03.01',
+                'revenue' => '4.1.01.01',
+                'penalty' => '4.1.02.01',
+            ],
+        ])->save();
+
+        LoanInstallment::query()
+            ->where('loan_row_id', $loan->row_id)
+            ->where('installment_number', '>', 0)
+            ->update(['principal_due' => 5_000_000]);
+
+        $payload = app(LoanDocumentService::class)->payload(
+            $loan->fresh(['installments']),
+            'kartu_angsuran_individu',
+        );
+        $html = view($payload['document']['view'], $payload)->render();
+
+        // Harus membaca baris tersimpan; hitung ulang akan menghasilkan 6.041.500.
+        self::assertGreaterThanOrEqual(12, substr_count($html, '5,000,000'));
+        self::assertStringNotContainsString('6,041,500', $html);
+    }
+
     public function test_group_schedule_uses_same_legacy_numbers_and_split_rows(): void
     {
         [$group, $members] = $this->createGroup();

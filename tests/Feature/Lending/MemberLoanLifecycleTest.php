@@ -757,6 +757,18 @@ final class MemberLoanLifecycleTest extends TestCase
             'disbursement_account_row_id' => $this->disbursementAccount->row_id,
         ], (int) $this->user->row_id);
 
+        // Simulasikan pinjaman migrasi: kode produk & akun legacy harus ikut
+        // terbawa ke pinjaman hasil reschedule.
+        $legacyCodes = [
+            'principal' => '1.1.03.07',
+            'revenue' => '4.1.01.07',
+            'penalty' => '4.1.02.07',
+        ];
+        $loan->forceFill([
+            'legacy_product_kode' => '07',
+            'legacy_account_codes' => $legacyCodes,
+        ])->save();
+
         // Reschedule dengan sisa pokok (belum ada angsuran dibayar = 8jt).
         $newLoan = $service->reschedule($loan, [
             'rescheduled_at' => '2026-08-10',
@@ -773,6 +785,8 @@ final class MemberLoanLifecycleTest extends TestCase
         // Loan baru di status active, dengan pokok = sisa.
         self::assertSame('active', $newLoan->status);
         self::assertSame('member_loan', $newLoan->legacy_source);
+        self::assertSame('07', $newLoan->legacy_product_kode);
+        self::assertSame($legacyCodes, $newLoan->legacy_account_codes);
         self::assertSame((int) $this->member->row_id, (int) $newLoan->borrower?->member_row_id);
         self::assertNull($newLoan->borrower?->group_row_id);
 

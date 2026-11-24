@@ -10,6 +10,14 @@ use RuntimeException;
 
 final class LegacyLendingExtractor
 {
+    /** @var array<int, string> */
+    private array $jppKodeByJenis = [];
+
+    private bool $jppKodeLoaded = false;
+
+    /** @var array<string, array<string, true>> */
+    private array $legacyChartBySuffix = [];
+
     public function __construct(
         private LegacyConnection $legacy,
     ) {}
@@ -152,7 +160,9 @@ final class LegacyLendingExtractor
      */
     public function pinjamanKelompokChunks(string $suffix, int $chunk): Generator
     {
-        yield from $this->chunked($this->legacy->pinjamanKelompokTable($suffix), 'id', $chunk);
+        foreach ($this->chunked($this->legacy->pinjamanKelompokTable($suffix), 'id', $chunk) as $rows) {
+            yield $this->withJppKode($rows, $suffix);
+        }
     }
 
     /**
@@ -168,7 +178,9 @@ final class LegacyLendingExtractor
      */
     public function pinjamanIndividuChunks(string $suffix, int $chunk): Generator
     {
-        yield from $this->chunked($this->legacy->pinjamanAnggotaTable($suffix), 'id', $chunk, "jenis_pinjaman = 'I'");
+        foreach ($this->chunked($this->legacy->pinjamanAnggotaTable($suffix), 'id', $chunk, "jenis_pinjaman = 'I'") as $rows) {
+            yield $this->withJppKode($rows, $suffix);
+        }
     }
 
     /**
@@ -293,6 +305,103 @@ final class LegacyLendingExtractor
             }
             $offset += $chunk;
         }
+    }
+
+    /**
+     * Lengkapi baris pinjaman dengan kode produk legacy (`jenis_produk_pinjaman.kode`)
+     * dan kode akun yang benar-benar ada di chart legacy. Pemetaan akun eksplisit
+     * mencegah kode produk tanpa akun legacy jatuh ke akun Next yang kebetulan
+     * memakai kode sama (mis. 1.1.03.10 = Piutang Jasa Perorangan di Next).
+     *
+     * @param  list<object>  $rows
+     * @return list<object>
+     */
+    private function withJppKode(array $rows, string $suffix): array
+    {
+        $map = $this->jppKodeMap();
+        $chart = $this->legacyChart($suffix);
+
+        foreach ($rows as $row) {
+            $jenis = (int) ($row->jenis_pp ?? 0);
+            $kode = $map[$jenis] ?? null;
+            $row->jpp_kode = $kode;
+
+            $row->jpp_principal_account = $kode !== null && isset($chart['1.1.03.'.$kode])
+                ? '1.1.03.'.$kode
+                : null;
+            $row->jpp_revenue_account = $kode !== null && isset($chart['4.1.01.'.$kode])
+                ? '4.1.01.'.$kode
+                : null;
+            $row->jpp_penalty_account = $kode !== null && isset($chart['4.1.02.'.$kode])
+                ? '4.1.02.'.$kode
+                : null;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function jppKodeMap(): array
+    {
+        if ($this->jppKodeLoaded) {
+            return $this->jppKodeByJenis;
+        }
+
+        $this->jppKodeLoaded = true;
+
+        if (! $this->legacy->tableExists('jenis_produk_pinjaman')) {
+            return [];
+        }
+
+        foreach ($this->legacy->select('SELECT id, kode FROM jenis_produk_pinjaman') as $row) {
+            $kode = trim((string) ($row->kode ?? ''));
+            if ($kode === '' || ! ctype_digit($kode)) {
+                continue;
+            }
+
+            $number = (int) $kode;
+            if ($number <= 0 || $number > 99) {
+                continue;
+            }
+
+            $this->jppKodeByJenis[(int) $row->id] = str_pad((string) $number, 2, '0', STR_PAD_LEFT);
+        }
+
+        return $this->jppKodeByJenis;
+    }
+
+    /**
+     * Kode akun yang tersedia pada chart legacy `rekening_{suffix}`.
+     *
+     * @return array<string, true>
+     */
+    private function legacyChart(string $suffix): array
+    {
+        if (isset($this->legacyChartBySuffix[$suffix])) {
+            return $this->legacyChartBySuffix[$suffix];
+        }
+
+        $this->legacyChartBySuffix[$suffix] = [];
+
+        if (! preg_match('/^\d+$/', $suffix)) {
+            return [];
+        }
+
+        $table = 'rekening_'.$suffix;
+        if (! $this->legacy->tableExists($table)) {
+            return [];
+        }
+
+        foreach ($this->legacy->select("SELECT kode_akun FROM `{$table}`") as $row) {
+            $code = trim((string) ($row->kode_akun ?? ''));
+            if ($code !== '') {
+                $this->legacyChartBySuffix[$suffix][$code] = true;
+            }
+        }
+
+        return $this->legacyChartBySuffix[$suffix];
     }
 
     /**

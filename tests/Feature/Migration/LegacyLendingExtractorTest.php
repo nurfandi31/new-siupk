@@ -31,9 +31,22 @@ final class LegacyLendingExtractorTest extends TestCase
         Schema::connection('tenant')->create('pinjaman_anggota_99', function ($table): void {
             $table->bigIncrements('id');
             $table->string('jenis_pinjaman', 1)->default('K');
+            $table->unsignedBigInteger('jenis_pp')->default(0);
             $table->unsignedBigInteger('id_pinkel')->default(0);
             $table->unsignedBigInteger('nia')->default(0);
             $table->string('alokasi', 100)->default('0');
+        });
+
+        Schema::connection('tenant')->dropIfExists('jenis_produk_pinjaman');
+        Schema::connection('tenant')->create('jenis_produk_pinjaman', function ($table): void {
+            $table->bigIncrements('id');
+            $table->string('kode', 10)->default('');
+        });
+
+        Schema::connection('tenant')->dropIfExists('rekening_99');
+        Schema::connection('tenant')->create('rekening_99', function ($table): void {
+            $table->bigIncrements('id');
+            $table->string('kode_akun', 32)->default('');
         });
 
         Schema::connection('tenant')->dropIfExists('pinjaman_kelompok_99');
@@ -67,6 +80,8 @@ final class LegacyLendingExtractorTest extends TestCase
         Schema::connection('tenant')->dropIfExists('pinjaman_kelompok_99');
         Schema::connection('tenant')->dropIfExists('rencana_angsuran_i_99');
         Schema::connection('tenant')->dropIfExists('real_angsuran_i_99');
+        Schema::connection('tenant')->dropIfExists('jenis_produk_pinjaman');
+        Schema::connection('tenant')->dropIfExists('rekening_99');
         $this->clearTenantTestContext();
 
         parent::tearDown();
@@ -156,5 +171,43 @@ final class LegacyLendingExtractorTest extends TestCase
         self::assertSame(2, $extractor->pinjamanAnggotaCount('99'));
         self::assertSame(1, $extractor->pinjamanAnggotaWithParentCount('99'));
         self::assertSame([10 => true], $extractor->pinjamanKelompokIdSet('99'));
+    }
+
+    public function test_extraction_attaches_only_legacy_chart_account_codes(): void
+    {
+        $db = DB::connection('tenant');
+
+        $db->table('jenis_produk_pinjaman')->insert([
+            ['id' => 13, 'kode' => '7'],
+            ['id' => 15, 'kode' => '10'],
+        ]);
+        $db->table('rekening_99')->insert([
+            ['kode_akun' => '1.1.03.07'],
+            ['kode_akun' => '4.1.01.07'],
+            ['kode_akun' => '4.1.02.07'],
+        ]);
+        $db->table('pinjaman_anggota_99')->insert([
+            ['id' => 1, 'jenis_pinjaman' => 'I', 'jenis_pp' => 13, 'id_pinkel' => 0, 'nia' => 1, 'alokasi' => '1000000'],
+            ['id' => 2, 'jenis_pinjaman' => 'I', 'jenis_pp' => 15, 'id_pinkel' => 0, 'nia' => 2, 'alokasi' => '2000000'],
+        ]);
+
+        $extractor = app(LegacyLendingExtractor::class);
+        $rows = [];
+        foreach ($extractor->pinjamanIndividuChunks('99', 100) as $chunk) {
+            foreach ($chunk as $row) {
+                $rows[(int) $row->id] = $row;
+            }
+        }
+
+        self::assertSame('07', $rows[1]->jpp_kode);
+        self::assertSame('1.1.03.07', $rows[1]->jpp_principal_account);
+        self::assertSame('4.1.01.07', $rows[1]->jpp_revenue_account);
+        self::assertSame('4.1.02.07', $rows[1]->jpp_penalty_account);
+
+        // Kode 10 tidak punya akun di chart legacy ini; jangan meminjam akun Next.
+        self::assertSame('10', $rows[2]->jpp_kode);
+        self::assertNull($rows[2]->jpp_principal_account);
+        self::assertNull($rows[2]->jpp_revenue_account);
+        self::assertNull($rows[2]->jpp_penalty_account);
     }
 }
